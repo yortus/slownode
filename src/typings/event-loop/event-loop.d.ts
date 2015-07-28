@@ -12,6 +12,8 @@ declare module "event-loop" {
 		flush(): void;
 		runTask(task?: EventTask): void;
 		fetchNext(): Promise<EventTask>;
+		addTaskHandler(handler: TaskHandler): boolean;
+		removeTaskHandler(topicFilter: string, functionId: string): boolean;
 	}
 	
 	export interface EventTask {
@@ -32,6 +34,6 @@ declare module "event-loop" {
 	}
 	
 	export interface TaskFunctions {
-		[index: string]: (args: any) => Promise<any>;
+		[index: string]: TaskHandler;
 	}
 }
