@@ -8,6 +8,11 @@ var expect = chai.expect;
 var unlink = Promise.promisify(fs.unlink);
 var readdir = Promise.promisify(fs.readdir);
 describe("EventLoop behaviour tests", function () {
+    it("will clean up", function (done) {
+        unlinkAll()
+            .then(done)
+            .catch(done);
+    });
     it("will throw when provided a non-string database name", function () {
         var dbName = 5;
         expect(make(dbName, 51)).to.throw(errors.InvalidDatabaseName);
@@ -32,11 +37,6 @@ describe("EventLoop behaviour tests", function () {
             .then(expect(true).to.equal)
             .then(function () { return loop.stop(); })
             .then(function () { return done(); });
-    });
-    it("will clean up", function (done) {
-        Promise.all(unlinkAll())
-            .then(done)
-            .catch(done);
     });
 });
 function make(name, delay) {

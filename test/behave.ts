@@ -10,6 +10,12 @@ var readdir = Promise.promisify(fs.readdir);
 
 describe("EventLoop behaviour tests", () => {
 
+	it("will clean up", done => {
+		unlinkAll()
+			.then(done)
+			.catch(done);
+	});
+
 	it("will throw when provided a non-string database name", () => {
 		var dbName: any = 5;
 		expect(make(dbName, 51)).to.throw(errors.InvalidDatabaseName);
@@ -41,11 +47,7 @@ describe("EventLoop behaviour tests", () => {
 			.then(() => done());
 	});
 
-	it("will clean up", done => {
-		Promise.all(unlinkAll())
-			.then(done)
-			.catch(done);
-	});
+
 
 });
 
