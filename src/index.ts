@@ -8,6 +8,9 @@ import taskToRow = require("./toRow");
 class EventLoop implements Types.EventLoop {
 
 	constructor(databaseName: string, pollingDelay: number) {
+		if (typeof databaseName !== "string") throw new TypeError(errors.MustSupplyDbName);
+		if (pollingDelay < 50) throw new Error(errors.InvalidPollDelay);
+		
 		this.store = knex({
 			client: "sqlite3",
 			connection: {
