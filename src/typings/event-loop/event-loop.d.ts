@@ -16,6 +16,7 @@ declare module "event-loop" {
 		removeTaskHandler(topicFilter: string, functionId: string): boolean;
 		toTask(taskRow: TaskSchema): EventTask;
 		removeTask(task: EventTask): any;
+		addTask(task: EventTask): any;
 	}
 	
 	export interface EventTask {
@@ -40,7 +41,7 @@ declare module "event-loop" {
 	}
 	
 	export interface TaskSchema {
-		id: number;
+		id?: number;
 		runAt: number;
 		runAtReadable: string;
 		topicFilter: string;

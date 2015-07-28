@@ -12,6 +12,8 @@
         "./src/createDatabase.ts",
         "./src/errors.ts",
         "./src/index.ts",
+        "./src/toRow.ts",
+        "./src/toTask.ts",
         "./src/typings/bluebird/bluebird.d.ts",
         "./src/typings/chai/chai.d.ts",
         "./src/typings/event-loop/event-loop.d.ts",

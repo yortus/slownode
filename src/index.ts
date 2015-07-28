@@ -2,6 +2,8 @@ import Types = require("event-loop");
 import errors = require("./errors");
 import createDatabase = require("./createDatabase");
 import knex = require("knex");
+import rowToTask = require("./toTask");
+import taskToRow = require("./toRow");
 
 class EventLoop implements Types.EventLoop {
 
@@ -14,7 +16,7 @@ class EventLoop implements Types.EventLoop {
 		});
 
 		this.pollingDelay = pollingDelay;
-		
+
 		createDatabase(this.store)
 			.then(() => this.flush());
 	}
@@ -33,10 +35,10 @@ class EventLoop implements Types.EventLoop {
 			setTimeout(() => this.flush(), this.pollingDelay);
 			return Promise.resolve(true);
 		}
-		
+
 		var handler = this.getTaskHandler(task.topicFilter, task.functionId);
 		if (!handler) throw new Error(errors.NoHandler);
-		
+
 		return handler.callback(task.task)
 			.then(() => this.removeTask(task))
 			.then(() => true)
@@ -54,12 +56,12 @@ class EventLoop implements Types.EventLoop {
 
 	addTaskHandler = (handler: Types.TaskHandler): boolean => {
 		var taskHandler = this.getTaskHandler(handler.topicFilter, handler.functionId);
-		
+
 		if (!!taskHandler) throw new Error(errors.FunctionExists);
 
 		if (!this.taskHandlers[handler.topicFilter]) this.taskHandlers[handler.topicFilter] = {};
 		this.taskHandlers[handler.topicFilter][handler.functionId] = handler;
-		
+
 		return true;
 	};
 
@@ -77,18 +79,18 @@ class EventLoop implements Types.EventLoop {
 		return topicTasks[functionId];
 	}
 
-	toTask(taskRow: Types.TaskSchema): Types.EventTask {
-		return {
-			id: taskRow.id,
-			topicFilter: taskRow.topicFilter,
-			functionId: taskRow.functionId,
-			task: JSON.parse(taskRow.task)
-		};
-	}
-
 	removeTask = (task: Types.EventTask) => {
 		return this.store("tasks")
 			.delete()
 			.where("id", "=", task.id);
 	}
+	
+	addTask = (task: Types.EventTask) => {
+		var row = this.toRow(task);
+		return this.store("tasks")
+			.insert(row);
+	}
+
+	toTask = rowToTask;
+	toRow = taskToRow;
 }

@@ -1,6 +1,8 @@
 var errors = require("./errors");
 var createDatabase = require("./createDatabase");
 var knex = require("knex");
+var rowToTask = require("./toTask");
+var taskToRow = require("./toRow");
 var EventLoop = (function () {
     function EventLoop(databaseName, pollingDelay) {
         var _this = this;
@@ -56,6 +58,13 @@ var EventLoop = (function () {
                 .delete()
                 .where("id", "=", task.id);
         };
+        this.addTask = function (task) {
+            var row = _this.toRow(task);
+            return _this.store("tasks")
+                .insert(row);
+        };
+        this.toTask = rowToTask;
+        this.toRow = taskToRow;
         this.store = knex({
             client: "sqlite3",
             connection: {
@@ -66,14 +75,6 @@ var EventLoop = (function () {
         createDatabase(this.store)
             .then(function () { return _this.flush(); });
     }
-    EventLoop.prototype.toTask = function (taskRow) {
-        return {
-            id: taskRow.id,
-            topicFilter: taskRow.topicFilter,
-            functionId: taskRow.functionId,
-            task: JSON.parse(taskRow.task)
-        };
-    };
     return EventLoop;
 })();
 //# sourceMappingURL=index.js.map
