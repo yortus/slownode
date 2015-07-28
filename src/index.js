@@ -66,9 +66,12 @@ var EventLoop = (function () {
         this.toTask = rowToTask;
         this.toRow = taskToRow;
         if (typeof databaseName !== "string")
-            throw new TypeError(errors.MustSupplyDbName);
+            throw new TypeError(errors.InvalidDatabaseName);
+        if (databaseName.length < 1)
+            throw new TypeError(errors.InvalidDatabaseName);
         if (pollingDelay < 50)
             throw new Error(errors.InvalidPollDelay);
+        databaseName += ".db";
         this.store = knex({
             client: "sqlite3",
             connection: {
