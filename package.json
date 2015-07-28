@@ -23,5 +23,11 @@
   "bugs": {
     "url": "https://github.com/seikho/event-loop/issues"
   },
-  "homepage": "https://github.com/seikho/event-loop"
+  "homepage": "https://github.com/seikho/event-loop",
+  "dependencies": {
+    "bluebird": "^2.9.34",
+    "chai": "^3.2.0",
+    "knex": "^0.8.6",
+    "mocha": "^2.2.5"
+  }
 }
