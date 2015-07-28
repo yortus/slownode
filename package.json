@@ -1,0 +1,26 @@
+{
+  "name": "event-loop",
+  "version": "0.1.0",
+  "description": "",
+  "main": "src/index",
+  "scripts": {
+    "test": "mocha",
+    "build": "tsglob && tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/seikho/event-loop"
+  },
+  "keywords": [
+    "persisent",
+    "event",
+    "loop",
+    "sqlite"
+  ],
+  "author": "Carl Winkler",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/seikho/event-loop/issues"
+  },
+  "homepage": "https://github.com/seikho/event-loop"
+}
