@@ -84,4 +84,5 @@ var EventLoop = (function () {
     }
     return EventLoop;
 })();
+module.exports = EventLoop;
 //# sourceMappingURL=index.js.map

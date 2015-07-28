@@ -4,6 +4,7 @@ import createDatabase = require("./createDatabase");
 import knex = require("knex");
 import rowToTask = require("./toTask");
 import taskToRow = require("./toRow");
+export = EventLoop;
 
 class EventLoop implements Types.EventLoop {
 
