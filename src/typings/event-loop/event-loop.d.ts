@@ -10,17 +10,19 @@ declare module "event-loop" {
 		pollingDelay: number;
 		taskHandlers: TaskIndex;
 		flush(): void;
-		runTask(task?: EventTask): void;
+		runTask(task?: EventTask): Promise<boolean>;
 		fetchNext(): Promise<EventTask>;
 		addTaskHandler(handler: TaskHandler): boolean;
 		removeTaskHandler(topicFilter: string, functionId: string): boolean;
+		toTask(taskRow: TaskSchema): EventTask;
+		removeTask(task: EventTask): any;
 	}
 	
 	export interface EventTask {
 		id: number;
 		topicFilter: string;
-		funcitonId: string;
-		args: any;
+		functionId: string;
+		task: any;
 	}
 	
 	export interface TaskHandler {
