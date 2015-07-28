@@ -36,4 +36,13 @@ declare module "event-loop" {
 	export interface TaskFunctions {
 		[index: string]: TaskHandler;
 	}
+	
+	export interface TaskSchema {
+		id: number;
+		runAt: number;
+		runAtReadable: string;
+		topicFilter: string;
+		functionId: string;
+		task: string;
+	}
 }
