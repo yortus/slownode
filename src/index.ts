@@ -1,7 +1,7 @@
 import Types = require("event-loop");
 import errors = require("./errors");
 import createDatabase = require("./createDatabase");
-import knex = require("knex");
+import Knex = require("knex");
 import rowToTask = require("./toTask");
 import taskToRow = require("./toRow");
 export = EventLoop;
@@ -14,9 +14,9 @@ class EventLoop implements Types.EventLoop {
 		if (typeof pollingDelay !== "number") throw new TypeError(errors.MustBeNumber);
 		if (pollingDelay < 50) throw new Error(errors.InvalidPollDelay);
 		if (pollingDelay === Infinity) throw new Error(errors.NotInfinity)
-		
-		databaseName += ".db";		
-		this.store = knex({
+
+		databaseName += ".db";
+		this.store = Knex({
 			client: "sqlite3",
 			connection: {
 				filename: databaseName
@@ -25,17 +25,19 @@ class EventLoop implements Types.EventLoop {
 
 		this.pollingDelay = pollingDelay;
 
-		createDatabase(this.store)
-			.then(() => this.flush());
+		this.ready = createDatabase(this.store)
+			.then(() => this.flush())			
 	}
 
-	store: knex;
+	store: Knex;
 	pollingDelay: number = 1000;
 	taskHandlers: Types.TaskIndex = {};
-
+	ready: Promise<boolean>;
+	
 	flush = () => {
 		this.fetchNext()
 			.then(this.runTask)
+		return true;
 	};
 
 	runTask = (task?: Types.EventTask) => {
@@ -59,7 +61,7 @@ class EventLoop implements Types.EventLoop {
 			.orderBy("runAt", "asc")
 			.orderBy("id", "asc")
 			.limit(1)
-			.then((rows: Types.TaskSchema) => this.toTask(rows[0]) || null);
+			.then((rows: Types.TaskSchema[]) => rows.length > 0 ? this.toTask(rows[0]) : null);
 	};
 
 	addTaskHandler = (handler: Types.TaskHandler): boolean => {
@@ -92,7 +94,7 @@ class EventLoop implements Types.EventLoop {
 			.delete()
 			.where("id", "=", task.id);
 	}
-	
+
 	addTask = (task: Types.EventTask) => {
 		var row = this.toRow(task);
 		return this.store("tasks")

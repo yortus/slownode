@@ -1,15 +1,18 @@
+var Promise = require("bluebird");
 function create(db) {
-    return hasTable(db)
-        .then(function (exists) { return createTable(db, exists); });
+    return Promise.delay(500)
+        .then(function () { return tableExists(db); })
+        .then(function (exists) { return createTable(db, exists); })
+        .then(function () { return Promise.resolve(true); });
 }
-function hasTable(db) {
+function tableExists(db) {
     return db.schema.hasTable("tasks");
 }
 function createTable(db, exists) {
     if (exists)
         return Promise.resolve(true);
-    return db.schema.table("tasks", function (table) {
-        table.bigInteger("id").primary();
+    return db.schema.createTable("tasks", function (table) {
+        table.increments("id").primary();
         table.bigInteger("runAt");
         table.text("runAtReadble");
         table.text("topicFilter");

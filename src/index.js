@@ -1,6 +1,6 @@
 var errors = require("./errors");
 var createDatabase = require("./createDatabase");
-var knex = require("knex");
+var Knex = require("knex");
 var rowToTask = require("./toTask");
 var taskToRow = require("./toRow");
 var EventLoop = (function () {
@@ -11,6 +11,7 @@ var EventLoop = (function () {
         this.flush = function () {
             _this.fetchNext()
                 .then(_this.runTask);
+            return true;
         };
         this.runTask = function (task) {
             if (!task) {
@@ -31,7 +32,7 @@ var EventLoop = (function () {
                 .orderBy("runAt", "asc")
                 .orderBy("id", "asc")
                 .limit(1)
-                .then(function (rows) { return _this.toTask(rows[0]) || null; });
+                .then(function (rows) { return rows.length > 0 ? _this.toTask(rows[0]) : null; });
         };
         this.addTaskHandler = function (handler) {
             var taskHandler = _this.getTaskHandler(handler.topicFilter, handler.functionId);
@@ -76,14 +77,14 @@ var EventLoop = (function () {
         if (pollingDelay === Infinity)
             throw new Error(errors.NotInfinity);
         databaseName += ".db";
-        this.store = knex({
+        this.store = Knex({
             client: "sqlite3",
             connection: {
                 filename: databaseName
             }
         });
         this.pollingDelay = pollingDelay;
-        createDatabase(this.store)
+        this.ready = createDatabase(this.store)
             .then(function () { return _this.flush(); });
     }
     return EventLoop;

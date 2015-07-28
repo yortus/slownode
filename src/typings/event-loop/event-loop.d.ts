@@ -9,6 +9,7 @@ declare module "event-loop" {
 		store: knex;
 		pollingDelay: number;
 		taskHandlers: TaskIndex;
+		ready: Promise<boolean>;
 		flush(): void;
 		runTask(task?: EventTask): Promise<boolean>;
 		fetchNext(): Promise<EventTask>;
