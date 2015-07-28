@@ -1,4 +1,5 @@
 var errors = require("./errors");
+var createDatabase = require("./createDatabase");
 var knex = require("knex");
 var EventLoop = (function () {
     function EventLoop(databaseName, pollingDelay) {
@@ -62,6 +63,8 @@ var EventLoop = (function () {
             }
         });
         this.pollingDelay = pollingDelay;
+        createDatabase(this.store)
+            .then(function () { return _this.flush(); });
     }
     EventLoop.prototype.toTask = function (taskRow) {
         return {

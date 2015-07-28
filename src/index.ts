@@ -1,5 +1,6 @@
 import Types = require("event-loop");
 import errors = require("./errors");
+import createDatabase = require("./createDatabase");
 import knex = require("knex");
 
 class EventLoop implements Types.EventLoop {
@@ -13,6 +14,9 @@ class EventLoop implements Types.EventLoop {
 		});
 
 		this.pollingDelay = pollingDelay;
+		
+		createDatabase(this.store)
+			.then(() => this.flush());
 	}
 
 	store: knex;
