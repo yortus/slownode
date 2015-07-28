@@ -9,10 +9,12 @@
         "./test/**/*.ts"
     ],
     "files": [
+        "./src/errors.ts",
         "./src/index.ts",
-        "./src/test/id.ts",
         "./src/typings/bluebird/bluebird.d.ts",
         "./src/typings/chai/chai.d.ts",
+        "./src/typings/event-loop/event-loop.d.ts",
+        "./src/typings/knex/knex.d.ts",
         "./src/typings/mocha/mocha.d.ts",
         "./src/typings/node/node.d.ts"
     ]
