@@ -88,5 +88,3 @@ class EventLoop implements Types.EventLoop {
 			.where("id", "=", task.id);
 	}
 }
-
-var e = new EventLoop("testdb.db", 1);

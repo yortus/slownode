@@ -9,6 +9,7 @@
         "./test/**/*.ts"
     ],
     "files": [
+        "./src/createDatabase.ts",
         "./src/errors.ts",
         "./src/index.ts",
         "./src/typings/bluebird/bluebird.d.ts",

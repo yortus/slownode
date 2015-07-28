@@ -73,5 +73,4 @@ var EventLoop = (function () {
     };
     return EventLoop;
 })();
-var e = new EventLoop("testdb.db", 1);
 //# sourceMappingURL=index.js.map
