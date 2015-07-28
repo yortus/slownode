@@ -5,7 +5,8 @@
   "main": "src/index",
   "scripts": {
     "test": "mocha",
-    "build": "tsglob && tsc"
+    "build": "tsglob && tsc",
+    "start": "node src/index"
   },
   "repository": {
     "type": "git",
