@@ -70,9 +70,11 @@ var EventLoop = (function () {
         if (databaseName.length < 1)
             throw new TypeError(errors.InvalidDatabaseName);
         if (typeof pollingDelay !== "number")
-            throw new TypeError(errors.InvalidPollDelay);
+            throw new TypeError(errors.MustBeNumber);
         if (pollingDelay < 50)
             throw new Error(errors.InvalidPollDelay);
+        if (pollingDelay === Infinity)
+            throw new Error(errors.NotInfinity);
         databaseName += ".db";
         this.store = knex({
             client: "sqlite3",

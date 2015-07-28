@@ -11,10 +11,11 @@ class EventLoop implements Types.EventLoop {
 	constructor(databaseName: string, pollingDelay: number) {
 		if (typeof databaseName !== "string") throw new TypeError(errors.InvalidDatabaseName);
 		if (databaseName.length < 1) throw new TypeError(errors.InvalidDatabaseName);
-		if (typeof pollingDelay !== "number") throw new TypeError(errors.InvalidPollDelay);
+		if (typeof pollingDelay !== "number") throw new TypeError(errors.MustBeNumber);
 		if (pollingDelay < 50) throw new Error(errors.InvalidPollDelay);
-		databaseName += ".db";
+		if (pollingDelay === Infinity) throw new Error(errors.NotInfinity)
 		
+		databaseName += ".db";		
 		this.store = knex({
 			client: "sqlite3",
 			connection: {
