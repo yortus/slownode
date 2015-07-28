@@ -3,14 +3,12 @@ import fs = require("fs");
 import EventLoop = require("../src/index");
 import errors = require("../src/errors");
 import chai = require("chai");
+import path = require("path");
 var expect = chai.expect;
-
-var testname = "testdatabase";
-var testDb = testname + ".db";
+var unlink = Promise.promisify(fs.unlink);
+var readdir = Promise.promisify(fs.readdir);
 
 describe("EventLoop behaviour tests", () => {
-
-	unlink();
 
 	it("will throw when provided a non-string database name", () => {
 		var dbName: any = 5;
@@ -35,33 +33,43 @@ describe("EventLoop behaviour tests", () => {
 	});
 
 	it("will successfully create an instance of EventLoop and create the database", (done) => {
-		let loop = new EventLoop(testname, 51);
-		loop.ready.then(success => {
-			expect(success).to.equal(true);
-			unlink();
-			done();
-		}).catch(() => chai.assert.fail());
+		var db = get("test");
+		let loop = new EventLoop(db.db, 51);
+		loop.ready
+			.then(expect(true).to.equal)
+			.then(() => loop.stop())
+			.then(() => done());
 	});
+
+	it("will clean up", done => {
+		Promise.all(unlinkAll())
+			.then(done)
+			.catch(done);
+	});
+
 });
 
 function make(name: string, delay: number) {
 	return () => new EventLoop(name, delay);
 }
 
-function unlink() {
-	try {
-		if (dbExists())
-			fs.unlinkSync(testDb);
-	} catch (ex) {
-		throw new Error("Database exists, but failed to delete");
-	}
+function unlinkAll() {
+	var push = (arr, file) => file.indexOf(".db") >= 0 ? arr.concat([file]) : arr;
+
+	return readdir(path.resolve(".."))
+		.then(files => files.reduce(push, []))
+		.then(files => Promise.all(files.map(toUnlink)))
 }
 
-function dbExists() {
-	try {
-		fs.statSync(testDb);
-		return true;
-	} catch (ex) {
-		return false;
-	}
+function toUnlink(filename: string) {
+	return unlink(filename)
+		.then(() => console.log("%s: Removed", filename))
+		.catch(err => console.log("%s: Failed to remove: ", err));
+}
+
+function get(name: string) {
+	return {
+		db: name,
+		file: name + ".db"
+	};
 }

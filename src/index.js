@@ -8,22 +8,14 @@ var EventLoop = (function () {
         var _this = this;
         this.pollingDelay = 1000;
         this.taskHandlers = {};
+        this.stop = function () {
+            if (_this.flushCallback)
+                clearTimeout(_this.flushCallback);
+        };
         this.flush = function () {
             _this.fetchNext()
                 .then(_this.runTask);
             return true;
-        };
-        this.runTask = function (task) {
-            if (!task) {
-                setTimeout(function () { return _this.flush(); }, _this.pollingDelay);
-                return Promise.resolve(true);
-            }
-            var handler = _this.getTaskHandler(task.topicFilter, task.functionId);
-            if (!handler)
-                throw new Error(errors.NoHandler);
-            return handler.callback(task.task)
-                .then(function () { return _this.removeTask(task); })
-                .then(function () { return true; });
         };
         this.fetchNext = function () {
             return _this.store("tasks")
@@ -34,6 +26,9 @@ var EventLoop = (function () {
                 .limit(1)
                 .then(function (rows) { return rows.length > 0 ? _this.toTask(rows[0]) : null; });
         };
+        /**
+         * Handler operations
+         */
         this.addTaskHandler = function (handler) {
             var taskHandler = _this.getTaskHandler(handler.topicFilter, handler.functionId);
             if (!!taskHandler)
@@ -53,6 +48,21 @@ var EventLoop = (function () {
         this.getTaskHandler = function (topicFilter, functionId) {
             var topicTasks = _this.taskHandlers[topicFilter] || {};
             return topicTasks[functionId];
+        };
+        /**
+         * Task operations
+         */
+        this.runTask = function (task) {
+            if (!task) {
+                _this.flushCallback = setTimeout(function () { return _this.flush(); }, _this.pollingDelay);
+                return Promise.resolve(true);
+            }
+            var handler = _this.getTaskHandler(task.topicFilter, task.functionId);
+            if (!handler)
+                throw new Error(errors.NoHandler);
+            return handler.callback(task.task)
+                .then(function () { return _this.removeTask(task); })
+                .then(function () { return true; });
         };
         this.removeTask = function (task) {
             return _this.store("tasks")

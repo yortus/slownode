@@ -18,6 +18,7 @@ declare module "event-loop" {
 		toTask(taskRow: TaskSchema): EventTask;
 		removeTask(task: EventTask): any;
 		addTask(task: EventTask): any;
+		stop(): void;
 	}
 	
 	export interface EventTask {

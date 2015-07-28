@@ -1,12 +1,13 @@
+var Promise = require("bluebird");
 var fs = require("fs");
 var EventLoop = require("../src/index");
 var errors = require("../src/errors");
 var chai = require("chai");
+var path = require("path");
 var expect = chai.expect;
-var testname = "testdatabase";
-var testDb = testname + ".db";
+var unlink = Promise.promisify(fs.unlink);
+var readdir = Promise.promisify(fs.readdir);
 describe("EventLoop behaviour tests", function () {
-    unlink();
     it("will throw when provided a non-string database name", function () {
         var dbName = 5;
         expect(make(dbName, 51)).to.throw(errors.InvalidDatabaseName);
@@ -25,33 +26,37 @@ describe("EventLoop behaviour tests", function () {
         expect(make("valid", Infinity)).to.throw(errors.NotInfinity);
     });
     it("will successfully create an instance of EventLoop and create the database", function (done) {
-        var loop = new EventLoop(testname, 51);
-        loop.ready.then(function (success) {
-            expect(success).to.equal(true);
-            unlink();
-            done();
-        }).catch(function () { return chai.assert.fail(); });
+        var db = get("test");
+        var loop = new EventLoop(db.db, 51);
+        loop.ready
+            .then(expect(true).to.equal)
+            .then(function () { return loop.stop(); })
+            .then(function () { return done(); });
+    });
+    it("will clean up", function (done) {
+        Promise.all(unlinkAll())
+            .then(done)
+            .catch(done);
     });
 });
 function make(name, delay) {
     return function () { return new EventLoop(name, delay); };
 }
-function unlink() {
-    try {
-        if (dbExists())
-            fs.unlinkSync(testDb);
-    }
-    catch (ex) {
-        throw new Error("Database exists, but failed to delete");
-    }
+function unlinkAll() {
+    var push = function (arr, file) { return file.indexOf(".db") >= 0 ? arr.concat([file]) : arr; };
+    return readdir(path.resolve(".."))
+        .then(function (files) { return files.reduce(push, []); })
+        .then(function (files) { return Promise.all(files.map(toUnlink)); });
 }
-function dbExists() {
-    try {
-        fs.statSync(testDb);
-        return true;
-    }
-    catch (ex) {
-        return false;
-    }
+function toUnlink(filename) {
+    return unlink(filename)
+        .then(function () { return console.log("%s: Removed", filename); })
+        .catch(function (err) { return console.log("%s: Failed to remove: ", err); });
+}
+function get(name) {
+    return {
+        db: name,
+        file: name + ".db"
+    };
 }
 //# sourceMappingURL=behave.js.map

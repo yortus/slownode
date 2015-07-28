@@ -33,26 +33,17 @@ class EventLoop implements Types.EventLoop {
 	pollingDelay: number = 1000;
 	taskHandlers: Types.TaskIndex = {};
 	ready: Promise<boolean>;
+	flushCallback: any;
+	
+	stop = () => {
+		if (this.flushCallback) clearTimeout(this.flushCallback);
+	} 
 	
 	flush = () => {
 		this.fetchNext()
 			.then(this.runTask)
 		return true;
-	};
-
-	runTask = (task?: Types.EventTask) => {
-		if (!task) {
-			setTimeout(() => this.flush(), this.pollingDelay);
-			return Promise.resolve(true);
-		}
-
-		var handler = this.getTaskHandler(task.topicFilter, task.functionId);
-		if (!handler) throw new Error(errors.NoHandler);
-
-		return handler.callback(task.task)
-			.then(() => this.removeTask(task))
-			.then(() => true)
-	};
+	};	
 
 	fetchNext = () => {
 		return this.store("tasks")
@@ -63,6 +54,10 @@ class EventLoop implements Types.EventLoop {
 			.limit(1)
 			.then((rows: Types.TaskSchema[]) => rows.length > 0 ? this.toTask(rows[0]) : null);
 	};
+	
+	/**
+	 * Handler operations
+	 */
 
 	addTaskHandler = (handler: Types.TaskHandler): boolean => {
 		var taskHandler = this.getTaskHandler(handler.topicFilter, handler.functionId);
@@ -88,6 +83,23 @@ class EventLoop implements Types.EventLoop {
 		var topicTasks = this.taskHandlers[topicFilter] || {};
 		return topicTasks[functionId];
 	}
+	
+	/**
+	 * Task operations
+	 */
+	runTask = (task?: Types.EventTask) => {
+		if (!task) {
+			this.flushCallback = setTimeout(() => this.flush(), this.pollingDelay);
+			return Promise.resolve(true);
+		}
+
+		var handler = this.getTaskHandler(task.topicFilter, task.functionId);
+		if (!handler) throw new Error(errors.NoHandler);
+
+		return handler.callback(task.task)
+			.then(() => this.removeTask(task))
+			.then(() => true)
+	};
 
 	removeTask = (task: Types.EventTask) => {
 		return this.store("tasks")
