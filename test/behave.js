@@ -38,9 +38,20 @@ function make(name, delay) {
 }
 function unlink() {
     try {
-        fs.unlinkSync(testDb);
+        if (dbExists())
+            fs.unlinkSync(testDb);
     }
     catch (ex) {
+        throw new Error("Database exists, but failed to delete");
+    }
+}
+function dbExists() {
+    try {
+        fs.statSync(testDb);
+        return true;
+    }
+    catch (ex) {
+        return false;
     }
 }
 //# sourceMappingURL=behave.js.map
