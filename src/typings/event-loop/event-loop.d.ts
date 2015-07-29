@@ -5,7 +5,7 @@ declare module "event-loop" {
 	
 	export class EventLoop {
 		
-		constructor(databaseName: string, pollingDelay: number);
+		constructor(config: EventLoopConfig);
 		private store: Knex;
 		private pollInterval: number;
 		private subscribers: Array<Subscriber>;
@@ -41,8 +41,8 @@ declare module "event-loop" {
 		id?: number;
 		runAt: number;
 		runAtReadable: string;
-		topicFilter: string;
-		functionId: string;
+		eventName: string;
+		subscriberId: string;
 		task: string;
 	}
 	
