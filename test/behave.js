@@ -7,6 +7,7 @@ var path = require("path");
 var expect = chai.expect;
 var unlink = Promise.promisify(fs.unlink);
 var readdir = Promise.promisify(fs.readdir);
+var loop;
 describe("EventLoop behaviour tests", function () {
     it("will clean up", function (done) {
         unlinkAll()
@@ -33,15 +34,26 @@ describe("EventLoop behaviour tests", function () {
     it("will throw when provided polling delay of infinity", function () {
         expect(make("valid", Infinity)).to.throw(errors.NotInfinity);
     });
-    it("will successfully create an instance of EventLoop and create the database", function (done) {
+    it("will create an instance of EventLoop and create the database", function (done) {
         var db = get("test");
-        var loop = new EventLoop(db.db, 51);
+        loop = new EventLoop(db.db, 51);
         loop.ready
             .then(function (isReady) { return expect(isReady).to.equal(true); })
-            .then(function () { return loop.stop(); })
             .then(function () { return done(); });
     });
+    it("will add a task handler", function () {
+        var added = loop.addHandler({
+            topicFilter: "event",
+            functionId: "one",
+            callback: dummyHandler,
+        });
+        expect(added).to.equal(true);
+    });
 });
+function dummyHandler(task) {
+    console.log(task);
+    return Promise.resolve(true);
+}
 function make(name, delay) {
     return function () { return new EventLoop(name, delay); };
 }

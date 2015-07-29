@@ -1,6 +1,7 @@
 import Promise = require("bluebird");
 import fs = require("fs");
 import EventLoop = require("../src/index");
+import Types = require("event-loop");
 import errors = require("../src/errors");
 import chai = require("chai");
 import path = require("path");
@@ -8,7 +9,10 @@ var expect = chai.expect;
 var unlink = Promise.promisify(fs.unlink);
 var readdir = Promise.promisify(fs.readdir);
 
+var loop: EventLoop;
 describe("EventLoop behaviour tests", () => {
+
+	
 
 	it("will clean up", done => {
 		unlinkAll()
@@ -41,18 +45,30 @@ describe("EventLoop behaviour tests", () => {
 		expect(make("valid", Infinity)).to.throw(errors.NotInfinity);
 	});
 
-	it("will successfully create an instance of EventLoop and create the database", (done) => {
+	it("will create an instance of EventLoop and create the database", (done) => {
 		var db = get("test");
-		let loop = new EventLoop(db.db, 51);
+		loop = new EventLoop(db.db, 51);
 		loop.ready
 			.then(isReady => expect(isReady).to.equal(true))
-			.then(() => loop.stop())
 			.then(() => done());
 	});
 
-
+	it("will add a task handler", () => {
+		var added = loop.addHandler({
+			topicFilter: "event",
+			functionId: "one",
+			callback: dummyHandler,
+		});
+		
+		expect(added).to.equal(true);
+	});
 
 });
+
+function dummyHandler(task: Types.EventTask) {
+	console.log(task);
+	return Promise.resolve(true);
+}
 
 function make(name: string, delay: number) {
 	return () => new EventLoop(name, delay);

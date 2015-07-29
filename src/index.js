@@ -29,8 +29,8 @@ var EventLoop = (function () {
         /**
          * Handler operations
          */
-        this.addTaskHandler = function (handler) {
-            var taskHandler = _this.getTaskHandler(handler.topicFilter, handler.functionId);
+        this.addHandler = function (handler) {
+            var taskHandler = _this.getHandler(handler.topicFilter, handler.functionId);
             if (!!taskHandler)
                 throw new Error(errors.FunctionExists);
             if (!_this.taskHandlers[handler.topicFilter])
@@ -38,16 +38,16 @@ var EventLoop = (function () {
             _this.taskHandlers[handler.topicFilter][handler.functionId] = handler;
             return true;
         };
-        this.removeTaskHandler = function (topicFilter, functionId) {
+        this.removeHandler = function (topicFilter, functionId) {
             var topicTasks = _this.taskHandlers[topicFilter] || {};
             var isExisting = !!topicTasks[functionId];
             if (!isExisting)
                 return false;
             return delete _this.taskHandlers[topicFilter][functionId];
         };
-        this.getTaskHandler = function (topicFilter, functionId) {
+        this.getHandler = function (topicFilter, functionId) {
             var topicTasks = _this.taskHandlers[topicFilter] || {};
-            return topicTasks[functionId];
+            return topicTasks[functionId] || null;
         };
         /**
          * Task operations
@@ -57,7 +57,7 @@ var EventLoop = (function () {
                 _this.flushCallback = setTimeout(function () { return _this.flush(); }, _this.pollingDelay);
                 return Promise.resolve(true);
             }
-            var handler = _this.getTaskHandler(task.topicFilter, task.functionId);
+            var handler = _this.getHandler(task.topicFilter, task.functionId);
             if (!handler)
                 throw new Error(errors.NoHandler);
             return handler.callback(task.task)
