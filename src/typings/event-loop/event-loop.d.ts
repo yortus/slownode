@@ -1,12 +1,12 @@
 /// <reference path="../knex/knex.d.ts" />
 
 declare module "event-loop" {
-	import knex = require("knex");
+	import Knex = require("knex");
 	
 	export class EventLoop {
 		
 		constructor(databaseName: string, pollingDelay: number);
-		store: knex;
+		store: Knex;
 		pollingDelay: number;
 		taskHandlers: TaskIndex;
 		ready: Promise<boolean>;

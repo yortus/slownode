@@ -1,12 +1,12 @@
 var errors = require("./errors");
 var createDatabase = require("./createDatabase");
 var Knex = require("knex");
-var rowToTask = require("./toTask");
-var taskToRow = require("./toRow");
 var getHandler = require("./handlers/get");
 var removeHandler = require("./handlers/remove");
 var addHandler = require("./handlers/add");
 var addTask = require("./tasks/add");
+var runTask = require("./tasks/run");
+var removeTask = require("./tasks/remove");
 var EventLoop = (function () {
     function EventLoop(databaseName, pollingDelay) {
         var _this = this;
@@ -33,29 +33,9 @@ var EventLoop = (function () {
         this.addHandler = addHandler;
         this.getHandler = getHandler;
         this.removeHandler = removeHandler;
-        /**
-         * Task operations
-         */
-        this.runTask = function (task) {
-            if (!task) {
-                _this.flushCallback = setTimeout(function () { return _this.flush(); }, _this.pollingDelay);
-                return Promise.resolve(true);
-            }
-            var handler = _this.getHandler(task.topicFilter, task.functionId);
-            if (!handler)
-                throw new Error(errors.NoHandler);
-            return handler.callback(task.task)
-                .then(function () { return _this.removeTask(task); })
-                .then(function () { return true; });
-        };
-        this.removeTask = function (task) {
-            return _this.store("tasks")
-                .delete()
-                .where("id", "=", task.id);
-        };
         this.addTask = addTask;
-        this.toTask = rowToTask;
-        this.toRow = taskToRow;
+        this.runTask = runTask;
+        this.removeTask = removeTask;
         if (typeof databaseName !== "string")
             throw new TypeError(errors.InvalidDatabaseName);
         if (databaseName.length < 1)

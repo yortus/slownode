@@ -9,6 +9,7 @@ import removeHandler = require("./handlers/remove");
 import addHandler = require("./handlers/add");
 import addTask = require("./tasks/add");
 import runTask = require("./tasks/run");
+import removeTask = require("./tasks/remove");
 export = EventLoop;
 
 class EventLoop implements Types.EventLoop {
@@ -64,19 +65,8 @@ class EventLoop implements Types.EventLoop {
 	getHandler = getHandler;
 	removeHandler = removeHandler;
 	
-	/**
-	 * Task operations
-	 */
 	addTask = addTask;
 	runTask = runTask;
+	removeTask = removeTask;
 
-	removeTask = (task: Types.EventTask) => {
-		return this.store("tasks")
-			.delete()
-			.where("id", "=", task.id);
-	}
-
-
-	toTask = rowToTask;
-	toRow = taskToRow;
 }
