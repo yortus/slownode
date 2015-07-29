@@ -7,6 +7,7 @@ import taskToRow = require("./toRow");
 import getHandler = require("./handlers/get");
 import removeHandler = require("./handlers/remove");
 import addHandler = require("./handlers/add");
+import addTask = require("./tasks/add");
 export = EventLoop;
 
 class EventLoop implements Types.EventLoop {
@@ -85,12 +86,7 @@ class EventLoop implements Types.EventLoop {
 			.where("id", "=", task.id);
 	}
 
-	addTask = (task: Types.EventTask) => {
-		
-		var row = this.toRow(task);
-		return this.store("tasks")
-			.insert(row);
-	}
+	addTask = addTask;
 
 	toTask = rowToTask;
 	toRow = taskToRow;

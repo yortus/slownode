@@ -6,6 +6,7 @@ var taskToRow = require("./toRow");
 var getHandler = require("./handlers/get");
 var removeHandler = require("./handlers/remove");
 var addHandler = require("./handlers/add");
+var addTask = require("./tasks/add");
 var EventLoop = (function () {
     function EventLoop(databaseName, pollingDelay) {
         var _this = this;
@@ -52,11 +53,7 @@ var EventLoop = (function () {
                 .delete()
                 .where("id", "=", task.id);
         };
-        this.addTask = function (task) {
-            var row = _this.toRow(task);
-            return _this.store("tasks")
-                .insert(row);
-        };
+        this.addTask = addTask;
         this.toTask = rowToTask;
         this.toRow = taskToRow;
         if (typeof databaseName !== "string")
