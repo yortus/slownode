@@ -35,7 +35,7 @@ class EventLoop implements Types.EventLoop {
 		this.pollingDelay = pollingDelay;
 
 		this.ready = createDatabase(this.store)
-			.then(() => this.flush())
+			.then(() => this.flushTask())
 	}
 
 	store: Knex;
@@ -45,8 +45,8 @@ class EventLoop implements Types.EventLoop {
 	flushCallback: NodeJS.Timer;
 
 
-	stop = stopTasks;
-	flush = flushTask;
+	stopTasks = stopTasks;
+	flushTask = flushTask;
 
 	addHandler = addHandler;
 	getNextTask = getNextTask;

@@ -15,8 +15,8 @@ var EventLoop = (function () {
         var _this = this;
         this.pollingDelay = 1000;
         this.taskHandlers = {};
-        this.stop = stopTasks;
-        this.flush = flushTask;
+        this.stopTasks = stopTasks;
+        this.flushTask = flushTask;
         this.addHandler = addHandler;
         this.getNextTask = getNextTask;
         this.getHandler = getHandler;
@@ -43,7 +43,7 @@ var EventLoop = (function () {
         });
         this.pollingDelay = pollingDelay;
         this.ready = createDatabase(this.store)
-            .then(function () { return _this.flush(); });
+            .then(function () { return _this.flushTask(); });
     }
     return EventLoop;
 })();

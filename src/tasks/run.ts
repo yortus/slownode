@@ -6,7 +6,7 @@ var run = (task?: Types.EventTask) => {
 	var self: Types.EventLoop = this;
 	
 	if (!task) {
-		self.flushCallback = setTimeout(() => self.flush(), self.pollingDelay);
+		self.flushCallback = setTimeout(() => self.flushTask(), self.pollingDelay);
 		return Promise.resolve(true);
 	}
 

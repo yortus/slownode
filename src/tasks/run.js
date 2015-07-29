@@ -3,7 +3,7 @@ var errors = require("../errors");
 var run = function (task) {
     var self = _this;
     if (!task) {
-        self.flushCallback = setTimeout(function () { return self.flush(); }, self.pollingDelay);
+        self.flushCallback = setTimeout(function () { return self.flushTask(); }, self.pollingDelay);
         return Promise.resolve(true);
     }
     var handler = self.getHandler(task.topicFilter, task.functionId);

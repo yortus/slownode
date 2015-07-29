@@ -12,8 +12,8 @@ declare module "event-loop" {
 		ready: Promise<boolean>;
 		flushCallback: NodeJS.Timer;
 		
-		flush(): void;
-		stop(): void;
+		flushTask(): void;
+		stopTasks(): void;
 		
 		addHandler(handler: TaskHandler): boolean;
 		getHandler(topicFilter: string, functionId: string): TaskHandler;
