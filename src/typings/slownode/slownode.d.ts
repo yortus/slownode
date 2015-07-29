@@ -1,7 +1,7 @@
 /// <reference path="../knex/knex.d.ts" />
 /// <reference path="../node/node.d.ts" />
 
-declare module "event-loop" {
+declare module "slownode" {
 	import Knex = require("knex");
 	
 	export class EventLoop {

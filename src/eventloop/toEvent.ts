@@ -1,4 +1,4 @@
-import Types = require("event-loop");
+import Types = require("slownode");
 export = toEvent;
 
 function toEvent(eventRow: Types.EventSchema): Types.Event {

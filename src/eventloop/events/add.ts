@@ -1,5 +1,5 @@
-import Types = require("event-loop");
-import EventLoop = require("../index");
+import Types = require("slownode");
+import EventLoop = require("../api");
 import store = require("./store");
 export = add;
 

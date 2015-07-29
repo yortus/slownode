@@ -1,6 +1,6 @@
 var Promise = require("bluebird");
 var fs = require("fs");
-var EventLoop = require("../src/index");
+var EventLoop = require("../src/eventloop/api");
 var errors = require("../src/errors");
 var chai = require("chai");
 var path = require("path");

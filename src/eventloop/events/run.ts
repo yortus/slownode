@@ -1,6 +1,6 @@
-import EventLoop = require("../index");
-import Types = require("event-loop");
-import errors = require("../errors");
+import EventLoop = require("../api");
+import Types = require("slownode");
+import errors = require("../../errors");
 export = run;
 
 function run(event?: Types.Event) {

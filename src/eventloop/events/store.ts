@@ -1,5 +1,5 @@
 import Knex = require("knex");
-import Types = require("event-loop");
+import Types = require("slownode");
 import Promise = require("bluebird");
 import toRow = require("../toRow");
 export = store;

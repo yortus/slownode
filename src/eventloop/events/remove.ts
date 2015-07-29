@@ -1,5 +1,5 @@
-import EventLoop = require("../index");
-import Types = require("event-loop");
+import EventLoop = require("../api");
+import Types = require("slownode");
 export = remove;
 
 function remove(task: Types.Event) {

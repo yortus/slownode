@@ -1,4 +1,4 @@
-var errors = require("../errors");
+var errors = require("../../errors");
 function add(subscriber) {
     var self = this;
     //TODO: Implement replacement logic
