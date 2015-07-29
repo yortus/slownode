@@ -3,6 +3,9 @@ var createDatabase = require("./createDatabase");
 var Knex = require("knex");
 var rowToTask = require("./toTask");
 var taskToRow = require("./toRow");
+var getHandler = require("./handlers/get");
+var removeHandler = require("./handlers/remove");
+var addHandler = require("./handlers/add");
 var EventLoop = (function () {
     function EventLoop(databaseName, pollingDelay) {
         var _this = this;
@@ -26,29 +29,9 @@ var EventLoop = (function () {
                 .limit(1)
                 .then(function (rows) { return rows.length > 0 ? _this.toTask(rows[0]) : null; });
         };
-        /**
-         * Handler operations
-         */
-        this.addHandler = function (handler) {
-            var taskHandler = _this.getHandler(handler.topicFilter, handler.functionId);
-            if (!!taskHandler)
-                throw new Error(errors.FunctionExists);
-            if (!_this.taskHandlers[handler.topicFilter])
-                _this.taskHandlers[handler.topicFilter] = {};
-            _this.taskHandlers[handler.topicFilter][handler.functionId] = handler;
-            return true;
-        };
-        this.removeHandler = function (topicFilter, functionId) {
-            var topicTasks = _this.taskHandlers[topicFilter] || {};
-            var isExisting = !!topicTasks[functionId];
-            if (!isExisting)
-                return false;
-            return delete _this.taskHandlers[topicFilter][functionId];
-        };
-        this.getHandler = function (topicFilter, functionId) {
-            var topicTasks = _this.taskHandlers[topicFilter] || {};
-            return topicTasks[functionId] || null;
-        };
+        this.addHandler = addHandler;
+        this.getHandler = getHandler;
+        this.removeHandler = removeHandler;
         /**
          * Task operations
          */

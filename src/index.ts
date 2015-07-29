@@ -4,6 +4,9 @@ import createDatabase = require("./createDatabase");
 import Knex = require("knex");
 import rowToTask = require("./toTask");
 import taskToRow = require("./toRow");
+import getHandler = require("./handlers/get");
+import removeHandler = require("./handlers/remove");
+import addHandler = require("./handlers/add");
 export = EventLoop;
 
 class EventLoop implements Types.EventLoop {
@@ -55,34 +58,9 @@ class EventLoop implements Types.EventLoop {
 			.then((rows: Types.TaskSchema[]) => rows.length > 0 ? this.toTask(rows[0]) : null);
 	};
 	
-	/**
-	 * Handler operations
-	 */
-
-	addHandler = (handler: Types.TaskHandler): boolean => {
-		var taskHandler = this.getHandler(handler.topicFilter, handler.functionId);
-
-		if (!!taskHandler) throw new Error(errors.FunctionExists);
-
-		if (!this.taskHandlers[handler.topicFilter]) this.taskHandlers[handler.topicFilter] = {};
-		this.taskHandlers[handler.topicFilter][handler.functionId] = handler;
-
-		return true;
-	};
-
-	removeHandler = (topicFilter: string, functionId: string): boolean => {
-		var topicTasks = this.taskHandlers[topicFilter] || {};
-
-		var isExisting = !!topicTasks[functionId];
-		if (!isExisting) return false;
-
-		return delete this.taskHandlers[topicFilter][functionId];
-	};
-
-	getHandler = (topicFilter: string, functionId: string) => {
-		var topicTasks = this.taskHandlers[topicFilter] || {};
-		return topicTasks[functionId] || null;
-	}
+	addHandler = addHandler;
+	getHandler = getHandler;
+	removeHandler = removeHandler;
 	
 	/**
 	 * Task operations
