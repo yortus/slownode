@@ -1,15 +1,7 @@
-var Promise = require("bluebird");
 var toRow = require("../toRow");
-function store(db, tasks) {
-    return db.transaction(function (trx) {
-        return Promise.map(tasks, function (task) { return toInsert(db, task, trx); })
-            .then(trx.commit);
-    });
-}
-function toInsert(db, task, trx) {
+function store(db, event) {
     return db("tasks")
-        .insert(toRow(task))
-        .transacting(trx);
+        .insert(toRow(event));
 }
 module.exports = store;
 //# sourceMappingURL=store.js.map

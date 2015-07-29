@@ -1,12 +1,8 @@
 var _this = this;
 var store = require("./store");
-var add = function (task) {
+var add = function (event) {
     var self = _this;
-    // var isGenericTask = task.functionId == null;
-    // if (isGenericTask) {
-    // 	var handlers = 
-    // }
-    return store(self.store, [task]);
+    return store(self.store, event);
 };
 module.exports = add;
 //# sourceMappingURL=add.js.map
