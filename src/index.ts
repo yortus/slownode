@@ -22,7 +22,7 @@ class EventLoop implements Types.EventLoop {
 		if (pollingDelay < 50) throw new Error(errors.InvalidPollDelay);
 		if (pollingDelay === Infinity) throw new Error(errors.NotInfinity)
 
-		databaseName += ".db";
+		databaseName += databaseName.slice(-3) === ".db" ? "" : ".db";
 		this.store = Knex({
 			client: "sqlite3",
 			connection: {
@@ -33,7 +33,7 @@ class EventLoop implements Types.EventLoop {
 		this.pollingDelay = pollingDelay;
 
 		this.ready = createDatabase(this.store)
-			.then(() => this.flush())			
+			.then(() => this.flush())
 	}
 
 	store: Knex;
@@ -41,22 +41,22 @@ class EventLoop implements Types.EventLoop {
 	taskHandlers: Types.TaskIndex = {};
 	ready: Promise<boolean>;
 	flushCallback: NodeJS.Timer;
-	
+
 	stop = () => {
 		if (this.flushCallback) clearTimeout(this.flushCallback);
-	} 
-	
+	}
+
 	flush = () => {
 		this.getNextTask()
 			.then(this.runTask)
 		return true;
-	};	
-	
+	};
+
 	addHandler = addHandler;
-	getNextTask = getNextTask; 
+	getNextTask = getNextTask;
 	getHandler = getHandler;
 	removeHandler = removeHandler;
-	
+
 	addTask = addTask;
 	runTask = runTask;
 	removeTask = removeTask;

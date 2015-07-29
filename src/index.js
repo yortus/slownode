@@ -39,7 +39,7 @@ var EventLoop = (function () {
             throw new Error(errors.InvalidPollDelay);
         if (pollingDelay === Infinity)
             throw new Error(errors.NotInfinity);
-        databaseName += ".db";
+        databaseName += databaseName.slice(-3) === ".db" ? "" : ".db";
         this.store = Knex({
             client: "sqlite3",
             connection: {
