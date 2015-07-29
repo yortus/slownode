@@ -13,8 +13,9 @@ declare module "event-loop" {
 		flush(): void;
 		runTask(task?: EventTask): Promise<boolean>;
 		fetchNext(): Promise<EventTask>;
-		addTaskHandler(handler: TaskHandler): boolean;
-		removeTaskHandler(topicFilter: string, functionId: string): boolean;
+		addHandler(handler: TaskHandler): boolean;
+		removeHandler(topicFilter: string, functionId: string): boolean;
+		getHandler(topicFilter: string, functionId: string): TaskHandler;
 		toTask(taskRow: TaskSchema): EventTask;
 		removeTask(task: EventTask): any;
 		addTask(task: EventTask): any;
