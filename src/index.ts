@@ -11,6 +11,8 @@ import addTask = require("./tasks/add");
 import runTask = require("./tasks/run");
 import removeTask = require("./tasks/remove");
 import getNextTask = require("./tasks/getNext");
+import flushTask = require("./tasks/flush");
+import stopTasks = require("./tasks/stop");
 export = EventLoop;
 
 class EventLoop implements Types.EventLoop {
@@ -42,15 +44,9 @@ class EventLoop implements Types.EventLoop {
 	ready: Promise<boolean>;
 	flushCallback: NodeJS.Timer;
 
-	stop = () => {
-		if (this.flushCallback) clearTimeout(this.flushCallback);
-	}
 
-	flush = () => {
-		this.getNextTask()
-			.then(this.runTask)
-		return true;
-	};
+	stop = stopTasks;
+	flush = flushTask;
 
 	addHandler = addHandler;
 	getNextTask = getNextTask;

@@ -8,20 +8,15 @@ var addTask = require("./tasks/add");
 var runTask = require("./tasks/run");
 var removeTask = require("./tasks/remove");
 var getNextTask = require("./tasks/getNext");
+var flushTask = require("./tasks/flush");
+var stopTasks = require("./tasks/stop");
 var EventLoop = (function () {
     function EventLoop(databaseName, pollingDelay) {
         var _this = this;
         this.pollingDelay = 1000;
         this.taskHandlers = {};
-        this.stop = function () {
-            if (_this.flushCallback)
-                clearTimeout(_this.flushCallback);
-        };
-        this.flush = function () {
-            _this.getNextTask()
-                .then(_this.runTask);
-            return true;
-        };
+        this.stop = stopTasks;
+        this.flush = flushTask;
         this.addHandler = addHandler;
         this.getNextTask = getNextTask;
         this.getHandler = getHandler;
