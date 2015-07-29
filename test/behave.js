@@ -10,7 +10,10 @@ var readdir = Promise.promisify(fs.readdir);
 describe("EventLoop behaviour tests", function () {
     it("will clean up", function (done) {
         unlinkAll()
-            .then(done)
+            .then(function (results) {
+            expect(results.every(function (r) { return r === true; })).to.equal(true);
+            done();
+        })
             .catch(done);
     });
     it("will throw when provided a non-string database name", function () {
@@ -34,7 +37,7 @@ describe("EventLoop behaviour tests", function () {
         var db = get("test");
         var loop = new EventLoop(db.db, 51);
         loop.ready
-            .then(expect(true).to.equal)
+            .then(function (isReady) { return expect(isReady).to.equal(true); })
             .then(function () { return loop.stop(); })
             .then(function () { return done(); });
     });
@@ -43,15 +46,15 @@ function make(name, delay) {
     return function () { return new EventLoop(name, delay); };
 }
 function unlinkAll() {
-    var push = function (arr, file) { return file.indexOf(".db") >= 0 ? arr.concat([file]) : arr; };
-    return readdir(path.resolve(".."))
+    var push = function (arr, file) { return file.slice(-3) === ".db" ? arr.concat([file]) : arr; };
+    return readdir(path.resolve("."))
         .then(function (files) { return files.reduce(push, []); })
-        .then(function (files) { return Promise.all(files.map(toUnlink)); });
+        .then(function (files) { return Promise.all([Promise.resolve(true)].concat(files.map(toUnlink))); });
 }
 function toUnlink(filename) {
     return unlink(filename)
-        .then(function () { return console.log("%s: Removed", filename); })
-        .catch(function (err) { return console.log("%s: Failed to remove: ", err); });
+        .then(function () { return true; })
+        .catch(function () { return false; });
 }
 function get(name) {
     return {

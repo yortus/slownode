@@ -12,7 +12,10 @@ describe("EventLoop behaviour tests", () => {
 
 	it("will clean up", done => {
 		unlinkAll()
-			.then(done)
+			.then(results => {
+				expect(results.every(r => r === true)).to.equal(true);
+				done();
+			})
 			.catch(done);
 	});
 
@@ -42,7 +45,7 @@ describe("EventLoop behaviour tests", () => {
 		var db = get("test");
 		let loop = new EventLoop(db.db, 51);
 		loop.ready
-			.then(expect(true).to.equal)
+			.then(isReady => expect(isReady).to.equal(true))
 			.then(() => loop.stop())
 			.then(() => done());
 	});
@@ -56,17 +59,17 @@ function make(name: string, delay: number) {
 }
 
 function unlinkAll() {
-	var push = (arr, file) => file.indexOf(".db") >= 0 ? arr.concat([file]) : arr;
+	var push = (arr, file) => file.slice(-3) === ".db" ? arr.concat([file]) : arr;
 
-	return readdir(path.resolve(".."))
+	return readdir(path.resolve("."))
 		.then(files => files.reduce(push, []))
-		.then(files => Promise.all(files.map(toUnlink)))
+		.then(files => Promise.all([Promise.resolve(true)].concat(files.map(toUnlink))))
 }
 
 function toUnlink(filename: string) {
 	return unlink(filename)
-		.then(() => console.log("%s: Removed", filename))
-		.catch(err => console.log("%s: Failed to remove: ", err));
+		.then(() => true)
+		.catch(() => false);
 }
 
 function get(name: string) {
