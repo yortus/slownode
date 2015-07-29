@@ -59,8 +59,8 @@ class EventLoop implements Types.EventLoop {
 	 * Handler operations
 	 */
 
-	addTaskHandler = (handler: Types.TaskHandler): boolean => {
-		var taskHandler = this.getTaskHandler(handler.topicFilter, handler.functionId);
+	addHandler = (handler: Types.TaskHandler): boolean => {
+		var taskHandler = this.getHandler(handler.topicFilter, handler.functionId);
 
 		if (!!taskHandler) throw new Error(errors.FunctionExists);
 
@@ -70,7 +70,7 @@ class EventLoop implements Types.EventLoop {
 		return true;
 	};
 
-	removeTaskHandler = (topicFilter: string, functionId: string): boolean => {
+	removeHandler = (topicFilter: string, functionId: string): boolean => {
 		var topicTasks = this.taskHandlers[topicFilter] || {};
 
 		var isExisting = !!topicTasks[functionId];
@@ -79,9 +79,9 @@ class EventLoop implements Types.EventLoop {
 		return delete this.taskHandlers[topicFilter][functionId];
 	};
 
-	getTaskHandler = (topicFilter: string, functionId: string) => {
+	getHandler = (topicFilter: string, functionId: string) => {
 		var topicTasks = this.taskHandlers[topicFilter] || {};
-		return topicTasks[functionId];
+		return topicTasks[functionId] || null;
 	}
 	
 	/**
@@ -93,7 +93,7 @@ class EventLoop implements Types.EventLoop {
 			return Promise.resolve(true);
 		}
 
-		var handler = this.getTaskHandler(task.topicFilter, task.functionId);
+		var handler = this.getHandler(task.topicFilter, task.functionId);
 		if (!handler) throw new Error(errors.NoHandler);
 
 		return handler.callback(task.task)
