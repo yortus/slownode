@@ -1,10 +1,11 @@
+import EventLoop = require("../index");
 import Types = require("event-loop");
 export = remove;
 
 var remove = (task: Types.Event) => {
-	var self: Types.EventLoop = this;
+	var self: EventLoop = this;
 
-	return self.store("tasks")
+	return self.store("events")
 		.delete()
 		.where("id", "=", task.id);
 }

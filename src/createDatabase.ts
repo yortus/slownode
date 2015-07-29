@@ -11,18 +11,17 @@ function create(db: knex) {
 }
 
 function tableExists(db: knex) {
-	return db.schema.hasTable("tasks");
+	return db.schema.hasTable("events");
 }
 
 function createTable(db: knex, exists: boolean) {
 	if (exists) return Promise.resolve(true);
 
-	return db.schema.createTable("tasks", table => {
+	return db.schema.createTable("events", table => {
 		table.increments("id").primary();
 		table.bigInteger("runAt");
 		table.text("runAtReadble");
-		table.text("topicFilter");
-		table.text("functionId");
-		table.text("task");
+		table.text("eventName");
+		table.text("event");
 	}).then(() => Promise.resolve(true));
 }

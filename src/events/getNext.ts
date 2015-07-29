@@ -6,7 +6,7 @@ export = getNext;
 var getNext = () => {
 	var self: EventLoop = this;
 
-	return self.store("tasks")
+	return self.store("events")
 		.select()
 		.where("runAt", "<=", Date.now())
 		.orderBy("runAt", "asc")

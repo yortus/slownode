@@ -2,7 +2,7 @@ var _this = this;
 var toTask = require("../toTask");
 var getNext = function () {
     var self = _this;
-    return self.store("tasks")
+    return self.store("events")
         .select()
         .where("runAt", "<=", Date.now())
         .orderBy("runAt", "asc")
