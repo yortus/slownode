@@ -10,6 +10,7 @@ import addHandler = require("./handlers/add");
 import addTask = require("./tasks/add");
 import runTask = require("./tasks/run");
 import removeTask = require("./tasks/remove");
+import getNextTask = require("./tasks/getNext");
 export = EventLoop;
 
 class EventLoop implements Types.EventLoop {
@@ -46,22 +47,13 @@ class EventLoop implements Types.EventLoop {
 	} 
 	
 	flush = () => {
-		this.fetchNext()
+		this.getNextTask()
 			.then(this.runTask)
 		return true;
 	};	
-
-	fetchNext = () => {
-		return this.store("tasks")
-			.select()
-			.where("runAt", "<=", Date.now())
-			.orderBy("runAt", "asc")
-			.orderBy("id", "asc")
-			.limit(1)
-			.then((rows: Types.TaskSchema[]) => rows.length > 0 ? this.toTask(rows[0]) : null);
-	};
 	
 	addHandler = addHandler;
+	getNextTask = getNextTask; 
 	getHandler = getHandler;
 	removeHandler = removeHandler;
 	

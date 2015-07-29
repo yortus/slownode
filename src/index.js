@@ -7,6 +7,7 @@ var addHandler = require("./handlers/add");
 var addTask = require("./tasks/add");
 var runTask = require("./tasks/run");
 var removeTask = require("./tasks/remove");
+var getNextTask = require("./tasks/getNext");
 var EventLoop = (function () {
     function EventLoop(databaseName, pollingDelay) {
         var _this = this;
@@ -17,20 +18,12 @@ var EventLoop = (function () {
                 clearTimeout(_this.flushCallback);
         };
         this.flush = function () {
-            _this.fetchNext()
+            _this.getNextTask()
                 .then(_this.runTask);
             return true;
         };
-        this.fetchNext = function () {
-            return _this.store("tasks")
-                .select()
-                .where("runAt", "<=", Date.now())
-                .orderBy("runAt", "asc")
-                .orderBy("id", "asc")
-                .limit(1)
-                .then(function (rows) { return rows.length > 0 ? _this.toTask(rows[0]) : null; });
-        };
         this.addHandler = addHandler;
+        this.getNextTask = getNextTask;
         this.getHandler = getHandler;
         this.removeHandler = removeHandler;
         this.addTask = addTask;

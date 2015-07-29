@@ -14,13 +14,13 @@ declare module "event-loop" {
 		
 		flush(): void;
 		stop(): void;
-		fetchNext(): Promise<EventTask>;
 		
 		addHandler(handler: TaskHandler): boolean;
 		getHandler(topicFilter: string, functionId: string): TaskHandler;
 		removeHandler(topicFilter: string, functionId: string): boolean;
 		
 		addTask(task: EventTask): any;
+		getNextTask(): Promise<EventTask>;
 		runTask(task?: EventTask): Promise<boolean>
 		removeTask(task: EventTask): any;
 	}
