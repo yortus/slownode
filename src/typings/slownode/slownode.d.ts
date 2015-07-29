@@ -4,7 +4,16 @@
 declare module "slownode" {
 	import Knex = require("knex");
 	
-	export class EventLoop {
+	export interface SlowNodeStatic {
+		EventLoop: any;
+		EventEmitter: any;
+	}
+	
+	export class SlowEventEmitter {
+		
+	}
+	
+	export class SlowEventLoop {
 		
 		constructor(config: EventLoopConfig);
 		private config: EventLoopConfig;
