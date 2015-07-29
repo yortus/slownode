@@ -1,7 +1,7 @@
 import Types = require("event-loop");
 export = toRow;
 
-function toRow(task: Types.EventTask): Types.TaskSchema {
+function toRow(task: Types.Event): Types.TaskEventSchema
 	return {
 		runAt: Date.now(),
 		runAtReadable: new Date().toISOString(),

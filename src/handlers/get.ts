@@ -4,6 +4,6 @@ export = get;
 var get = (topicFilter: string, functionId: string) => {
 	var self: Types.EventLoop = this;
 	
-	var topicHandlers = self.taskHandlers[topicFilter] || {};
+	var topicHandlers = self.subscribers[topicFilter] || {};
 	return topicHandlers[functionId] || null;
 }

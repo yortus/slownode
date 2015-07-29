@@ -17,44 +17,43 @@ export = EventLoop;
 
 class EventLoop implements Types.EventLoop {
 
-	constructor(databaseName: string, pollingDelay: number) {
-		if (typeof databaseName !== "string") throw new TypeError(errors.InvalidDatabaseName);
-		if (databaseName.length < 1) throw new TypeError(errors.InvalidDatabaseName);
-		if (typeof pollingDelay !== "number") throw new TypeError(errors.MustBeNumber);
-		if (pollingDelay < 50) throw new Error(errors.InvalidPollDelay);
-		if (pollingDelay === Infinity) throw new Error(errors.NotInfinity)
+	constructor(config: Types.EventLoopConfig) {
+		// TODO: Move config validation to seperate module
+		if (typeof config.database !== "string") throw new TypeError(errors.InvalidDatabaseName);
+		if (config.database.length < 1) throw new TypeError(errors.InvalidDatabaseName);
+		if (typeof config.pollInterval !== "number") throw new TypeError(errors.MustBeNumber);
+		if (config.pollInterval < 50) throw new Error(errors.InvalidPollDelay);
+		if (config.pollInterval === Infinity) throw new Error(errors.NotInfinity)
 
-		databaseName += databaseName.slice(-3) === ".db" ? "" : ".db";
+		config.database += config.database.slice(-3) === ".db" ? "" : ".db";
 		this.store = Knex({
 			client: "sqlite3",
 			connection: {
-				filename: databaseName
+				filename: config.database
 			}
 		});
 
-		this.pollingDelay = pollingDelay;
+		this.pollInterval = config.pollInterval;
 
 		this.ready = createDatabase(this.store)
-			.then(() => this.flushTask())
+			.then(() => this.start())
 	}
 
 	store: Knex;
-	pollingDelay: number = 1000;
-	taskHandlers: Types.TaskIndex = {};
+	pollInterval: number = 1000;
+	subscribers: Array<Types.Subscriber> = [];
 	ready: Promise<boolean>;
 	flushCallback: NodeJS.Timer;
 
+	stop = stopTasks;
+	start = flushTask;
 
-	stopTasks = stopTasks;
-	flushTask = flushTask;
-
-	addHandler = addHandler;
+	subscribe = addHandler;
 	getNextTask = getNextTask;
 	getHandler = getHandler;
 	removeHandler = removeHandler;
 
-	addTask = addTask;
+	publish = addTask;
 	runTask = runTask;
 	removeTask = removeTask;
-
 }

@@ -4,7 +4,7 @@ import Promise = require("bluebird");
 import toRow = require("../toRow");
 export = store;
 
-function store(db: Knex, tasks: Array<Types.EventTask>) {
+function store(db: Knex, tasks: Array<Types.Event>) {
 
 	return db.transaction(trx => {
 		return Promise.map(tasks, task => toInsert(db, task, trx))
@@ -13,7 +13,7 @@ function store(db: Knex, tasks: Array<Types.EventTask>) {
 
 }
 
-function toInsert(db: Knex, task: Types.EventTask, trx: any) {
+function toInsert(db: Knex, task: Types.Event, trx: any) {
 	return db("tasks")
 		.insert(toRow(task))
 		.transacting(trx);

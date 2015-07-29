@@ -11,5 +11,5 @@ var getNext = () => {
 		.orderBy("runAt", "asc")
 		.orderBy("id", "asc")
 		.limit(1)
-		.then((rows: Types.TaskSchema[]) => rows.length > 0 ? toTask(rows[0]) : null);
+		.then((rows: Types.EventSchema[]) => rows.length > 0 ? toTask(rows[0]) : null);
 };

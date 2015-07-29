@@ -6,52 +6,50 @@ declare module "event-loop" {
 	export class EventLoop {
 		
 		constructor(databaseName: string, pollingDelay: number);
-		store: Knex;
-		pollingDelay: number;
-		taskHandlers: TaskIndex;
-		ready: Promise<boolean>;
-		flushCallback: NodeJS.Timer;
+		private store: Knex;
+		private pollInterval: number;
+		private subscribers: Array<Subscriber>;
+		public ready: Promise<boolean>;
+		private flushCallback: NodeJS.Timer;
 		
-		flushTask(): void;
-		stopTasks(): void;
+		public start(): void;
+		public stop(): void;
 		
-		addHandler(handler: TaskHandler): boolean;
-		getHandler(topicFilter: string, functionId: string): TaskHandler;
-		removeHandler(topicFilter: string, functionId: string): boolean;
+		public subscribe(subscriber: Subscriber): boolean;
+		private getSubscriber(topicFilter: string, functionId: string): Subscriber;
+		private removeSubscriber(topicFilter: string, functionId: string): boolean;
 		
-		addTask(task: EventTask): any;
-		getNextTask(): Promise<EventTask>;
-		runTask(task?: EventTask): Promise<boolean>
-		removeTask(task: EventTask): any;
+		public publish(task: Event): any;
+		private getNextEvent(): Promise<Event>;
+		private runEvent(task?: Event): Promise<boolean>
+		private removeEvent(task: Event): any;
 	}
 	
-	export interface EventTask {
+	export interface Event {
 		id: number;
-		topicFilter: string;
-		functionId?: string;
-		task: any;
+		eventName: string;
+		subscriberId?: string;
+		event: any;
 	}
 	
-	export interface TaskHandler {
-		topicFilter: string;
-		functionId: string;
+	export interface Subscriber {
+		id: string;
 		callback: (args: any) => Promise<any>;
 	}
 	
-	export interface TaskIndex {
-		[index: string]: TaskFunctions; 
-	}
-	
-	export interface TaskFunctions {
-		[index: string]: TaskHandler;
-	}
-	
-	export interface TaskSchema {
+	export interface EventSchema {
 		id?: number;
 		runAt: number;
 		runAtReadable: string;
 		topicFilter: string;
 		functionId: string;
 		task: string;
+	}
+	
+	export interface EventLoopConfig {
+		retryCount: number;
+		retryIntervalMs: number;
+		pollInterval: number;
+		database: string;
 	}
 }

@@ -42,7 +42,7 @@ describe("EventLoop behaviour tests", function () {
             .then(function () { return done(); });
     });
     it("will add a task handler", function () {
-        var added = loop.addHandler({
+        var added = loop.subscribe({
             topicFilter: "event",
             functionId: "one",
             callback: dummyHandler,

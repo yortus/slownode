@@ -54,7 +54,7 @@ describe("EventLoop behaviour tests", () => {
 	});
 
 	it("will add a task handler", () => {
-		var added = loop.addHandler({
+		var added = loop.subscribe({
 			topicFilter: "event",
 			functionId: "one",
 			callback: dummyHandler,
@@ -65,7 +65,7 @@ describe("EventLoop behaviour tests", () => {
 
 });
 
-function dummyHandler(task: Types.EventTask) {
+function dummyHandler(task: Types.Event) {
 	console.log(task);
 	return Promise.resolve(true);
 }
