@@ -1,9 +1,10 @@
+import EventLoop = require("../index");
 import Types = require("event-loop");
 import toTask = require("../toTask");
 export = getNext;
 
 var getNext = () => {
-	var self: Types.EventLoop = this;
+	var self: EventLoop = this;
 
 	return self.store("tasks")
 		.select()
