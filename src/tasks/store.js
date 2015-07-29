@@ -1,5 +1,5 @@
 var Promise = require("bluebird");
-var toRow = require("./toRow");
+var toRow = require("../toRow");
 function store(db, tasks) {
     return db.transaction(function (trx) {
         return Promise.map(tasks, function (task) { return toInsert(db, task, trx); })
@@ -12,4 +12,4 @@ function toInsert(db, task, trx) {
         .transacting(trx);
 }
 module.exports = store;
-//# sourceMappingURL=storeTasks.js.map
+//# sourceMappingURL=store.js.map

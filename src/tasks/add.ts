@@ -1,5 +1,5 @@
 import Types = require("event-loop");
-import store = require("../storeTasks");
+import store = require("./store");
 export = add;
 
 var add = (task: Types.EventTask) => {
