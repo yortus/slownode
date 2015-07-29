@@ -49,11 +49,11 @@ class EventLoop implements Types.EventLoop {
 	start = flushEvent;
 
 	subscribe = addSubscriber;
-	getNextTask = getNextEvent;
-	getHandler = getSubscriber;
-	removeHandler = removeSubscriber;
+	getSubscriber = getSubscriber;
+	removeSubscriber = removeSubscriber;
 
 	publish = addEvent;
-	runTask = processEvent;
-	removeTask = removeEvent;
+	processEvent = processEvent;
+	removeEvent = removeEvent;
+	getNextEvent = getNextEvent;
 }

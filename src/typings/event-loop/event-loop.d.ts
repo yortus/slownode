@@ -17,12 +17,12 @@ declare module "event-loop" {
 		public stop(): void;
 		
 		public subscribe(subscriber: Subscriber): boolean;
-		private getSubscriber(topicFilter: string, functionId: string): Subscriber;
-		private removeSubscriber(topicFilter: string, functionId: string): boolean;
+		private removeSubscriber(subscriberId: string): boolean;
+		// private getSubscriber(subscriberId: string): Subscriber;
 		
 		public publish(task: Event): any;
 		private getNextEvent(): Promise<Event>;
-		private runEvent(task?: Event): Promise<boolean>
+		private processEvent(task?: Event): Promise<boolean>
 		private removeEvent(task: Event): any;
 	}
 	
