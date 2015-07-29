@@ -3,7 +3,7 @@ import Types = require("event-loop");
 import toEvent = require("../toEvent");
 export = getNext;
 
-var getNext = () => {
+function getNext() {
 	var self: EventLoop = this;
 
 	return self.store("events")

@@ -42,14 +42,14 @@ class EventLoop {
 	ready: Promise<boolean>;
 	flushCallback: NodeJS.Timer;
 
-	stop = stopEvents;
-	start = flushEvent;
+	stop = stopEvents.bind(this);
+	start = flushEvent.bind(this);
 
-	subscribe = addSubscriber;
-	removeSubscriber = removeSubscriber;
+	subscribe = addSubscriber.bind(this);
+	removeSubscriber = removeSubscriber.bind(this);
 
-	publish = addEvent;
-	processEvent = processEvent;
-	removeEvent = removeEvent;
-	getNextEvent = getNextEvent;
+	publish = addEvent.bind(this);
+	processEvent = processEvent.bind(this);
+	removeEvent = removeEvent.bind(this);
+	getNextEvent = getNextEvent.bind(this);
 }

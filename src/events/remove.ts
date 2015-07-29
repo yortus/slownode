@@ -2,7 +2,7 @@ import EventLoop = require("../index");
 import Types = require("event-loop");
 export = remove;
 
-var remove = (task: Types.Event) => {
+function remove(task: Types.Event) {
 	var self: EventLoop = this;
 
 	return self.store("events")

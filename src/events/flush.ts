@@ -2,7 +2,7 @@ import EventLoop = require("../index");
 import Types = require("event-loop");
 export = flush;
 
-var flush = () => {
+function flush() {
 	var self: EventLoop = this;
 	
 	// TODO: Retry/failure handling

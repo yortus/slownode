@@ -1,4 +1,5 @@
 /// <reference path="../knex/knex.d.ts" />
+/// <reference path="../node/node.d.ts" />
 
 declare module "event-loop" {
 	import Knex = require("knex");
@@ -18,7 +19,6 @@ declare module "event-loop" {
 		
 		public subscribe(subscriber: Subscriber): boolean;
 		private removeSubscriber(subscriberId: string): boolean;
-		// private getSubscriber(subscriberId: string): Subscriber;
 		
 		public publish(task: Event): any;
 		private getNextEvent(): Promise<Event>;

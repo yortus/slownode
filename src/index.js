@@ -15,14 +15,14 @@ var EventLoop = (function () {
         this.config = config;
         this.pollInterval = 1000;
         this.subscribers = [];
-        this.stop = stopEvents;
-        this.start = flushEvent;
-        this.subscribe = addSubscriber;
-        this.removeSubscriber = removeSubscriber;
-        this.publish = addEvent;
-        this.processEvent = processEvent;
-        this.removeEvent = removeEvent;
-        this.getNextEvent = getNextEvent;
+        this.stop = stopEvents.bind(this);
+        this.start = flushEvent.bind(this);
+        this.subscribe = addSubscriber.bind(this);
+        this.removeSubscriber = removeSubscriber.bind(this);
+        this.publish = addEvent.bind(this);
+        this.processEvent = processEvent.bind(this);
+        this.removeEvent = removeEvent.bind(this);
+        this.getNextEvent = getNextEvent.bind(this);
         // TODO: Move config validation to seperate module
         if (typeof config.database !== "string")
             throw new TypeError(errors.InvalidDatabaseName);

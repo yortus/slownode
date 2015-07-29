@@ -3,7 +3,7 @@ import Types = require("event-loop");
 import errors = require("../errors");
 export = add;
 
-var add = (subscriber: Types.Subscriber): boolean => {
+function add(subscriber: Types.Subscriber): boolean {
 	var self: EventLoop = this;
 	
 	//TODO: Implement replacement logic

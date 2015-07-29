@@ -4,7 +4,7 @@ import errors = require("../errors");
 export = remove;
 
 // TODO: Persist subscriber changes
-var remove = (subscriberId: string): boolean => {
+function remove(subscriberId: string): boolean {
 	var self: EventLoop = this;
 	var subscriber = self.subscribers[subscriberId] || {};
 

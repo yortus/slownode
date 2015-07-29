@@ -1,6 +1,5 @@
-var _this = this;
-var run = function (event) {
-    var self = _this;
+function run(event) {
+    var self = this;
     if (!event) {
         self.flushCallback = setTimeout(function () { return self.start(); }, self.pollInterval);
         return Promise.resolve(true);
@@ -10,7 +9,8 @@ var run = function (event) {
         runPromise.then(function () { return execute(sub, event); });
     });
     return runPromise;
-};
+}
+;
 function execute(subscriber, event) {
     //TODO: Update db according to subscriber config
     return subscriber.callback(event.event)

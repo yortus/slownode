@@ -3,9 +3,8 @@ import Types = require("event-loop");
 import errors = require("../errors");
 export = run;
 
-var run = (event?: Types.Event) => {
+function run(event?: Types.Event) {
 	var self: EventLoop = this;
-
 	if (!event) {
 		self.flushCallback = setTimeout(() => self.start(), self.pollInterval);
 		return Promise.resolve(true);
