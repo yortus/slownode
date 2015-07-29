@@ -1,29 +1,30 @@
 var errors = require("./errors");
 var createDatabase = require("./createDatabase");
 var Knex = require("knex");
-var getHandler = require("./handlers/get");
-var removeHandler = require("./handlers/remove");
-var addHandler = require("./handlers/add");
-var addTask = require("./tasks/add");
-var runTask = require("./tasks/run");
-var removeTask = require("./tasks/remove");
-var getNextTask = require("./tasks/getNext");
-var flushTask = require("./tasks/flush");
-var stopTasks = require("./tasks/stop");
+var getSubscriber = require("./subscribers/get");
+var removeSubscriber = require("./subscribers/remove");
+var addSubscriber = require("./subscribers/add");
+var addEvent = require("./events/add");
+var processEvent = require("./events/run");
+var removeEvent = require("./events/remove");
+var getNextEvent = require("./events/getNext");
+var flushEvent = require("./events/flush");
+var stopEvents = require("./events/stop");
 var EventLoop = (function () {
     function EventLoop(config) {
         var _this = this;
+        this.config = config;
         this.pollInterval = 1000;
         this.subscribers = [];
-        this.stop = stopTasks;
-        this.start = flushTask;
-        this.subscribe = addHandler;
-        this.getNextTask = getNextTask;
-        this.getHandler = getHandler;
-        this.removeHandler = removeHandler;
-        this.publish = addTask;
-        this.runTask = runTask;
-        this.removeTask = removeTask;
+        this.stop = stopEvents;
+        this.start = flushEvent;
+        this.subscribe = addSubscriber;
+        this.getNextTask = getNextEvent;
+        this.getHandler = getSubscriber;
+        this.removeHandler = removeSubscriber;
+        this.publish = addEvent;
+        this.runTask = processEvent;
+        this.removeTask = removeEvent;
         // TODO: Move config validation to seperate module
         if (typeof config.database !== "string")
             throw new TypeError(errors.InvalidDatabaseName);

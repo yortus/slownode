@@ -6,6 +6,7 @@ declare module "event-loop" {
 	export class EventLoop {
 		
 		constructor(config: EventLoopConfig);
+		private config: EventLoopConfig;
 		private store: Knex;
 		private pollInterval: number;
 		private subscribers: Array<Subscriber>;
@@ -28,7 +29,6 @@ declare module "event-loop" {
 	export interface Event {
 		id: number;
 		eventName: string;
-		subscriberId?: string;
 		event: any;
 	}
 	
@@ -42,14 +42,13 @@ declare module "event-loop" {
 		runAt: number;
 		runAtReadable: string;
 		eventName: string;
-		subscriberId: string;
-		task: string;
+		event: string;
 	}
 	
 	export interface EventLoopConfig {
-		retryCount: number;
-		retryIntervalMs: number;
-		pollInterval: number;
+		retryCount?: number;
+		retryIntervalMs?: number;
+		pollInterval?: number;
 		database: string;
 	}
 }

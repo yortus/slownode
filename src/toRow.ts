@@ -1,12 +1,11 @@
 import Types = require("event-loop");
 export = toRow;
 
-function toRow(task: Types.Event): Types.TaskEventSchema
+function toRow(event: Types.Event): Types.EventSchema {
 	return {
 		runAt: Date.now(),
 		runAtReadable: new Date().toISOString(),
-		topicFilter: task.topicFilter,
-		functionId: task.functionId,
-		task: JSON.stringify(task.task)
+		eventName: event.eventName,
+		event: JSON.stringify(event.event)
 	};
 }

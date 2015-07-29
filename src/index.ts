@@ -4,20 +4,20 @@ import createDatabase = require("./createDatabase");
 import Knex = require("knex");
 import rowToTask = require("./toTask");
 import taskToRow = require("./toRow");
-import getHandler = require("./handlers/get");
-import removeHandler = require("./handlers/remove");
-import addHandler = require("./handlers/add");
-import addTask = require("./tasks/add");
-import runTask = require("./tasks/run");
-import removeTask = require("./tasks/remove");
-import getNextTask = require("./tasks/getNext");
-import flushTask = require("./tasks/flush");
-import stopTasks = require("./tasks/stop");
+import getSubscriber = require("./subscribers/get");
+import removeSubscriber = require("./subscribers/remove");
+import addSubscriber = require("./subscribers/add");
+import addEvent = require("./events/add");
+import processEvent = require("./events/run");
+import removeEvent = require("./events/remove");
+import getNextEvent = require("./events/getNext");
+import flushEvent = require("./events/flush");
+import stopEvents = require("./events/stop");
 export = EventLoop;
 
 class EventLoop implements Types.EventLoop {
 
-	constructor(config: Types.EventLoopConfig) {
+	constructor(public config: Types.EventLoopConfig) {
 		// TODO: Move config validation to seperate module
 		if (typeof config.database !== "string") throw new TypeError(errors.InvalidDatabaseName);
 		if (config.database.length < 1) throw new TypeError(errors.InvalidDatabaseName);
@@ -40,20 +40,20 @@ class EventLoop implements Types.EventLoop {
 	}
 
 	store: Knex;
-	pollInterval: number = 1000;
+	pollInterval = 1000;
 	subscribers: Array<Types.Subscriber> = [];
 	ready: Promise<boolean>;
 	flushCallback: NodeJS.Timer;
 
-	stop = stopTasks;
-	start = flushTask;
+	stop = stopEvents;
+	start = flushEvent;
 
-	subscribe = addHandler;
-	getNextTask = getNextTask;
-	getHandler = getHandler;
-	removeHandler = removeHandler;
+	subscribe = addSubscriber;
+	getNextTask = getNextEvent;
+	getHandler = getSubscriber;
+	removeHandler = removeSubscriber;
 
-	publish = addTask;
-	runTask = runTask;
-	removeTask = removeTask;
+	publish = addEvent;
+	runTask = processEvent;
+	removeTask = removeEvent;
 }
