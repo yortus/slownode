@@ -1,13 +1,12 @@
 var _this = this;
 var errors = require("../errors");
-var add = function (handler) {
+var add = function (subscriber) {
     var self = _this;
-    var taskHandler = self.getHandler(handler.topicFilter, handler.functionId);
-    if (!!taskHandler)
+    //TODO: Implement replacement logic
+    //TODO: Persist the subscriber in the database
+    if (!!self.subscribers[subscriber.id])
         throw new Error(errors.FunctionExists);
-    if (!self.subscribers[handler.topicFilter])
-        self.subscribers[handler.topicFilter] = {};
-    self.subscribers[handler.topicFilter][handler.functionId] = handler;
+    self.subscribers[subscriber.id] = subscriber;
     return true;
 };
 module.exports = add;
