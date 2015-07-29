@@ -1,17 +1,20 @@
 var _this = this;
-var errors = require("../errors");
-var run = function (task) {
+var run = function (event) {
     var self = _this;
-    if (!task) {
+    if (!event) {
         self.flushCallback = setTimeout(function () { return self.start(); }, self.pollInterval);
         return Promise.resolve(true);
     }
-    var handler = self.getHandler(task.eventName, task.subscriberId);
-    if (!handler)
-        throw new Error(errors.NoHandler);
-    return handler.callback(task.event)
-        .then(function () { return self.removeTask(task); })
-        .then(function () { return true; });
+    var runPromise = Promise.resolve(true);
+    self.subscribers.forEach(function (sub) {
+        runPromise.then(function () { return execute(sub, event); });
+    });
+    return runPromise;
 };
+function execute(subscriber, event) {
+    //TODO: Update db according to handler config
+    return subscriber.callback(event.event)
+        .then(function () { return true; });
+}
 module.exports = run;
 //# sourceMappingURL=run.js.map
