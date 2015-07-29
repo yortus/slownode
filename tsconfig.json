@@ -21,7 +21,6 @@
         "./src/events/store.ts",
         "./src/index.ts",
         "./src/subscribers/add.ts",
-        "./src/subscribers/get.ts",
         "./src/subscribers/remove.ts",
         "./src/toRow.ts",
         "./src/toTask.ts",

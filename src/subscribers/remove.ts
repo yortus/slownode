@@ -1,13 +1,15 @@
+import EventLoop = require("../index");
 import Types = require("event-loop");
 import errors = require("../errors");
 export = remove;
 
-var remove = (topicFilter: string, functionId: string): boolean => {
-	var self: Types.EventLoop = this;
-	var topicTasks = self.subscribers[topicFilter] || {};
+// TODO: Persist subscriber changes
+var remove = (subscriberId: string): boolean => {
+	var self: EventLoop = this;
+	var subscriber = self.subscribers[subscriberId] || {};
 
-	var isExisting = !!topicTasks[functionId];
+	var isExisting = !!subscriber;
 	if (!isExisting) return false;
 
-	return delete self.subscribers[topicFilter][functionId];
+	return delete self.subscribers[subscriber];
 };
