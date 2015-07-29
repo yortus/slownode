@@ -1,6 +1,6 @@
 {
-  "name": "event-loop",
-  "version": "0.1.1",
+  "name": "slownode",
+  "version": "0.1.0",
   "description": "",
   "main": "src/index",
   "scripts": {
@@ -10,20 +10,23 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/seikho/event-loop"
+    "url": "https://github.com/paypac/slownode"
   },
   "keywords": [
     "persisent",
     "event",
     "loop",
-    "sqlite"
+    "emitter",
+    "promise",
+    "slow",
+    "function"
   ],
   "author": "Carl Winkler",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/seikho/event-loop/issues"
+    "url": "https://github.com/paypac/slownode/issues"
   },
-  "homepage": "https://github.com/seikho/event-loop",
+  "homepage": "https://github.com/paypac/slownode",
   "dependencies": {
     "bluebird": "^2.9.34",
     "chai": "^3.2.0",
