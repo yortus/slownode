@@ -25,7 +25,7 @@ declare module "event-loop" {
 	export interface EventTask {
 		id: number;
 		topicFilter: string;
-		functionId: string;
+		functionId?: string;
 		task: any;
 	}
 	

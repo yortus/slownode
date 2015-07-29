@@ -13,6 +13,7 @@
         "./src/createDatabase.ts",
         "./src/errors.ts",
         "./src/index.ts",
+        "./src/storeTasks.ts",
         "./src/toRow.ts",
         "./src/toTask.ts",
         "./src/typings/bluebird/bluebird.d.ts",

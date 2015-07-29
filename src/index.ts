@@ -108,6 +108,7 @@ class EventLoop implements Types.EventLoop {
 	}
 
 	addTask = (task: Types.EventTask) => {
+		
 		var row = this.toRow(task);
 		return this.store("tasks")
 			.insert(row);
