@@ -49,7 +49,6 @@ class EventLoop implements Types.EventLoop {
 	start = flushEvent;
 
 	subscribe = addSubscriber;
-	getSubscriber = getSubscriber;
 	removeSubscriber = removeSubscriber;
 
 	publish = addEvent;

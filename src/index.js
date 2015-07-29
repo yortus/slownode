@@ -1,7 +1,6 @@
 var errors = require("./errors");
 var createDatabase = require("./createDatabase");
 var Knex = require("knex");
-var getSubscriber = require("./subscribers/get");
 var removeSubscriber = require("./subscribers/remove");
 var addSubscriber = require("./subscribers/add");
 var addEvent = require("./events/add");
@@ -19,12 +18,11 @@ var EventLoop = (function () {
         this.stop = stopEvents;
         this.start = flushEvent;
         this.subscribe = addSubscriber;
-        this.getNextTask = getNextEvent;
-        this.getHandler = getSubscriber;
-        this.removeHandler = removeSubscriber;
+        this.removeSubscriber = removeSubscriber;
         this.publish = addEvent;
-        this.runTask = processEvent;
-        this.removeTask = removeEvent;
+        this.processEvent = processEvent;
+        this.removeEvent = removeEvent;
+        this.getNextEvent = getNextEvent;
         // TODO: Move config validation to seperate module
         if (typeof config.database !== "string")
             throw new TypeError(errors.InvalidDatabaseName);
