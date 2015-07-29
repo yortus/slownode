@@ -8,6 +8,7 @@ import getHandler = require("./handlers/get");
 import removeHandler = require("./handlers/remove");
 import addHandler = require("./handlers/add");
 import addTask = require("./tasks/add");
+import runTask = require("./tasks/run");
 export = EventLoop;
 
 class EventLoop implements Types.EventLoop {
@@ -37,7 +38,7 @@ class EventLoop implements Types.EventLoop {
 	pollingDelay: number = 1000;
 	taskHandlers: Types.TaskIndex = {};
 	ready: Promise<boolean>;
-	flushCallback: any;
+	flushCallback: NodeJS.Timer;
 	
 	stop = () => {
 		if (this.flushCallback) clearTimeout(this.flushCallback);
@@ -66,19 +67,8 @@ class EventLoop implements Types.EventLoop {
 	/**
 	 * Task operations
 	 */
-	runTask = (task?: Types.EventTask) => {
-		if (!task) {
-			this.flushCallback = setTimeout(() => this.flush(), this.pollingDelay);
-			return Promise.resolve(true);
-		}
-
-		var handler = this.getHandler(task.topicFilter, task.functionId);
-		if (!handler) throw new Error(errors.NoHandler);
-
-		return handler.callback(task.task)
-			.then(() => this.removeTask(task))
-			.then(() => true)
-	};
+	addTask = addTask;
+	runTask = runTask;
 
 	removeTask = (task: Types.EventTask) => {
 		return this.store("tasks")
@@ -86,7 +76,6 @@ class EventLoop implements Types.EventLoop {
 			.where("id", "=", task.id);
 	}
 
-	addTask = addTask;
 
 	toTask = rowToTask;
 	toRow = taskToRow;

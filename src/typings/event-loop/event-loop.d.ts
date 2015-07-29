@@ -10,16 +10,19 @@ declare module "event-loop" {
 		pollingDelay: number;
 		taskHandlers: TaskIndex;
 		ready: Promise<boolean>;
+		flushCallback: NodeJS.Timer;
+		
 		flush(): void;
-		runTask(task?: EventTask): Promise<boolean>;
-		fetchNext(): Promise<EventTask>;
-		addHandler(handler: TaskHandler): boolean;
-		removeHandler(topicFilter: string, functionId: string): boolean;
-		getHandler(topicFilter: string, functionId: string): TaskHandler;
-		toTask(taskRow: TaskSchema): EventTask;
-		removeTask(task: EventTask): any;
-		addTask(task: EventTask): any;
 		stop(): void;
+		fetchNext(): Promise<EventTask>;
+		
+		addHandler(handler: TaskHandler): boolean;
+		getHandler(topicFilter: string, functionId: string): TaskHandler;
+		removeHandler(topicFilter: string, functionId: string): boolean;
+		
+		addTask(task: EventTask): any;
+		runTask(task?: EventTask): Promise<boolean>
+		removeTask(task: EventTask): any;
 	}
 	
 	export interface EventTask {
