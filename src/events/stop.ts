@@ -1,8 +1,9 @@
+import EventLoop = require("../index");
 import Types = require("event-loop");
 export = stop;
 
 var stop = () => {
-	var self: Types.EventLoop = this;
+	var self: EventLoop = this;
 	
 	if (self.flushCallback) clearTimeout(self.flushCallback);
 };

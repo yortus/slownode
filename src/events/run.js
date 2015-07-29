@@ -12,7 +12,7 @@ var run = function (event) {
     return runPromise;
 };
 function execute(subscriber, event) {
-    //TODO: Update db according to handler config
+    //TODO: Update db according to subscriber config
     return subscriber.callback(event.event)
         .then(function () { return true; });
 }
