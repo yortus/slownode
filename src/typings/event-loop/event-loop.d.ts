@@ -30,6 +30,7 @@ declare module "event-loop" {
 		id: number;
 		eventName: string;
 		event: any;
+		runAt: number;
 	}
 	
 	export interface Subscriber {

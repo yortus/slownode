@@ -2,9 +2,6 @@ import Types = require("event-loop");
 import errors = require("./errors");
 import createDatabase = require("./createDatabase");
 import Knex = require("knex");
-import rowToTask = require("./toTask");
-import taskToRow = require("./toRow");
-import getSubscriber = require("./subscribers/get");
 import removeSubscriber = require("./subscribers/remove");
 import addSubscriber = require("./subscribers/add");
 import addEvent = require("./events/add");
@@ -15,9 +12,9 @@ import flushEvent = require("./events/flush");
 import stopEvents = require("./events/stop");
 export = EventLoop;
 
-class EventLoop implements Types.EventLoop {
+class EventLoop {
 
-	constructor(public config: Types.EventLoopConfig) {
+	constructor(private config: Types.EventLoopConfig) {
 		// TODO: Move config validation to seperate module
 		if (typeof config.database !== "string") throw new TypeError(errors.InvalidDatabaseName);
 		if (config.database.length < 1) throw new TypeError(errors.InvalidDatabaseName);
