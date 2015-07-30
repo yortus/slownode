@@ -1,5 +1,5 @@
 import Promise = require("bluebird");
-import errors = require("../errors");
+import errors = require("./errors");
 import knex = require("knex");
 export = create;
 
