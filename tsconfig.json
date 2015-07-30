@@ -10,7 +10,6 @@
     ],
     "files": [
         "./test/behave.ts",
-        "./src/createDatabase.ts",
         "./src/errors.ts",
         "./src/eventloop/api.ts",
         "./src/eventloop/events/add.ts",
@@ -29,6 +28,7 @@
         "./src/function/setInterval.ts",
         "./src/function/setTimeout.ts",
         "./src/index.ts",
+        "./src/store/create.ts",
         "./src/typings/bluebird/bluebird.d.ts",
         "./src/typings/chai/chai.d.ts",
         "./src/typings/knex/knex.d.ts",
