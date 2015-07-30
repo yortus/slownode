@@ -16,6 +16,8 @@
         "./src/eventloop/calls/run.ts",
         "./src/eventloop/calls/stop.ts",
         "./src/function/declare.ts",
+        "./src/function/deserialise.ts",
+        "./src/function/serialise.ts",
         "./src/function/setImmediate.ts",
         "./src/function/setInterval.ts",
         "./src/function/setTimeout.ts",

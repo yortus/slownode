@@ -1,5 +1,5 @@
 export = immediate;
 
-function immediate() {
+function immediate(func: () => Promise<any>) {
 	
 }
