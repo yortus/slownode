@@ -1,17 +1,17 @@
 var errors = require("../errors");
 var Knex = require("knex");
-var addEvent = require("./events/add");
-var processEvent = require("./events/run");
-var removeEvent = require("./events/remove");
-var getNextEvent = require("./events/getNext");
-var flushEvent = require("./events/flush");
-var stopEvents = require("./events/stop");
+var addEvent = require("./calls/add");
+var processEvent = require("./calls/run");
+var removeEvent = require("./calls/remove");
+var getNextEvent = require("./calls/getNext");
+var flushEvent = require("./calls/flush");
+var stopEvents = require("./calls/stop");
 var EventLoop = (function () {
     function EventLoop(config) {
         this.config = config;
         this.stop = stopEvents.bind(this);
         this.start = flushEvent.bind(this);
-        this.storeCall = addEvent.bind(this);
+        this.addCall = addEvent.bind(this);
         this.processCall = processEvent.bind(this);
         this.removeCall = removeEvent.bind(this);
         this.getNextCall = getNextEvent.bind(this);

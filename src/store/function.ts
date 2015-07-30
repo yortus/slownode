@@ -1,7 +1,7 @@
 import Types = require("slownode");
 import db = require("./db");
 
-export function add(func: Types.SlowFunction) {
+export function add(func: Types.SlowFunction): Promise<number> {
 
 	var runAt = func.runAt || Date.now();
 	var args = JSON.stringify(func.arguments || {});
@@ -13,10 +13,10 @@ export function add(func: Types.SlowFunction) {
 			runAtReadable: new Date(runAt).toString(),
 			arguments: func.arguments
 		})
-		.then((ids: number[]) => Promise.resolve(ids[0]));
+		.then((ids: number[]) => ids[0]);
 }
 
-export function remove(func: number|Types.SlowFunction) {
+export function remove(func: number|Types.SlowFunction): Promise<boolean> {
 	var id = typeof func === "number"
 		? func
 		: func.id;
@@ -24,5 +24,6 @@ export function remove(func: number|Types.SlowFunction) {
 	return db("eventloop")
 		.delete()
 		.where("id", "=", id)
-		.then(rows => Promise.resolve(rows > 0));
+		.then(rows => rows > 0)
+		.catch(() => false);
 }

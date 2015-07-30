@@ -26,7 +26,7 @@ declare module "slownode" {
 		start(): void;
 		stop(): void;
 		
-		storeCall(operation: SlowFunction): any;
+		addCall(operation: SlowFunction): any;
 		getNextCall(): Promise<SlowFunction>;
 		processCall(task?: SlowFunction): Promise<boolean>
 		removeCall(task: SlowFunction): any;

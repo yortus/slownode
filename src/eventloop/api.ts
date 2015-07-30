@@ -2,12 +2,12 @@ import Types = require("slownode");
 import errors = require("../errors");
 import Knex = require("knex");
 
-import addEvent = require("./events/add");
-import processEvent = require("./events/run");
-import removeEvent = require("./events/remove");
-import getNextEvent = require("./events/getNext");
-import flushEvent = require("./events/flush");
-import stopEvents = require("./events/stop");
+import addEvent = require("./calls/add");
+import processEvent = require("./calls/run");
+import removeEvent = require("./calls/remove");
+import getNextEvent = require("./calls/getNext");
+import flushEvent = require("./calls/flush");
+import stopEvents = require("./calls/stop");
 export = EventLoop;
 
 class EventLoop implements Types.SlowEventLoop {
@@ -36,7 +36,7 @@ class EventLoop implements Types.SlowEventLoop {
 	stop = stopEvents.bind(this);
 	start = flushEvent.bind(this);
 
-	storeCall = addEvent.bind(this);
+	addCall = addEvent.bind(this);
 	processCall = processEvent.bind(this);
 	removeCall = removeEvent.bind(this);
 	getNextCall = getNextEvent.bind(this);
