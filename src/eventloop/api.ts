@@ -1,8 +1,7 @@
 import Types = require("slownode");
 import errors = require("../errors");
 import Knex = require("knex");
-import removeSubscriber = require("./subscribers/remove");
-import addSubscriber = require("./subscribers/add");
+
 import addEvent = require("./events/add");
 import processEvent = require("./events/run");
 import removeEvent = require("./events/remove");
@@ -17,9 +16,9 @@ class EventLoop implements Types.SlowEventLoop {
 		// TODO: Move config validation to seperate module
 		if (typeof config.database !== "string") throw new TypeError(errors.InvalidDatabaseName);
 		if (config.database.length < 1) throw new TypeError(errors.InvalidDatabaseName);
-		if (typeof config.pollInterval !== "number") throw new TypeError(errors.MustBeNumber);
-		if (config.pollInterval < 50) throw new Error(errors.InvalidPollDelay);
-		if (config.pollInterval === Infinity) throw new Error(errors.NotInfinity)
+		if (typeof config.pollIntervalMs !== "number") throw new TypeError(errors.MustBeNumber);
+		if (config.pollIntervalMs < 50) throw new Error(errors.InvalidPollDelay);
+		if (config.pollIntervalMs === Infinity) throw new Error(errors.NotInfinity)
 
 		config.database += config.database.slice(-3) === ".db" ? "" : ".db";
 		this.store = Knex({

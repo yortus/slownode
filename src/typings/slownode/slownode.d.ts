@@ -52,7 +52,7 @@ declare module "slownode" {
 	export interface EventLoopConfig {
 		retryCount?: number;
 		retryIntervalMs?: number;
-		pollInterval?: number;
+		pollIntervalMs?: number;
 		database: string;
 	}
 	

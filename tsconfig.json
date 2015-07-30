@@ -19,8 +19,6 @@
         "./src/eventloop/events/run.ts",
         "./src/eventloop/events/stop.ts",
         "./src/eventloop/events/store.ts",
-        "./src/eventloop/subscribers/add.ts",
-        "./src/eventloop/subscribers/remove.ts",
         "./src/eventloop/toEvent.ts",
         "./src/eventloop/toRow.ts",
         "./src/function/declare.ts",

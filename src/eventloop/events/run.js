@@ -1,13 +1,10 @@
 function run(event) {
     var self = this;
     if (!event) {
-        self.flushCallback = setTimeout(function () { return self.start(); }, self.pollInterval);
+        self.flushCallback = setTimeout(function () { return self.start(); }, self.config.pollIntervalMs);
         return Promise.resolve(true);
     }
     var runPromise = Promise.resolve(true);
-    self.subscribers.forEach(function (sub) {
-        runPromise.then(function () { return execute(sub, event); });
-    });
     return runPromise;
 }
 ;

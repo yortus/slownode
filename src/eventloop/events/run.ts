@@ -1,20 +1,15 @@
-import EventLoop = require("../api");
 import Types = require("slownode");
 import errors = require("../../errors");
 export = run;
 
 function run(event?: Types.Event) {
-	var self: EventLoop = this;
+	var self: Types.SlowEventLoop = this;
 	if (!event) {
-		self.flushCallback = setTimeout(() => self.start(), self.pollInterval);
+		self.flushCallback = setTimeout(() => self.start(), self.config.pollIntervalMs);
 		return Promise.resolve(true);
 	}
 	
 	var runPromise = Promise.resolve(true);
-	
-	self.subscribers.forEach(sub => {
-		runPromise.then(() => execute(sub, event));
-	});
 	
 	return runPromise;
 };

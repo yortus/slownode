@@ -20,11 +20,11 @@ var EventLoop = (function () {
             throw new TypeError(errors.InvalidDatabaseName);
         if (config.database.length < 1)
             throw new TypeError(errors.InvalidDatabaseName);
-        if (typeof config.pollInterval !== "number")
+        if (typeof config.pollIntervalMs !== "number")
             throw new TypeError(errors.MustBeNumber);
-        if (config.pollInterval < 50)
+        if (config.pollIntervalMs < 50)
             throw new Error(errors.InvalidPollDelay);
-        if (config.pollInterval === Infinity)
+        if (config.pollIntervalMs === Infinity)
             throw new Error(errors.NotInfinity);
         config.database += config.database.slice(-3) === ".db" ? "" : ".db";
         this.store = Knex({

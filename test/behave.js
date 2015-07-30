@@ -19,33 +19,26 @@ describe("EventLoop behaviour tests", function () {
     });
     it("will throw when provided a non-string database name", function () {
         var dbName = 5;
-        expect(make({ database: dbName, pollInterval: 51 })).to.throw(errors.InvalidDatabaseName);
+        expect(make({ database: dbName, pollIntervalMs: 51 })).to.throw(errors.InvalidDatabaseName);
     });
     it("will throw when provided an empty trying database name", function () {
-        expect(make({ database: "", pollInterval: 51 })).to.throw(errors.InvalidDatabaseName);
+        expect(make({ database: "", pollIntervalMs: 51 })).to.throw(errors.InvalidDatabaseName);
     });
     it("will throw when provided a non-number polling delay", function () {
         var delay = "string";
-        expect(make({ database: "valid", pollInterval: delay })).to.throw(errors.MustBeNumber);
+        expect(make({ database: "valid", pollIntervalMs: delay })).to.throw(errors.MustBeNumber);
     });
     it("will throw when provided <50 polling delay", function () {
-        expect(make({ database: "valid", pollInterval: 49 })).to.throw(errors.InvalidPollDelay);
+        expect(make({ database: "valid", pollIntervalMs: 49 })).to.throw(errors.InvalidPollDelay);
     });
     it("will throw when provided polling delay of infinity", function () {
-        expect(make({ database: "valid", pollInterval: Infinity })).to.throw(errors.NotInfinity);
+        expect(make({ database: "valid", pollIntervalMs: Infinity })).to.throw(errors.NotInfinity);
     });
     it("will create an instance of EventLoop and create the database", function (done) {
-        loop = new EventLoop({ database: "test.db", pollInterval: 500 });
+        loop = new EventLoop({ database: "test.db", pollIntervalMs: 500 });
         loop.ready
             .then(function (isReady) { return expect(isReady).to.equal(true); })
             .then(function () { return done(); });
-    });
-    it("will add a task handler", function () {
-        var added = loop.subscribe({
-            id: "event",
-            callback: dummyHandler,
-        });
-        expect(added).to.equal(true);
     });
 });
 function dummyHandler(task) {
