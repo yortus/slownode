@@ -1,4 +1,4 @@
-function slowFunction(id, func) {
+function slowFunction(func) {
 }
 module.exports = slowFunction;
 //# sourceMappingURL=declare.js.map

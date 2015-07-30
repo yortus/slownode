@@ -1,4 +1,5 @@
 export = slowFunction;
-function slowFunction(id: string, func: (...args: any[]) => Promise<any>) {
+
+function slowFunction(func: (...args: any[]) => Promise<any>) {
 	
 }
