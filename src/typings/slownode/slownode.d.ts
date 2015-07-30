@@ -44,12 +44,12 @@ declare module "slownode" {
 		callback: (args: any) => Promise<any>;
 	}
 	
-	export interface EventSchema {
+	export interface EventLoopSchema {
 		id?: number;
+		functionId: string
 		runAt: number;
 		runAtReadable: string;
-		eventName: string;
-		event: string;
+		arguments: string;
 	}
 	
 	export interface EventLoopConfig {

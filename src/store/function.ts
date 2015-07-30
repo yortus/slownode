@@ -27,3 +27,26 @@ export function remove(func: number|Types.SlowFunction): Promise<boolean> {
 		.then(rows => rows > 0)
 		.catch(() => false);
 }
+
+export function getNext(): Promise<Types.SlowFunction> {
+	var now = Date.now();
+
+	return db("eventloop")
+		.select()
+		.where("runAt", "=", 0)
+		.orWhere("runAt", "<=", now)
+		.orderBy("id", "asc")
+		.limit(1)
+		.then(toSlowFunction);
+}
+
+function toSlowFunction(funcs: Types.EventLoopSchema[]): Types.SlowFunction {
+	if (funcs.length === 0) return null;
+
+	return {
+		id: funcs[0].id,
+		functionId: funcs[0].functionId,
+		runAt: funcs[0].runAt,
+		arguments: JSON.parse(funcs[0].arguments)
+	}
+}
