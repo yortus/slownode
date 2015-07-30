@@ -1,6 +1,5 @@
 import Types = require("slownode");
 import errors = require("../errors");
-import createDatabase = require("./createDatabase");
 import Knex = require("knex");
 import removeSubscriber = require("./subscribers/remove");
 import addSubscriber = require("./subscribers/add");
@@ -12,9 +11,9 @@ import flushEvent = require("./events/flush");
 import stopEvents = require("./events/stop");
 export = EventLoop;
 
-class EventLoop {
+class EventLoop implements Types.SlowEventLoop {
 
-	constructor(private config: Types.EventLoopConfig) {
+	constructor(public config: Types.EventLoopConfig) {
 		// TODO: Move config validation to seperate module
 		if (typeof config.database !== "string") throw new TypeError(errors.InvalidDatabaseName);
 		if (config.database.length < 1) throw new TypeError(errors.InvalidDatabaseName);
@@ -29,24 +28,14 @@ class EventLoop {
 				filename: config.database
 			}
 		});
-
-		this.pollInterval = config.pollInterval;
-
-		this.ready = createDatabase(this.store)
-			.then(() => this.start())
 	}
 
 	store: Knex;
-	pollInterval = 1000;
-	subscribers: Array<Types.Subscriber> = [];
 	ready: Promise<boolean>;
 	flushCallback: NodeJS.Timer;
 
 	stop = stopEvents.bind(this);
 	start = flushEvent.bind(this);
-
-	subscribe = addSubscriber.bind(this);
-	removeSubscriber = removeSubscriber.bind(this);
 
 	publish = addEvent.bind(this);
 	processEvent = processEvent.bind(this);

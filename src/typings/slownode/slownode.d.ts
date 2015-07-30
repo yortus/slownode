@@ -16,23 +16,17 @@ declare module "slownode" {
 	export class SlowEventLoop {
 		
 		constructor(config: EventLoopConfig);
-		private config: EventLoopConfig;
-		private store: Knex;
-		private pollInterval: number;
-		private subscribers: Array<Subscriber>;
-		public ready: Promise<boolean>;
-		private flushCallback: NodeJS.Timer;
+		config: EventLoopConfig;
+		store: Knex;
+		flushCallback: NodeJS.Timer;
 		
-		public start(): void;
-		public stop(): void;
+		start(): void;
+		stop(): void;
 		
-		public subscribe(subscriber: Subscriber): boolean;
-		private removeSubscriber(subscriberId: string): boolean;
-		
-		public publish(task: Event): any;
-		private getNextEvent(): Promise<Event>;
-		private processEvent(task?: Event): Promise<boolean>
-		private removeEvent(task: Event): any;
+		publish(task: Event): any;
+		getNextEvent(): Promise<Event>;
+		processEvent(task?: Event): Promise<boolean>
+		removeEvent(task: Event): any;
 	}
 	
 	export interface Event {
@@ -60,5 +54,9 @@ declare module "slownode" {
 		retryIntervalMs?: number;
 		pollInterval?: number;
 		database: string;
+	}
+	
+	export interface SlowFunction {
+		
 	}
 }
