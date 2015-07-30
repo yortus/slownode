@@ -36,8 +36,8 @@ class EventLoop implements Types.SlowEventLoop {
 	stop = stopEvents.bind(this);
 	start = flushEvent.bind(this);
 
-	publish = addEvent.bind(this);
-	processEvent = processEvent.bind(this);
-	removeEvent = removeEvent.bind(this);
-	getNextEvent = getNextEvent.bind(this);
+	storeCall = addEvent.bind(this);
+	processCall = processEvent.bind(this);
+	removeCall = removeEvent.bind(this);
+	getNextCall = getNextEvent.bind(this);
 }

@@ -11,10 +11,10 @@ var EventLoop = (function () {
         this.config = config;
         this.stop = stopEvents.bind(this);
         this.start = flushEvent.bind(this);
-        this.publish = addEvent.bind(this);
-        this.processEvent = processEvent.bind(this);
-        this.removeEvent = removeEvent.bind(this);
-        this.getNextEvent = getNextEvent.bind(this);
+        this.storeCall = addEvent.bind(this);
+        this.processCall = processEvent.bind(this);
+        this.removeCall = removeEvent.bind(this);
+        this.getNextCall = getNextEvent.bind(this);
         // TODO: Move config validation to seperate module
         if (typeof config.database !== "string")
             throw new TypeError(errors.InvalidDatabaseName);

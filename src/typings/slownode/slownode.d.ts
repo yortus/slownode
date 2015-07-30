@@ -26,17 +26,17 @@ declare module "slownode" {
 		start(): void;
 		stop(): void;
 		
-		publish(task: Event): any;
-		getNextEvent(): Promise<Event>;
-		processEvent(task?: Event): Promise<boolean>
-		removeEvent(task: Event): any;
+		storeCall(operation: SlowFunction): any;
+		getNextCall(): Promise<SlowFunction>;
+		processCall(task?: SlowFunction): Promise<boolean>
+		removeCall(task: SlowFunction): any;
 	}
 	
-	export interface Event {
-		id: number;
-		eventName: string;
-		event: any;
-		runAt: number;
+	export interface SlowFunction {
+		id?: number;
+		functionId: string;
+		runAt?: number;
+		arguments: any;
 	}
 	
 	export interface Subscriber {
@@ -57,9 +57,5 @@ declare module "slownode" {
 		retryIntervalMs?: number;
 		pollIntervalMs?: number;
 		database: string;
-	}
-	
-	export interface SlowFunction {
-		
 	}
 }

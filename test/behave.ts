@@ -54,7 +54,7 @@ describe("EventLoop behaviour tests", () => {
 
 });
 
-function dummyHandler(task: Types.Event) {
+function dummyHandler(task: Types.SlowFunction) {
 	console.log(task);
 	return Promise.resolve(true);
 }

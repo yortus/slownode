@@ -1,8 +1,8 @@
 function toEvent(eventRow) {
     return {
         id: eventRow.id,
-        eventName: eventRow.eventName,
-        event: JSON.parse(eventRow.event),
+        functionId: eventRow.eventName,
+        arguments: JSON.parse(eventRow.event),
         runAt: eventRow.runAt
     };
 }

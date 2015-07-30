@@ -1,11 +1,11 @@
 import Types = require("slownode");
 export = toRow;
 
-function toRow(event: Types.Event): Types.EventSchema {
+function toRow(event: Types.SlowFunction): Types.EventSchema {
 	return {
 		runAt: Date.now(),
 		runAtReadable: new Date().toISOString(),
-		eventName: event.eventName,
-		event: JSON.stringify(event.event)
+		eventName: event.functionId,
+		event: JSON.stringify(event.arguments)
 	};
 }
