@@ -1,0 +1,5 @@
+export = interval;
+
+function interval() {
+	
+}

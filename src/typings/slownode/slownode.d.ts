@@ -9,7 +9,6 @@ declare module "slownode" {
 	export function setInterval(funct: SlowFunction, milliseconds: number): Promise<number>; 
 	
 	export interface SlowNodeStatic {
-		EventLoop: any;
 		EventEmitter: any;
 	}
 	

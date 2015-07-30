@@ -1,7 +1,12 @@
-import SlowNode = require("slownode");
-import EventLoop = require("./eventloop/api");
+import immediate = require("./function/setImmediate");
+import timeout = require("./function/setTimeout");
+import interval = require("./function/setInterval");
 
-var api: SlowNode.SlowNodeStatic = {
-	EventLoop: EventLoop,
-	EventEmitter: null
+var api = {
+	setTimeout: timeout,
+	setImmediate: immediate,
+	setInterval: interval,
+	EventEmitter: null,
+	Promise: null,
+	
 }

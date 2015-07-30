@@ -1,6 +1,11 @@
-var EventLoop = require("./eventloop/api");
+var immediate = require("./function/setImmediate");
+var timeout = require("./function/setTimeout");
+var interval = require("./function/setInterval");
 var api = {
-    EventLoop: EventLoop,
-    EventEmitter: null
+    setTimeout: timeout,
+    setImmediate: immediate,
+    setInterval: interval,
+    EventEmitter: null,
+    Promise: null,
 };
 //# sourceMappingURL=index.js.map

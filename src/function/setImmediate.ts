@@ -1,0 +1,5 @@
+export = immediate;
+
+function immediate() {
+	
+}
