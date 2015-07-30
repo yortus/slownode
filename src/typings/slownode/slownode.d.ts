@@ -4,6 +4,10 @@
 declare module "slownode" {
 	import Knex = require("knex");
 	
+	export function setTimeout(func: SlowFunction, milliseconds: number): Promise<number>;
+	export function setImmediate(func: SlowFunction): Promise<number>;
+	export function setInterval(funct: SlowFunction, milliseconds: number): Promise<number>; 
+	
 	export interface SlowNodeStatic {
 		EventLoop: any;
 		EventEmitter: any;
