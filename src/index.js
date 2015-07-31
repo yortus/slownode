@@ -1,14 +1,17 @@
 var immediate = require("./function/setImmediate");
 var timeout = require("./function/setTimeout");
 var interval = require("./function/setInterval");
-var api = {
+var start = require("./start");
+var SlowNode = {
+    configuration: null,
+    start: start,
+    exit: null,
     setTimeout: timeout,
     setImmediate: immediate,
     setInterval: interval,
     EventEmitter: null,
+    EventLoop: null,
     Promise: null,
-    start: null,
-    exit: null
 };
-module.exports = api;
+module.exports = SlowNode;
 //# sourceMappingURL=index.js.map

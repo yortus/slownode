@@ -7,7 +7,8 @@ import validateConfig = require("./validateConfig");
 export = start;
 
 function start(config: SlowNode.Config) {
+	var self: SlowNode.SlowNodeStatic = this;
 	// TODO: More?
-	return validateConfig(config);
-	
+	validateConfig(config);
+	self.configuration = config;
 }

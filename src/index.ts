@@ -1,14 +1,22 @@
+import Types = require("slownode");
 import immediate = require("./function/setImmediate");
 import timeout = require("./function/setTimeout");
 import interval = require("./function/setInterval");
-export = api;
 
-var api = {
+import start = require("./start");
+export = SlowNode;
+
+var SlowNode: Types.SlowNodeStatic = {
+	configuration: null,
+	
+	start: start,
+	exit: null,
+	 
 	setTimeout: timeout,
 	setImmediate: immediate,
 	setInterval: interval,
+	
 	EventEmitter: null,
+	EventLoop: null,
 	Promise: null,
-	start: null,
-	exit: null 	
 }

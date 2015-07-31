@@ -49,6 +49,7 @@ function eventLoopTable(table: any) {
 	table.text("function"); // Function identity or 'inline' function
 	table.integer("runAt"); // 0 --> N
 	table.text("runAtReadable");
+	table.integer("repeat");
 	table.text("arguments"); // JSON array
 }
 

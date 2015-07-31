@@ -9,9 +9,9 @@ declare module "slownode" {
 	export interface SlowNodeStatic {
 		configuration: Config;
 		
-		setTimeout(func: SlowFunction, milliseconds: number): Promise<number>;
+		setTimeout(func: SlowFunction, delayMs: number): Promise<number>;
 		setImmediate(func: SlowFunction): Promise<number>;
-		setInterval(funct: SlowFunction, milliseconds: number): Promise<number>;
+		setInterval(funct: SlowFunction, delayMs: number): Promise<number>;
 		
 		EventEmitter: SlowEventEmitter;
 		EventLoop: SlowEventLoop;
@@ -54,6 +54,7 @@ declare module "slownode" {
 	export interface EventLoopSchema {
 		id?: number;
 		functionId: string
+		repeat: number;
 		runAt: number;
 		runAtReadable: string;
 		arguments: string;
