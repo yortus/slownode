@@ -3,46 +3,54 @@
 
 declare module "slownode" {
 	import Knex = require("knex");
-	
-	export function setTimeout(func: SlowFunction, milliseconds: number): Promise<number>;
-	export function setImmediate(func: SlowFunction): Promise<number>;
-	export function setInterval(funct: SlowFunction, milliseconds: number): Promise<number>; 
-	
+
+
+
 	export interface SlowNodeStatic {
-		EventEmitter: any;
+		configuration: Config;
+		
+		setTimeout(func: SlowFunction, milliseconds: number): Promise<number>;
+		setImmediate(func: SlowFunction): Promise<number>;
+		setInterval(funct: SlowFunction, milliseconds: number): Promise<number>;
+		
+		EventEmitter: SlowEventEmitter;
+		EventLoop: SlowEventLoop;
+		Promise: SlowPromise;
 	}
 	
+	export class SlowPromise {
+		
+	}
+
 	export class SlowEventEmitter {
-		
+
 	}
-	
-	export interface SlowEventLoop {		
-				
-		config: EventLoopConfig;
+
+	export interface SlowEventLoop {
+		pollIntervalMs: number;
 		flushCallback: NodeJS.Timer;
-		ready: Promise<boolean>;
-		
+
 		start(): void;
 		stop(): void;
-		
+
 		addCall(operation: SlowFunction): any;
 		getNextCall(): Promise<SlowFunction>;
 		processCall(task?: SlowFunction): Promise<boolean>
 		removeCall(task: SlowFunction): any;
 	}
-	
+
 	export interface SlowFunction {
 		id?: number;
 		functionId: string;
 		runAt?: number;
 		arguments: any;
 	}
-	
+
 	export interface Subscriber {
 		id: string;
 		callback: (args: any) => Promise<any>;
 	}
-	
+
 	export interface EventLoopSchema {
 		id?: number;
 		functionId: string
@@ -50,8 +58,8 @@ declare module "slownode" {
 		runAtReadable: string;
 		arguments: string;
 	}
-	
-	export interface EventLoopConfig {
+
+	export interface Config {
 		retryCount?: number;
 		retryIntervalMs?: number;
 		pollIntervalMs?: number;

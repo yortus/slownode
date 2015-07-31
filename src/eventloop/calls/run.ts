@@ -5,7 +5,7 @@ export = run;
 function run(event?: Types.SlowFunction) {
 	var self: Types.SlowEventLoop = this;
 	if (!event) {
-		self.flushCallback = setTimeout(() => self.start(), self.config.pollIntervalMs);
+		self.flushCallback = setTimeout(() => self.start(), self.pollIntervalMs);
 		return Promise.resolve(true);
 	}
 	

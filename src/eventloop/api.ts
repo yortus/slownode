@@ -9,20 +9,13 @@ import stopEvents = require("./calls/stop");
 export = EventLoop;
 
 var EventLoop: Types.SlowEventLoop = {
+	pollIntervalMs: 1000,
+	flushCallback: null,
+	stop: stopEvents.bind(this),
+	start: flushEvent.bind(this),
 
-	constructor(public config: Types.EventLoopConfig) {
-		// TODO: Move config validation to seperate module
-
-	}
-
-	ready: Promise<boolean> = Promise.delay(500).then(() => true);
-	flushCallback: NodeJS.Timer;
-
-	stop = stopEvents.bind(this);
-	start = flushEvent.bind(this);
-
-	addCall = store.add.bind(this);
-	processCall = processEvent.bind(this);
-	removeCall = store.remove.bind(this);
-	getNextCall = store.getNext.bind(this);
+	addCall: store.add.bind(this),
+	processCall: processEvent.bind(this),
+	removeCall: store.remove.bind(this),
+	getNextCall: store.getNext.bind(this),
 }

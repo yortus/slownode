@@ -1,9 +1,9 @@
-import EventLoop = require("../api");
+import SlowNode = require("slownode");
 import Types = require("slownode");
 export = stop;
 
 function stop() {
-	var self: EventLoop = this;
+	var self: SlowNode.SlowEventLoop = this;
 	
 	if (self.flushCallback) clearTimeout(self.flushCallback);
 };
