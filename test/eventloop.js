@@ -10,17 +10,11 @@ var readdir = Promise.promisify(fs.readdir);
 var loop;
 describe("EventLoop behaviour tests", function () {
     it("will clean up", function (done) {
-        removeDatabase()
+        Promise.delay(1000)
+            .then(removeDatabase)
             .then(function (results) { return expect(results.every(function (r) { return r === true; })).to.equal(true); })
             .then(done)
             .catch(done);
-    });
-    it("will throw when provided a non-string database name", function () {
-        var dbName = 5;
-        expect(make({ database: dbName, pollIntervalMs: 51 })).to.throw(errors.InvalidDatabaseName);
-    });
-    it("will throw when provided an empty trying database name", function () {
-        expect(make({ database: "", pollIntervalMs: 51 })).to.throw(errors.InvalidDatabaseName);
     });
     it("will throw when provided a non-number polling delay", function () {
         var delay = "string";
@@ -60,4 +54,4 @@ function toUnlink(filename) {
         return false;
     });
 }
-//# sourceMappingURL=init.js.map
+//# sourceMappingURL=eventloop.js.map

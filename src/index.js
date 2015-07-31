@@ -7,5 +7,8 @@ var api = {
     setInterval: interval,
     EventEmitter: null,
     Promise: null,
+    start: null,
+    exit: null
 };
+module.exports = api;
 //# sourceMappingURL=index.js.map

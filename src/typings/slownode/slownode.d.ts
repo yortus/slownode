@@ -16,12 +16,12 @@ declare module "slownode" {
 		
 	}
 	
-	export class SlowEventLoop {
-		
+	export class SlowEventLoop {		
 		constructor(config: EventLoopConfig);
+				
 		config: EventLoopConfig;
-		store: Knex;
 		flushCallback: NodeJS.Timer;
+		ready: Promise<boolean>;
 		
 		start(): void;
 		stop(): void;

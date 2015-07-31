@@ -17,8 +17,7 @@ class EventLoop implements Types.SlowEventLoop {
 		if (config.pollIntervalMs === Infinity) throw new Error(errors.NotInfinity)
 	}
 
-	store: Knex;
-	ready: Promise<boolean>;
+	ready: Promise<boolean> = Promise.delay(500).then(() => true);
 	flushCallback: NodeJS.Timer;
 
 	stop = stopEvents.bind(this);

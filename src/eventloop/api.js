@@ -6,6 +6,7 @@ var stopEvents = require("./calls/stop");
 var EventLoop = (function () {
     function EventLoop(config) {
         this.config = config;
+        this.ready = Promise.delay(500).then(function () { return true; });
         this.stop = stopEvents.bind(this);
         this.start = flushEvent.bind(this);
         this.addCall = store.add.bind(this);
