@@ -12,7 +12,7 @@ var readdir = Promise.promisify(fs.readdir);
 var loop: Types.SlowEventLoop;
 describe("EventLoop behaviour tests", () => {
 
-	it("will remove the previous database before starting", done => {
+	it("will remove the previous database before starting", () => {
 		// TODO
 	});
 
@@ -29,7 +29,7 @@ describe("EventLoop behaviour tests", () => {
 		// expect().to.throw(errors.NotInfinity);
 	});
 
-	it("will create an instance of EventLoop and create the database", (done) => {
+	it("will create an instance of EventLoop and create the database", () => {
 		// TODO
 	});
 

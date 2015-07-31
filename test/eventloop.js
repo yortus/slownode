@@ -7,7 +7,7 @@ var unlink = Promise.promisify(fs.unlink);
 var readdir = Promise.promisify(fs.readdir);
 var loop;
 describe("EventLoop behaviour tests", function () {
-    it("will remove the previous database before starting", function (done) {
+    it("will remove the previous database before starting", function () {
         // TODO
     });
     it("will throw when provided a non-number polling delay", function () {
@@ -20,7 +20,7 @@ describe("EventLoop behaviour tests", function () {
     it("will throw when provided polling delay of infinity", function () {
         // expect().to.throw(errors.NotInfinity);
     });
-    it("will create an instance of EventLoop and create the database", function (done) {
+    it("will create an instance of EventLoop and create the database", function () {
         // TODO
     });
 });
