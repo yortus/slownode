@@ -10,11 +10,9 @@ var readdir = Promise.promisify(fs.readdir);
 var loop;
 describe("EventLoop behaviour tests", function () {
     it("will clean up", function (done) {
-        unlinkAll()
-            .then(function (results) {
-            expect(results.every(function (r) { return r === true; })).to.equal(true);
-            done();
-        })
+        removeDatabase()
+            .then(function (results) { return expect(results.every(function (r) { return r === true; })).to.equal(true); })
+            .then(done)
             .catch(done);
     });
     it("will throw when provided a non-string database name", function () {
@@ -48,7 +46,7 @@ function dummyHandler(task) {
 function make(config) {
     return function () { return new EventLoop(config); };
 }
-function unlinkAll() {
+function removeDatabase() {
     var push = function (arr, file) { return file.slice(-3) === ".db" ? arr.concat([file]) : arr; };
     return readdir(path.resolve("."))
         .then(function (files) { return files.reduce(push, []); })
@@ -57,12 +55,9 @@ function unlinkAll() {
 function toUnlink(filename) {
     return unlink(filename)
         .then(function () { return true; })
-        .catch(function () { return false; });
-}
-function get(name) {
-    return {
-        db: name,
-        file: name + ".db"
-    };
+        .catch(function (err) {
+        console.log(err);
+        return false;
+    });
 }
 //# sourceMappingURL=init.js.map

@@ -9,17 +9,13 @@ var expect = chai.expect;
 var unlink = Promise.promisify(fs.unlink);
 var readdir = Promise.promisify(fs.readdir);
 
-var loop: EventLoop;
+var loop: Types.SlowEventLoop;
 describe("EventLoop behaviour tests", () => {
 
-	
-
 	it("will clean up", done => {
-		unlinkAll()
-			.then(results => {
-				expect(results.every(r => r === true)).to.equal(true);
-				done();
-			})
+		removeDatabase()
+			.then(results => expect(results.every(r => r === true)).to.equal(true))
+			.then(done)
 			.catch(done);
 	});
 
@@ -63,7 +59,7 @@ function make(config: Types.EventLoopConfig) {
 	return () => new EventLoop(config);
 }
 
-function unlinkAll() {
+function removeDatabase() {
 	var push = (arr, file) => file.slice(-3) === ".db" ? arr.concat([file]) : arr;
 
 	return readdir(path.resolve("."))
@@ -74,12 +70,8 @@ function unlinkAll() {
 function toUnlink(filename: string) {
 	return unlink(filename)
 		.then(() => true)
-		.catch(() => false);
-}
-
-function get(name: string) {
-	return {
-		db: name,
-		file: name + ".db"
-	};
+		.catch(err => {
+			console.log(err);
+			return false;
+		});
 }
