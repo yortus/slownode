@@ -65,4 +65,4 @@ function get(name) {
         file: name + ".db"
     };
 }
-//# sourceMappingURL=behave.js.map
+//# sourceMappingURL=init.js.map
