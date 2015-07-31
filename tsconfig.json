@@ -15,6 +15,7 @@
         "./src/eventloop/calls/flush.ts",
         "./src/eventloop/calls/run.ts",
         "./src/eventloop/calls/stop.ts",
+        "./src/eventloop/validateConfig.ts",
         "./src/exit.ts",
         "./src/function/declare.ts",
         "./src/function/deserialise.ts",

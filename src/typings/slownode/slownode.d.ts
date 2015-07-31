@@ -16,8 +16,7 @@ declare module "slownode" {
 		
 	}
 	
-	export class SlowEventLoop {		
-		constructor(config: EventLoopConfig);
+	export interface SlowEventLoop {		
 				
 		config: EventLoopConfig;
 		flushCallback: NodeJS.Timer;

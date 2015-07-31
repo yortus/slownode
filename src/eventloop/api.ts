@@ -8,13 +8,11 @@ import flushEvent = require("./calls/flush");
 import stopEvents = require("./calls/stop");
 export = EventLoop;
 
-class EventLoop implements Types.SlowEventLoop {
+var EventLoop: Types.SlowEventLoop = {
 
 	constructor(public config: Types.EventLoopConfig) {
 		// TODO: Move config validation to seperate module
-		if (typeof config.pollIntervalMs !== "number") throw new TypeError(errors.MustBeNumber);
-		if (config.pollIntervalMs < 50) throw new Error(errors.InvalidPollDelay);
-		if (config.pollIntervalMs === Infinity) throw new Error(errors.NotInfinity)
+
 	}
 
 	ready: Promise<boolean> = Promise.delay(500).then(() => true);
