@@ -15,6 +15,10 @@ describe("EventLoop behaviour tests", () => {
 			.then(() => done())
 			.catch(done);
 	});
+	
+	it("will create the database schema", done => {
+		done();		
+	});
 
 	it("will throw when provided a non-number polling delay", () => {
 		var delay: any = "string";
