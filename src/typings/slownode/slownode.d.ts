@@ -3,15 +3,13 @@
 
 declare module "slownode" {
 	import Knex = require("knex");
-
-
-
+	
 	export interface SlowNodeStatic {
 		configuration: Config;
 		
-		setTimeout(func: SlowFunction, delayMs: number): Promise<number>;
-		setImmediate(func: SlowFunction): Promise<number>;
-		setInterval(funct: SlowFunction, delayMs: number): Promise<number>;
+		setTimeout(func: () => any, delayMs: number): Promise<number>;
+		setImmediate(func: () => any): Promise<number>;
+		setInterval(funct: () => any, delayMs: number): Promise<number>;
 		
 		EventEmitter: SlowEventEmitter;
 		EventLoop: SlowEventLoop;
