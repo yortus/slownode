@@ -14,6 +14,9 @@ declare module "slownode" {
 		EventEmitter: SlowEventEmitter;
 		EventLoop: SlowEventLoop;
 		Promise: SlowPromise;
+		
+		start(config: Config): Promise<boolean>;
+		exit(): Promise<boolean>;
 	}
 	
 	export class SlowPromise {

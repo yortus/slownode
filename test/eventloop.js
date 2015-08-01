@@ -1,9 +1,13 @@
+var SlowNode = require("../src/index");
 var chai = require("chai");
 var expect = chai.expect;
 var loop;
 describe("EventLoop behaviour tests", function () {
-    it("will remove the previous database before starting", function () {
-        // TODO
+    it("will remove the previous database before starting", function (done) {
+        SlowNode.exit()
+            .then(function (result) { return expect(result).to.be.true; })
+            .then(done)
+            .catch(done);
     });
     it("will throw when provided a non-number polling delay", function () {
         var delay = "string";

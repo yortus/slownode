@@ -1,6 +1,6 @@
 import Promise = require("bluebird");
 import fs = require("fs");
-import EventLoop = require("../src/eventloop/api");
+import SlowNode = require("../src/index");
 import Types = require("slownode");
 import errors = require("../src/errors");
 import chai = require("chai");
@@ -9,8 +9,11 @@ var expect = chai.expect;
 var loop: Types.SlowEventLoop;
 describe("EventLoop behaviour tests", () => {
 
-	it("will remove the previous database before starting", () => {
-		// TODO
+	it("will remove the previous database before starting", done => {
+		SlowNode.exit()
+			.then(result => expect(result).to.be.true)
+			.then(done)
+			.catch(done);
 	});
 
 	it("will throw when provided a non-number polling delay", () => {
