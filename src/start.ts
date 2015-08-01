@@ -4,6 +4,9 @@ import Knex = require("knex");
 import fs = require("fs");
 import db = require("./store/db");
 import validateConfig = require("./validateConfig");
+import errors = require("./errors");
+import createSchema = require("./store/create");
+var readFile = Promise.promisify(fs.readFile);
 export = start;
 
 function start(config: SlowNode.Config) {
@@ -11,4 +14,18 @@ function start(config: SlowNode.Config) {
 	// TODO: More?
 	validateConfig(config);
 	self.configuration = config;
+	
+	
+}
+
+var count = 3;
+function isDatabaseReady() {
+	if (count === 0) throw new Error(errors.DatabaseInitFailed);
+	count--;
+	
+	return Promise
+		.delay(100)
+		.then(() => readFile("slownode.db"))
+		.then(createSchema)
+		.catch(isDatabaseReady);
 }

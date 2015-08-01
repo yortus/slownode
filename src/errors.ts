@@ -12,5 +12,6 @@ var errors = {
 	MustBeFunction: "Input must be a function",
 	MustBeString: "Input must be a string",
 	UnableToDeserialise: "Unable to deserialise to a function",
-	DidNotParseAsFunction: "Unable to deserialise to a function: The deserialised result was not a function"
+	DidNotParseAsFunction: "Unable to deserialise to a function: The deserialised result was not a function",
+	DatabaseInitFailed: "Failed to initialise the database"
 }

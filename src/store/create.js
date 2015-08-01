@@ -1,17 +1,17 @@
 var Promise = require("bluebird");
 var errors = require("../errors");
+var db = require("./db");
 var tables = ["functions", "eventloop", "events", "listeners"];
-function create(db) {
-    return Promise.delay(500)
-        .then(function () { return tablesExists(db); })
-        .then(function (exists) { return createTable(db, exists); })
+function create() {
+    return tablesExists()
+        .then(createTable)
         .then(function () { return Promise.resolve(true); });
 }
-function tablesExists(db) {
+function tablesExists() {
     var toPromise = function (table) { return db.schema.hasTable(table); };
     return Promise.all(tables.map(toPromise));
 }
-function createTable(db, exists) {
+function createTable(exists) {
     if (exists.every(function (e) { return e === true; }))
         return Promise.resolve(true);
     if (exists.some(function (e) { return e === true; }))

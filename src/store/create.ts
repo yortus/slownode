@@ -1,23 +1,23 @@
 import Promise = require("bluebird");
 import errors = require("../errors");
 import knex = require("knex");
+import db = require("./db");
 export = create;
 
 var tables = ["functions", "eventloop", "events", "listeners"];
 
-function create(db: knex) {
-	return Promise.delay(500)
-		.then(() => tablesExists(db))
-		.then(exists => createTable(db, exists))
+function create() {
+	return tablesExists()
+		.then(createTable)
 		.then(() => Promise.resolve(true));
 }
 
-function tablesExists(db: knex) {
+function tablesExists() {
 	var toPromise = table => db.schema.hasTable(table);
 	return Promise.all(tables.map(toPromise));
 }
 
-function createTable(db: knex, exists: Array<boolean>) {
+function createTable(exists: Array<boolean>) {
 	if (exists.every(e => e === true)) return Promise.resolve(true);
 	if (exists.some(e => e === true)) throw new Error(errors.DatabaseInvalid);
 
