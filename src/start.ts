@@ -15,11 +15,11 @@ function start(config: SlowNode.Config) {
 	validateConfig(config);
 	self.configuration = config;
 	
-	
+	return prepareDatabase();
 }
 
 var count = 3;
-function isDatabaseReady() {
+function prepareDatabase() {
 	if (count === 0) throw new Error(errors.DatabaseInitFailed);
 	count--;
 	
@@ -27,5 +27,6 @@ function isDatabaseReady() {
 		.delay(100)
 		.then(() => readFile("slownode.db"))
 		.then(createSchema)
-		.catch(isDatabaseReady);
+		.then(() => true)
+		.catch(prepareDatabase);
 }

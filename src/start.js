@@ -9,9 +9,10 @@ function start(config) {
     // TODO: More?
     validateConfig(config);
     self.configuration = config;
+    return prepareDatabase();
 }
 var count = 3;
-function isDatabaseReady() {
+function prepareDatabase() {
     if (count === 0)
         throw new Error(errors.DatabaseInitFailed);
     count--;
@@ -19,7 +20,8 @@ function isDatabaseReady() {
         .delay(100)
         .then(function () { return readFile("slownode.db"); })
         .then(createSchema)
-        .catch(isDatabaseReady);
+        .then(function () { return true; })
+        .catch(prepareDatabase);
 }
 module.exports = start;
 //# sourceMappingURL=start.js.map
