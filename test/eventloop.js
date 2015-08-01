@@ -6,7 +6,7 @@ describe("EventLoop behaviour tests", function () {
     it("will remove the previous database before starting", function (done) {
         SlowNode.exit()
             .then(function (result) { return expect(result).to.be.true; })
-            .then(done)
+            .then(function () { return done(); })
             .catch(done);
     });
     it("will throw when provided a non-number polling delay", function () {

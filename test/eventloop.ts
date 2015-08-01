@@ -12,7 +12,7 @@ describe("EventLoop behaviour tests", () => {
 	it("will remove the previous database before starting", done => {
 		SlowNode.exit()
 			.then(result => expect(result).to.be.true)
-			.then(done)
+			.then(() => done())
 			.catch(done);
 	});
 
