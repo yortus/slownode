@@ -4,10 +4,7 @@ import EventLoop = require("../src/eventloop/api");
 import Types = require("slownode");
 import errors = require("../src/errors");
 import chai = require("chai");
-import path = require("path");
 var expect = chai.expect;
-var unlink = Promise.promisify(fs.unlink);
-var readdir = Promise.promisify(fs.readdir);
 
 var loop: Types.SlowEventLoop;
 describe("EventLoop behaviour tests", () => {
@@ -34,25 +31,3 @@ describe("EventLoop behaviour tests", () => {
 	});
 
 });
-
-function dummyHandler(task: Types.SlowFunction) {
-	console.log(task);
-	return Promise.resolve(true);
-}
-
-function removeDatabase() {
-	var push = (arr, file) => file.slice(-3) === ".db" ? arr.concat([file]) : arr;
-
-	return readdir(path.resolve("."))
-		.then(files => files.reduce(push, []))
-		.then(files => Promise.all([Promise.resolve(true)].concat(files.map(toUnlink))))
-}
-
-function toUnlink(filename: string) {
-	return unlink(filename)
-		.then(() => true)
-		.catch(err => {
-			console.log(err);
-			return false;
-		});
-}
