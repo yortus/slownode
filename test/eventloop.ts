@@ -22,11 +22,11 @@ describe("EventLoop behaviour tests", () => {
 	});
 
 	it("will throw when provided <50 polling delay", () => {
-		// expect().to.throw(errors.InvalidPollDelay);
+		expect(start.bind(start, 49)).to.throw(errors.InvalidPollDelay);
 	});
 
 	it("will throw when provided polling delay of infinity", () => {
-		// expect().to.throw(errors.NotInfinity);
+		expect(start.bind(start, Infinity)).to.throw(errors.NotInfinity);
 	});
 
 	it("will create an instance of EventLoop and create the database", () => {

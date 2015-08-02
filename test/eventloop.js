@@ -15,10 +15,10 @@ describe("EventLoop behaviour tests", function () {
         expect(start.bind(start, delay)).to.throw(errors.MustBeNumber);
     });
     it("will throw when provided <50 polling delay", function () {
-        // expect().to.throw(errors.InvalidPollDelay);
+        expect(start.bind(start, 49)).to.throw(errors.InvalidPollDelay);
     });
     it("will throw when provided polling delay of infinity", function () {
-        // expect().to.throw(errors.NotInfinity);
+        expect(start.bind(start, Infinity)).to.throw(errors.NotInfinity);
     });
     it("will create an instance of EventLoop and create the database", function () {
         // TODO
