@@ -65,6 +65,5 @@ declare module "slownode" {
 		retryCount?: number;
 		retryIntervalMs?: number;
 		pollIntervalMs?: number;
-		database: string;
 	}
 }
