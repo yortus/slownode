@@ -1,6 +1,6 @@
 var Promise = require("bluebird");
 var fs = require("fs");
-var db = require("./store/db");
+var index_1 = require("./index");
 var unlink = Promise.promisify(fs.unlink);
 var readFile = Promise.promisify(fs.readFile);
 function stop() {
@@ -15,7 +15,7 @@ function databaseExists() {
 function teardown(exists) {
     if (!exists)
         return Promise.resolve(true);
-    return db.destroy()
+    return index_1.connection.destroy()
         .then(function () { return unlink("slownode.db"); })
         .then(function () { return true; })
         .catch(function () { return false; });

@@ -1,6 +1,6 @@
 import Promise = require("bluebird")
 import fs = require("fs");
-import db = require("./store/db");
+import { connection as db } from "./index";
 var unlink = Promise.promisify(fs.unlink);
 var readFile = Promise.promisify(fs.readFile);
 export = stop;

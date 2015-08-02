@@ -1,14 +1,20 @@
 var Promise = require("bluebird");
+var Knex = require("knex");
 var fs = require("fs");
+var api = require("./index");
 var validateConfig = require("./validateConfig");
 var errors = require("./errors");
 var createSchema = require("./store/create");
 var readFile = Promise.promisify(fs.readFile);
 function start(config) {
-    var self = this;
-    // TODO: More?
     validateConfig(config);
-    self.configuration = config;
+    api.configuration = config;
+    api.connection = Knex({
+        client: "sqlite3",
+        connection: {
+            filename: "slownode.db"
+        }
+    });
     count = 3;
     return prepareDatabase();
 }
@@ -31,7 +37,6 @@ function prepareDatabase() {
 function createBlankDatabase(fileContent) {
     if (!!fileContent)
         return Promise.resolve(true);
-    console.log("Create it!");
     return new Promise(function (resolve, reject) {
         fs.writeFile("slownode.db", "", function (err) {
             if (!err)

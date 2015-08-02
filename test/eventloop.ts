@@ -1,6 +1,6 @@
 import Promise = require("bluebird");
 import fs = require("fs");
-import SlowNode = require("../src/index");
+import * as SlowNode from "../src/index";
 import Types = require("slownode");
 import errors = require("../src/errors");
 import chai = require("chai");
@@ -10,7 +10,7 @@ var loop: Types.SlowEventLoop;
 describe("EventLoop behaviour tests", () => {
 
 	it("will remove the previous database before starting", done => {
-		SlowNode.exit()
+		SlowNode.stop()
 			.then(result => expect(result).to.be.true)
 			.then(() => done())
 			.catch(done);

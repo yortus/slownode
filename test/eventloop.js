@@ -5,7 +5,7 @@ var expect = chai.expect;
 var loop;
 describe("EventLoop behaviour tests", function () {
     it("will remove the previous database before starting", function (done) {
-        SlowNode.exit()
+        SlowNode.stop()
             .then(function (result) { return expect(result).to.be.true; })
             .then(function () { return done(); })
             .catch(done);
