@@ -15,14 +15,10 @@ describe("EventLoop behaviour tests", () => {
 			.then(() => done())
 			.catch(done);
 	});
-	
-	it("will create the database schema", done => {
-		done();		
-	});
 
 	it("will throw when provided a non-number polling delay", () => {
 		var delay: any = "string";
-		// expect().to.throw(errors.MustBeNumber);
+		expect(start.bind(start, delay)).to.throw(errors.MustBeNumber);
 	});
 
 	it("will throw when provided <50 polling delay", () => {
@@ -38,3 +34,14 @@ describe("EventLoop behaviour tests", () => {
 	});
 
 });
+
+function start(pollIntervalMs: number, retryCount?: number, retryIntervalMs?: number) {
+	retryCount = retryCount || null;
+	retryIntervalMs = retryIntervalMs || null;
+	
+	SlowNode.start({
+		pollIntervalMs: pollIntervalMs,
+		retryCount: retryCount,
+		retryIntervalMs: retryIntervalMs
+	});
+}

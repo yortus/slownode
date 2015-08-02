@@ -1,4 +1,5 @@
 var SlowNode = require("../src/index");
+var errors = require("../src/errors");
 var chai = require("chai");
 var expect = chai.expect;
 var loop;
@@ -9,12 +10,9 @@ describe("EventLoop behaviour tests", function () {
             .then(function () { return done(); })
             .catch(done);
     });
-    it("will create the database schema", function (done) {
-        done();
-    });
     it("will throw when provided a non-number polling delay", function () {
         var delay = "string";
-        // expect().to.throw(errors.MustBeNumber);
+        expect(start.bind(start, delay)).to.throw(errors.MustBeNumber);
     });
     it("will throw when provided <50 polling delay", function () {
         // expect().to.throw(errors.InvalidPollDelay);
@@ -26,4 +24,13 @@ describe("EventLoop behaviour tests", function () {
         // TODO
     });
 });
+function start(pollIntervalMs, retryCount, retryIntervalMs) {
+    retryCount = retryCount || null;
+    retryIntervalMs = retryIntervalMs || null;
+    SlowNode.start({
+        pollIntervalMs: pollIntervalMs,
+        retryCount: retryCount,
+        retryIntervalMs: retryIntervalMs
+    });
+}
 //# sourceMappingURL=eventloop.js.map
