@@ -29,8 +29,11 @@ describe("EventLoop behaviour tests", () => {
 		expect(start.bind(start, Infinity)).to.throw(errors.NotInfinity);
 	});
 
-	it("will create an instance of EventLoop and create the database", () => {
-		// TODO
+	it("will create an instance of EventLoop and create the database", done => {
+		start(100)
+			.then(worked => expect(true).to.equal)
+			.then(() => done())
+			.catch(done);
 	});
 
 });
@@ -39,7 +42,7 @@ function start(pollIntervalMs: number, retryCount?: number, retryIntervalMs?: nu
 	retryCount = retryCount || null;
 	retryIntervalMs = retryIntervalMs || null;
 	
-	SlowNode.start({
+	return SlowNode.start({
 		pollIntervalMs: pollIntervalMs,
 		retryCount: retryCount,
 		retryIntervalMs: retryIntervalMs

@@ -20,14 +20,17 @@ describe("EventLoop behaviour tests", function () {
     it("will throw when provided polling delay of infinity", function () {
         expect(start.bind(start, Infinity)).to.throw(errors.NotInfinity);
     });
-    it("will create an instance of EventLoop and create the database", function () {
-        // TODO
+    it("will create an instance of EventLoop and create the database", function (done) {
+        start(100)
+            .then(function (worked) { return expect(true).to.equal; })
+            .then(function () { return done(); })
+            .catch(done);
     });
 });
 function start(pollIntervalMs, retryCount, retryIntervalMs) {
     retryCount = retryCount || null;
     retryIntervalMs = retryIntervalMs || null;
-    SlowNode.start({
+    return SlowNode.start({
         pollIntervalMs: pollIntervalMs,
         retryCount: retryCount,
         retryIntervalMs: retryIntervalMs

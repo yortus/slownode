@@ -17,7 +17,7 @@ function databaseExists() {
 }
 
 function teardown(exists: boolean) {
-	if (exists) return Promise.resolve(true);
+	if (!exists) return Promise.resolve(true);
 
 	return db.destroy()
 		.then(() => unlink("slownode.db"))

@@ -16,7 +16,7 @@ declare module "slownode" {
 		Promise: SlowPromise;
 		
 		start(config: Config): Promise<boolean>;
-		exit(): Promise<boolean>;
+		stop(): Promise<boolean>;
 	}
 	
 	export class SlowPromise {

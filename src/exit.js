@@ -13,7 +13,7 @@ function databaseExists() {
         .catch(function () { return false; });
 }
 function teardown(exists) {
-    if (exists)
+    if (!exists)
         return Promise.resolve(true);
     return db.destroy()
         .then(function () { return unlink("slownode.db"); })

@@ -15,18 +15,35 @@ function start(config: SlowNode.Config) {
 	validateConfig(config);
 	self.configuration = config;
 	
+	count = 3;
 	return prepareDatabase();
 }
 
-var count = 3;
+var count = 0;
 function prepareDatabase() {
-	if (count === 0) throw new Error(errors.DatabaseInitFailed);
+	if (count <= 0) throw new Error(errors.DatabaseInitFailed);
 	count--;
 	
 	return Promise
-		.delay(100)
+		.delay(150)
 		.then(() => readFile("slownode.db"))
+		.catch(createBlankDatabase)
 		.then(createSchema)
 		.then(() => true)
-		.catch(prepareDatabase);
+		.catch(err => {
+			console.log(err);
+			return prepareDatabase();
+		});
+}
+
+function createBlankDatabase(fileContent: any) {
+	if (!!fileContent) return Promise.resolve(true);
+	console.log("Create it!");
+	return new Promise((resolve, reject) => {
+		fs.writeFile("slownode.db", "", err => {
+			if (!err) return resolve(<any>true);
+			reject(err);
+		});
+	});
+	
 }

@@ -3,21 +3,19 @@ import immediate = require("./function/setImmediate");
 import timeout = require("./function/setTimeout");
 import interval = require("./function/setInterval");
 
-import start = require("./start");
-import exit = require("./exit");
-export = SlowNode;
+import startSlowNode = require("./start");
+import stopSlowNode = require("./exit");
 
-var SlowNode: Types.SlowNodeStatic = {
-	configuration: null,
-	
-	start: start,
-	exit: exit,
-	 
-	setTimeout: timeout,
-	setImmediate: immediate,
-	setInterval: interval,
-	
-	EventEmitter: null,
-	EventLoop: null,
-	Promise: null,
-}
+export var configuration = null;
+export var connection = null;
+
+export var start = startSlowNode;
+export var stop = stopSlowNode;
+
+export var setTimeout = timeout;
+export var setImmediate = immediate;
+export var setInterval = interval;
+
+export var EventEmitter = null;
+export var EventLoop = null;
+export var Promise = null;
