@@ -3,6 +3,7 @@ import Promise = require("bluebird");
 import Knex = require("knex");
 import fs = require("fs");
 import * as api from "./index";
+import createDb = require("./store/db");
 import validateConfig = require("./validateConfig");
 import errors = require("./errors");
 import createSchema = require("./store/create");
@@ -13,12 +14,7 @@ function start(config: SlowNode.Config) {
 	
 	validateConfig(config);
 	api.configuration = config;
-	api.connection = Knex({
-		client: "sqlite3",
-		connection: {
-			filename: "slownode.db"
-		}
-	});
+	api.connection = createDb();
 	
 	count = 3;
 	return prepareDatabase();

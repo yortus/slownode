@@ -1,7 +1,7 @@
 var Promise = require("bluebird");
-var Knex = require("knex");
 var fs = require("fs");
 var api = require("./index");
+var createDb = require("./store/db");
 var validateConfig = require("./validateConfig");
 var errors = require("./errors");
 var createSchema = require("./store/create");
@@ -9,12 +9,7 @@ var readFile = Promise.promisify(fs.readFile);
 function start(config) {
     validateConfig(config);
     api.configuration = config;
-    api.connection = Knex({
-        client: "sqlite3",
-        connection: {
-            filename: "slownode.db"
-        }
-    });
+    api.connection = createDb();
     count = 3;
     return prepareDatabase();
 }

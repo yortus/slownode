@@ -1,10 +1,11 @@
 var immediate = require("./function/setImmediate");
 var timeout = require("./function/setTimeout");
 var interval = require("./function/setInterval");
+var createDb = require("./store/db");
 var startSlowNode = require("./start");
 var stopSlowNode = require("./stop");
 exports.configuration = null;
-exports.connection = null;
+exports.connection = createDb();
 exports.start = startSlowNode;
 exports.stop = stopSlowNode;
 exports.setTimeout = timeout;
