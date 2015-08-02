@@ -66,4 +66,35 @@ declare module "slownode" {
 		retryIntervalMs?: number;
 		pollIntervalMs?: number;
 	}
+	
+	export interface EventTable {
+		id?: number;
+		topic: string;
+		arguments: string;
+		createdAt: number;
+		createdAtReadable: string;
+	}
+	
+	export interface FunctionTable {
+		id?: number;
+		functionId: string;
+		functionBody: string;
+	}
+	
+	export interface EventLoopTable {
+		id?: number;
+		functionId: string;
+		functionBody: string;
+		runAt: number;
+		runAtReadable?: string;
+		repeat?: number;
+		arguments?: string;
+	}
+	
+	export interface EventListenerTable {
+		id?: number;
+		topic: string;
+		functionId: string;
+		runOnce: number;
+	}
 }
