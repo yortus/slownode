@@ -1,8 +1,8 @@
-var db = require("./db");
+var index_1 = require("../index");
 function add(func) {
     var runAt = func.runAt || Date.now();
     var args = JSON.stringify(func.arguments || {});
-    return db("eventloop")
+    return index_1.connection("eventloop")
         .insert({
         functionId: func.functionId,
         runAt: runAt,
@@ -16,7 +16,7 @@ function remove(func) {
     var id = typeof func === "number"
         ? func
         : func.id;
-    return db("eventloop")
+    return index_1.connection("eventloop")
         .delete()
         .where("id", "=", id)
         .then(function (rows) { return rows > 0; })
@@ -25,7 +25,7 @@ function remove(func) {
 exports.remove = remove;
 function getNext() {
     var now = Date.now();
-    return db("eventloop")
+    return index_1.connection("eventloop")
         .select()
         .where("runAt", "=", 0)
         .orWhere("runAt", "<=", now)

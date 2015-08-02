@@ -1,7 +1,7 @@
 import Promise = require("bluebird");
 import errors = require("../errors");
-import knex = require("knex");
-import db = require("./db");
+import Knex = require("knex");
+import { connection as db} from "../index";
 export = create;
 
 var tables = ["functions", "eventloop", "events", "listeners"];

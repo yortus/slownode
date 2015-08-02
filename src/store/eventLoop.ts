@@ -1,5 +1,5 @@
 import Types = require("slownode");
-import db = require("./db");
+import { connection as db} from "../index";
 
 export function add(func: Types.SlowFunction): Promise<number> {
 
