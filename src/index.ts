@@ -4,7 +4,7 @@ import timeout = require("./function/setTimeout");
 import interval = require("./function/setInterval");
 
 import startSlowNode = require("./start");
-import stopSlowNode = require("./exit");
+import stopSlowNode = require("./stop");
 
 export var configuration = null;
 export var connection = null;
