@@ -3,9 +3,9 @@ import fs = require("fs");
 import db = require("./store/db");
 var unlink = Promise.promisify(fs.unlink);
 var readFile = Promise.promisify(fs.readFile);
-export = exit;
+export = stop;
 
-function exit() {
+function stop() {
 	return databaseExists()
 		.then(teardown);
 }

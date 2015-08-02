@@ -3,7 +3,7 @@ var fs = require("fs");
 var db = require("./store/db");
 var unlink = Promise.promisify(fs.unlink);
 var readFile = Promise.promisify(fs.readFile);
-function exit() {
+function stop() {
     return databaseExists()
         .then(teardown);
 }
@@ -20,5 +20,5 @@ function teardown(exists) {
         .then(function () { return true; })
         .catch(function () { return false; });
 }
-module.exports = exit;
-//# sourceMappingURL=exit.js.map
+module.exports = stop;
+//# sourceMappingURL=stop.js.map
