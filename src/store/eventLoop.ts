@@ -40,7 +40,7 @@ export function getNext(): Promise<Types.SlowFunction> {
 		.then(toSlowFunction);
 }
 
-function toSlowFunction(funcs: Types.EventLoopSchema[]): Types.SlowFunction {
+function toSlowFunction(funcs: Types.Schema.EventLoop[]): Types.SlowFunction {
 	if (funcs.length === 0) return null;
 
 	return {

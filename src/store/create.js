@@ -31,13 +31,13 @@ function eventTable(table) {
     table.text("createdAtReable");
 }
 function functionTable(table) {
-    table.increments("id").primary();
-    table.text("name");
-    table.text("function");
+    table.text("id").unique();
+    table.text("functionBody");
 }
 function eventLoopTable(table) {
     table.increments("id").primary();
-    table.text("function"); // Function identity or 'inline' function
+    table.text("functionId");
+    table.text("functionBody");
     table.integer("runAt"); // 0 --> N
     table.text("runAtReadable");
     table.integer("repeat");

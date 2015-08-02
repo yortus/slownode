@@ -20,7 +20,7 @@ function tablesExists() {
 function createTable(exists: Array<boolean>) {
 	if (exists.every(e => e === true)) return Promise.resolve(true);
 	if (exists.some(e => e === true)) throw new Error(errors.DatabaseInvalid);
-
+	
 	var promises = [db.schema.createTable("events", eventTable),
 		db.schema.createTable("functions", functionTable),
 		db.schema.createTable("eventloop", eventLoopTable),
@@ -39,14 +39,14 @@ function eventTable(table: any) {
 }
 
 function functionTable(table: any) {
-	table.increments("id").primary();
-	table.text("name");
-	table.text("function");
+	table.text("id").unique();
+	table.text("functionBody");
 }
 
 function eventLoopTable(table: any) {
 	table.increments("id").primary();
-	table.text("function"); // Function identity or 'inline' function
+	table.text("functionId");
+	table.text("functionBody");
 	table.integer("runAt"); // 0 --> N
 	table.text("runAtReadable");
 	table.integer("repeat");
