@@ -5,7 +5,7 @@ import timeout = require("./slowFunction/setTimeout");
 import interval = require("./slowFunction/setInterval");
 import createDb = require("./store/db");
 
-import eventLoop = require("./eventLoop/api");
+import eventLoop = require("./eventLoop/index");
 import startSlowNode = require("./start");
 import stopSlowNode = require("./stop");
 

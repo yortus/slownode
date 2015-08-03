@@ -1,4 +1,4 @@
-var SlowNode = require("../../index");
+var SlowNode = require("../index");
 function stop() {
     if (SlowNode.flushCallback)
         clearTimeout(SlowNode.flushCallback);

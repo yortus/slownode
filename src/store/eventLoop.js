@@ -1,11 +1,7 @@
 var SlowNode = require("../index");
 function add(functionId, options) {
-    var args = [];
-    for (var _i = 2; _i < arguments.length; _i++) {
-        args[_i - 2] = arguments[_i];
-    }
     options = options || {};
-    var storable = toStorableCall(functionId, options, args);
+    var storable = toStorableCall(functionId, options);
     var query = SlowNode.connection("eventloop")
         .insert(storable);
     if (options.trx)
@@ -13,10 +9,10 @@ function add(functionId, options) {
     return query;
 }
 exports.add = add;
-function remove(functionId) {
+function remove(id) {
     return SlowNode.connection("eventloop")
         .delete()
-        .where("id", "=", functionId)
+        .where("id", "=", id)
         .then(function (rows) { return rows > 0; })
         .catch(function () { return false; });
 }
@@ -33,19 +29,15 @@ function getNext() {
 }
 exports.getNext = getNext;
 function toStorableCall(functionId, options) {
-    var args = [];
-    for (var _i = 2; _i < arguments.length; _i++) {
-        args[_i - 2] = arguments[_i];
-    }
     var options = options || {};
     var runAt = options.runAt || 0;
     var runAtReadable = new Date(runAt).toString();
-    args = args || [];
+    options.arguments = options.arguments || {};
     return {
-        functionId: functionId,
+        funcId: functionId,
         runAt: runAt,
         runAtReadable: runAtReadable,
-        arguments: JSON.stringify(args)
+        arguments: JSON.stringify(options.arguments)
     };
 }
 //# sourceMappingURL=eventLoop.js.map

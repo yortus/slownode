@@ -1,9 +1,9 @@
 import Types = require("slownode");
 import SlowNode = require("../index");
 
-export function add(functionId: string, options?: Types.SlowFunctionOptions, ...args: any[]): Promise<number> {
+export function add(functionId: string, options?: Types.SlowFunctionOptions): Promise<number> {
 	options = options || {};
-	var storable = toStorableCall(functionId, options, args);
+	var storable = toStorableCall(functionId, options);
 
 	var query = SlowNode.connection("eventloop")
 		.insert(storable);
@@ -13,10 +13,10 @@ export function add(functionId: string, options?: Types.SlowFunctionOptions, ...
 	return query;
 }
 
-export function remove(functionId: string): Promise<boolean> {
+export function remove(id: number): Promise<boolean> {
 	return SlowNode.connection("eventloop")
 		.delete()
-		.where("id", "=", functionId)
+		.where("id", "=", id)
 		.then(rows => rows > 0)
 		.catch(() => false);
 }
@@ -33,16 +33,17 @@ export function getNext(): Promise<Types.Schema.EventLoop> {
 		.then(calls => calls[0]);
 }
 
-function toStorableCall(functionId: string, options?: Types.SlowFunctionOptions, ...args: any[]): Types.Schema.EventLoop {
+function toStorableCall(functionId: string, options?: Types.SlowFunctionOptions): Types.Schema.EventLoop {
 	var options = options || {};
 	var runAt = options.runAt || 0;
 	var runAtReadable = new Date(runAt).toString();
-	args = args || [];
+	
+	options.arguments = options.arguments || {};
 
 	return {
-		functionId: functionId,
+		funcId: functionId,
 		runAt: runAt,
 		runAtReadable: runAtReadable,
-		arguments: JSON.stringify(args)
+		arguments: JSON.stringify(options.arguments)
 	};
 }

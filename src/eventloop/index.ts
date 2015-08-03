@@ -3,12 +3,12 @@ import errors = require("../errors");
 import Knex = require("knex");
 
 import store = require("../store/eventLoop");
-import processEvent = require("./calls/run");
-import flushCall = require("./calls/flush");
-import stopEvents = require("./calls/stop");
+import execCall = require("./exec");
+import runLoop = require("./runLoop");
+import stopEvents = require("./stop");
 
 export var add = store.add;
-export var run = processEvent;
+export var exec = execCall;
 export var remove = store.remove;
 export var getNext = store.getNext;
-export var flush = flushCall;
+export var flush = runLoop;

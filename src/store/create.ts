@@ -41,7 +41,7 @@ function functionTable(table: any) {
 
 function eventLoopTable(table: any) {
 	table.increments("id").primary();
-	table.text("functionId");
+	table.text("funcId");
 	table.bigInteger("runAt"); // 0 --> N
 	table.text("runAtReadable");
 	table.text("arguments"); // JSON array

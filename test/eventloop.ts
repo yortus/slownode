@@ -4,6 +4,7 @@ import SlowNode = require("../src/index");
 import Types = require("slownode");
 import errors = require("../src/errors");
 import chai = require("chai");
+import crypto = require("crypto");
 var expect = chai.expect;
 
 var loop: Types.SlowEventLoop;
@@ -38,6 +39,23 @@ describe("EventLoop behaviour tests", () => {
 	
 	it("will create an immediate function call", done => {
 		SlowNode.setImmediate(() => console.log("test"));
+		setTimeout(() => done(), 500);
+	});
+	
+	it("will create an immediate function call with dependencies", done => {
+		SlowNode.setImmediate(() => {
+			var hash = crypto.createHash("md5")
+				.update("test")
+				.digest("hex");
+				
+			console.log(hash);
+		}, {
+			dependencies: [{
+				reference: "crypto",
+				as: "crypto"
+			}]
+		});
+		
 		setTimeout(() => done(), 500);
 	});
 

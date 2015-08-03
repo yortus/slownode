@@ -1,6 +1,7 @@
 var SlowNode = require("../src/index");
 var errors = require("../src/errors");
 var chai = require("chai");
+var crypto = require("crypto");
 var expect = chai.expect;
 var loop;
 describe("EventLoop behaviour tests", function () {
@@ -28,6 +29,20 @@ describe("EventLoop behaviour tests", function () {
     });
     it("will create an immediate function call", function (done) {
         SlowNode.setImmediate(function () { return console.log("test"); });
+        setTimeout(function () { return done(); }, 500);
+    });
+    it("will create an immediate function call with dependencies", function (done) {
+        SlowNode.setImmediate(function () {
+            var hash = crypto.createHash("md5")
+                .update("test")
+                .digest("hex");
+            console.log(hash);
+        }, {
+            dependencies: [{
+                    reference: "crypto",
+                    as: "crypto"
+                }]
+        });
         setTimeout(function () { return done(); }, 500);
     });
 });
