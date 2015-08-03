@@ -13,9 +13,9 @@ declare module "slownode" {
 		stop(): Promise<boolean>;
 		flush(): Promise<any>;
 
-		setTimeout(func: () => any, delayMs: number, dependencies?: Array<Dependency>): Promise<number>;
-		setImmediate(func: () => any, dependencies?: Array<Dependency>): Promise<number>;
-		setInterval(funct: () => any, delayMs: number, dependencies?: Array<Dependency>): Promise<number>;
+		setTimeout(func: () => any, delayMs: number, options?: SlowFunctionOptions): Promise<number>;
+		setImmediate(func: () => any, options?: SlowFunctionOptions): Promise<number>;
+		setInterval(funct: () => any, delayMs: number, options?: SlowFunctionOptions): Promise<number>;
 		
 		Promise: any;
 		Event: any;
@@ -39,8 +39,11 @@ declare module "slownode" {
 	export interface SlowFunction {
 		id?: number;
 		body: (...args: any[]) => any;		
+		options: SlowFunctionOptions;
+	}
+	
+	export interface SlowFunctionOptions {
 		dependencies?: Array<Dependency>
-		
 		runAt?: number;
 		intervalMs?: number;
 		retryCount?: number;
