@@ -38,7 +38,18 @@ declare module "slownode" {
 
 	export interface SlowFunction {
 		id?: number;
+		functionBody: (...args: any[]) => any;		
+		dependencies?: Array<Dependency>
+		
 		runAt?: number;
+		intervalMs?: number;
+		retryCount?: number;
+		retryIntervalMs?: number;
+	}
+	
+	export interface Dependency {
+		module: string;
+		as: string;
 	}
 
 	export interface Subscriber {
