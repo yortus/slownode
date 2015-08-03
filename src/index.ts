@@ -16,7 +16,6 @@ export var flushCallback: NodeJS.Timer = null;
 
 export var start = startSlowNode;
 export var stop = stopSlowNode;
-export var flush = null;
 
 export var setTimeout = timeout;
 export var setImmediate = immediate;
@@ -24,3 +23,8 @@ export var setInterval = interval;
 
 export var Promise = null;
 export var Event = null;
+
+export function flush() {
+	eventLoop.getNext()
+		.then(eventLoop.run)
+}

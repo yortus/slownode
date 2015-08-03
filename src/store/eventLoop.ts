@@ -1,7 +1,7 @@
 import Types = require("slownode");
 import { connection as db} from "../index";
 
-export function call(functionId: string, options?: Types.SlowFunctionOptions, ...args: any[]): Promise<number> {
+export function add(functionId: string, options?: Types.SlowFunctionOptions, ...args: any[]): Promise<number> {
 	var storable = toStorableCall(functionId, options, args);
 
 	return db("eventloop")

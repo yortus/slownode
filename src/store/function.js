@@ -7,4 +7,11 @@ function add(slowFunction) {
         .then(function (ids) { return ids[0]; });
 }
 exports.add = add;
+function get(functionId) {
+    return index_1.connection("function")
+        .select()
+        .where("id", "=", functionId)
+        .then(function (rows) { return rows[0]; });
+}
+exports.get = get;
 //# sourceMappingURL=function.js.map

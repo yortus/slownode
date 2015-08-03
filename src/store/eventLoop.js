@@ -1,5 +1,5 @@
 var index_1 = require("../index");
-function call(functionId, options) {
+function add(functionId, options) {
     var args = [];
     for (var _i = 2; _i < arguments.length; _i++) {
         args[_i - 2] = arguments[_i];
@@ -9,7 +9,7 @@ function call(functionId, options) {
         .insert(storable)
         .then(function (ids) { return ids[0]; });
 }
-exports.call = call;
+exports.add = add;
 function remove(functionId) {
     return index_1.connection("eventloop")
         .delete()
