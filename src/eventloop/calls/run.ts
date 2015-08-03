@@ -21,10 +21,11 @@ function callFunction(functionCall?: Types.Schema.EventLoop): any {
 
 	return functionStore.get(functionCall.functionId)
 		.then(cacheFunction)
-		.then(func => createCall(func, functionCall));
+		.then(func => createCall(func, functionCall))
+		.then(() => EventLoop.flush());
 };
 
-function cacheFunction(rawFunction: Types.Schema.Function): Types.SlowFunction {
+function cacheFunction(rawFunction: Types.Schema.Function) {
 	var cachedFunc = functionCache[rawFunction.id];
 	if (cachedFunc) return cachedFunc;
 	
@@ -36,5 +37,8 @@ function cacheFunction(rawFunction: Types.Schema.Function): Types.SlowFunction {
 
 function createCall(slowFunction: Types.SlowFunction, call: Types.Schema.EventLoop) {
 	var args = JSON.parse(call.arguments);
-	return slowFunction.body.call(this, args);
+	
+	var result = slowFunction.body.call(this, args);
+	console.log("[CALL] %s: %s", slowFunction.id, result);
+	return result;
 }

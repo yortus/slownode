@@ -14,7 +14,8 @@ function callFunction(functionCall) {
     }
     return functionStore.get(functionCall.functionId)
         .then(cacheFunction)
-        .then(function (func) { return createCall(func, functionCall); });
+        .then(function (func) { return createCall(func, functionCall); })
+        .then(function () { return EventLoop.flush(); });
 }
 ;
 function cacheFunction(rawFunction) {
@@ -27,7 +28,9 @@ function cacheFunction(rawFunction) {
 }
 function createCall(slowFunction, call) {
     var args = JSON.parse(call.arguments);
-    return slowFunction.body.call(this, args);
+    var result = slowFunction.body.call(this, args);
+    console.log("[CALL] %s: %s", slowFunction.id, result);
+    return result;
 }
 module.exports = callFunction;
 //# sourceMappingURL=run.js.map
