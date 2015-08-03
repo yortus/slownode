@@ -1,12 +1,11 @@
-var store = require("../store/eventLoop");
-var serialise = require("./serialise");
-function interval(func, delayMs) {
-    var serialisedFunc = serialise(func);
+var store = require("../store/function");
+function interval(func, delayMs, options) {
+    options = options || {};
+    options.runAt = Date.now();
+    options.intervalMs = delayMs;
     return store.add({
-        arguments: "[]",
-        functionId: serialisedFunc,
-        repeat: 1,
-        runAt: Date.now() + delayMs,
+        body: func,
+        options: options
     });
 }
 module.exports = interval;
