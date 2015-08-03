@@ -1,6 +1,7 @@
 var Promise = require("bluebird");
 var fs = require("fs");
-var api = require("./index");
+var SlowNode = require("./index");
+var EventLoop = require("./eventLoop/api");
 var createDb = require("./store/db");
 var validateConfig = require("./validateConfig");
 var errors = require("./errors");
@@ -8,8 +9,8 @@ var createSchema = require("./store/create");
 var readFile = Promise.promisify(fs.readFile);
 function start(config) {
     validateConfig(config);
-    api.configuration = config;
-    api.connection = createDb();
+    SlowNode.configuration = config;
+    SlowNode.connection = createDb();
     count = 3;
     return prepareDatabase();
 }
@@ -23,6 +24,7 @@ function prepareDatabase() {
         .then(function () { return readFile("slownode.db"); })
         .catch(createBlankDatabase)
         .then(createSchema)
+        .then(function () { return EventLoop.flush(); })
         .then(function () { return true; })
         .catch(function (err) {
         console.log(err);

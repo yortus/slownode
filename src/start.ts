@@ -1,8 +1,9 @@
-import SlowNode = require("slownode");
+import Types = require("slownode");
 import Promise = require("bluebird");
 import Knex = require("knex");
 import fs = require("fs");
-import * as api from "./index";
+import SlowNode = require("./index");
+import EventLoop = require("./eventLoop/api");
 import createDb = require("./store/db");
 import validateConfig = require("./validateConfig");
 import errors = require("./errors");
@@ -10,11 +11,11 @@ import createSchema = require("./store/create");
 var readFile = Promise.promisify(fs.readFile);
 export = start;
 
-function start(config: SlowNode.Config) {
+function start(config: Types.Config) {
 	
 	validateConfig(config);
-	api.configuration = config;
-	api.connection = createDb();
+	SlowNode.configuration = config;
+	SlowNode.connection = createDb();
 	
 	count = 3;
 	return prepareDatabase();
@@ -30,6 +31,7 @@ function prepareDatabase() {
 		.then(() => readFile("slownode.db"))
 		.catch(createBlankDatabase)
 		.then(createSchema)
+		.then(() => EventLoop.flush())
 		.then(() => true)
 		.catch(err => {
 			console.log(err);
