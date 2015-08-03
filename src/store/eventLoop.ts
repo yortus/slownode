@@ -1,35 +1,23 @@
 import Types = require("slownode");
 import { connection as db} from "../index";
-import toStorable = require("../function/toStorable");
 
-export function add(func: Types.SlowFunction): Promise<number> {
-
-	var runAt = func.runAt || Date.now();
-	var args = JSON.stringify(func.arguments || {});
+export function call(functionId: string, options?: Types.SlowFunctionOptions, ...args: any[]): Promise<number> {
+	var storable = toStorableCall(functionId, options, args);
 
 	return db("eventloop")
-		.insert({
-			functionId: func.functionId,
-			runAt: runAt,
-			runAtReadable: new Date(runAt).toString(),
-			arguments: func.arguments
-		})
+		.insert(storable)
 		.then((ids: number[]) => ids[0]);
 }
 
-export function remove(func: number|Types.SlowFunction): Promise<boolean> {
-	var id = typeof func === "number"
-		? func
-		: func.id;
-
+export function remove(functionId: string): Promise<boolean> {
 	return db("eventloop")
 		.delete()
-		.where("id", "=", id)
+		.where("id", "=", functionId)
 		.then(rows => rows > 0)
 		.catch(() => false);
 }
 
-export function getNext(): Promise<Types.SlowFunction> {
+export function getNext(): Promise<Types.Schema.EventLoop> {
 	var now = Date.now();
 
 	return db("eventloop")
@@ -38,16 +26,19 @@ export function getNext(): Promise<Types.SlowFunction> {
 		.orWhere("runAt", "<=", now)
 		.orderBy("id", "asc")
 		.limit(1)
-		.then(toSlowFunction);
+		.then(calls => calls[0]);
 }
 
-function toSlowFunction(funcs: Types.Schema.EventLoop[]): Types.SlowFunction {
-	if (funcs.length === 0) return null;
-
+function toStorableCall(functionId: string, options?: Types.SlowFunctionOptions, ...args: any[]): Types.Schema.EventLoop {
+	var options = options || {};
+	var runAt = Date.now() + (options.runAt || 0);
+	var runAtReadable = new Date(runAt).toString();
+	args = args || [];
+	
 	return {
-		id: funcs[0].id,
-		functionId: funcs[0].functionId,
-		runAt: funcs[0].runAt,
-		arguments: JSON.parse(funcs[0].arguments)
-	}
+		functionId: functionId,
+		runAt: runAt,
+		runAtReadable: runAtReadable,
+		arguments: JSON.stringify(args)
+	};
 }

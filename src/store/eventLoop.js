@@ -1,24 +1,19 @@
 var index_1 = require("../index");
-function add(func) {
-    var runAt = func.runAt || Date.now();
-    var args = JSON.stringify(func.arguments || {});
+function call(functionId, options) {
+    var args = [];
+    for (var _i = 2; _i < arguments.length; _i++) {
+        args[_i - 2] = arguments[_i];
+    }
+    var storable = toStorableCall(functionId, options, args);
     return index_1.connection("eventloop")
-        .insert({
-        functionId: func.functionId,
-        runAt: runAt,
-        runAtReadable: new Date(runAt).toString(),
-        arguments: func.arguments
-    })
+        .insert(storable)
         .then(function (ids) { return ids[0]; });
 }
-exports.add = add;
-function remove(func) {
-    var id = typeof func === "number"
-        ? func
-        : func.id;
+exports.call = call;
+function remove(functionId) {
     return index_1.connection("eventloop")
         .delete()
-        .where("id", "=", id)
+        .where("id", "=", functionId)
         .then(function (rows) { return rows > 0; })
         .catch(function () { return false; });
 }
@@ -31,17 +26,23 @@ function getNext() {
         .orWhere("runAt", "<=", now)
         .orderBy("id", "asc")
         .limit(1)
-        .then(toSlowFunction);
+        .then(function (calls) { return calls[0]; });
 }
 exports.getNext = getNext;
-function toSlowFunction(funcs) {
-    if (funcs.length === 0)
-        return null;
+function toStorableCall(functionId, options) {
+    var args = [];
+    for (var _i = 2; _i < arguments.length; _i++) {
+        args[_i - 2] = arguments[_i];
+    }
+    var options = options || {};
+    var runAt = Date.now() + (options.runAt || 0);
+    var runAtReadable = new Date(runAt).toString();
+    args = args || [];
     return {
-        id: funcs[0].id,
-        functionId: funcs[0].functionId,
-        runAt: funcs[0].runAt,
-        arguments: JSON.parse(funcs[0].arguments)
+        functionId: functionId,
+        runAt: runAt,
+        runAtReadable: runAtReadable,
+        arguments: JSON.stringify(args)
     };
 }
 //# sourceMappingURL=eventLoop.js.map

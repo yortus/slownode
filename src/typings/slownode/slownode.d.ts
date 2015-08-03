@@ -88,7 +88,6 @@ declare module "slownode" {
 			functionId: string;
 			runAt: number;
 			runAtReadable?: string;
-			repeat?: number;
 			arguments?: string;
 		}
 
