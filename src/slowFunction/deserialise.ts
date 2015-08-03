@@ -11,16 +11,14 @@ function deserialise(func: Types.Schema.Function): Types.SlowFunction {
 	var localVariables = dependencies.map(toRequireCall);
 	var parsedFunc = parseFunction(func.body);
 
-	var outerCall = (...args: any[]) => {
-		for (var key in localVariables)
-			eval(localVariables[key]);
-
+	var outerCall = (...args: any[]) => {	
+		eval(localVariables.join(""));
 		return innerCall(args)
 	}
 	
 	return {
 		id: func.id,
-		body: outerCall,
+		body: outerCall.bind({}),
 		options: {
 			intervalMs: func.intervalMs,
 			retryCount: func.retryCount,
@@ -46,9 +44,7 @@ function toRequireCall(dependency: Types.Dependency) {
 		"var",
 		dependency.as,
 		"=",
-		"require('",
-		dependency.reference,
-		"');"
+		"require(\""+ dependency.reference + "\");"
 	].join(" ");
 }
 

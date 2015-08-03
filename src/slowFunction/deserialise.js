@@ -10,13 +10,12 @@ function deserialise(func) {
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i - 0] = arguments[_i];
         }
-        for (var key in localVariables)
-            eval(localVariables[key]);
+        eval(localVariables.join(""));
         return innerCall(args);
     };
     return {
         id: func.id,
-        body: outerCall,
+        body: outerCall.bind({}),
         options: {
             intervalMs: func.intervalMs,
             retryCount: func.retryCount,
@@ -40,9 +39,7 @@ function toRequireCall(dependency) {
         "var",
         dependency.as,
         "=",
-        "require('",
-        dependency.reference,
-        "');"
+        "require(\"" + dependency.reference + "\");"
     ].join(" ");
 }
 module.exports = deserialise;
