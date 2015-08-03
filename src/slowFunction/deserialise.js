@@ -40,7 +40,7 @@ function toRequireCall(dependency) {
         dependency.as,
         "=",
         "require('",
-        dependency.module,
+        dependency.reference,
         "');"
     ].join(" ");
 }

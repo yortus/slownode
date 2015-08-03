@@ -50,7 +50,7 @@ declare module "slownode" {
 	}
 	
 	export interface Dependency {
-		module: string;
+		reference: string;
 		as: string;
 	}
 
