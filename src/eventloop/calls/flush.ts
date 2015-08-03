@@ -6,6 +6,6 @@ function flush() {
 	
 	// TODO: Retry/failure handling
 	
-	return self.getNextCall()
-		.then(self.processCall);
+	return self.getNext()
+		.then(self.run);
 };

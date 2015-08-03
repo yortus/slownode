@@ -1,4 +1,4 @@
-import Types = require("slownode");
+import SlowNode = require("slownode");
 import errors = require("../errors");
 import Knex = require("knex");
 
@@ -8,14 +8,9 @@ import flushEvent = require("./calls/flush");
 import stopEvents = require("./calls/stop");
 export = EventLoop;
 
-var EventLoop: Types.SlowEventLoop = {
-	pollIntervalMs: 1000,
-	flushCallback: null,
-	stop: stopEvents.bind(this),
-	start: flushEvent.bind(this),
-
-	addCall: store.add.bind(this),
-	processCall: processEvent.bind(this),
-	removeCall: store.remove.bind(this),
-	getNextCall: store.getNext.bind(this),
+var EventLoop: SlowNode.SlowEventLoop = {
+	add: store.add.bind(this),
+	run: processEvent.bind(this),
+	remove: store.remove.bind(this),
+	getNext: store.getNext.bind(this),
 }

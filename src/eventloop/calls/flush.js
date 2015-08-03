@@ -1,8 +1,8 @@
 function flush() {
     var self = this;
     // TODO: Retry/failure handling
-    return self.getNextCall()
-        .then(self.processCall);
+    return self.getNext()
+        .then(self.run);
 }
 ;
 module.exports = flush;

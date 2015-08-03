@@ -6,17 +6,19 @@ declare module "slownode" {
 
 	export interface SlowNodeStatic {
 		configuration: Config;
+		connection: Knex;
+		flushCallback: NodeJS.Timer;
+		
+		start(config: Config): Promise<boolean>;
+		stop(): Promise<boolean>;
+		flush(): Promise<any>;
 
 		setTimeout(func: () => any, delayMs: number): Promise<number>;
 		setImmediate(func: () => any): Promise<number>;
 		setInterval(funct: () => any, delayMs: number): Promise<number>;
-
-		EventEmitter: SlowEventEmitter;
-		EventLoop: SlowEventLoop;
-		Promise: SlowPromise;
-
-		start(config: Config): Promise<boolean>;
-		stop(): Promise<boolean>;
+		
+		Promise: any;
+		Event: any;
 	}
 
 	export class SlowPromise {
@@ -28,17 +30,10 @@ declare module "slownode" {
 	}
 
 	export interface SlowEventLoop {
-		configuration: Config;
-		flushCallback: NodeJS.Timer;
-
-		start(): Promise<boolean>;
-		stop(): Promise<boolean>;
-		flush(): Promise<any>;
-
-		addCall(operation: SlowFunction): any;
-		getNextCall(): Promise<SlowFunction>;
-		processCall(task?: SlowFunction): Promise<boolean>
-		removeCall(task: SlowFunction): any;
+		add(operation: SlowFunction): any;
+		getNext(): Promise<SlowFunction>;
+		run(task?: SlowFunction): Promise<boolean>
+		remove(task: SlowFunction): any;
 	}
 
 	export interface SlowFunction {
