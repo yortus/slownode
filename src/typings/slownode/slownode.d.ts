@@ -13,9 +13,9 @@ declare module "slownode" {
 		stop(): Promise<boolean>;
 		flush(): Promise<any>;
 
-		setTimeout(func: () => any, delayMs: number): Promise<number>;
-		setImmediate(func: () => any): Promise<number>;
-		setInterval(funct: () => any, delayMs: number): Promise<number>;
+		setTimeout(func: () => any, delayMs: number, dependencies?: Array<Dependency>): Promise<number>;
+		setImmediate(func: () => any, dependencies?: Array<Dependency>): Promise<number>;
+		setInterval(funct: () => any, delayMs: number, dependencies?: Array<Dependency>): Promise<number>;
 		
 		Promise: any;
 		Event: any;
