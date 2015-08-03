@@ -1,10 +1,9 @@
 var store = require("../store/eventLoop");
 var processEvent = require("./calls/run");
-var EventLoop = {
-    add: store.add,
-    run: processEvent,
-    remove: store.remove,
-    getNext: store.getNext,
-};
-module.exports = EventLoop;
+var flushCall = require("./calls/flush");
+exports.add = store.add;
+exports.run = processEvent;
+exports.remove = store.remove;
+exports.getNext = store.getNext;
+exports.flush = flushCall;
 //# sourceMappingURL=api.js.map

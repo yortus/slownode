@@ -11,7 +11,6 @@ declare module "slownode" {
 		
 		start(config: Config): Promise<boolean>;
 		stop(): Promise<boolean>;
-		flush(): Promise<any>;
 
 		setTimeout(func: () => any, delayMs: number, options?: SlowFunctionOptions): Promise<number>;
 		setImmediate(func: () => any, options?: SlowFunctionOptions): Promise<number>;

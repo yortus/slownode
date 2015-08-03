@@ -1,17 +1,17 @@
-var index_1 = require("../index");
+var SlowNode = require("../index");
 function add(functionId, options) {
     var args = [];
     for (var _i = 2; _i < arguments.length; _i++) {
         args[_i - 2] = arguments[_i];
     }
     var storable = toStorableCall(functionId, options, args);
-    return index_1.connection("eventloop")
+    return SlowNode.connection("eventloop")
         .insert(storable)
         .then(function (ids) { return ids[0]; });
 }
 exports.add = add;
 function remove(functionId) {
-    return index_1.connection("eventloop")
+    return SlowNode.connection("eventloop")
         .delete()
         .where("id", "=", functionId)
         .then(function (rows) { return rows > 0; })
@@ -20,7 +20,7 @@ function remove(functionId) {
 exports.remove = remove;
 function getNext() {
     var now = Date.now();
-    return index_1.connection("eventloop")
+    return SlowNode.connection("eventloop")
         .select()
         .where("runAt", "=", 0)
         .orWhere("runAt", "<=", now)

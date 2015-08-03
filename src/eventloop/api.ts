@@ -4,13 +4,11 @@ import Knex = require("knex");
 
 import store = require("../store/eventLoop");
 import processEvent = require("./calls/run");
-import flushEvent = require("./calls/flush");
+import flushCall = require("./calls/flush");
 import stopEvents = require("./calls/stop");
-export = EventLoop;
 
-var EventLoop: SlowNode.SlowEventLoop = {
-	add: store.add,
-	run: processEvent,
-	remove: store.remove,
-	getNext: store.getNext,
-}
+export var add = store.add;
+export var run = processEvent;
+export var remove = store.remove;
+export var getNext = store.getNext;
+export var flush = flushCall;

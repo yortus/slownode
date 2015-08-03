@@ -1,4 +1,4 @@
-import * as SlowNode from "../../index";
+import SlowNode = require("../../index");
 export = stop;
 
 function stop() {

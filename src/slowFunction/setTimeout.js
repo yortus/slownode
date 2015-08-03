@@ -1,4 +1,4 @@
-var store = require("../store/function");
+var store = require("../store/slowFunction");
 function timeout(func, delayMs, options) {
     options = options || {};
     options.intervalMs = 0;

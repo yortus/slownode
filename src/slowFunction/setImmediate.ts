@@ -1,4 +1,4 @@
-import store = require("../store/function");
+import store = require("../store/slowFunction");
 import Types = require("slownode");
 import toStorable = require("./toStorable");
 export = immediate;

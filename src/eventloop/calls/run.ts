@@ -1,15 +1,16 @@
 import Types = require("slownode");
 import errors = require("../../errors");
+import EventLoop = require("../api");
+import functionStore = require("../../store/slowFunction");
+import deserialise = require("../../slowFunction/deserialise");
 import SlowNode = require("../../index");
-import functionStore = require("../../store/function");
-import deserialise = require("../../function/deserialise");
 export = callFunction;
 
 var functionCache: Array<Types.SlowFunction> = [];
 
 function callFunction(functionCall?: Types.Schema.EventLoop): any {
 	if (!functionCall) {
-		SlowNode.flushCallback = setTimeout(() => SlowNode.flush(), SlowNode.configuration.pollIntervalMs);
+		SlowNode.flushCallback = setTimeout(() => EventLoop.flush(), SlowNode.configuration.pollIntervalMs);
 		return Promise.resolve(true);
 	}
 

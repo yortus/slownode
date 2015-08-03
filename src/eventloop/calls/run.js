@@ -1,10 +1,11 @@
+var EventLoop = require("../api");
+var functionStore = require("../../store/slowFunction");
+var deserialise = require("../../slowFunction/deserialise");
 var SlowNode = require("../../index");
-var functionStore = require("../../store/function");
-var deserialise = require("../../function/deserialise");
 var functionCache = [];
 function callFunction(functionCall) {
     if (!functionCall) {
-        SlowNode.flushCallback = setTimeout(function () { return SlowNode.flush(); }, SlowNode.configuration.pollIntervalMs);
+        SlowNode.flushCallback = setTimeout(function () { return EventLoop.flush(); }, SlowNode.configuration.pollIntervalMs);
         return Promise.resolve(true);
     }
     var cachedFunc = functionCache[functionCall.functionId];

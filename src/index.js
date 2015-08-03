@@ -1,8 +1,7 @@
-var immediate = require("./function/setImmediate");
-var timeout = require("./function/setTimeout");
-var interval = require("./function/setInterval");
+var immediate = require("./slowFunction/setImmediate");
+var timeout = require("./slowFunction/setTimeout");
+var interval = require("./slowFunction/setInterval");
 var createDb = require("./store/db");
-var eventLoop = require("./eventLoop/api");
 var startSlowNode = require("./start");
 var stopSlowNode = require("./stop");
 exports.configuration = null;
@@ -15,9 +14,4 @@ exports.setImmediate = immediate;
 exports.setInterval = interval;
 exports.Promise = null;
 exports.Event = null;
-function flush() {
-    eventLoop.getNext()
-        .then(eventLoop.run);
-}
-exports.flush = flush;
 //# sourceMappingURL=index.js.map

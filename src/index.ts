@@ -1,8 +1,8 @@
 import Knex = require("knex");
 import Types = require("slownode");
-import immediate = require("./function/setImmediate");
-import timeout = require("./function/setTimeout");
-import interval = require("./function/setInterval");
+import immediate = require("./slowFunction/setImmediate");
+import timeout = require("./slowFunction/setTimeout");
+import interval = require("./slowFunction/setInterval");
 import createDb = require("./store/db");
 
 import eventLoop = require("./eventLoop/api");
@@ -23,8 +23,3 @@ export var setInterval = interval;
 
 export var Promise = null;
 export var Event = null;
-
-export function flush() {
-	eventLoop.getNext()
-		.then(eventLoop.run)
-}

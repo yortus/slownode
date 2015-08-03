@@ -1,5 +1,5 @@
 import Types = require("slownode");
-import store = require("../store/function");
+import store = require("../store/slowFunction");
 export = timeout;
 
 function timeout(func: () => any, delayMs: number, options?: Types.SlowFunctionOptions) {

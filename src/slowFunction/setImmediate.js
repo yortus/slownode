@@ -1,4 +1,4 @@
-var store = require("../store/function");
+var store = require("../store/slowFunction");
 function immediate(func, options) {
     options = options || {};
     options.runAt = Date.now();

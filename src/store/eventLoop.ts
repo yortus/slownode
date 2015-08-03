@@ -1,16 +1,16 @@
 import Types = require("slownode");
-import { connection as db} from "../index";
+import SlowNode = require("../index");
 
 export function add(functionId: string, options?: Types.SlowFunctionOptions, ...args: any[]): Promise<number> {
 	var storable = toStorableCall(functionId, options, args);
 
-	return db("eventloop")
+	return SlowNode.connection("eventloop")
 		.insert(storable)
 		.then((ids: number[]) => ids[0]);
 }
 
 export function remove(functionId: string): Promise<boolean> {
-	return db("eventloop")
+	return SlowNode.connection("eventloop")
 		.delete()
 		.where("id", "=", functionId)
 		.then(rows => rows > 0)
@@ -20,7 +20,7 @@ export function remove(functionId: string): Promise<boolean> {
 export function getNext(): Promise<Types.Schema.EventLoop> {
 	var now = Date.now();
 
-	return db("eventloop")
+	return SlowNode.connection("eventloop")
 		.select()
 		.where("runAt", "=", 0)
 		.orWhere("runAt", "<=", now)
