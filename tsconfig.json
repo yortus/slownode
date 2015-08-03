@@ -21,6 +21,7 @@
         "./src/function/setImmediate.ts",
         "./src/function/setInterval.ts",
         "./src/function/setTimeout.ts",
+        "./src/function/toStorable.ts",
         "./src/index.ts",
         "./src/start.ts",
         "./src/stop.ts",

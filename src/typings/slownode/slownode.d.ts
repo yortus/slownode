@@ -38,7 +38,7 @@ declare module "slownode" {
 
 	export interface SlowFunction {
 		id?: number;
-		functionBody: (...args: any[]) => any;		
+		body: (...args: any[]) => any;		
 		dependencies?: Array<Dependency>
 		
 		runAt?: number;
@@ -73,7 +73,7 @@ declare module "slownode" {
 
 		export interface Function {
 			id?: number;
-			functionBody: string;
+			body: string;
 			dependencies: string;
 			intervalMs: number;
 			retryCount: number;

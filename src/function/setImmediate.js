@@ -1,12 +1,7 @@
-var store = require("../store/eventLoop");
-var serialise = require("./serialise");
-function immediate(func) {
-    var serialisedFunc = serialise(func);
-    return store.add({
-        arguments: "[]",
-        functionId: serialisedFunc,
-        runAt: Date.now(),
-    });
+var functionStore = require("../store/function");
+function immediate(slowFunction) {
+    // TODO: Rules/logic...
+    return functionStore.add(slowFunction);
 }
 module.exports = immediate;
 //# sourceMappingURL=setImmediate.js.map

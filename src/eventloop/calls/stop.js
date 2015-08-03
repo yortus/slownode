@@ -1,7 +1,7 @@
+var SlowNode = require("../../index");
 function stop() {
-    var self = this;
-    if (self.flushCallback)
-        clearTimeout(self.flushCallback);
+    if (SlowNode.flushCallback)
+        clearTimeout(SlowNode.flushCallback);
 }
 ;
 module.exports = stop;

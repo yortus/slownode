@@ -1,13 +1,10 @@
-import store = require("../store/eventLoop");
-import serialise = require("./serialise");
+import functionStore = require("../store/function");
+import Types = require("slownode");
+import toStorable = require("./toStorable");
 export = immediate;
 
-function immediate(func: () => any) {
-	var serialisedFunc = serialise(func);
+function immediate(slowFunction: Types.SlowFunction) {
+	// TODO: Rules/logic...
 	
-	return store.add({
-		arguments: "[]",
-		functionId: serialisedFunc,
-		runAt: Date.now(),
-	});
+	return functionStore.add(slowFunction);
 }

@@ -21,10 +21,10 @@ function createTable(exists: Array<boolean>) {
 	if (exists.every(e => e === true)) return Promise.resolve(true);
 	if (exists.some(e => e === true)) throw new Error(errors.DatabaseInvalid);
 	
-	var promises = [db.schema.createTable("events", eventTable),
-		db.schema.createTable("functions", functionTable),
+	var promises = [db.schema.createTable("event", eventTable),
+		db.schema.createTable("function", functionTable),
 		db.schema.createTable("eventloop", eventLoopTable),
-		db.schema.createTable("eventListeners", eventListenersTable)];
+		db.schema.createTable("eventListener", eventListenersTable)];
 
 	return Promise.all(promises)
 		.then(() => true);

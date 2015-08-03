@@ -1,9 +1,7 @@
-import SlowNode = require("slownode");
-import Types = require("slownode");
+import * as SlowNode from "../../index";
 export = stop;
 
 function stop() {
-	var self: SlowNode.SlowEventLoop = this;
-	
-	if (self.flushCallback) clearTimeout(self.flushCallback);
+
+	if (SlowNode.flushCallback) clearTimeout(SlowNode.flushCallback);
 };

@@ -16,10 +16,10 @@ function createTable(exists) {
         return Promise.resolve(true);
     if (exists.some(function (e) { return e === true; }))
         throw new Error(errors.DatabaseInvalid);
-    var promises = [index_1.connection.schema.createTable("events", eventTable),
-        index_1.connection.schema.createTable("functions", functionTable),
+    var promises = [index_1.connection.schema.createTable("event", eventTable),
+        index_1.connection.schema.createTable("function", functionTable),
         index_1.connection.schema.createTable("eventloop", eventLoopTable),
-        index_1.connection.schema.createTable("eventListeners", eventListenersTable)];
+        index_1.connection.schema.createTable("eventListener", eventListenersTable)];
     return Promise.all(promises)
         .then(function () { return true; });
 }

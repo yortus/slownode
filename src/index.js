@@ -13,4 +13,6 @@ exports.flush = null;
 exports.setTimeout = timeout;
 exports.setImmediate = immediate;
 exports.setInterval = interval;
+exports.Promise = null;
+exports.Event = null;
 //# sourceMappingURL=index.js.map
