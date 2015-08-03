@@ -10,9 +10,11 @@ import stopSlowNode = require("./stop");
 
 export var configuration: Types.Config = null;
 export var connection: Knex = createDb();
+export var flushCallback: NodeJS.Timer = null;
 
 export var start = startSlowNode;
 export var stop = stopSlowNode;
+export var flush = null;
 
 export var setTimeout = timeout;
 export var setImmediate = immediate;

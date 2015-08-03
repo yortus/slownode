@@ -28,11 +28,12 @@ declare module "slownode" {
 	}
 
 	export interface SlowEventLoop {
-		pollIntervalMs: number;
+		configuration: Config;
 		flushCallback: NodeJS.Timer;
 
-		start(): void;
-		stop(): void;
+		start(): Promise<boolean>;
+		stop(): Promise<boolean>;
+		flush(): Promise<any>;
 
 		addCall(operation: SlowFunction): any;
 		getNextCall(): Promise<SlowFunction>;
@@ -42,9 +43,7 @@ declare module "slownode" {
 
 	export interface SlowFunction {
 		id?: number;
-		functionId: string;
 		runAt?: number;
-		arguments: any;
 	}
 
 	export interface Subscriber {
@@ -53,8 +52,6 @@ declare module "slownode" {
 	}
 
 	export interface Config {
-		retryCount?: number;
-		retryIntervalMs?: number;
 		pollIntervalMs?: number;
 	}
 
@@ -70,14 +67,16 @@ declare module "slownode" {
 
 		export interface Function {
 			id?: number;
-			functionId: string;
 			functionBody: string;
+			dependencies: string;
+			intervalMs: number;
+			retryCount: number;
+			retryIntervalMs: number;
 		}
 
 		export interface EventLoop {
 			id?: number;
 			functionId: string;
-			functionBody: string;
 			runAt: number;
 			runAtReadable?: string;
 			repeat?: number;
@@ -91,8 +90,4 @@ declare module "slownode" {
 			runOnce: number;
 		}
 	}
-
-
-
-
 }

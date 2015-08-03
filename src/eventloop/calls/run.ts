@@ -1,11 +1,12 @@
 import Types = require("slownode");
 import errors = require("../../errors");
+import * as self from "../../index";
 export = run;
 
 function run(event?: Types.SlowFunction) {
-	var self: Types.SlowEventLoop = this;
+
 	if (!event) {
-		self.flushCallback = setTimeout(() => self.start(), self.pollIntervalMs);
+		self.flushCallback = setTimeout(() => self.flush(), self.configuration.pollIntervalMs);
 		return Promise.resolve(true);
 	}
 	
@@ -13,9 +14,3 @@ function run(event?: Types.SlowFunction) {
 	
 	return runPromise;
 };
-
-function execute(subscriber: Types.Subscriber, event: Types.SlowFunction) {
-	//TODO: Update db according to subscriber config
-	return subscriber.callback(event.arguments)
-		.then(() => true)
-}

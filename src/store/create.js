@@ -23,25 +23,27 @@ function createTable(exists) {
     return Promise.all(promises)
         .then(function () { return true; });
 }
+function functionTable(table) {
+    table.text("id").unique();
+    table.text("functionBody");
+    table.text("dependencies");
+    table.integer("intervalMs");
+    table.integer("retryCount"); // 0 -> N
+    table.integer("retryIntervalMs");
+}
+function eventLoopTable(table) {
+    table.increments("id").primary();
+    table.text("functionId");
+    table.integer("runAt"); // 0 --> N
+    table.text("runAtReadable");
+    table.text("arguments"); // JSON array
+}
 function eventTable(table) {
     table.increments("id").primary();
     table.text("topic");
     table.text("arguments");
     table.bigInteger("createdAt");
     table.text("createdAtReable");
-}
-function functionTable(table) {
-    table.text("id").unique();
-    table.text("functionBody");
-}
-function eventLoopTable(table) {
-    table.increments("id").primary();
-    table.text("functionId");
-    table.text("functionBody");
-    table.integer("runAt"); // 0 --> N
-    table.text("runAtReadable");
-    table.integer("repeat");
-    table.text("arguments"); // JSON array
 }
 function eventListenersTable(table) {
     table.increments("id").primary();
