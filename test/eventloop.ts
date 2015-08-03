@@ -1,6 +1,6 @@
 import Promise = require("bluebird");
 import fs = require("fs");
-import * as SlowNode from "../src/index";
+import SlowNode = require("../src/index");
 import Types = require("slownode");
 import errors = require("../src/errors");
 import chai = require("chai");
@@ -34,6 +34,11 @@ describe("EventLoop behaviour tests", () => {
 			.then(worked => expect(true).to.equal)
 			.then(() => done())
 			.catch(done);
+	});
+	
+	it("will create an immediate function call", done => {
+		SlowNode.setImmediate(() => console.log("test"));
+		setTimeout(() => done(), 500);
 	});
 
 });

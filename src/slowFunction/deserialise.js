@@ -15,6 +15,7 @@ function deserialise(func) {
         return innerCall(args);
     };
     return {
+        id: func.id,
         body: outerCall,
         options: {
             intervalMs: func.intervalMs,

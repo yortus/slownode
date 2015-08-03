@@ -26,6 +26,10 @@ describe("EventLoop behaviour tests", function () {
             .then(function () { return done(); })
             .catch(done);
     });
+    it("will create an immediate function call", function (done) {
+        SlowNode.setImmediate(function () { return console.log("test"); });
+        setTimeout(function () { return done(); }, 500);
+    });
 });
 function start(pollIntervalMs, retryCount, retryIntervalMs) {
     retryCount = retryCount || null;

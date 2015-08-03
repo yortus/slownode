@@ -36,7 +36,7 @@ declare module "slownode" {
 	}
 
 	export interface SlowFunction {
-		id?: number;
+		id?: string;
 		body: (...args: any[]) => any;		
 		options: SlowFunctionOptions;
 	}
@@ -47,6 +47,7 @@ declare module "slownode" {
 		intervalMs?: number;
 		retryCount?: number;
 		retryIntervalMs?: number;
+		trx?: any;
 	}
 	
 	export interface Dependency {
@@ -74,7 +75,7 @@ declare module "slownode" {
 		}
 
 		export interface Function {
-			id?: number;
+			id?: string;
 			body: string;
 			dependencies: string;
 			intervalMs: number;

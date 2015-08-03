@@ -19,6 +19,7 @@ function deserialise(func: Types.Schema.Function): Types.SlowFunction {
 	}
 	
 	return {
+		id: func.id,
 		body: outerCall,
 		options: {
 			intervalMs: func.intervalMs,

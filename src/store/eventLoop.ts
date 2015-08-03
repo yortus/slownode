@@ -2,11 +2,15 @@ import Types = require("slownode");
 import SlowNode = require("../index");
 
 export function add(functionId: string, options?: Types.SlowFunctionOptions, ...args: any[]): Promise<number> {
+	options = options || {};
 	var storable = toStorableCall(functionId, options, args);
 
-	return SlowNode.connection("eventloop")
-		.insert(storable)
-		.then((ids: number[]) => ids[0]);
+	var query = SlowNode.connection("eventloop")
+		.insert(storable);
+
+	if (options.trx) query.transacting(options.trx);
+
+	return query;
 }
 
 export function remove(functionId: string): Promise<boolean> {
@@ -31,10 +35,10 @@ export function getNext(): Promise<Types.Schema.EventLoop> {
 
 function toStorableCall(functionId: string, options?: Types.SlowFunctionOptions, ...args: any[]): Types.Schema.EventLoop {
 	var options = options || {};
-	var runAt = Date.now() + (options.runAt || 0);
+	var runAt = options.runAt || 0;
 	var runAtReadable = new Date(runAt).toString();
 	args = args || [];
-	
+
 	return {
 		functionId: functionId,
 		runAt: runAt,

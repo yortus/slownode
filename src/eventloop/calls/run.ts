@@ -1,5 +1,4 @@
 import Types = require("slownode");
-import errors = require("../../errors");
 import EventLoop = require("../api");
 import functionStore = require("../../store/slowFunction");
 import deserialise = require("../../slowFunction/deserialise");
@@ -23,7 +22,7 @@ function callFunction(functionCall?: Types.Schema.EventLoop): any {
 		.then(cacheFunction)
 		.then(func => createCall(func, functionCall))
 		.then(() => EventLoop.flush());
-};
+}
 
 function cacheFunction(rawFunction: Types.Schema.Function) {
 	var cachedFunc = functionCache[rawFunction.id];

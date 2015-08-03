@@ -17,7 +17,6 @@ function callFunction(functionCall) {
         .then(function (func) { return createCall(func, functionCall); })
         .then(function () { return EventLoop.flush(); });
 }
-;
 function cacheFunction(rawFunction) {
     var cachedFunc = functionCache[rawFunction.id];
     if (cachedFunc)

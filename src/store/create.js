@@ -25,16 +25,16 @@ function createTable(exists) {
 }
 function functionTable(table) {
     table.text("id").unique();
-    table.text("functionBody");
+    table.text("body");
     table.text("dependencies");
-    table.integer("intervalMs");
+    table.bigInteger("intervalMs");
     table.integer("retryCount"); // 0 -> N
-    table.integer("retryIntervalMs");
+    table.bigInteger("retryIntervalMs");
 }
 function eventLoopTable(table) {
     table.increments("id").primary();
     table.text("functionId");
-    table.integer("runAt"); // 0 --> N
+    table.bigInteger("runAt"); // 0 --> N
     table.text("runAtReadable");
     table.text("arguments"); // JSON array
 }

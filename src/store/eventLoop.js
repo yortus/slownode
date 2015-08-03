@@ -4,10 +4,13 @@ function add(functionId, options) {
     for (var _i = 2; _i < arguments.length; _i++) {
         args[_i - 2] = arguments[_i];
     }
+    options = options || {};
     var storable = toStorableCall(functionId, options, args);
-    return SlowNode.connection("eventloop")
-        .insert(storable)
-        .then(function (ids) { return ids[0]; });
+    var query = SlowNode.connection("eventloop")
+        .insert(storable);
+    if (options.trx)
+        query.transacting(options.trx);
+    return query;
 }
 exports.add = add;
 function remove(functionId) {
@@ -35,7 +38,7 @@ function toStorableCall(functionId, options) {
         args[_i - 2] = arguments[_i];
     }
     var options = options || {};
-    var runAt = Date.now() + (options.runAt || 0);
+    var runAt = options.runAt || 0;
     var runAtReadable = new Date(runAt).toString();
     args = args || [];
     return {
