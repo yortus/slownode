@@ -9,8 +9,8 @@ import stopEvents = require("./calls/stop");
 export = EventLoop;
 
 var EventLoop: SlowNode.SlowEventLoop = {
-	add: store.add.bind(this),
-	run: processEvent.bind(this),
-	remove: store.remove.bind(this),
-	getNext: store.getNext.bind(this),
+	call: store.call,
+	run: processEvent,
+	remove: store.remove,
+	getNext: store.getNext,
 }

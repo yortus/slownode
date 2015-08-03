@@ -1,7 +1,7 @@
-var self = require("../../index");
-function run(event) {
-    if (!event) {
-        self.flushCallback = setTimeout(function () { return self.flush(); }, self.configuration.pollIntervalMs);
+var SlowNode = require("../../index");
+function run(functionCall) {
+    if (!functionCall) {
+        SlowNode.flushCallback = setTimeout(function () { return SlowNode.flush(); }, SlowNode.configuration.pollIntervalMs);
         return Promise.resolve(true);
     }
     var runPromise = Promise.resolve(true);

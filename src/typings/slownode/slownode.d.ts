@@ -30,10 +30,10 @@ declare module "slownode" {
 	}
 
 	export interface SlowEventLoop {
-		add(operation: SlowFunction): any;
-		getNext(): Promise<SlowFunction>;
-		run(task?: SlowFunction): Promise<boolean>
-		remove(task: SlowFunction): any;
+		call(functionId: string, options: SlowFunctionOptions, ...args: any[]): any;
+		getNext(): Promise<Schema.EventLoop>;
+		run(task?: Schema.EventLoop): Promise<boolean>
+		remove(functionId: string): any;
 	}
 
 	export interface SlowFunction {

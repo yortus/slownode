@@ -1,12 +1,12 @@
 import Types = require("slownode");
 import errors = require("../../errors");
-import * as self from "../../index";
+import SlowNode = require("../../index");
 export = run;
 
-function run(event?: Types.SlowFunction) {
+function run(functionCall?: Types.Schema.EventLoop) {
 
-	if (!event) {
-		self.flushCallback = setTimeout(() => self.flush(), self.configuration.pollIntervalMs);
+	if (!functionCall) {
+		SlowNode.flushCallback = setTimeout(() => SlowNode.flush(), SlowNode.configuration.pollIntervalMs);
 		return Promise.resolve(true);
 	}
 	
