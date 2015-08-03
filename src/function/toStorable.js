@@ -1,16 +1,17 @@
 var crypto = require("crypto");
 var serialise = require("./serialise");
 function toStorable(slowFunction) {
+    var options = slowFunction.options || {};
     var body = serialise(slowFunction.body);
     var id = slowFunction.id || generateFunctionId(body);
-    var dependencies = JSON.stringify(slowFunction.dependencies || []);
+    var dependencies = JSON.stringify(options.dependencies || []);
     return {
         id: id,
         body: body,
         dependencies: dependencies,
-        intervalMs: slowFunction.intervalMs || 0,
-        retryCount: slowFunction.retryCount || 0,
-        retryIntervalMs: slowFunction.retryIntervalMs || 0
+        intervalMs: options.intervalMs || 0,
+        retryCount: options.retryCount || 0,
+        retryIntervalMs: options.retryIntervalMs || 0
     };
 }
 function generateFunctionId(body) {
