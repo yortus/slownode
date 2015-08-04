@@ -11,6 +11,7 @@
     "files": [
         "./test/eventloop.ts",
         "./src/errors.ts",
+        "./src/eventEmitter/index.ts",
         "./src/eventLoop/exec.ts",
         "./src/eventLoop/index.ts",
         "./src/eventLoop/runLoop.ts",
