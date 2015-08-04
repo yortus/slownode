@@ -46,7 +46,7 @@ function createCall(slowFunc: Types.SlowFunction, call: Types.Schema.EventLoop) 
 
 function storedFuncWrapper(func: Types.SlowFunction, args?: any) {
 	var deps = func.options.dependencies
-		.map(dep => "this." + dep.as + " = " + inject(dep))
+		.map(dep => `this.${dep.as} = ${inject(dep)}`)
 		.join("; ");
 
 	eval(deps);
@@ -56,6 +56,6 @@ function storedFuncWrapper(func: Types.SlowFunction, args?: any) {
 function inject(dependency: Types.Dependency) {
 	return dependency.reference == null
 		? JSON.stringify(dependency.value)
-		: "require(\'" + dependency.reference + "\')";
+		: `require("${dependency.reference}")`;
 
 }

@@ -3,7 +3,7 @@
 
 declare module "slownode" {
 	import Knex = require("knex");
-	
+
 	export const enum PromiseState {
 		Pending,
 		Fulfilled,
@@ -14,26 +14,31 @@ declare module "slownode" {
 		configuration: Config;
 		connection: Knex;
 		flushCallback: NodeJS.Timer;
-		
+
 		start(config: Config): Promise<boolean>;
 		stop(): Promise<boolean>;
 
 		setTimeout(func: () => any, delayMs: number, options?: SlowFunctionOptions): Promise<number>;
 		setImmediate(func: () => any, options?: SlowFunctionOptions): Promise<number>;
 		setInterval(funct: () => any, delayMs: number, options?: SlowFunctionOptions): Promise<number>;
-		
+
 		Promise: any;
 		Event: any;
 	}
 
 	export interface SlowPromise {
-		id: number;
+		id?: number;
 		funcId: string;
 		state: PromiseState;
 		onFulfill: number;
 		onReject: number;
 		value: any;
-		then: (onFulfill?: SlowPromise, onReject?: SlowPromise) => Promise<number>;
+	}
+	
+	export interface SlowThennable {
+		then: (onFulfill?: SlowPromise, onReject?: SlowPromise) => Promise<{ fulfill: number, reject: number }>;
+		slowPromise: SlowPromise;
+		isReady: Promise<number>;
 	}
 
 	export interface SlowEventEmitter {
@@ -49,10 +54,10 @@ declare module "slownode" {
 
 	export interface SlowFunction {
 		id?: string;
-		body: (...args: any[]) => any;		
+		body: (...args: any[]) => any;
 		options: SlowFunctionOptions;
 	}
-	
+
 	export interface SlowFunctionOptions {
 		dependencies?: Array<Dependency>
 		runAt?: number;
@@ -62,7 +67,7 @@ declare module "slownode" {
 		arguments?: {};
 		trx?: any;
 	}
-	
+
 	export interface Dependency {
 		reference?: string;
 		value?: any;
@@ -79,7 +84,7 @@ declare module "slownode" {
 	}
 
 	export module Schema {
-		
+
 		export interface Event {
 			id?: number;
 			topic: string;
@@ -92,7 +97,8 @@ declare module "slownode" {
 			id?: string;
 			body: string;
 			dependencies: string;
-			isPromise: number;
+			callOnce?: number;
+			isPromise?: number;
 			intervalMs: number;
 			retryCount: number;
 			retryIntervalMs: number;
@@ -112,7 +118,7 @@ declare module "slownode" {
 			functionId: string;
 			runOnce: number;
 		}
-		
+
 		export interface Promise {
 			id?: number;
 			funcId: string;

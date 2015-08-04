@@ -30,6 +30,7 @@
         "./src/store/db.ts",
         "./src/store/eventEmitter.ts",
         "./src/store/eventLoop.ts",
+        "./src/store/promise.ts",
         "./src/store/slowFunction.ts",
         "./src/typings/bluebird/bluebird.d.ts",
         "./src/typings/chai/chai.d.ts",
