@@ -1,7 +1,15 @@
+/**
+ *
+ * Implicit events when adding/removing listeners:
+ * 'newListener'
+ * 'removeListener'
+ *
+ */
 function addListener(event, listener) {
 }
 exports.addListener = addListener;
 function on(event, listener) {
+    return addListener(event, listener);
 }
 exports.on = on;
 function once(event, listener) {

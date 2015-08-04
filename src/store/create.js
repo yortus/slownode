@@ -28,7 +28,7 @@ function functionTable(table) {
     table.text("id").unique();
     table.text("body");
     table.text("dependencies");
-    table.integer("callOnce").default(0); // 0 | 1
+    table.integer("callOnce").defaultTo(0); // 0 | 1
     table.integer("isPromise").defaultTo(0); // 0 | 1
     table.bigInteger("intervalMs");
     table.integer("retryCount"); // 0 -> N
