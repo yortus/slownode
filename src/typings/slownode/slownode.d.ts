@@ -26,16 +26,17 @@ declare module "slownode" {
 		Event: any;
 	}
 
-	export class SlowPromise {
+	export interface SlowPromise {
 		id: number;
 		funcId: string;
 		state: PromiseState;
 		onFulfill: number;
 		onReject: number;
 		value: any;
+		then: (onFulfill?: SlowPromise, onReject?: SlowPromise) => Promise<number>;
 	}
 
-	export class SlowEventEmitter {
+	export interface SlowEventEmitter {
 
 	}
 
@@ -91,6 +92,7 @@ declare module "slownode" {
 			id?: string;
 			body: string;
 			dependencies: string;
+			isPromise: number;
 			intervalMs: number;
 			retryCount: number;
 			retryIntervalMs: number;
