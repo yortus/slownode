@@ -1,7 +1,7 @@
 var Promise = require("bluebird");
 var errors = require("../errors");
 var index_1 = require("../index");
-var tables = ["function", "eventLoop", "event", "eventListener"];
+var tables = ["function", "eventLoop", "event", "eventListener", "promise"];
 function create() {
     return tablesExists()
         .then(createTable)
@@ -19,7 +19,8 @@ function createTable(exists) {
     var promises = [index_1.connection.schema.createTable("event", eventTable),
         index_1.connection.schema.createTable("function", functionTable),
         index_1.connection.schema.createTable("eventLoop", eventLoopTable),
-        index_1.connection.schema.createTable("eventListener", eventListenersTable)];
+        index_1.connection.schema.createTable("eventListener", eventListenersTable),
+        index_1.connection.schema.createTable("promise", promiseTable)];
     return Promise.all(promises)
         .then(function () { return true; });
 }
@@ -50,6 +51,14 @@ function eventListenersTable(table) {
     table.text("topic");
     table.text("functionId");
     table.integer("runOnce");
+}
+function promiseTable(table) {
+    table.increments("id").primary();
+    table.text("funcId");
+    table.integer("state");
+    table.integer("onFulfillId");
+    table.integer("onRejectId");
+    table.text("value");
 }
 module.exports = create;
 //# sourceMappingURL=create.js.map

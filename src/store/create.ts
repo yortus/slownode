@@ -4,7 +4,7 @@ import Knex = require("knex");
 import { connection as db} from "../index";
 export = create;
 
-var tables = ["function", "eventLoop", "event", "eventListener"];
+var tables = ["function", "eventLoop", "event", "eventListener", "promise"];
 
 function create() {
 	return tablesExists()
@@ -20,11 +20,12 @@ function tablesExists() {
 function createTable(exists: Array<boolean>) {
 	if (exists.every(e => e === true)) return Promise.resolve(true);
 	if (exists.some(e => e === true)) throw new Error(errors.DatabaseInvalid);
-	
+
 	var promises = [db.schema.createTable("event", eventTable),
 		db.schema.createTable("function", functionTable),
 		db.schema.createTable("eventLoop", eventLoopTable),
-		db.schema.createTable("eventListener", eventListenersTable)];
+		db.schema.createTable("eventListener", eventListenersTable),
+		db.schema.createTable("promise", promiseTable)];
 
 	return Promise.all(promises)
 		.then(() => true);
@@ -60,4 +61,13 @@ function eventListenersTable(table: any) {
 	table.text("topic");
 	table.text("functionId");
 	table.integer("runOnce");
+}
+
+function promiseTable(table: any) {
+	table.increments("id").primary();
+	table.text("funcId");
+	table.integer("state");
+	table.integer("onFulfillId");
+	table.integer("onRejectId");
+	table.text("value");
 }
