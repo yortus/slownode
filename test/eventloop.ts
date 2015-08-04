@@ -36,32 +36,30 @@ describe("EventLoop behaviour tests", () => {
 			.catch(done);
 	});
 
-	it("will create an immediate function call", done => {
-		SlowNode.setImmediate(() => console.log("test"));
-		wait(done);
-	});
-
-	it("will create an immediate function call with injected reference", done => {		
+	it("will create an immediate function call with injected reference", done => {
 		SlowNode.setImmediate(function() {
-			console.log(this.h.STATUS_CODES['200']);
+			this.chai.expect(this.h.STATUS_CODES['200']).to.equal("OK");
 		}, dep("h", "http"));
 
 		wait(done);
 	});
-	
+
 	it("will create an immediate function call with injected value", done => {
 		SlowNode.setImmediate(function() {
-			console.log(this.injectedValue);
+			this.chai.expect(this.injectedValue).to.equal("OK");
 		}, dep("injectedValue", null, "OK"));
-		
+
 		wait(done);
 	});
-	
+
 	it("will create and call a function with a delay", done => {
-		console.log(Date.now());
+		var start = Date.now()
 		SlowNode.setTimeout(function() {
-			console.log(Date.now());
-		}, 250);
+			var diff = Date.now() - this.start;
+			this.chai.expect(diff).to.be.above(249);
+			this.chai.expect(diff).to.be.below(500);
+		}, 250, dep("start", null, start));
+		
 		wait(done);
 	});
 
@@ -84,14 +82,16 @@ function start(pollIntervalMs: number, retryCount?: number, retryIntervalMs?: nu
 
 function dep(as: string, reference?: string, value?: any) {
 	var dep: any = {
-		dependencies: [{
-			as: as,
-		}]
+		dependencies: [
+			{ as: as, },
+			{ reference: "mocha", as: "mocha" },
+			{ reference: "chai", as: "chai " }
+		]
 	};
-	
+
 	if (reference == null) dep.dependencies[0].value = value;
 	else dep.dependencies[0].reference = reference;
 
 	return dep;
-	
+
 }
