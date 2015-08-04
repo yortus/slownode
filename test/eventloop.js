@@ -42,6 +42,13 @@ describe("EventLoop behaviour tests", function () {
         }, dep("injectedValue", null, "OK"));
         wait(done);
     });
+    it("will create and call a function with a delay", function (done) {
+        console.log(Date.now());
+        SlowNode.setTimeout(function () {
+            console.log(Date.now());
+        }, 250);
+        wait(done);
+    });
 });
 function wait(done) {
     setTimeout(function () { return done(); }, 500);

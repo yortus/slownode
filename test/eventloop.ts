@@ -41,8 +41,7 @@ describe("EventLoop behaviour tests", () => {
 		wait(done);
 	});
 
-	it("will create an immediate function call with injected reference", done => {
-		
+	it("will create an immediate function call with injected reference", done => {		
 		SlowNode.setImmediate(function() {
 			console.log(this.h.STATUS_CODES['200']);
 		}, dep("h", "http"));
@@ -54,6 +53,15 @@ describe("EventLoop behaviour tests", () => {
 		SlowNode.setImmediate(function() {
 			console.log(this.injectedValue);
 		}, dep("injectedValue", null, "OK"));
+		
+		wait(done);
+	});
+	
+	it("will create and call a function with a delay", done => {
+		console.log(Date.now());
+		SlowNode.setTimeout(function() {
+			console.log(Date.now());
+		}, 250);
 		wait(done);
 	});
 
