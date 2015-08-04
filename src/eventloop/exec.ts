@@ -24,7 +24,7 @@ function callFunc(funcCall?: Types.Schema.EventLoop): any {
 function getSlowFunc(funcId: string) {
 	var cachedFunc = funcCache[funcId];
 	if (cachedFunc) return Promise.resolve(cachedFunc);
-	
+
 	return funcStore.get(funcId)
 		.then(cacheFunc);
 }
@@ -32,16 +32,23 @@ function getSlowFunc(funcId: string) {
 function cacheFunc(rawFunc: Types.Schema.Function) {
 	var deserialisedFunc = deserialise(rawFunc);
 	funcCache[rawFunc.id] = deserialisedFunc;
-	
-	return Promise.resolve(deserialisedFunc); 
+
+	return Promise.resolve(deserialisedFunc);
 }
 
 
 function createCall(slowFunc: Types.SlowFunction, call: Types.Schema.EventLoop) {
 	var args = JSON.parse(call.arguments);
-	
-	var result = slowFunc.body.call(this, args);
-	console.log("[CALL] %s: %s", slowFunc.id, result);
+
+	var result = storedFuncWrapper.call({}, slowFunc, args);
 	return Promise.resolve(result);
 }
 
+function storedFuncWrapper(func: Types.SlowFunction, args?: any) {
+	var deps = func.options.dependencies
+		.map(dep => "this." + dep.as + " = require(\'" + dep.reference + "\')")
+		.join("; ");
+
+	eval(deps);
+	return func.body.call(this, args);
+}

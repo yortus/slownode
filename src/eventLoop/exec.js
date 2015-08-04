@@ -29,9 +29,15 @@ function cacheFunc(rawFunc) {
 }
 function createCall(slowFunc, call) {
     var args = JSON.parse(call.arguments);
-    var result = slowFunc.body.call(this, args);
-    console.log("[CALL] %s: %s", slowFunc.id, result);
+    var result = storedFuncWrapper.call({}, slowFunc, args);
     return Promise.resolve(result);
+}
+function storedFuncWrapper(func, args) {
+    var deps = func.options.dependencies
+        .map(function (dep) { return "this." + dep.as + " = require(\'" + dep.reference + "\')"; })
+        .join("; ");
+    eval(deps);
+    return func.body.call(this, args);
 }
 module.exports = callFunc;
 //# sourceMappingURL=exec.js.map

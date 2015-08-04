@@ -5,21 +5,14 @@ export = deserialise;
 // TODO: (De)serialisation should be smarter
 function deserialise(func: Types.Schema.Function): Types.SlowFunction {
 
-	var innerCall = eval(func.body);
 	var dependencies: Array<Types.Dependency> = JSON.parse(func.dependencies);
-
-	var localVariables = dependencies.map(toRequireCall);
-	var parsedFunc = parseFunction(func.body);
-
-	var outerCall = (...args: any[]) => {	
-		eval(localVariables.join(""));
-		return innerCall(args)
-	}
+	var innerCall = parseFunction(func.body);
 	
 	return {
 		id: func.id,
-		body: outerCall.bind({}),
-		options: {
+		body: innerCall,
+		options: { 
+			dependencies: dependencies,
 			intervalMs: func.intervalMs,
 			retryCount: func.retryCount,
 			retryIntervalMs: func.retryIntervalMs
@@ -37,14 +30,3 @@ function parseFunction(body: string) {
 		throw new Error(errors.UnableToDeserialise);
 	}
 }
-
-
-function toRequireCall(dependency: Types.Dependency) {
-	return [
-		"var",
-		dependency.as,
-		"=",
-		"require(\""+ dependency.reference + "\");"
-	].join(" ");
-}
-
