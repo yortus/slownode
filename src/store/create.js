@@ -56,8 +56,8 @@ function promiseTable(table) {
     table.increments("id").primary();
     table.text("funcId");
     table.integer("state");
-    table.integer("onFulfillId");
-    table.integer("onRejectId");
+    table.integer("onFulfill");
+    table.integer("onReject");
     table.text("value");
 }
 module.exports = create;

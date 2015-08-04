@@ -3,6 +3,12 @@
 
 declare module "slownode" {
 	import Knex = require("knex");
+	
+	export const enum PromiseState {
+		Pending,
+		Fulfilled,
+		Rejected
+	}
 
 	export interface SlowNodeStatic {
 		configuration: Config;
@@ -21,7 +27,12 @@ declare module "slownode" {
 	}
 
 	export class SlowPromise {
-
+		id: number;
+		funcId: string;
+		state: PromiseState;
+		onFulfill: number;
+		onReject: number;
+		value: any;
 	}
 
 	export class SlowEventEmitter {
@@ -98,6 +109,15 @@ declare module "slownode" {
 			topic: string;
 			functionId: string;
 			runOnce: number;
+		}
+		
+		export interface Promise {
+			id?: number;
+			funcId: string;
+			state: number;
+			onFulfull: number;
+			onReject: number;
+			value: string;
 		}
 	}
 }
