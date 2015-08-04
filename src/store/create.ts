@@ -4,7 +4,7 @@ import Knex = require("knex");
 import { connection as db} from "../index";
 export = create;
 
-var tables = ["functions", "eventloop", "events", "listeners"];
+var tables = ["function", "eventLoop", "event", "eventListener"];
 
 function create() {
 	return tablesExists()
@@ -23,7 +23,7 @@ function createTable(exists: Array<boolean>) {
 	
 	var promises = [db.schema.createTable("event", eventTable),
 		db.schema.createTable("function", functionTable),
-		db.schema.createTable("eventloop", eventLoopTable),
+		db.schema.createTable("eventLoop", eventLoopTable),
 		db.schema.createTable("eventListener", eventListenersTable)];
 
 	return Promise.all(promises)

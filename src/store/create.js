@@ -1,7 +1,7 @@
 var Promise = require("bluebird");
 var errors = require("../errors");
 var index_1 = require("../index");
-var tables = ["functions", "eventloop", "events", "listeners"];
+var tables = ["function", "eventLoop", "event", "eventListener"];
 function create() {
     return tablesExists()
         .then(createTable)
@@ -18,7 +18,7 @@ function createTable(exists) {
         throw new Error(errors.DatabaseInvalid);
     var promises = [index_1.connection.schema.createTable("event", eventTable),
         index_1.connection.schema.createTable("function", functionTable),
-        index_1.connection.schema.createTable("eventloop", eventLoopTable),
+        index_1.connection.schema.createTable("eventLoop", eventLoopTable),
         index_1.connection.schema.createTable("eventListener", eventListenersTable)];
     return Promise.all(promises)
         .then(function () { return true; });

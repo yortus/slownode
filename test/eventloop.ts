@@ -59,7 +59,7 @@ describe("EventLoop behaviour tests", () => {
 			this.chai.expect(diff).to.be.above(249);
 			this.chai.expect(diff).to.be.below(500);
 		}, 250, dep("start", null, start));
-		
+
 		wait(done);
 	});
 

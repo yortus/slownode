@@ -5,7 +5,7 @@ export function add(functionId: string, options?: Types.SlowFunctionOptions): Pr
 	options = options || {};
 	var storable = toStorableCall(functionId, options);
 
-	var query = SlowNode.connection("eventloop")
+	var query = SlowNode.connection("eventLoop")
 		.insert(storable);
 
 	if (options.trx) query.transacting(options.trx);
@@ -14,7 +14,7 @@ export function add(functionId: string, options?: Types.SlowFunctionOptions): Pr
 }
 
 export function remove(id: number): Promise<boolean> {
-	return SlowNode.connection("eventloop")
+	return SlowNode.connection("eventLoop")
 		.delete()
 		.where("id", "=", id)
 		.then(rows => rows > 0)
@@ -24,7 +24,7 @@ export function remove(id: number): Promise<boolean> {
 export function getNext(): Promise<Types.Schema.EventLoop> {
 	var now = Date.now();
 
-	return SlowNode.connection("eventloop")
+	return SlowNode.connection("eventLoop")
 		.select()
 		.where("runAt", "=", 0)
 		.orWhere("runAt", "<=", now)

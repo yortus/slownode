@@ -2,7 +2,7 @@ var SlowNode = require("../index");
 function add(functionId, options) {
     options = options || {};
     var storable = toStorableCall(functionId, options);
-    var query = SlowNode.connection("eventloop")
+    var query = SlowNode.connection("eventLoop")
         .insert(storable);
     if (options.trx)
         query.transacting(options.trx);
@@ -10,7 +10,7 @@ function add(functionId, options) {
 }
 exports.add = add;
 function remove(id) {
-    return SlowNode.connection("eventloop")
+    return SlowNode.connection("eventLoop")
         .delete()
         .where("id", "=", id)
         .then(function (rows) { return rows > 0; })
@@ -19,7 +19,7 @@ function remove(id) {
 exports.remove = remove;
 function getNext() {
     var now = Date.now();
-    return SlowNode.connection("eventloop")
+    return SlowNode.connection("eventLoop")
         .select()
         .where("runAt", "=", 0)
         .orWhere("runAt", "<=", now)

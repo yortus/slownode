@@ -23,6 +23,7 @@
         "./src/slowFunction/setInterval.ts",
         "./src/slowFunction/setTimeout.ts",
         "./src/slowFunction/toStorable.ts",
+        "./src/slowPromise/index.ts",
         "./src/start.ts",
         "./src/stop.ts",
         "./src/store/create.ts",
