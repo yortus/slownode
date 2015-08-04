@@ -28,23 +28,24 @@ describe("EventLoop behaviour tests", function () {
     });
     it("will create an immediate function call", function (done) {
         SlowNode.setImmediate(function () { return console.log("test"); });
-        setTimeout(function () { return done(); }, 500);
+        wait(done);
     });
-    it("will create an immediate function call with dependencies", function (done) {
+    it("will create an immediate function call with injected reference", function (done) {
         SlowNode.setImmediate(function () {
-            var hash = this.cry.createHash("md5")
-                .update("test")
-                .digest("hex");
-            console.log(hash);
-        }, {
-            dependencies: [{
-                    reference: "crypto",
-                    as: "cry"
-                }]
-        });
-        setTimeout(function () { return done(); }, 500);
+            console.log(this.h.STATUS_CODES['200']);
+        }, dep("h", "http"));
+        wait(done);
+    });
+    it("will create an immediate function call with injected value", function (done) {
+        SlowNode.setImmediate(function () {
+            console.log(this.injectedValue);
+        }, dep("injectedValue", null, "OK"));
+        wait(done);
     });
 });
+function wait(done) {
+    setTimeout(function () { return done(); }, 500);
+}
 function start(pollIntervalMs, retryCount, retryIntervalMs) {
     retryCount = retryCount || null;
     retryIntervalMs = retryIntervalMs || null;
@@ -53,5 +54,17 @@ function start(pollIntervalMs, retryCount, retryIntervalMs) {
         retryCount: retryCount,
         retryIntervalMs: retryIntervalMs
     });
+}
+function dep(as, reference, value) {
+    var dep = {
+        dependencies: [{
+                as: as,
+            }]
+    };
+    if (reference == null)
+        dep.dependencies[0].value = value;
+    else
+        dep.dependencies[0].reference = reference;
+    return dep;
 }
 //# sourceMappingURL=eventloop.js.map

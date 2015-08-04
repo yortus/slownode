@@ -34,10 +34,15 @@ function createCall(slowFunc, call) {
 }
 function storedFuncWrapper(func, args) {
     var deps = func.options.dependencies
-        .map(function (dep) { return "this." + dep.as + " = require(\'" + dep.reference + "\')"; })
+        .map(function (dep) { return "this." + dep.as + " = " + inject(dep); })
         .join("; ");
     eval(deps);
     return func.body.call(this, args);
+}
+function inject(dependency) {
+    return dependency.reference == null
+        ? JSON.stringify(dependency.value)
+        : "require(\'" + dependency.reference + "\')";
 }
 module.exports = callFunc;
 //# sourceMappingURL=exec.js.map
