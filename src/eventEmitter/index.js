@@ -1,4 +1,5 @@
 var listenerStore = require("../store/listener");
+var loopStore = require("../store/eventLoop");
 /**
  *
  * Implicit events when adding/removing listeners:
@@ -30,7 +31,8 @@ function emit(event) {
     for (var _i = 1; _i < arguments.length; _i++) {
         args[_i - 1] = arguments[_i];
     }
-    listenerStore.getListeners(event);
+    return listenerStore.getListeners(event)
+        .then(function (listeners) { return loopStore.execListeners(listeners, args); });
 }
 exports.emit = emit;
 //# sourceMappingURL=index.js.map

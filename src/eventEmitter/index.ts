@@ -1,6 +1,8 @@
 import Types = require("slownode");
 import listenerStore = require("../store/listener");
 import funcStore = require("../store/slowFunction");
+import loopStore = require("../store/eventLoop");
+
 
 /**
  * 
@@ -36,6 +38,6 @@ export function listeners(event: string) {
 }
 
 export function emit(event: string, ...args: any[]): Promise<boolean> {
-	listenerStore.getListeners(event)
-	
+	return listenerStore.getListeners(event)
+		.then(listeners => loopStore.execListeners(listeners, args))	
 }

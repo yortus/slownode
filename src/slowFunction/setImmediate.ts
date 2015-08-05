@@ -5,9 +5,9 @@ export = immediate;
 
 function immediate(func: () => any, options?: Types.SlowFunctionOptions) {
 	options = options || {};
-	options.runAt = Date.now();
+	options.runAt = 0;
 	options.intervalMs = 0;
-
+	
 	return store.add({
 		body: func,
 		options: options

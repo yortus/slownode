@@ -24,15 +24,4 @@ function removeListeners(event) {
         .where("topic", "=", event);
 }
 exports.removeListeners = removeListeners;
-function addEvent(event) {
-    return db("event")
-        .insert(event);
-}
-exports.addEvent = addEvent;
-function removeEvent(id) {
-    return db("event")
-        .delete()
-        .where("id", "=", id);
-}
-exports.removeEvent = removeEvent;
 //# sourceMappingURL=listener.js.map

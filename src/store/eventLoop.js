@@ -1,25 +1,48 @@
+var Promise = require("bluebird");
 var SlowNode = require("../index");
+var db = SlowNode.connection;
 function add(functionId, options) {
     options = options || {};
     var storable = toStorableCall(functionId, options);
-    var query = SlowNode.connection("eventLoop")
+    return db("eventLoop")
         .insert(storable);
-    if (options.trx)
-        query.transacting(options.trx);
-    return query;
 }
 exports.add = add;
+function execListeners(listeners, args) {
+    var hasListeners = listeners.length === 0;
+    if (!hasListeners)
+        return Promise.resolve(false);
+    return db.transaction(function (trx) {
+        var promises = listeners
+            .map(function (l) { return exec.apply(l.functionId, args).transacting(trx); });
+        return Promise.all(promises)
+            .then(trx.commit)
+            .catch(trx.rollback);
+    }).then(function () { return true; });
+}
+exports.execListeners = execListeners;
+function exec(functionId) {
+    var args = [];
+    for (var _i = 1; _i < arguments.length; _i++) {
+        args[_i - 1] = arguments[_i];
+    }
+    var record = {
+        funcId: functionId,
+        arguments: JSON.stringify(args)
+    };
+    return db("eventLoop")
+        .insert(record);
+}
+exports.exec = exec;
 function remove(id) {
-    return SlowNode.connection("eventLoop")
+    return db("eventLoop")
         .delete()
-        .where("id", "=", id)
-        .then(function (rows) { return rows > 0; })
-        .catch(function () { return false; });
+        .where("id", "=", id);
 }
 exports.remove = remove;
 function getNext() {
     var now = Date.now();
-    return SlowNode.connection("eventLoop")
+    return db("eventLoop")
         .select()
         .where("runAt", "=", 0)
         .orWhere("runAt", "<=", now)

@@ -1,40 +1,47 @@
 import Types = require("slownode");
 import toStorable = require("../slowFunction/toStorable");
 import SlowNode = require("../index");
+import db = SlowNode.connection;
 import eventLoopStore = require("./eventLoop");
+import transact = require("./transact");
+import errors = require("../errors");
+var QueryBuilder = db("");
 
-export function add(slowFunction: Types.SlowFunction): Promise<string> {
+export function add(slowFunction: Types.SlowFunction) {
 	var options = slowFunction.options || {};
 	var storableFunc = toStorable(slowFunction);
 	slowFunction.id = storableFunc.id;
 
-	return SlowNode.connection.transaction(trx => {
-		options.trx = trx;
+	return db("function").insert(storableFunc);
+}
 
-		return SlowNode.connection("function")
-			.insert(storableFunc)
-			.transacting(trx)
-			.then(() => addToEventLoop(slowFunction, storableFunc, trx))
-			.then(trx.commit)
-			.catch(trx.rollback);
-	});
+export function addTimed(slowFunction: Types.SlowFunction) {
+	if (!slowFunction.options) throw new Error(errors.TimedFuncsMustHaveOptions);
+
+	var storableFn = toStorable(slowFunction);
+
+	// db.transaction(trx=> {
+	// 	return trx.insert(storableFn)
+	// 		.into("function")
+	// 		.then(() => trx.insert(;
+	// })
+
+
 }
 
 export function get(functionId: string): Promise<Types.Schema.Function> {
-	return SlowNode.connection("function")
+	return db("function")
 		.select()
 		.where("id", "=", functionId)
-		.then(rows => rows[0]);
 }
 
-function addToEventLoop(slowFunction: Types.SlowFunction, storable: Types.Schema.Function, trx) {
+function addToEventLoop(slowFunction: Types.SlowFunction, storable: Types.Schema.Function) {
 	var opts = slowFunction.options || {};
 	if (opts.runAt === 0) {
 		return Promise.resolve(slowFunction.id);
 	}
 
 	var query = eventLoopStore.add(slowFunction.id, {
-		trx: trx,
 		runAt: opts.runAt,
 		dependencies: opts.dependencies || [],
 		intervalMs: storable.intervalMs,

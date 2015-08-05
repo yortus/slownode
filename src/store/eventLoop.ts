@@ -1,30 +1,51 @@
+import Promise = require("bluebird");
 import Types = require("slownode");
 import SlowNode = require("../index");
+import db = SlowNode.connection;
 
-export function add(functionId: string, options?: Types.SlowFunctionOptions): Promise<number> {
+export function add(functionId: string, options?: Types.SlowFunctionOptions) {
 	options = options || {};
 	var storable = toStorableCall(functionId, options);
 
-	var query = SlowNode.connection("eventLoop")
+	return db("eventLoop")
 		.insert(storable);
-
-	if (options.trx) query.transacting(options.trx);
-
-	return query;
 }
 
-export function remove(id: number): Promise<boolean> {
-	return SlowNode.connection("eventLoop")
+export function execListeners(listeners: Types.Schema.EventListener[], args: any[]) {
+	var hasListeners = listeners.length === 0;
+	if (!hasListeners) return Promise.resolve(false);
+
+	return db.transaction(trx => {
+
+		var promises = listeners
+			.map(l => exec.apply(l.functionId, args).transacting(trx));
+
+		return Promise.all(promises)
+			.then(trx.commit)
+			.catch(trx.rollback);
+	}).then(() => true);
+}
+
+export function exec(functionId: string, ...args: any[]) {
+	var record = {
+		funcId: functionId,
+		arguments: JSON.stringify(args)
+	};
+
+	return db("eventLoop")
+		.insert(record);
+}
+
+export function remove(id: number) {
+	return db("eventLoop")
 		.delete()
-		.where("id", "=", id)
-		.then(rows => rows > 0)
-		.catch(() => false);
+		.where("id", "=", id);
 }
 
 export function getNext(): Promise<Types.Schema.EventLoop> {
 	var now = Date.now();
 
-	return SlowNode.connection("eventLoop")
+	return db("eventLoop")
 		.select()
 		.where("runAt", "=", 0)
 		.orWhere("runAt", "<=", now)
@@ -37,7 +58,7 @@ function toStorableCall(functionId: string, options?: Types.SlowFunctionOptions)
 	var options = options || {};
 	var runAt = options.runAt || 0;
 	var runAtReadable = new Date(runAt).toString();
-	
+
 	options.arguments = options.arguments || {};
 
 	return {
