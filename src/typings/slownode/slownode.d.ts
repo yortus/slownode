@@ -96,17 +96,16 @@ declare module "slownode" {
 			id?: string;
 			body: string;
 			dependencies: string;
-			callOnce?: number;
 			isPromise?: number;
-			intervalMs: number;
-			retryCount: number;
-			retryIntervalMs: number;
+			intervalMs?: number;
+			retryCount?: number;
+			retryIntervalMs?: number;
 		}
 
 		export interface EventLoop {
 			id?: number;
 			funcId: string;
-			runAt: number;
+			runAt?: number;
 			runAtReadable?: string;
 			arguments?: string;
 		}
@@ -115,15 +114,15 @@ declare module "slownode" {
 			id?: number;
 			topic: string;
 			functionId: string;
-			runOnce: number;
+			runOnce?: number;
 		}
 
 		export interface Promise {
 			id?: number;
 			funcId: string;
-			state: number;
-			onFulfull: number;
-			onReject: number;
+			state?: number;
+			onFulfull?: number;
+			onReject?: number;
 			value: string;
 		}
 	}

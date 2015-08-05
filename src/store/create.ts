@@ -67,7 +67,7 @@ function listenerTable(table: any) {
 function promiseTable(table: any) {
 	table.increments("id").primary();
 	table.text("funcId");
-	table.integer("state");
+	table.integer("state").defaultTo(0);
 	table.integer("onFulfill").defaultTo(0);
 	table.integer("onReject").defaultTo(0);
 	table.text("value");
