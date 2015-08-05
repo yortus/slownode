@@ -27,7 +27,9 @@ function addListener(event, listener, options) {
             .then(function () { return store.addListener(listenRow).transacting(trx); })
             .then(trx.commit)
             .catch(trx.rollback);
-    });
+    })
+        .then(function () { return true; })
+        .catch(function (err) { return false; });
 }
 exports.addListener = addListener;
 function on(event, listener, options) {

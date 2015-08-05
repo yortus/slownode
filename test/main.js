@@ -48,6 +48,10 @@ describe("EventLoop behaviour tests", function () {
         wait(done);
     });
     it("will create an event listener", function (done) {
+        SlowNode.EventEmitter.once("test", function (arg) { console.log(arg); })
+            .then(function (res) { return expect(res).to.be.equal(true); })
+            .then(function () { return done(); })
+            .catch(done);
     });
 });
 function wait(done) {

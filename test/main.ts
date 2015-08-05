@@ -64,7 +64,11 @@ describe("EventLoop behaviour tests", () => {
 	});
 	
 	it("will create an event listener", done => {
-	})
+		SlowNode.EventEmitter.once("test", function(arg) { console.log(arg); })
+			.then(res => expect(res).to.be.equal(true))
+			.then(() => done())
+			.catch(done);
+	});
 
 });
 

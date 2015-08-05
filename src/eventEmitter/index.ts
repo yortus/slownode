@@ -12,7 +12,7 @@ import store = require("../store/index");
  */
 
 
-export function addListener(event: string, listener: (...args: any[]) => any, options?: Types.SlowFunctionOptions) {
+export function addListener(event: string, listener: (...args: any[]) => any, options?: Types.SlowFunctionOptions): Promise<boolean> {
 	options = options || {};
 	options.runAt = -1;
 	var func: Types.SlowFunction = {
@@ -33,7 +33,9 @@ export function addListener(event: string, listener: (...args: any[]) => any, op
 			.then(() => store.addListener(listenRow).transacting(trx))
 			.then(trx.commit)
 			.catch(trx.rollback)
-	});
+	})
+		.then(() => true)
+		.catch(err => false);
 }
 
 export function on(event: string, listener: (...args: any[]) => any, options?: Types.SlowFunctionOptions) {
@@ -62,7 +64,7 @@ export function listeners(event: string) {
 export function emit(event: string, ...args: any[]): Promise<boolean> {
 
 	return SlowNode.connection.transaction(trx => {
-		
+
 		var toCall = (l: Types.Schema.EventListener) => store
 			.addCall(l.funcId, { arguments: args })
 			.transacting(trx);
@@ -72,7 +74,7 @@ export function emit(event: string, ...args: any[]): Promise<boolean> {
 			.then(Promise.all)
 			.then(trx.commit)
 			.catch(trx.rollback)
-			
+
 	}).then(() => true);
 
 }
