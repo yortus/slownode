@@ -24,7 +24,7 @@ function createTable(exists: Array<boolean>) {
 	var promises = [db.schema.createTable("event", eventTable),
 		db.schema.createTable("function", functionTable),
 		db.schema.createTable("eventLoop", eventLoopTable),
-		db.schema.createTable("listener", eventListenersTable),
+		db.schema.createTable("listener", listenerTable),
 		db.schema.createTable("promise", promiseTable)];
 
 	return Promise.all(promises)
@@ -35,19 +35,18 @@ function functionTable(table: any) {
 	table.text("id").unique();
 	table.text("body");
 	table.text("dependencies");
-	table.integer("callOnce").defaultTo(0); // 0 | 1
 	table.integer("isPromise").defaultTo(0); // 0 | 1
-	table.bigInteger("intervalMs");
-	table.integer("retryCount"); // 0 -> N
-	table.bigInteger("retryIntervalMs");
+	table.bigInteger("intervalMs").defaultTo(0);
+	table.integer("retryCount").defaultTo(0); // 0 -> N
+	table.bigInteger("retryIntervalMs").defaultTo(0);
 }
 
 function eventLoopTable(table: any) {
 	table.increments("id").primary();
 	table.text("funcId");
-	table.bigInteger("runAt"); // 0 --> N
-	table.text("runAtReadable");
-	table.text("arguments"); // JSON array
+	table.bigInteger("runAt").defaultTo(0); // 0 --> N
+	table.text("runAtReadable").defaultTo("Immediately");
+	table.text("arguments").defaultTo("{}"); // JSON array
 }
 
 function eventTable(table: any) {
@@ -58,18 +57,18 @@ function eventTable(table: any) {
 	table.text("createdAtReable");
 }
 
-function eventListenersTable(table: any) {
+function listenerTable(table: any) {
 	table.increments("id").primary();
 	table.text("topic");
-	table.text("functionId");
-	table.integer("runOnce");
+	table.text("funcId");
+	table.integer("runOnce").defaultTo(0);
 }
 
 function promiseTable(table: any) {
 	table.increments("id").primary();
 	table.text("funcId");
 	table.integer("state");
-	table.integer("onFulfill");
-	table.integer("onReject");
+	table.integer("onFulfill").defaultTo(0);
+	table.integer("onReject").defaultTo(0);
 	table.text("value");
 }
