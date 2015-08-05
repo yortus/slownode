@@ -1,6 +1,6 @@
 import Types = require("slownode");
 import EventLoop = require("./index");
-import funcStore = require("../store/slowFunction");
+import store = require("../store/index");
 import deserialise = require("../slowFunction/deserialise");
 import SlowNode = require("../index");
 export = callFunc;
@@ -25,7 +25,7 @@ function getSlowFunc(funcId: string) {
 	var cachedFunc = funcCache[funcId];
 	if (cachedFunc) return Promise.resolve(cachedFunc);
 
-	return funcStore.get(funcId)
+	return store.get(funcId)
 		.then(cacheFunc);
 }
 
@@ -46,11 +46,17 @@ function createCall(slowFunc: Types.SlowFunction, call: Types.Schema.EventLoop) 
 
 function storedFuncWrapper(func: Types.SlowFunction, args?: any) {
 	var deps = func.options.dependencies
-		.map(dep => `this.${dep.as} = ${inject(dep)}`)
+		.map(dep => `this.${dep.as} = ${inject(dep) }`)
 		.join("; ");
 
-	eval(deps);
-	return func.body.call(this, args);
+	try {
+		eval(deps);
+		return func.body.call(this, args);
+	} catch (ex) {
+		// TODO: conditional error handling...
+		// TODO: notify...
+	}
+	
 }
 
 function inject(dependency: Types.Dependency) {

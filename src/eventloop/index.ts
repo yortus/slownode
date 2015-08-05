@@ -1,8 +1,7 @@
 import SlowNode = require("slownode");
 import errors = require("../errors");
 import Knex = require("knex");
-
-import store = require("../store/eventLoop");
+import store = require("../store/index");
 import execCall = require("./exec");
 import runLoop = require("./runLoop");
 import stopEvents = require("./stop");

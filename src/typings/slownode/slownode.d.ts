@@ -92,6 +92,7 @@ declare module "slownode" {
 			intervalMs?: number;
 			retryCount?: number;
 			retryIntervalMs?: number;
+			runOnce?: number;
 		}
 
 		export interface EventLoop {
@@ -106,7 +107,6 @@ declare module "slownode" {
 			id?: number;
 			topic: string;
 			functionId: string;
-			runOnce?: number;
 		}
 
 		export interface Promise {

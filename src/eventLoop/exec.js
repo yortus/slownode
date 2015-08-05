@@ -36,8 +36,12 @@ function storedFuncWrapper(func, args) {
     var deps = func.options.dependencies
         .map(function (dep) { return ("this." + dep.as + " = " + inject(dep)); })
         .join("; ");
-    eval(deps);
-    return func.body.call(this, args);
+    try {
+        eval(deps);
+        return func.body.call(this, args);
+    }
+    catch (ex) {
+    }
 }
 function inject(dependency) {
     return dependency.reference == null

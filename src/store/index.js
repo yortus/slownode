@@ -1,5 +1,7 @@
 var Promise = require("bluebird");
 var SlowNode = require("../index");
+var toStorable = require("../slowFunction/toStorable");
+var errors = require("../errors");
 var db = SlowNode.connection;
 function add(functionId, options) {
     options = options || {};
@@ -63,4 +65,46 @@ function toStorableCall(functionId, options) {
         arguments: JSON.stringify(options.arguments)
     };
 }
-//# sourceMappingURL=eventLoop.js.map
+function addListener(listener) {
+    return db("listener")
+        .insert(listener);
+}
+exports.addListener = addListener;
+function getListeners(event) {
+    return db("listener")
+        .select()
+        .where("topic", "=", event);
+}
+exports.getListeners = getListeners;
+function removeListener(event) {
+    return db("listener")
+        .delete()
+        .where("topic", "=", event)
+        .limit(1);
+}
+exports.removeListener = removeListener;
+function removeListeners(event) {
+    return db("listener")
+        .delete()
+        .where("topic", "=", event);
+}
+exports.removeListeners = removeListeners;
+function addFunction(slowFunction) {
+    var storableFunc = toStorable(slowFunction);
+    return db("function").insert(storableFunc);
+}
+exports.addFunction = addFunction;
+function addTimedFunction(slowFunction) {
+    if (!slowFunction.options)
+        throw new Error(errors.TimedFuncsMustHaveOptions);
+    var storableFn = toStorable(slowFunction);
+    // TODO...
+}
+exports.addTimedFunction = addTimedFunction;
+function getFunction(functionId) {
+    return db("function")
+        .select()
+        .where("id", "=", functionId);
+}
+exports.getFunction = getFunction;
+//# sourceMappingURL=index.js.map

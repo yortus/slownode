@@ -1,4 +1,4 @@
-var store = require("../store/eventLoop");
+var store = require("../store/index");
 var execCall = require("./exec");
 var runLoop = require("./runLoop");
 exports.add = store.add;

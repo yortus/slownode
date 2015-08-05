@@ -40,6 +40,7 @@ function functionTable(table: any) {
 	table.bigInteger("intervalMs").defaultTo(0);
 	table.integer("retryCount").defaultTo(0); // 0 -> N
 	table.bigInteger("retryIntervalMs").defaultTo(0);
+	table.integer("runOnce").defaultTo(0);
 }
 
 function eventLoopTable(table: any) {
@@ -47,14 +48,13 @@ function eventLoopTable(table: any) {
 	table.text("funcId");
 	table.bigInteger("runAt").defaultTo(0); // 0 --> N
 	table.text("runAtReadable").defaultTo("Immediately");
-	table.text("arguments").defaultTo("{}"); // JSON array
+	table.text("arguments").defaultTo("[]"); // JSON array
 }
 
 function listenerTable(table: any) {
 	table.increments("id").primary();
 	table.text("topic");
 	table.text("funcId");
-	table.integer("runOnce").defaultTo(0);
 }
 
 function promiseTable(table: any) {
