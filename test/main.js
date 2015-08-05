@@ -47,6 +47,8 @@ describe("EventLoop behaviour tests", function () {
         }, 250, dep("start", null, start));
         wait(done);
     });
+    it("will create an event listener", function (done) {
+    });
 });
 function wait(done) {
     setTimeout(function () { return done(); }, 500);

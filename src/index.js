@@ -13,5 +13,5 @@ exports.setTimeout = timeout;
 exports.setImmediate = immediate;
 exports.setInterval = interval;
 exports.Promise = null;
-exports.Event = null;
+exports.Event = require("./eventEmitter/index");
 //# sourceMappingURL=index.js.map

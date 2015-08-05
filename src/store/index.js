@@ -32,7 +32,7 @@ function exec(functionId) {
         funcId: functionId,
         arguments: JSON.stringify(args)
     };
-    return db("eventLoop")
+    return SlowNode.connection("eventLoop")
         .insert(record);
 }
 exports.exec = exec;

@@ -22,4 +22,4 @@ export var setImmediate = immediate;
 export var setInterval = interval;
 
 export var Promise = null;
-export var Event = null;
+export import EventEmitter = require("./eventEmitter/index");

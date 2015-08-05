@@ -62,6 +62,9 @@ describe("EventLoop behaviour tests", () => {
 
 		wait(done);
 	});
+	
+	it("will create an event listener", done => {
+	})
 
 });
 

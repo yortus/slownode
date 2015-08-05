@@ -37,6 +37,6 @@ export function exec(functionId: string, ...args: any[]) {
 		arguments: JSON.stringify(args)
 	};
 
-	return db("eventLoop")
+	return SlowNode.connection("eventLoop")
 		.insert(record);
 }
