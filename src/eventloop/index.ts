@@ -8,4 +8,7 @@ export import add = store.addCall;
 export import exec = require("./exec");
 export import remove = store.removeCall;
 export import getNext = store.nextCall;
-export import flush = require("./runLoop");
+
+export function flush() {
+	return getNext().then(exec);
+}
