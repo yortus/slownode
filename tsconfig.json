@@ -9,7 +9,7 @@
         "./test/**/*.ts"
     ],
     "files": [
-        "./test/eventloop.ts",
+        "./test/main.ts",
         "./src/errors.ts",
         "./src/eventEmitter/index.ts",
         "./src/eventLoop/exec.ts",
