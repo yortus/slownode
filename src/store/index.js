@@ -1,30 +1,16 @@
 var Promise = require("bluebird");
 var SlowNode = require("../index");
 var db = SlowNode.connection;
-var addCall = require("./eventLoop/add");
-var nextCall = require("./eventLoop/next");
-var removeCall = require("./eventLoop/remove");
-var addListener = require("./listener/add");
-var getListeners = require("./listener/get");
-var removeListener = require("./listener/remove");
-var removeListeners = require("./listener/removeAll");
-var addFunction = require("./slowFunction/add");
-var addTimedFunction = require("./slowFunction/addTimed");
-var getFunction = require("./slowFunction/get");
-var api = {
-    addCall: addCall,
-    nextCall: nextCall,
-    removeCall: removeCall,
-    addListener: addListener,
-    getListeners: getListeners,
-    removeListener: removeListener,
-    removeListeners: removeListeners,
-    addFunction: addFunction,
-    addTimedFunction: addTimedFunction,
-    getFunction: getFunction,
-    exec: exec,
-    execListeners: execListeners,
-};
+exports.addCall = require("./eventLoop/add");
+exports.nextCall = require("./eventLoop/next");
+exports.removeCall = require("./eventLoop/remove");
+exports.addListener = require("./listener/add");
+exports.getListeners = require("./listener/get");
+exports.removeListener = require("./listener/remove");
+exports.removeListeners = require("./listener/removeAll");
+exports.addFunction = require("./slowFunction/add");
+exports.addTimedFunction = require("./slowFunction/addTimed");
+exports.getFunction = require("./slowFunction/get");
 function execListeners(listeners, args) {
     var hasListeners = listeners.length === 0;
     if (!hasListeners)
@@ -37,6 +23,7 @@ function execListeners(listeners, args) {
             .catch(trx.rollback);
     }).then(function () { return true; });
 }
+exports.execListeners = execListeners;
 function exec(functionId) {
     var args = [];
     for (var _i = 1; _i < arguments.length; _i++) {
@@ -49,5 +36,5 @@ function exec(functionId) {
     return db("eventLoop")
         .insert(record);
 }
-module.exports = api;
+exports.exec = exec;
 //# sourceMappingURL=index.js.map

@@ -19,7 +19,7 @@ function getSlowFunc(funcId) {
     var cachedFunc = funcCache[funcId];
     if (cachedFunc)
         return Promise.resolve(cachedFunc);
-    return store.get(funcId)
+    return store.getFunction(funcId)
         .then(cacheFunc);
 }
 function cacheFunc(rawFunc) {

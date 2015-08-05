@@ -6,8 +6,8 @@ import execCall = require("./exec");
 import runLoop = require("./runLoop");
 import stopEvents = require("./stop");
 
-export var add = store.add;
+export var add = store.addCall;
 export var exec = execCall;
-export var remove = store.remove;
-export var getNext = store.getNext;
+export var remove = store.removeCall;
+export var getNext = store.nextCall;
 export var flush = runLoop;
