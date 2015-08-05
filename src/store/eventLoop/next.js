@@ -4,8 +4,8 @@ function next() {
     var now = Date.now();
     return db("eventLoop")
         .select()
-        .where("runAt", "=", 0)
-        .orWhere("runAt", "<=", now)
+        .where("runAt", ">=", 0)
+        .andWhere("runAt", "<=", now)
         .orderBy("id", "asc")
         .limit(1)
         .then(function (calls) { return calls[0]; });

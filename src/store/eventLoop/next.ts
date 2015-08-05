@@ -8,8 +8,8 @@ function next(): Promise<Types.Schema.EventLoop> {
 
 	return db("eventLoop")
 		.select()
-		.where("runAt", "=", 0)
-		.orWhere("runAt", "<=", now)
+		.where("runAt", ">=", 0)
+		.andWhere("runAt", "<=", now)
 		.orderBy("id", "asc")
 		.limit(1)
 		.then(calls => calls[0]);

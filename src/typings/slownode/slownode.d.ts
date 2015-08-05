@@ -1,4 +1,5 @@
 /// <reference path="../knex/knex.d.ts" />
+/// <reference path="../bluebird/bluebird.d.ts" />
 /// <reference path="../node/node.d.ts" />
 
 declare module "slownode" {
@@ -61,6 +62,7 @@ declare module "slownode" {
 	export interface SlowFunctionOptions {
 		dependencies?: Array<Dependency>
 		runAt?: number;
+		callOnce?: number;
 		intervalMs?: number;
 		retryCount?: number;
 		retryIntervalMs?: number;
@@ -71,11 +73,6 @@ declare module "slownode" {
 		reference?: string;
 		value?: any;
 		as: string;
-	}
-
-	export interface Subscriber {
-		id: string;
-		callback: (args: any) => Promise<any>;
 	}
 
 	export interface Config {
@@ -92,7 +89,7 @@ declare module "slownode" {
 			intervalMs?: number;
 			retryCount?: number;
 			retryIntervalMs?: number;
-			runOnce?: number;
+			callOnce?: number;
 		}
 
 		export interface EventLoop {
@@ -106,7 +103,7 @@ declare module "slownode" {
 		export interface EventListener {
 			id?: number;
 			topic: string;
-			functionId: string;
+			funcId: string;
 		}
 
 		export interface Promise {

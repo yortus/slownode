@@ -1,3 +1,5 @@
+var SlowNode = require("../index");
+var db = SlowNode.connection;
 var store = require("../store/index");
 /**
  *
@@ -6,14 +8,36 @@ var store = require("../store/index");
  * 'removeListener'
  *
  */
-function addListener(event, listener) {
+function addListener(event, listener, options) {
+    options = options || {};
+    options.runAt = -1;
+    var func = {
+        body: listener,
+        options: options
+    };
+    var listenRow = {
+        topic: event,
+        funcId: ""
+    };
+    return db.transaction(function (trx) {
+        store
+            .addFunction(func)
+            .transacting(trx)
+            .then(function (ids) { return listenRow.funcId = ids[0]; })
+            .then(function () { return store.addListener(listenRow).transacting(trx); })
+            .then(trx.commit)
+            .catch(trx.rollback);
+    });
 }
 exports.addListener = addListener;
-function on(event, listener) {
-    return addListener(event, listener);
+function on(event, listener, options) {
+    return addListener(event, listener, options);
 }
 exports.on = on;
-function once(event, listener) {
+function once(event, listener, options) {
+    options = options || {};
+    options.callOnce = 1;
+    return addListener(event, listener, options);
 }
 exports.once = once;
 function removeListener(event) {

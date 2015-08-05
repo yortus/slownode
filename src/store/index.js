@@ -17,7 +17,7 @@ function execListeners(listeners, args) {
         return Promise.resolve(false);
     return db.transaction(function (trx) {
         var promises = listeners
-            .map(function (l) { return exec.apply(l.functionId, args).transacting(trx); });
+            .map(function (l) { return exec.apply(l.funcId, args).transacting(trx); });
         return Promise.all(promises)
             .then(trx.commit)
             .catch(trx.rollback);

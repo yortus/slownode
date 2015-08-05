@@ -24,7 +24,7 @@ export function execListeners(listeners: Types.Schema.EventListener[], args: any
 	return db.transaction(trx => {
 
 		var promises = listeners
-			.map(l => exec.apply(l.functionId, args).transacting(trx));
+			.map(l => exec.apply(l.funcId, args).transacting(trx));
 
 		return Promise.all(promises)
 			.then(trx.commit)
@@ -41,19 +41,3 @@ export function exec(functionId: string, ...args: any[]) {
 	return db("eventLoop")
 		.insert(record);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
