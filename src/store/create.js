@@ -1,7 +1,7 @@
 var Promise = require("bluebird");
 var errors = require("../errors");
 var index_1 = require("../index");
-var tables = ["function", "eventLoop", "event", "listener", "promise"];
+var tables = ["function", "eventLoop", "listener", "promise"];
 function create() {
     return tablesExists()
         .then(createTable)
@@ -16,11 +16,12 @@ function createTable(exists) {
         return Promise.resolve(true);
     if (exists.some(function (e) { return e === true; }))
         throw new Error(errors.DatabaseInvalid);
-    var promises = [index_1.connection.schema.createTable("event", eventTable),
+    var promises = [
         index_1.connection.schema.createTable("function", functionTable),
         index_1.connection.schema.createTable("eventLoop", eventLoopTable),
         index_1.connection.schema.createTable("listener", listenerTable),
-        index_1.connection.schema.createTable("promise", promiseTable)];
+        index_1.connection.schema.createTable("promise", promiseTable)
+    ];
     return Promise.all(promises)
         .then(function () { return true; });
 }
@@ -39,13 +40,6 @@ function eventLoopTable(table) {
     table.bigInteger("runAt").defaultTo(0); // 0 --> N
     table.text("runAtReadable").defaultTo("Immediately");
     table.text("arguments").defaultTo("{}"); // JSON array
-}
-function eventTable(table) {
-    table.increments("id").primary();
-    table.text("topic");
-    table.text("arguments");
-    table.bigInteger("createdAt");
-    table.text("createdAtReable");
 }
 function listenerTable(table) {
     table.increments("id").primary();

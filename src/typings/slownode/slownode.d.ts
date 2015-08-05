@@ -84,14 +84,6 @@ declare module "slownode" {
 
 	export module Schema {
 
-		export interface Event {
-			id?: number;
-			topic: string;
-			arguments: string;
-			createdAt: number;
-			createdAtReadable: string;
-		}
-
 		export interface Function {
 			id?: string;
 			body: string;
