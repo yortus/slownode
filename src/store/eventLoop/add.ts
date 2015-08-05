@@ -6,6 +6,10 @@ export = add;
 
 function add(functionId: string, options?: Types.SlowFunctionOptions) {
 	options = options || {};
+	
+	if (typeof options.arguments !== "string")
+		options.arguments = JSON.stringify(options.arguments || []);
+		 
 	var storable = toStorableCall(functionId, options);
 
 	return db("eventLoop")

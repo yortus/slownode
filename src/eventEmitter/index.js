@@ -1,3 +1,4 @@
+var Promise = require("bluebird");
 var SlowNode = require("../index");
 var db = SlowNode.connection;
 var store = require("../store/index");
@@ -54,8 +55,16 @@ function emit(event) {
     for (var _i = 1; _i < arguments.length; _i++) {
         args[_i - 1] = arguments[_i];
     }
-    return store.getListeners(event)
-        .then(function (listeners) { return store.execListeners(listeners, args); });
+    return db.transaction(function (trx) {
+        var toCall = function (l) { return store
+            .addCall(l.funcId, { arguments: args })
+            .transacting(trx); };
+        store.getListeners(event)
+            .then(function (listeners) { return listeners.map(toCall); })
+            .then(Promise.all)
+            .then(trx.commit)
+            .catch(trx.rollback);
+    }).then(function () { return true; });
 }
 exports.emit = emit;
 //# sourceMappingURL=index.js.map

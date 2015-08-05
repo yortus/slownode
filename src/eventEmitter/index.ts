@@ -1,3 +1,4 @@
+import Promise = require("bluebird")
 import Types = require("slownode");
 import SlowNode = require("../index");
 import db = SlowNode.connection;
@@ -43,7 +44,7 @@ export function on(event: string, listener: (...args: any[]) => any, options?: T
 export function once(event: string, listener: (...args: any[]) => any, options?: Types.SlowFunctionOptions) {
 	options = options || {};
 	options.callOnce = 1;
-	
+
 	return addListener(event, listener, options);
 }
 
@@ -60,6 +61,19 @@ export function listeners(event: string) {
 }
 
 export function emit(event: string, ...args: any[]): Promise<boolean> {
-	return store.getListeners(event)
-		.then(listeners => store.execListeners(listeners, args))
+
+	return db.transaction(trx => {
+		
+		var toCall = (l: Types.Schema.EventListener) => store
+			.addCall(l.funcId, { arguments: args })
+			.transacting(trx);
+
+		store.getListeners(event)
+			.then(listeners => listeners.map(toCall))
+			.then(Promise.all)
+			.then(trx.commit)
+			.catch(trx.rollback)
+			
+	}).then(() => true);
+
 }

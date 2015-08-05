@@ -2,6 +2,8 @@ var SlowNode = require("../../index");
 var db = SlowNode.connection;
 function add(functionId, options) {
     options = options || {};
+    if (typeof options.arguments !== "string")
+        options.arguments = JSON.stringify(options.arguments || []);
     var storable = toStorableCall(functionId, options);
     return db("eventLoop")
         .insert(storable);
