@@ -2,8 +2,9 @@ import Promise = require("bluebird");
 import Types = require("slownode");
 import SlowNode = require("../../index");
 import db = SlowNode.connection;
+export = add;
 
-export default function add(functionId: string, options?: Types.SlowFunctionOptions) {
+function add(functionId: string, options?: Types.SlowFunctionOptions) {
 	options = options || {};
 	var storable = toStorableCall(functionId, options);
 

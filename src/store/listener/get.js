@@ -5,5 +5,5 @@ function get(event) {
         .select()
         .where("topic", "=", event);
 }
-exports.default = get;
+module.exports = get;
 //# sourceMappingURL=get.js.map

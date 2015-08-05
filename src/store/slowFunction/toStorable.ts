@@ -1,6 +1,6 @@
 import Types = require("slownode");
 import crypto = require("crypto");
-import serialise = require("./serialise");
+import serialise = require("../../slowFunction/serialise");
 export = toStorable;
 
 function toStorable(slowFunction: Types.SlowFunction): Types.Schema.Function {

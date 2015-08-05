@@ -1,8 +1,9 @@
 import Types = require("slownode");
 import SlowNode = require("../../index");
 import db = SlowNode.connection;
+export = next;
 
-export default function next(): Promise<Types.Schema.EventLoop> {
+function next(): Promise<Types.Schema.EventLoop> {
 	var now = Date.now();
 
 	return db("eventLoop")

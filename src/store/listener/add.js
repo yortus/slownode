@@ -4,5 +4,5 @@ function add(listener) {
     return db("listener")
         .insert(listener);
 }
-exports.default = add;
+module.exports = add;
 //# sourceMappingURL=add.js.map

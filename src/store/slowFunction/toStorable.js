@@ -1,5 +1,5 @@
 var crypto = require("crypto");
-var serialise = require("./serialise");
+var serialise = require("../../slowFunction/serialise");
 function toStorable(slowFunction) {
     var options = slowFunction.options || {};
     var body = serialise(slowFunction.body);

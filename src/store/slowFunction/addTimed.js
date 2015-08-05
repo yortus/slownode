@@ -6,5 +6,5 @@ function addTimed(slowFunction) {
     var storableFn = toStorable(slowFunction);
     // TODO...
 }
-exports.default = addTimed;
+module.exports = addTimed;
 //# sourceMappingURL=addTimed.js.map

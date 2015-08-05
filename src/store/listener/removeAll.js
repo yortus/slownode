@@ -5,5 +5,5 @@ function removeAll(event) {
         .delete()
         .where("topic", "=", event);
 }
-exports.default = removeAll;
+module.exports = removeAll;
 //# sourceMappingURL=removeAll.js.map

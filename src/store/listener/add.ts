@@ -1,8 +1,9 @@
 import Types = require("slownode");
 import SlowNode = require("../../index");
 import db = SlowNode.connection;
+export = add;
 
-export default function add(listener: Types.Schema.EventListener) {
+function add(listener: Types.Schema.EventListener) {
 	return db("listener")
 		.insert(listener);
 }

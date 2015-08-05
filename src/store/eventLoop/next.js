@@ -10,5 +10,5 @@ function next() {
         .limit(1)
         .then(function (calls) { return calls[0]; });
 }
-exports.default = next;
+module.exports = next;
 //# sourceMappingURL=next.js.map

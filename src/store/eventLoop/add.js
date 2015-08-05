@@ -6,7 +6,6 @@ function add(functionId, options) {
     return db("eventLoop")
         .insert(storable);
 }
-exports.default = add;
 function toStorableCall(functionId, options) {
     var options = options || {};
     var runAt = options.runAt || 0;
@@ -19,4 +18,5 @@ function toStorableCall(functionId, options) {
         arguments: JSON.stringify(options.arguments)
     };
 }
+module.exports = add;
 //# sourceMappingURL=add.js.map

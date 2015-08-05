@@ -5,5 +5,5 @@ function get(functionId) {
         .select()
         .where("id", "=", functionId);
 }
-exports.default = get;
+module.exports = get;
 //# sourceMappingURL=get.js.map

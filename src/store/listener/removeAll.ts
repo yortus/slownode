@@ -1,8 +1,9 @@
 import Types = require("slownode");
 import SlowNode = require("../../index");
 import db = SlowNode.connection;
+export = removeAll;
 
-export default function removeAll(event: string) {
+function removeAll(event: string) {
 	return db("listener")
 		.delete()
 		.where("topic", "=", event);

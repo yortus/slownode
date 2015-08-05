@@ -1,8 +1,9 @@
 import Types = require("slownode");
 import SlowNode = require("../../index");
 import db = SlowNode.connection;
+export = get;
 
-export default function get(event: string) {
+function get(event: string) {
 	return db("listener")
 		.select()
 		.where("topic", "=", event);

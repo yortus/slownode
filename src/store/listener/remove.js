@@ -6,5 +6,5 @@ function remove(event) {
         .where("topic", "=", event)
         .limit(1);
 }
-exports.default = remove;
+module.exports = remove;
 //# sourceMappingURL=remove.js.map

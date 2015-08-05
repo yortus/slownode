@@ -5,5 +5,5 @@ function remove(id) {
         .delete()
         .where("id", "=", id);
 }
-exports.default = remove;
+module.exports = remove;
 //# sourceMappingURL=remove.js.map
