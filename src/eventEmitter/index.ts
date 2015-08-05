@@ -31,6 +31,6 @@ export function listeners(event: string) {
 	
 }
 
-export function emit(event: string, ...args: any[]) {
+export function emit(event: string, args?: Object) {
 	
 }
