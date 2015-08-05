@@ -46,7 +46,7 @@ declare module "slownode" {
 	}
 
 	export interface SlowEventLoop {
-		add(functionId: string, options: SlowFunctionOptions, ...args: any[]): any;
+		add(functionId: string, options: SlowFunctionOptions, args?: Object): any;
 		getNext(): Promise<Schema.EventLoop>;
 		run(task?: Schema.EventLoop): Promise<boolean>
 		remove(functionId: string): any;
@@ -54,7 +54,7 @@ declare module "slownode" {
 
 	export interface SlowFunction {
 		id?: string;
-		body: (...args: any[]) => any;
+		body: (args?: Object) => any;
 		options: SlowFunctionOptions;
 	}
 
@@ -65,7 +65,6 @@ declare module "slownode" {
 		retryCount?: number;
 		retryIntervalMs?: number;
 		arguments?: {};
-		trx?: any;
 	}
 
 	export interface Dependency {
