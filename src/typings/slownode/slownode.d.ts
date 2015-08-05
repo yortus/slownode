@@ -35,7 +35,7 @@ declare module "slownode" {
 		value: any;
 	}
 	
-	export interface SlowThennable {
+	export interface SlowThenable {
 		then: (onFulfill?: SlowPromise, onReject?: SlowPromise) => Promise<{ fulfill: number, reject: number }>;
 		slowPromise: SlowPromise;
 		isReady: Promise<number>;
@@ -46,7 +46,7 @@ declare module "slownode" {
 	}
 
 	export interface SlowEventLoop {
-		add(functionId: string, options: SlowFunctionOptions, args?: Object): any;
+		add(functionId: string, options: SlowFunctionOptions, ...args: any[]): any;
 		getNext(): Promise<Schema.EventLoop>;
 		run(task?: Schema.EventLoop): Promise<boolean>
 		remove(functionId: string): any;
@@ -54,7 +54,7 @@ declare module "slownode" {
 
 	export interface SlowFunction {
 		id?: string;
-		body: (args?: Object) => any;
+		body: (...args: any[]) => any;
 		options: SlowFunctionOptions;
 	}
 
