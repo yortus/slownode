@@ -14,6 +14,10 @@ export import getListeners = require("./listener/get");
 export import removeListener = require("./listener/remove");
 export import removeListeners = require("./listener/removeAll");
 
+export import addFunction = require("./slowFunction/add");
+export import addTimedFunction = require("./slowFunction/addTimed");
+export import getFunction = require("./slowFunction/get");
+
 export function execListeners(listeners: Types.Schema.EventListener[], args: any[]) {
 	var hasListeners = listeners.length === 0;
 	if (!hasListeners) return Promise.resolve(false);
@@ -50,21 +54,7 @@ export function exec(functionId: string, ...args: any[]) {
 
 
 
-export function addFunction(slowFunction: Types.SlowFunction) {
-	var storableFunc = toStorable(slowFunction);
 
-	return db("function").insert(storableFunc);
-}
 
-export function addTimedFunction(slowFunction: Types.SlowFunction) {
-	if (!slowFunction.options) throw new Error(errors.TimedFuncsMustHaveOptions);	
 
-	var storableFn = toStorable(slowFunction);
-	// TODO...
-}
 
-export function getFunction(functionId: string): Promise<Types.Schema.Function> {
-	return db("function")
-		.select()
-		.where("id", "=", functionId)
-}

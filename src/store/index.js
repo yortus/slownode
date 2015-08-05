@@ -1,8 +1,6 @@
 var Promise = require("bluebird");
 var SlowNode = require("../index");
 var db = SlowNode.connection;
-var toStorable = require("../slowFunction/toStorable");
-var errors = require("../errors");
 exports.addCall = require("./eventLoop/add");
 exports.nextCall = require("./eventLoop/next");
 exports.removeCall = require("./eventLoop/remove");
@@ -10,6 +8,9 @@ exports.addListener = require("./listener/add");
 exports.getListeners = require("./listener/get");
 exports.removeListener = require("./listener/remove");
 exports.removeListeners = require("./listener/removeAll");
+exports.addFunction = require("./slowFunction/add");
+exports.addTimedFunction = require("./slowFunction/addTimed");
+exports.getFunction = require("./slowFunction/get");
 function execListeners(listeners, args) {
     var hasListeners = listeners.length === 0;
     if (!hasListeners)
@@ -36,22 +37,4 @@ function exec(functionId) {
         .insert(record);
 }
 exports.exec = exec;
-function addFunction(slowFunction) {
-    var storableFunc = toStorable(slowFunction);
-    return db("function").insert(storableFunc);
-}
-exports.addFunction = addFunction;
-function addTimedFunction(slowFunction) {
-    if (!slowFunction.options)
-        throw new Error(errors.TimedFuncsMustHaveOptions);
-    var storableFn = toStorable(slowFunction);
-    // TODO...
-}
-exports.addTimedFunction = addTimedFunction;
-function getFunction(functionId) {
-    return db("function")
-        .select()
-        .where("id", "=", functionId);
-}
-exports.getFunction = getFunction;
 //# sourceMappingURL=index.js.map
