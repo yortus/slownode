@@ -1,5 +1,5 @@
 import Types = require("slownode");
-import store = require("../store/promise");
+import store = require("../store/index");
 
 // function slowPromise(promise: number|((...args: any[]) => any)): Types.SlowThennable {
 // 	var sp: Types.SlowPromise = {

@@ -1,9 +1,9 @@
-var store = require("../store/slowFunction");
+var store = require("../store/index");
 function interval(func, delayMs, options) {
     options = options || {};
     options.runAt = Date.now();
     options.intervalMs = delayMs;
-    return store.add({
+    return store.addFunction({
         body: func,
         options: options
     });

@@ -1,6 +1,5 @@
-import store = require("../store/slowFunction");
+import store = require("../store/index");
 import Types = require("slownode");
-import toStorable = require("./toStorable");
 export = immediate;
 
 function immediate(func: () => any, options?: Types.SlowFunctionOptions) {
@@ -8,7 +7,7 @@ function immediate(func: () => any, options?: Types.SlowFunctionOptions) {
 	options.runAt = 0;
 	options.intervalMs = 0;
 	
-	return store.add({
+	return store.addFunction({
 		body: func,
 		options: options
 	});
