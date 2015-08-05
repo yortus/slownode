@@ -1,9 +1,7 @@
 var store = require("../store/index");
-var execCall = require("./exec");
-var runLoop = require("./runLoop");
 exports.add = store.addCall;
-exports.exec = execCall;
+exports.exec = require("./exec");
 exports.remove = store.removeCall;
 exports.getNext = store.nextCall;
-exports.flush = runLoop;
+exports.flush = require("./runLoop");
 //# sourceMappingURL=index.js.map
