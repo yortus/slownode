@@ -1,7 +1,6 @@
 import Promise = require("bluebird");
 import Types = require("slownode");
 import SlowNode = require("../../index");
-import db = SlowNode.connection;
 export = add;
 
 function add(functionId: string, options?: Types.SlowFunctionOptions) {
@@ -12,7 +11,7 @@ function add(functionId: string, options?: Types.SlowFunctionOptions) {
 		 
 	var storable = toStorableCall(functionId, options);
 
-	return db("eventLoop")
+	return SlowNode.connection("eventLoop")
 		.insert(storable);
 }
 

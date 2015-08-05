@@ -1,6 +1,5 @@
 var Promise = require("bluebird");
 var SlowNode = require("../index");
-var db = SlowNode.connection;
 var store = require("../store/index");
 /**
  *
@@ -20,7 +19,7 @@ function addListener(event, listener, options) {
         topic: event,
         funcId: ""
     };
-    return db.transaction(function (trx) {
+    return SlowNode.connection.transaction(function (trx) {
         store
             .addFunction(func)
             .transacting(trx)
@@ -55,7 +54,7 @@ function emit(event) {
     for (var _i = 1; _i < arguments.length; _i++) {
         args[_i - 1] = arguments[_i];
     }
-    return db.transaction(function (trx) {
+    return SlowNode.connection.transaction(function (trx) {
         var toCall = function (l) { return store
             .addCall(l.funcId, { arguments: args })
             .transacting(trx); };

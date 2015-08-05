@@ -1,16 +1,15 @@
 import Types = require("slownode");
 import SlowNode = require("../../index");
-import db = SlowNode.connection;
 export = next;
 
 function next(): Promise<Types.Schema.EventLoop> {
 	var now = Date.now();
 
-	return db("eventLoop")
+	return SlowNode.connection("eventLoop")
 		.select()
 		.where("runAt", ">=", 0)
 		.andWhere("runAt", "<=", now)
 		.orderBy("id", "asc")
 		.limit(1)
-		.then(calls => calls[0]);
+		.then(calls => Promise.resolve(calls[0]));
 }

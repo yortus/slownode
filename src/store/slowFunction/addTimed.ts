@@ -1,6 +1,5 @@
 import Types = require("slownode");
 import SlowNode = require("../../index");
-import db = SlowNode.connection;
 import toStorable = require("./toStorable");
 import errors = require("../../errors");
 export = addTimed;

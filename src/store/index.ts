@@ -1,7 +1,6 @@
 import Promise = require("bluebird");
 import Types = require("slownode");
 import SlowNode = require("../index");
-import db = SlowNode.connection;
 import errors = require("../errors");
 
 export import addCall = require("./eventLoop/add");
@@ -21,7 +20,7 @@ export function execListeners(listeners: Types.Schema.EventListener[], args: any
 	var hasListeners = listeners.length === 0;
 	if (!hasListeners) return Promise.resolve(false);
 
-	return db.transaction(trx => {
+	return SlowNode.connection.transaction(trx => {
 
 		var promises = listeners
 			.map(l => exec.apply(l.funcId, args).transacting(trx));

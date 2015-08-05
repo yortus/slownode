@@ -6,7 +6,7 @@
   "scripts": {
     "test": "mocha",
     "build": "tsglob && tsc",
-    "start": "node src/index"
+    "start": "node src/dryrun"
   },
   "repository": {
     "type": "git",

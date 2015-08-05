@@ -1,7 +1,6 @@
 var SlowNode = require("../../index");
-var db = SlowNode.connection;
 function get(functionId) {
-    return db("function")
+    return SlowNode.connection("function")
         .select()
         .where("id", "=", functionId);
 }

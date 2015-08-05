@@ -1,7 +1,6 @@
 import Promise = require("bluebird")
 import Types = require("slownode");
 import SlowNode = require("../index");
-import db = SlowNode.connection;
 import store = require("../store/index");
 
 /**
@@ -26,7 +25,7 @@ export function addListener(event: string, listener: (...args: any[]) => any, op
 		funcId: ""
 	}
 
-	return db.transaction(trx => {
+	return SlowNode.connection.transaction(trx => {
 		store
 			.addFunction(func)
 			.transacting(trx)
@@ -62,7 +61,7 @@ export function listeners(event: string) {
 
 export function emit(event: string, ...args: any[]): Promise<boolean> {
 
-	return db.transaction(trx => {
+	return SlowNode.connection.transaction(trx => {
 		
 		var toCall = (l: Types.Schema.EventListener) => store
 			.addCall(l.funcId, { arguments: args })

@@ -10,6 +10,7 @@
     ],
     "files": [
         "./test/main.ts",
+        "./src/dryrun.ts",
         "./src/errors.ts",
         "./src/eventEmitter/index.ts",
         "./src/eventLoop/exec.ts",
@@ -34,7 +35,6 @@
         "./src/store/listener/get.ts",
         "./src/store/listener/remove.ts",
         "./src/store/listener/removeAll.ts",
-        "./src/store/slowFunction.ts",
         "./src/store/slowFunction/add.ts",
         "./src/store/slowFunction/addTimed.ts",
         "./src/store/slowFunction/get.ts",

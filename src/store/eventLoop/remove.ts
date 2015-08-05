@@ -1,10 +1,10 @@
 import Types = require("slownode");
 import SlowNode = require("../../index");
-import db = SlowNode.connection;
+
 export = remove;
 
 function remove(id: number) {
-	return db("eventLoop")
+	return SlowNode.connection("eventLoop")
 		.delete()
 		.where("id", "=", id);
 }

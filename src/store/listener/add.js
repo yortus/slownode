@@ -1,7 +1,6 @@
 var SlowNode = require("../../index");
-var db = SlowNode.connection;
 function add(listener) {
-    return db("listener")
+    return SlowNode.connection("listener")
         .insert(listener);
 }
 module.exports = add;

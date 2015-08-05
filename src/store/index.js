@@ -1,6 +1,5 @@
 var Promise = require("bluebird");
 var SlowNode = require("../index");
-var db = SlowNode.connection;
 exports.addCall = require("./eventLoop/add");
 exports.nextCall = require("./eventLoop/next");
 exports.removeCall = require("./eventLoop/remove");
@@ -15,7 +14,7 @@ function execListeners(listeners, args) {
     var hasListeners = listeners.length === 0;
     if (!hasListeners)
         return Promise.resolve(false);
-    return db.transaction(function (trx) {
+    return SlowNode.connection.transaction(function (trx) {
         var promises = listeners
             .map(function (l) { return exec.apply(l.funcId, args).transacting(trx); });
         return Promise.all(promises)
