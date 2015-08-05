@@ -1,5 +1,5 @@
 var EventLoop = require("./index");
-var funcStore = require("../store/slowFunction");
+var store = require("../store/index");
 var deserialise = require("../slowFunction/deserialise");
 var SlowNode = require("../index");
 var funcCache = [];
@@ -19,7 +19,7 @@ function getSlowFunc(funcId) {
     var cachedFunc = funcCache[funcId];
     if (cachedFunc)
         return Promise.resolve(cachedFunc);
-    return funcStore.get(funcId)
+    return store.get(funcId)
         .then(cacheFunc);
 }
 function cacheFunc(rawFunc) {

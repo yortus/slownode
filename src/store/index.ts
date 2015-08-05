@@ -7,6 +7,12 @@ import errors = require("../errors");
 
 export import addCall = require("./eventLoop/add");
 export import nextCall = require("./eventLoop/next");
+export import removeCall = require("./eventLoop/remove");
+
+export import addListener = require("./listener/add");
+export import getListeners = require("./listener/get");
+export import removeListener = require("./listener/remove");
+export import removeListeners = require("./listener/removeAll");
 
 export function execListeners(listeners: Types.Schema.EventListener[], args: any[]) {
 	var hasListeners = listeners.length === 0;
@@ -33,38 +39,16 @@ export function exec(functionId: string, ...args: any[]) {
 		.insert(record);
 }
 
-export function remove(id: number) {
-	return db("eventLoop")
-		.delete()
-		.where("id", "=", id);
-}
 
 
 
 
-export function addListener(listener: Types.Schema.EventListener) {
-	return db("listener")
-		.insert(listener);
-}
 
-export function getListeners(event: string) {
-	return db("listener")
-		.select()
-		.where("topic", "=", event);
-}
 
-export function removeListener(event: string) {
-	return db("listener")
-		.delete()
-		.where("topic", "=", event)
-		.limit(1);
-}
 
-export function removeListeners(event: string) {
-	return db("listener")
-		.delete()
-		.where("topic", "=", event);
-}
+
+
+
 
 export function addFunction(slowFunction: Types.SlowFunction) {
 	var storableFunc = toStorable(slowFunction);
