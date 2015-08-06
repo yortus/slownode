@@ -14,10 +14,9 @@ function callFunc(funcCall?: Types.Schema.EventLoop): any {
 		return Promise.resolve(true);
 	}
 	
-	console.log(funcCall);
 	// TODO: Fail/retry logic
 	return getSlowFunc(funcCall.funcId)
-		.then(func => createCall(func, funcCall))
+		.then(func =>	createCall(func, funcCall))
 		.then(() => EventLoop.remove(funcCall.id))
 		.then(() => EventLoop.flush());
 }

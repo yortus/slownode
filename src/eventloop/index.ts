@@ -9,5 +9,11 @@ export import remove = store.removeCall;
 export import getNext = store.nextCall;
 
 export function flush() {
-	return getNext().then(exec);
+	return getNext()
+		.then(exec)
+		.catch(err => {
+			// TODO: Remove from event loop or retry...
+			throw err;
+		})
+		.done(function() {});
 }

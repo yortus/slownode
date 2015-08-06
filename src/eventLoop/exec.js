@@ -9,7 +9,6 @@ function callFunc(funcCall) {
         SlowNode.flushCallback = setTimeout(function () { return EventLoop.flush(); }, SlowNode.configuration.pollIntervalMs);
         return Promise.resolve(true);
     }
-    console.log(funcCall);
     // TODO: Fail/retry logic
     return getSlowFunc(funcCall.funcId)
         .then(function (func) { return createCall(func, funcCall); })
