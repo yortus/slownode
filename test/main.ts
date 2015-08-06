@@ -82,14 +82,20 @@ describe("EventLoop behaviour tests", () => {
 
 		wait(done);
 	});
-	
+
 	it("will create a named SlowFunction", done => {
 		SlowNode.SlowFunction("testFunction", function(args) {
 			this.chai.expect(args).to.equal("test callback");
 		}, dep())
-		.then(id => expect(id).to.equal("testFunction"))
-		.then(() => done())
-		.catch(done);
+			.then(id => expect(id).to.equal("testFunction"))
+			.then(() => done())
+			.catch(done);
+	});
+
+	it("will callback a named function with arguments", done => {
+		SlowNode.Callback("testFunction", "test callback")
+			.then(id => expect(id).to.be.above(0));
+		wait(done);
 	});
 
 });
@@ -111,9 +117,7 @@ function start(pollIntervalMs: number, retryCount?: number, retryIntervalMs?: nu
 
 function dep(as?: string, reference?: string, value?: any) {
 	var dep: any = {
-		dependencies: [
-			{ reference: "chai", as: "chai " }
-		]
+		dependencies: [{ reference: "chai", as: "chai " }]
 	};
 
 	if (!as) return dep;

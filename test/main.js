@@ -70,6 +70,11 @@ describe("EventLoop behaviour tests", function () {
             .then(function () { return done(); })
             .catch(done);
     });
+    it("will callback a named function with arguments", function (done) {
+        SlowNode.Callback("testFunction", "test callback")
+            .then(function (id) { return expect(id).to.be.above(0); });
+        wait(done);
+    });
 });
 function wait(done) {
     setTimeout(function () { return done(); }, 500);
@@ -85,9 +90,7 @@ function start(pollIntervalMs, retryCount, retryIntervalMs) {
 }
 function dep(as, reference, value) {
     var dep = {
-        dependencies: [
-            { reference: "chai", as: "chai " }
-        ]
+        dependencies: [{ reference: "chai", as: "chai " }]
     };
     if (!as)
         return dep;
