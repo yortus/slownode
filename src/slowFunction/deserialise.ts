@@ -1,6 +1,7 @@
 import Types = require("slownode");
 import SlowNode = require("../index");
 import errors = require("../errors");
+var log = require("ls-logger"); 
 export = deserialise;
 
 SlowNode;
@@ -44,6 +45,7 @@ function wrapFunction(slowFunc: Types.SlowFunction, func: Function) {
 		.join("; ");
 
 	eval(deps);
+	if (SlowNode.DEBUG) log.info(`${slowFunc.id}: Function executed`);
 	return func.bind(this);
 }
 

@@ -6,6 +6,7 @@ import errors = require("../src/errors");
 import chai = require("chai");
 var expect = chai.expect;
 
+SlowNode.DEBUG = true;
 var loop: Types.SlowEventLoop;
 describe("EventLoop behaviour tests", () => {
 

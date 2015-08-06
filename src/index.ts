@@ -15,3 +15,4 @@ export import setInterval = require("./slowFunction/setInterval");;
 
 export var Promise = null;
 export import EventEmitter = require("./eventEmitter/index");
+export var DEBUG = false;

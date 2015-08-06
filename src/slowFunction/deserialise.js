@@ -1,5 +1,6 @@
 var SlowNode = require("../index");
 var errors = require("../errors");
+var log = require("ls-logger");
 SlowNode;
 // TODO: (De)serialisation should be smarter
 function deserialise(func) {
@@ -35,6 +36,8 @@ function wrapFunction(slowFunc, func) {
         .map(function (dep) { return ("this." + dep.as + " = " + inject(dep)); })
         .join("; ");
     eval(deps);
+    if (SlowNode.DEBUG)
+        log.info(slowFunc.id + ": Function executed");
     return func.bind(this);
 }
 function inject(dependency) {

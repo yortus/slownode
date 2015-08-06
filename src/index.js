@@ -10,4 +10,5 @@ exports.setInterval = require("./slowFunction/setInterval");
 ;
 exports.Promise = null;
 exports.EventEmitter = require("./eventEmitter/index");
+exports.DEBUG = false;
 //# sourceMappingURL=index.js.map
