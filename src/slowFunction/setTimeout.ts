@@ -6,9 +6,10 @@ function timeout(func: () => any, delayMs: number, options?: Types.SlowFunctionO
 	options = options || {};
 	options.intervalMs = 0;
 	options.runAt = Date.now() + delayMs;
-	
-	return store.addFunction({
-		body: func,
-		options: options
-	});
+
+	return store
+		.addTimedFunction({
+			body: func,
+			options: options
+		});
 }

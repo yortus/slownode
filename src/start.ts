@@ -12,7 +12,6 @@ var readFile = Promise.promisify(fs.readFile);
 export = start;
 
 function start(config: Types.Config) {
-	
 	validateConfig(config);
 	SlowNode.configuration = config;
 	SlowNode.connection = createDb();

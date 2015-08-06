@@ -6,9 +6,10 @@ function immediate(func: () => any, options?: Types.SlowFunctionOptions) {
 	options = options || {};
 	options.runAt = 0;
 	options.intervalMs = 0;
-	
-	return store.addFunction({
-		body: func,
-		options: options
-	});
+
+	return store
+		.addTimedFunction({
+			body: func,
+			options: options
+		});
 }

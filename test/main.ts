@@ -31,13 +31,22 @@ describe("EventLoop behaviour tests", () => {
 
 	it("will create an instance of EventLoop and create the database", done => {
 		start(100)
-			.then(worked => expect(true).to.equal)
+			.then(result => expect(true).to.equal(result))
 			.then(() => done())
 			.catch(done);
 	});
 
+	it("will have SlowNode implicitly available in a SlowFunction", done => {
+		SlowNode.setImmediate(function() {
+			this.chai.expect(SlowNode).to.exist;
+			this.chai.expect(undefined).to.equal(1);
+		}, dep());
+		wait(done);
+	})
+
 	it("will create an immediate function call with injected reference", done => {
 		SlowNode.setImmediate(function() {
+			console.log("Sdfsdfsd");
 			this.chai.expect(this.h.STATUS_CODES['200']).to.equal("OK");
 		}, dep("h", "http"));
 

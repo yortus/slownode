@@ -3,7 +3,7 @@ function interval(func, delayMs, options) {
     options = options || {};
     options.runAt = Date.now();
     options.intervalMs = delayMs;
-    return store.addFunction({
+    return store.addTimedFunction({
         body: func,
         options: options
     });

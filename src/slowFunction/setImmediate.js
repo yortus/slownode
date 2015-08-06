@@ -3,7 +3,8 @@ function immediate(func, options) {
     options = options || {};
     options.runAt = 0;
     options.intervalMs = 0;
-    return store.addFunction({
+    return store
+        .addTimedFunction({
         body: func,
         options: options
     });

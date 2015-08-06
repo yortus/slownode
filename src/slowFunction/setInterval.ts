@@ -8,7 +8,7 @@ function interval(func: () => any, delayMs: number, options?: Types.SlowFunction
 	options.runAt = Date.now();
 	options.intervalMs = delayMs;
 
-	return store.addFunction({
+	return store.addTimedFunction({
 		body: func,
 		options: options
 	});
