@@ -79,7 +79,6 @@ function start(pollIntervalMs, retryCount, retryIntervalMs) {
 function dep(as, reference, value) {
     var dep = {
         dependencies: [
-            { reference: "mocha", as: "mocha" },
             { reference: "chai", as: "chai " }
         ]
     };

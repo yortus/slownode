@@ -103,7 +103,6 @@ function start(pollIntervalMs: number, retryCount?: number, retryIntervalMs?: nu
 function dep(as?: string, reference?: string, value?: any) {
 	var dep: any = {
 		dependencies: [
-			{ reference: "mocha", as: "mocha" },
 			{ reference: "chai", as: "chai " }
 		]
 	};
