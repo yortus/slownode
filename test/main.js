@@ -62,6 +62,14 @@ describe("EventLoop behaviour tests", function () {
             .then(function () { return SlowNode.EventEmitter.emit("test", "argument"); });
         wait(done);
     });
+    it("will create a named SlowFunction", function (done) {
+        SlowNode.SlowFunction("testFunction", function (args) {
+            this.chai.expect(args).to.equal("test callback");
+        }, dep())
+            .then(function (id) { return expect(id).to.equal("testFunction"); })
+            .then(function () { return done(); })
+            .catch(done);
+    });
 });
 function wait(done) {
     setTimeout(function () { return done(); }, 500);
