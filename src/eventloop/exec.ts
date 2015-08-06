@@ -5,8 +5,6 @@ import deserialise = require("../slowFunction/deserialise");
 import SlowNode = require("../index");
 export = callFunc;
 
-var funcCache: Array<Types.ISlowFunction> = [];
-
 function callFunc(funcCall?: Types.Schema.EventLoop): any {
 	var startTime = Date.now();
 	if (!funcCall) {
@@ -14,15 +12,11 @@ function callFunc(funcCall?: Types.Schema.EventLoop): any {
 		return Promise.resolve(true);
 	}
 	
-	// TODO: Fail/retry logic
 	return getSlowFunc(funcCall.funcId)
-		.then(func =>	createCall(func, funcCall));
+		.then(func => createCall(func, funcCall));
 }
 
 function getSlowFunc(funcId: string) {
-
-	var cachedFunc = funcCache[funcId];
-	if (cachedFunc) return Promise.resolve(cachedFunc);
 
 	return store.getFunction(funcId)
 		.then(cacheFunc);
@@ -30,7 +24,6 @@ function getSlowFunc(funcId: string) {
 
 function cacheFunc(rawFunc: Types.Schema.Function) {
 	var deserialisedFunc = deserialise(rawFunc);
-	funcCache[rawFunc.id] = deserialisedFunc;
 
 	return deserialisedFunc;
 }
@@ -39,6 +32,6 @@ function cacheFunc(rawFunc: Types.Schema.Function) {
 function createCall(slowFunc: Types.ISlowFunction, call: Types.Schema.EventLoop) {
 	var args = JSON.parse(call.arguments);
 	
-	var result = slowFunc.body(args);
+	var result = slowFunc.body.apply(slowFunc.body, args);
 	return result;
 }
