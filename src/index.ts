@@ -15,5 +15,6 @@ export import setInterval = require("./slowFunction/setInterval");;
 
 export import SlowFunction = require("./slowFunction/declare");
 export import EventEmitter = require("./eventEmitter/index");
+export import Callback = require("./slowFunction/callback");
 export var Promise = null;
 export var DEBUG = false;
