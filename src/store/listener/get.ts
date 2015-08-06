@@ -2,8 +2,10 @@ import Types = require("slownode");
 import SlowNode = require("../../index");
 export = get;
 
-function get(event: string): Promise<Types.Schema.EventListener[]> {
+function get(event: string) {
+
 	return SlowNode.connection("listener")
 		.select()
-		.where("topic", "=", event);
+		.where("topic", "=", event)
+		.innerJoin("function", "listener.funcId", "function.id");
 }
