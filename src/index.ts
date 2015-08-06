@@ -1,25 +1,17 @@
 import Knex = require("knex");
 import Types = require("slownode");
-import immediate = require("./slowFunction/setImmediate");
-import timeout = require("./slowFunction/setTimeout");
-import interval = require("./slowFunction/setInterval");
 import createDb = require("./store/db");
-
-import eventLoop = require("./eventLoop/index");
-import startSlowNode = require("./start");
-import stopSlowNode = require("./stop");
-
 
 export var configuration: Types.Config = null;
 export var connection: Knex = createDb();
 export var flushCallback: NodeJS.Timer = null;
 
-export var start = startSlowNode;
-export var stop = stopSlowNode;
+export import start = require("./start");
+export import stop = require("./stop");
 
-export var setTimeout = timeout;
-export var setImmediate = immediate;
-export var setInterval = interval;
+export import setTimeout = require("./slowFunction/setTimeout");
+export import setImmediate = require("./slowFunction/setImmediate");
+export import setInterval = require("./slowFunction/setInterval");;
 
 export var Promise = null;
 export import EventEmitter = require("./eventEmitter/index");

@@ -1,17 +1,13 @@
-var immediate = require("./slowFunction/setImmediate");
-var timeout = require("./slowFunction/setTimeout");
-var interval = require("./slowFunction/setInterval");
 var createDb = require("./store/db");
-var startSlowNode = require("./start");
-var stopSlowNode = require("./stop");
 exports.configuration = null;
 exports.connection = createDb();
 exports.flushCallback = null;
-exports.start = startSlowNode;
-exports.stop = stopSlowNode;
-exports.setTimeout = timeout;
-exports.setImmediate = immediate;
-exports.setInterval = interval;
+exports.start = require("./start");
+exports.stop = require("./stop");
+exports.setTimeout = require("./slowFunction/setTimeout");
+exports.setImmediate = require("./slowFunction/setImmediate");
+exports.setInterval = require("./slowFunction/setInterval");
+;
 exports.Promise = null;
 exports.EventEmitter = require("./eventEmitter/index");
 //# sourceMappingURL=index.js.map
