@@ -25,28 +25,12 @@ function getSlowFunc(funcId) {
 function cacheFunc(rawFunc) {
     var deserialisedFunc = deserialise(rawFunc);
     funcCache[rawFunc.id] = deserialisedFunc;
-    return Promise.resolve(deserialisedFunc);
+    return deserialisedFunc;
 }
 function createCall(slowFunc, call) {
     var args = JSON.parse(call.arguments);
-    var result = storedFuncWrapper.call({}, slowFunc, args);
-    return Promise.resolve(result);
-}
-function storedFuncWrapper(func, args) {
-    var deps = func.options.dependencies
-        .map(function (dep) { return ("this." + dep.as + " = " + inject(dep)); })
-        .join("; ");
-    try {
-        eval(deps);
-        return func.body.call(this, args);
-    }
-    catch (ex) {
-    }
-}
-function inject(dependency) {
-    return dependency.reference == null
-        ? JSON.stringify(dependency.value)
-        : "require(\"" + dependency.reference + "\")";
+    var result = slowFunc.body(args);
+    return result;
 }
 module.exports = callFunc;
 //# sourceMappingURL=exec.js.map

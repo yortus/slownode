@@ -22,6 +22,7 @@ function callFunc(funcCall?: Types.Schema.EventLoop): any {
 }
 
 function getSlowFunc(funcId: string) {
+
 	var cachedFunc = funcCache[funcId];
 	if (cachedFunc) return Promise.resolve(cachedFunc);
 
@@ -33,35 +34,13 @@ function cacheFunc(rawFunc: Types.Schema.Function) {
 	var deserialisedFunc = deserialise(rawFunc);
 	funcCache[rawFunc.id] = deserialisedFunc;
 
-	return Promise.resolve(deserialisedFunc);
+	return deserialisedFunc;
 }
 
 
 function createCall(slowFunc: Types.SlowFunction, call: Types.Schema.EventLoop) {
 	var args = JSON.parse(call.arguments);
 
-	var result = storedFuncWrapper.call({}, slowFunc, args);
-	return Promise.resolve(result);
-}
-
-function storedFuncWrapper(func: Types.SlowFunction, args?: any) {
-	var deps = func.options.dependencies
-		.map(dep => `this.${dep.as} = ${inject(dep) }`)
-		.join("; ");
-
-	try {
-		eval(deps);
-		return func.body.call(this, args);
-	} catch (ex) {
-		// TODO: conditional error handling...
-		// TODO: notify...
-	}
-	
-}
-
-function inject(dependency: Types.Dependency) {
-	return dependency.reference == null
-		? JSON.stringify(dependency.value)
-		: `require("${dependency.reference}")`;
-
+	var result = slowFunc.body(args);
+	return result;
 }
