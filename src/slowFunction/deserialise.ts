@@ -1,6 +1,9 @@
 import Types = require("slownode");
+import SlowNode = require("../index");
 import errors = require("../errors");
 export = deserialise;
+
+SlowNode;
 
 // TODO: (De)serialisation should be smarter
 function deserialise(func: Types.Schema.Function): Types.SlowFunction {

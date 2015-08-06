@@ -1,4 +1,6 @@
+var SlowNode = require("../index");
 var errors = require("../errors");
+SlowNode;
 // TODO: (De)serialisation should be smarter
 function deserialise(func) {
     var dependencies = JSON.parse(func.dependencies);
