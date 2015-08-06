@@ -62,12 +62,17 @@ describe("EventLoop behaviour tests", () => {
 
 		wait(done);
 	});
-	
-	it("will create an event listener", done => {
-		SlowNode.EventEmitter.once("test", function(arg) { console.log(arg); })
+
+	it("will create an event listener then emit an event with an argument", done => {
+		var func = function(arg) {
+			this.chai.expect(arg).to.equal("argument");
+		}
+
+		SlowNode.EventEmitter.once("test", func, dep())
 			.then(res => expect(res).to.be.equal(true))
-			.then(() => done())
-			.catch(done);
+			.then(() => SlowNode.EventEmitter.emit("test", "argument"));
+
+		wait(done);
 	});
 
 });
@@ -87,17 +92,18 @@ function start(pollIntervalMs: number, retryCount?: number, retryIntervalMs?: nu
 	});
 }
 
-function dep(as: string, reference?: string, value?: any) {
+function dep(as?: string, reference?: string, value?: any) {
 	var dep: any = {
 		dependencies: [
-			{ as: as, },
 			{ reference: "mocha", as: "mocha" },
 			{ reference: "chai", as: "chai " }
 		]
 	};
 
-	if (reference == null) dep.dependencies[0].value = value;
-	else dep.dependencies[0].reference = reference;
+	if (!as) return dep;
+
+	if (reference == null) dep.dependencies.push({ as: as, value: value });
+	else dep.dependencies.push({ as: as, reference: reference });
 
 	return dep;
 

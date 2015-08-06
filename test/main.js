@@ -47,11 +47,14 @@ describe("EventLoop behaviour tests", function () {
         }, 250, dep("start", null, start));
         wait(done);
     });
-    it("will create an event listener", function (done) {
-        SlowNode.EventEmitter.once("test", function (arg) { console.log(arg); })
+    it("will create an event listener then emit an event with an argument", function (done) {
+        var func = function (arg) {
+            this.chai.expect(arg).to.equal("argument");
+        };
+        SlowNode.EventEmitter.once("test", func, dep())
             .then(function (res) { return expect(res).to.be.equal(true); })
-            .then(function () { return done(); })
-            .catch(done);
+            .then(function () { return SlowNode.EventEmitter.emit("test", "argument"); });
+        wait(done);
     });
 });
 function wait(done) {
@@ -69,15 +72,16 @@ function start(pollIntervalMs, retryCount, retryIntervalMs) {
 function dep(as, reference, value) {
     var dep = {
         dependencies: [
-            { as: as, },
             { reference: "mocha", as: "mocha" },
             { reference: "chai", as: "chai " }
         ]
     };
+    if (!as)
+        return dep;
     if (reference == null)
-        dep.dependencies[0].value = value;
+        dep.dependencies.push({ as: as, value: value });
     else
-        dep.dependencies[0].reference = reference;
+        dep.dependencies.push({ as: as, reference: reference });
     return dep;
 }
 //# sourceMappingURL=main.js.map
