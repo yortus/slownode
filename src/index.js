@@ -8,7 +8,8 @@ exports.setTimeout = require("./slowFunction/setTimeout");
 exports.setImmediate = require("./slowFunction/setImmediate");
 exports.setInterval = require("./slowFunction/setInterval");
 ;
-exports.Promise = null;
+exports.SlowFunction = require("./slowFunction/declare");
 exports.EventEmitter = require("./eventEmitter/index");
+exports.Promise = null;
 exports.DEBUG = false;
 //# sourceMappingURL=index.js.map

@@ -13,6 +13,7 @@ export import setTimeout = require("./slowFunction/setTimeout");
 export import setImmediate = require("./slowFunction/setImmediate");
 export import setInterval = require("./slowFunction/setInterval");;
 
-export var Promise = null;
+export import SlowFunction = require("./slowFunction/declare");
 export import EventEmitter = require("./eventEmitter/index");
+export var Promise = null;
 export var DEBUG = false;
