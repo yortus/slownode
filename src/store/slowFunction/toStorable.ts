@@ -3,7 +3,7 @@ import crypto = require("crypto");
 import serialise = require("../../slowFunction/serialise");
 export = toStorable;
 
-function toStorable(slowFunction: Types.SlowFunction): Types.Schema.Function {
+function toStorable(slowFunction: Types.ISlowFunction): Types.Schema.Function {
 	var options = slowFunction.options || {};
 	
 	var body = serialise(slowFunction.body);

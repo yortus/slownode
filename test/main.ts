@@ -7,7 +7,7 @@ import chai = require("chai");
 var expect = chai.expect;
 
 SlowNode.DEBUG = true;
-var loop: Types.SlowEventLoop;
+
 describe("EventLoop behaviour tests", () => {
 
 	it("will remove the previous database before starting", done => {

@@ -5,27 +5,27 @@
 declare module "slownode" {
 	import Knex = require("knex");
 
-	export const enum PromiseState {
-		Pending,
-		Fulfilled,
-		Rejected
-	}
+	export var configuration: ISlowConfig;
+	export var connection: Knex;
+	export var flushCallback: NodeJS.Timer;
 
-	export interface SlowNodeStatic {
-		configuration: Config;
-		connection: Knex;
-		flushCallback: NodeJS.Timer;
+	export function start(config: ISlowConfig): Promise<boolean>;
+	export function stop(): Promise<boolean>;
 
-		start(config: Config): Promise<boolean>;
-		stop(): Promise<boolean>;
+	export function setTimeout(func: () => any, delayMs: number, options ?: ISlowOptions): Promise<number>;
+	export function setImmediate(func: () => any, options ?: ISlowOptions): Promise<number>;
+	export function setInterval(funct: () => any, delayMs: number, options ?: ISlowOptions): Promise<number>;
 
-		setTimeout(func: () => any, delayMs: number, options?: SlowFunctionOptions): Promise<number>;
-		setImmediate(func: () => any, options?: SlowFunctionOptions): Promise<number>;
-		setInterval(funct: () => any, delayMs: number, options?: SlowFunctionOptions): Promise<number>;
-
-		Promise: any;
-		Event: any;
-	}
+	export function SlowFunction(id: string, callback: (...args: any[]) => any, options ?: ISlowOptions): Promise<string>;
+	export var EventEmitter: {
+		addListener(event: string, listener: (...args: any[]) => any, options?: ISlowOptions): Promise<boolean>,
+		on(event: string, listener: (...args: any[]) => any, options?: ISlowOptions): Promise<boolean>,
+		once(event: string, listener: (...args: any[]) => any, options?: ISlowOptions): Promise<boolean>,
+		removeListener(event: string): Promise<boolean>,
+		removeListeners(event: string): Promise<boolean>,
+		listeners(event: string): Promise<Schema.EventListener[]>,
+		emit(event: string, ...args: any[]): Promise<boolean>
+	};
 
 	export interface SlowPromise {
 		id?: number;
@@ -36,31 +36,26 @@ declare module "slownode" {
 		value: any;
 	}
 	
-	export interface SlowThenable {
+	export const enum PromiseState {
+		Pending,
+		Fulfilled,
+		Rejected
+	}
+
+	export interface ISlowThenable {
 		then: (onFulfill?: SlowPromise, onReject?: SlowPromise) => Promise<{ fulfill: number, reject: number }>;
 		slowPromise: SlowPromise;
 		isReady: Promise<number>;
 	}
 
-	export interface SlowEventEmitter {
-
-	}
-
-	export interface SlowEventLoop {
-		add(functionId: string, options: SlowFunctionOptions, ...args: any[]): any;
-		getNext(): Promise<Schema.EventLoop>;
-		run(task?: Schema.EventLoop): Promise<boolean>
-		remove(functionId: string): any;
-	}
-
-	export interface SlowFunction {
+	export interface ISlowFunction {
 		id?: string;
 		body: (...args: any[]) => any;
-		options: SlowFunctionOptions;
+		options: ISlowOptions;
 	}
 
-	export interface SlowFunctionOptions {
-		dependencies?: Array<Dependency>
+	export interface ISlowOptions {
+		dependencies?: Array<IDependency>
 		runAt?: number;
 		callOnce?: number;
 		intervalMs?: number;
@@ -69,13 +64,13 @@ declare module "slownode" {
 		arguments?: {};
 	}
 
-	export interface Dependency {
+	export interface IDependency {
 		reference?: string;
 		value?: any;
 		as: string;
 	}
 
-	export interface Config {
+	export interface ISlowConfig {
 		pollIntervalMs?: number;
 	}
 

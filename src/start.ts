@@ -11,7 +11,7 @@ import createSchema = require("./store/create");
 var readFile = Promise.promisify(fs.readFile);
 export = start;
 
-function start(config: Types.Config) {
+function start(config: Types.ISlowConfig) {
 	validateConfig(config);
 	SlowNode.configuration = config;
 	SlowNode.connection = createDb();

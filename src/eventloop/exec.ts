@@ -5,7 +5,7 @@ import deserialise = require("../slowFunction/deserialise");
 import SlowNode = require("../index");
 export = callFunc;
 
-var funcCache: Array<Types.SlowFunction> = [];
+var funcCache: Array<Types.ISlowFunction> = [];
 
 function callFunc(funcCall?: Types.Schema.EventLoop): any {
 	var startTime = Date.now();
@@ -36,7 +36,7 @@ function cacheFunc(rawFunc: Types.Schema.Function) {
 }
 
 
-function createCall(slowFunc: Types.SlowFunction, call: Types.Schema.EventLoop) {
+function createCall(slowFunc: Types.ISlowFunction, call: Types.Schema.EventLoop) {
 	var args = JSON.parse(call.arguments);
 	
 	var result = slowFunc.body(args);

@@ -7,8 +7,8 @@ export = deserialise;
 SlowNode;
 
 // TODO: (De)serialisation should be smarter
-function deserialise(func: Types.Schema.Function): Types.SlowFunction {
-	var dependencies: Array<Types.Dependency> = JSON.parse(func.dependencies);
+function deserialise(func: Types.Schema.Function): Types.ISlowFunction {
+	var dependencies: Array<Types.IDependency> = JSON.parse(func.dependencies);
 	
 	var output = {
 		id: func.id,
@@ -39,7 +39,7 @@ function parseFunction(body: string): (...args: any[]) => any {
 	}
 }
 
-function wrapFunction(slowFunc: Types.SlowFunction, func: Function) {
+function wrapFunction(slowFunc: Types.ISlowFunction, func: Function) {
 	var deps = slowFunc.options.dependencies
 		.map(dep => `this.${dep.as} = ${inject(dep)}`)
 		.join("; ");
@@ -49,7 +49,7 @@ function wrapFunction(slowFunc: Types.SlowFunction, func: Function) {
 	return func.bind(this);
 }
 
-function inject(dependency: Types.Dependency) {
+function inject(dependency: Types.IDependency) {
 	return dependency.reference == null
 		? JSON.stringify(dependency.value)
 		: `require("${dependency.reference}")`;

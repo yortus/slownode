@@ -2,7 +2,7 @@ import Types = require("slownode");
 import store = require("../store/index");
 export = timeout;
 
-function timeout(func: () => any, delayMs: number, options?: Types.SlowFunctionOptions) {
+function timeout(func: () => any, delayMs: number, options?: Types.ISlowOptions) {
 	options = options || {};
 	options.intervalMs = 0;
 	options.runAt = Date.now() + delayMs;

@@ -12,10 +12,10 @@ import deserialise = require("../slowFunction/deserialise");
  */
 
 
-export function addListener(event: string, listener: (...args: any[]) => any, options?: Types.SlowFunctionOptions): Promise<boolean> {
+export function addListener(event: string, listener: (...args: any[]) => any, options?: Types.ISlowOptions): Promise<boolean> {
 	options = options || {};
 	options.runAt = -1;
-	var func: Types.SlowFunction = {
+	var func: Types.ISlowFunction = {
 		body: listener,
 		options: options
 	};
@@ -37,11 +37,11 @@ export function addListener(event: string, listener: (...args: any[]) => any, op
 		.catch(err => false);
 }
 
-export function on(event: string, listener: (...args: any[]) => any, options?: Types.SlowFunctionOptions) {
+export function on(event: string, listener: (...args: any[]) => any, options?: Types.ISlowOptions) {
 	return addListener(event, listener, options);
 }
 
-export function once(event: string, listener: (...args: any[]) => any, options?: Types.SlowFunctionOptions) {
+export function once(event: string, listener: (...args: any[]) => any, options?: Types.ISlowOptions) {
 	options = options || {};
 	options.callOnce = 1;
 

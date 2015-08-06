@@ -6,7 +6,7 @@ import addCall = require("../eventLoop/add");
 import errors = require("../../errors");
 export = addTimed;
 
-function addTimed(slowFunc: Types.SlowFunction) {
+function addTimed(slowFunc: Types.ISlowFunction) {
 	var timedId = 0;
 
 	SlowNode.connection.transaction(trx => {

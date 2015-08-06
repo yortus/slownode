@@ -3,7 +3,7 @@ import SlowNode = require("../../index");
 import toStorable = require("./toStorable");
 export = add;
 
-function add(slowFunction: Types.SlowFunction) {
+function add(slowFunction: Types.ISlowFunction) {
 	var storableFunc = toStorable(slowFunction);
 	slowFunction.id = storableFunc.id;
 

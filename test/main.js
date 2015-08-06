@@ -3,7 +3,6 @@ var errors = require("../src/errors");
 var chai = require("chai");
 var expect = chai.expect;
 SlowNode.DEBUG = true;
-var loop;
 describe("EventLoop behaviour tests", function () {
     it("will remove the previous database before starting", function (done) {
         SlowNode.stop()
