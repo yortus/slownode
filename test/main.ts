@@ -98,6 +98,19 @@ describe("EventLoop behaviour tests", () => {
 		wait(done);
 	});
 
+	it("will created a named SlowFunction that takes 2 arguments", done => {
+		SlowNode.SlowFunction("secondFunction", function(left, right) {
+			this.chai.expect(left + right).to.equal(10);
+		}, dep())
+			.then(() => done())
+			.catch(done);
+	});
+
+	it("will callback a named function with 2 arguments", done => {
+		SlowNode.Callback("secondFunction", 3, 7);
+		wait(done);
+	});
+
 });
 
 function wait(done) {

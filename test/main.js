@@ -75,6 +75,17 @@ describe("EventLoop behaviour tests", function () {
             .then(function (id) { return expect(id).to.be.above(0); });
         wait(done);
     });
+    it("will created a named SlowFunction that takes 2 arguments", function (done) {
+        SlowNode.SlowFunction("secondFunction", function (left, right) {
+            this.chai.expect(left + right).to.equal(10);
+        }, dep())
+            .then(function () { return done(); })
+            .catch(done);
+    });
+    it("will callback a named function with 2 arguments", function (done) {
+        SlowNode.Callback("secondFunction", 3, 7);
+        wait(done);
+    });
 });
 function wait(done) {
     setTimeout(function () { return done(); }, 500);
