@@ -5,6 +5,7 @@ export = add;
 
 function add(slowFunction: Types.SlowFunction) {
 	var storableFunc = toStorable(slowFunction);
+	slowFunction.id = storableFunc.id;
 
 	return SlowNode.connection("function").insert(storableFunc);
 }
