@@ -2,10 +2,9 @@ var errors = require("../errors");
 // TODO: (De)serialisation should be smarter
 function deserialise(func) {
     var dependencies = JSON.parse(func.dependencies);
-    var innerCall = parseFunction(func.body);
-    return {
+    var output = {
         id: func.id,
-        body: innerCall,
+        body: null,
         options: {
             dependencies: dependencies,
             intervalMs: func.intervalMs,
@@ -13,6 +12,10 @@ function deserialise(func) {
             retryIntervalMs: func.retryIntervalMs
         }
     };
+    var innerCall = parseFunction(func.body);
+    var wrappedCall = wrapFunction.call({}, output, innerCall);
+    output.body = wrappedCall;
+    return output;
 }
 function parseFunction(body) {
     try {
@@ -24,6 +27,18 @@ function parseFunction(body) {
     catch (ex) {
         throw new Error(errors.UnableToDeserialise);
     }
+}
+function wrapFunction(slowFunc, func) {
+    var deps = slowFunc.options.dependencies
+        .map(function (dep) { return ("this." + dep.as + " = " + inject(dep)); })
+        .join("; ");
+    eval(deps);
+    return func.bind(this);
+}
+function inject(dependency) {
+    return dependency.reference == null
+        ? JSON.stringify(dependency.value)
+        : "require(\"" + dependency.reference + "\")";
 }
 module.exports = deserialise;
 //# sourceMappingURL=deserialise.js.map
