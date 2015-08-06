@@ -1,6 +1,6 @@
-var Promise = require("bluebird");
 var SlowNode = require("../index");
 var store = require("../store/index");
+var deserialise = require("../slowFunction/deserialise");
 /**
  *
  * Implicit events when adding/removing listeners:
@@ -21,9 +21,8 @@ function addListener(event, listener, options) {
     };
     return SlowNode.connection.transaction(function (trx) {
         store
-            .addFunction(func)
-            .transacting(trx)
-            .then(function (ids) { return listenRow.funcId = ids[0]; })
+            .addFunction(func).transacting(trx)
+            .then(function () { return listenRow.funcId = func.id; })
             .then(function () { return store.addListener(listenRow).transacting(trx); })
             .then(trx.commit)
             .catch(trx.rollback);
@@ -49,6 +48,7 @@ function removeListeners(event) {
 }
 exports.removeListeners = removeListeners;
 function listeners(event) {
+    return store.getListeners(event);
 }
 exports.listeners = listeners;
 function emit(event) {
@@ -56,16 +56,13 @@ function emit(event) {
     for (var _i = 1; _i < arguments.length; _i++) {
         args[_i - 1] = arguments[_i];
     }
-    return SlowNode.connection.transaction(function (trx) {
-        var toCall = function (l) { return store
-            .addCall(l.funcId, { arguments: args })
-            .transacting(trx); };
-        store.getListeners(event)
-            .then(function (listeners) { return listeners.map(toCall); })
-            .then(Promise.all)
-            .then(trx.commit)
-            .catch(trx.rollback);
-    }).then(function () { return true; });
+    var toFunc = function (func) {
+        var fn = deserialise(func).body;
+        return fn.apply(fn, args);
+    };
+    return listeners(event)
+        .then(function (funcs) { return funcs.map(toFunc); })
+        .then(function () { return true; });
 }
 exports.emit = emit;
 //# sourceMappingURL=index.js.map
