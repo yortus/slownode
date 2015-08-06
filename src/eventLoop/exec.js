@@ -11,9 +11,7 @@ function callFunc(funcCall) {
     }
     // TODO: Fail/retry logic
     return getSlowFunc(funcCall.funcId)
-        .then(function (func) { return createCall(func, funcCall); })
-        .then(function () { return EventLoop.remove(funcCall.id); })
-        .then(function () { return EventLoop.flush(); });
+        .then(function (func) { return createCall(func, funcCall); });
 }
 function getSlowFunc(funcId) {
     var cachedFunc = funcCache[funcId];

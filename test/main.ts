@@ -38,14 +38,13 @@ describe("EventLoop behaviour tests", () => {
 
 	it("will have SlowNode implicitly available in a SlowFunction", done => {
 		SlowNode.setImmediate(function() {
-			this.chai.expect(undefined).to.exist;
+			this.chai.expect(SlowNode).to.exist;
 		}, dep());
 		wait(done);
 	})
 
 	it("will create an immediate function call with injected reference", done => {
 		SlowNode.setImmediate(function() {
-			console.log
 			this.chai.expect(this.h.STATUS_CODES['200']).to.equal("OK");
 		}, dep("h", "http"));
 
@@ -54,7 +53,6 @@ describe("EventLoop behaviour tests", () => {
 
 	it("will create an immediate function call with injected value", done => {
 		SlowNode.setImmediate(function() {
-			console.log(this);
 			this.chai.expect(this.injectedValue).to.equal("OK");
 		}, dep("injectedValue", null, "OK"));
 
