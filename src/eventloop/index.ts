@@ -22,5 +22,8 @@ export function flush() {
 			return remove(nextFunc.id)
 				.then(() => { throw err });
 		})
-		.done(null, () => flush());
+		.done(null, err => {
+			flush();
+			throw err;
+		});
 }

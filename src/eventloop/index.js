@@ -16,7 +16,10 @@ function flush() {
         return exports.remove(nextFunc.id)
             .then(function () { throw err; });
     })
-        .done(null, function () { return flush(); });
+        .done(null, function (err) {
+        flush();
+        throw err;
+    });
 }
 exports.flush = flush;
 //# sourceMappingURL=index.js.map
