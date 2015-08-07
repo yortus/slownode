@@ -17,6 +17,7 @@
         "./src/eventLoop/index.ts",
         "./src/index.ts",
         "./src/slowFunction/callback.ts",
+        "./src/slowFunction/cps.ts",
         "./src/slowFunction/declare.ts",
         "./src/slowFunction/deserialise.ts",
         "./src/slowFunction/serialise.ts",

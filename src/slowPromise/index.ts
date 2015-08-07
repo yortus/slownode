@@ -2,6 +2,7 @@ import Types = require("slownode");
 import SlowNode = require("../index");
 import store = require("../store/index");
 
+
 var SlowPromise = (() => {
 	
 	var fn: any = create;
