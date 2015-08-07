@@ -2,6 +2,7 @@ var SlowNode = require("../../index");
 var addFunction = require("./add");
 var addCall = require("../eventLoop/add");
 function addTimed(slowFunc) {
+    slowFunc.options.runOnce = 1;
     var timedId = 0;
     return SlowNode.connection.transaction(function (trx) {
         addFunction(slowFunc)

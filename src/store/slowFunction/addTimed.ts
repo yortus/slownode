@@ -7,6 +7,8 @@ import errors = require("../../errors");
 export = addTimed;
 
 function addTimed(slowFunc: Types.ISlowFunction) {
+	slowFunc.options.runOnce = 1;
+	
 	var timedId = 0;
 
 	return SlowNode.connection.transaction(trx => {
