@@ -43,8 +43,9 @@ function wrapFunction(slowFunc: Types.ISlowFunction, func: Function) {
 	var deps = slowFunc.options.dependencies
 		.map(dep => `this.${dep.as} = ${inject(dep)}`)
 		.join("; ");
-
+	
 	eval(deps);
+	
 	if (SlowNode.DEBUG) log.info(`${slowFunc.id}: Function executed`);
 	return func.bind(this);
 }

@@ -110,7 +110,10 @@ describe("EventLoop behaviour tests", () => {
 		SlowNode.Callback("secondFunction", 3, 7);
 		wait(done);
 	});
-
+	
+	it("will callback with a callback as the right-most argument", done => {
+		SlowNode.Callback("secondFunction", 3, 7, SlowNode.Callback("testFunction"));
+	});
 });
 
 function wait(done) {

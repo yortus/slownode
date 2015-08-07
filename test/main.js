@@ -86,6 +86,9 @@ describe("EventLoop behaviour tests", function () {
         SlowNode.Callback("secondFunction", 3, 7);
         wait(done);
     });
+    it("will callback with a callback as the right-most argument", function (done) {
+        SlowNode.Callback("secondFunction", 3, 7, SlowNode.Callback("testFunction"));
+    });
 });
 function wait(done) {
     setTimeout(function () { return done(); }, 500);
