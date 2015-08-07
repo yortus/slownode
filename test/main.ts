@@ -31,7 +31,7 @@ describe("EventLoop behaviour tests", () => {
 	});
 
 	it("will create an instance of EventLoop and create the database", done => {
-		start(100)
+		start(50)
 			.then(result => expect(true).to.equal(result))
 			.then(() => done())
 			.catch(done);
@@ -41,7 +41,7 @@ describe("EventLoop behaviour tests", () => {
 		SlowNode.setImmediate(function() {
 			this.chai.expect(SlowNode).to.exist;
 		}, dep())
-			.delay(500).then(() => done())
+			.delay(150).then(() => done())
 			.catch(done);
 	})
 
@@ -49,7 +49,7 @@ describe("EventLoop behaviour tests", () => {
 		SlowNode.setImmediate(function() {
 			this.chai.expect(this.h.STATUS_CODES['200']).to.equal("OK");
 		}, dep("h", "http"))
-			.delay(500).then(() => done())
+			.delay(150).then(() => done())
 			.catch(done);
 	});
 
@@ -57,7 +57,7 @@ describe("EventLoop behaviour tests", () => {
 		SlowNode.setImmediate(function() {
 			this.chai.expect(this.injectedValue).to.equal("OK");
 		}, dep("injectedValue", null, "OK"))
-			.delay(500).then(() => done())
+			.delay(150).then(() => done())
 			.catch(done);
 	});
 
@@ -69,7 +69,7 @@ describe("EventLoop behaviour tests", () => {
 			this.chai.expect(diff).to.be.above(249);
 			this.chai.expect(diff).to.be.below(500);
 		}, 250, dep("start", null, start))
-			.delay(500).then(() => done())
+			.delay(150).then(() => done())
 			.catch(done);
 
 	});
@@ -82,7 +82,7 @@ describe("EventLoop behaviour tests", () => {
 		SlowNode.EventEmitter.once("test", func, dep())
 			.then(res => expect(res).to.be.equal(true))
 			.then(() => SlowNode.EventEmitter.emit("test", "argument"))
-			.delay(500).then(() => done())
+			.delay(150).then(() => done())
 			.catch(done);
 
 	});
@@ -115,7 +115,7 @@ describe("EventLoop behaviour tests", () => {
 	it("will callback a named function with 2 arguments", done => {
 		SlowNode.Callback("secondFunction", 3, 7)
 			.then(val => expect(val).to.equal(10))
-			.delay(500).then(() => done())
+			.delay(150).then(() => done())
 			.catch(done);
 	});
 });
