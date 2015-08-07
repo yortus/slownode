@@ -15,3 +15,8 @@ export import removeListeners = require("./listener/removeAll");
 export import addFunction = require("./slowFunction/add");
 export import addTimedFunction = require("./slowFunction/addTimed");
 export import getFunction = require("./slowFunction/get");
+
+export import addPromise = require("./promise/add");
+export import getPromise = require("./promise/get");
+export import rejectPromise = require("./promise/reject");
+export import resolvePromise = require("./promise/resolve");
