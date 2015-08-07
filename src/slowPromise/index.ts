@@ -1,31 +1,18 @@
 import Types = require("slownode");
 import store = require("../store/index");
 
-// function slowPromise(promise: number|((...args: any[]) => any)): Types.SlowThennable {
-// 	var sp: Types.SlowPromise = {
-// 		id: 0,
-// 		funcId: "",
-// 		state: 0,
-// 		onFulfill: 0,
-// 		onReject: 0,
-// 		value: null,
-// 	}
+export function create(callback: (resolve: SlowResolve, reject: SlowReject) => any) {
+	
+}
 
-// 	if (typeof promise === "number") {
-		
-// 	}
 
-// 	else {
 
-// 		return null;
+interface SlowResolve {
+	(): void;
+	(value: any): any; 
+}
 
-// 	}
-
-// }
-
-// function then(onFulfill?: Types.SlowPromise, onReject?: Types.SlowPromise): Promise<{ fulfill: number, reject: number }> {
-// 	this.isReady(id => {
-		
-// 	});
-// 	return null;
-// }
+interface SlowReject {
+	(): void;
+	(reason: any): any;
+}
