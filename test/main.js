@@ -29,20 +29,23 @@ describe("EventLoop behaviour tests", function () {
     it("will have SlowNode implicitly available in a SlowFunction", function (done) {
         SlowNode.setImmediate(function () {
             this.chai.expect(SlowNode).to.exist;
-        }, dep());
-        wait(done);
+        }, dep())
+            .delay(500).then(function () { return done(); })
+            .catch(done);
     });
     it("will create an immediate function call with injected reference", function (done) {
         SlowNode.setImmediate(function () {
             this.chai.expect(this.h.STATUS_CODES['200']).to.equal("OK");
-        }, dep("h", "http"));
-        wait(done);
+        }, dep("h", "http"))
+            .delay(500).then(function () { return done(); })
+            .catch(done);
     });
     it("will create an immediate function call with injected value", function (done) {
         SlowNode.setImmediate(function () {
             this.chai.expect(this.injectedValue).to.equal("OK");
-        }, dep("injectedValue", null, "OK"));
-        wait(done);
+        }, dep("injectedValue", null, "OK"))
+            .delay(500).then(function () { return done(); })
+            .catch(done);
     });
     it("will create and call a function with a delay", function (done) {
         var start = Date.now();
@@ -50,8 +53,9 @@ describe("EventLoop behaviour tests", function () {
             var diff = Date.now() - this.start;
             this.chai.expect(diff).to.be.above(249);
             this.chai.expect(diff).to.be.below(500);
-        }, 250, dep("start", null, start));
-        wait(done);
+        }, 250, dep("start", null, start))
+            .delay(500).then(function () { return done(); })
+            .catch(done);
     });
     it("will create an event listener then emit an event with an argument", function (done) {
         var func = function (arg) {
@@ -59,12 +63,13 @@ describe("EventLoop behaviour tests", function () {
         };
         SlowNode.EventEmitter.once("test", func, dep())
             .then(function (res) { return expect(res).to.be.equal(true); })
-            .then(function () { return SlowNode.EventEmitter.emit("test", "argument"); });
-        wait(done);
+            .then(function () { return SlowNode.EventEmitter.emit("test", "argument"); })
+            .delay(500).then(function () { return done(); })
+            .catch(done);
     });
     it("will create a named SlowFunction", function (done) {
         SlowNode.SlowFunction("testFunction", function (args) {
-            this.chai.expect(args).to.equal("test callback");
+            return args;
         }, dep())
             .then(function (id) { return expect(id).to.equal("testFunction"); })
             .then(function () { return done(); })
@@ -72,27 +77,25 @@ describe("EventLoop behaviour tests", function () {
     });
     it("will callback a named function with arguments", function (done) {
         SlowNode.Callback("testFunction", "test callback")
-            .then(function (id) { return expect(id).to.be.above(0); });
-        wait(done);
+            .then(function (val) { return expect(val).to.be.equal("test callback"); })
+            .then(function () { return done(); })
+            .catch(done);
     });
     it("will created a named SlowFunction that takes 2 arguments", function (done) {
         SlowNode.SlowFunction("secondFunction", function (left, right) {
-            this.chai.expect(left + right).to.equal(10);
+            return left + right;
         }, dep())
+            .then(function (id) { return expect(id).to.equal("secondFunction"); })
             .then(function () { return done(); })
             .catch(done);
     });
     it("will callback a named function with 2 arguments", function (done) {
-        SlowNode.Callback("secondFunction", 3, 7);
-        wait(done);
-    });
-    it("will callback with a callback as the right-most argument", function (done) {
-        SlowNode.Callback("secondFunction", 3, 7, SlowNode.Callback("testFunction"));
+        SlowNode.Callback("secondFunction", 3, 7)
+            .then(function (val) { return expect(val).to.equal(10); })
+            .delay(500).then(function () { return done(); })
+            .catch(done);
     });
 });
-function wait(done) {
-    setTimeout(function () { return done(); }, 500);
-}
 function start(pollIntervalMs, retryCount, retryIntervalMs) {
     retryCount = retryCount || null;
     retryIntervalMs = retryIntervalMs || null;

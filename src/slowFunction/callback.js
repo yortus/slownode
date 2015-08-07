@@ -11,7 +11,7 @@ function callback(functionId) {
     };
     return store.getFunction(functionId)
         .then(deserialise)
-        .then(function (func) { return func.body.apply(args); });
+        .then(function (func) { return func.body.apply(func.body, args); });
 }
 module.exports = callback;
 //# sourceMappingURL=callback.js.map

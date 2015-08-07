@@ -9,7 +9,7 @@ export = addTimed;
 function addTimed(slowFunc: Types.ISlowFunction) {
 	var timedId = 0;
 
-	SlowNode.connection.transaction(trx => {
+	return SlowNode.connection.transaction(trx => {
 		addFunction(slowFunc)
 			.transacting(trx)
 			.then(() => addCall(slowFunc.id, slowFunc.options).transacting(trx))
@@ -17,5 +17,5 @@ function addTimed(slowFunc: Types.ISlowFunction) {
 			.then(trx.commit)
 			.then(() => timedId)
 			.catch(trx.rollback)
-	});
+	}).then(() => slowFunc.id);
 }

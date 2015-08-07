@@ -68,5 +68,5 @@ export function emit(event: string, ...args: any[]): Promise<boolean> {
 
 	return listeners(event)
 		.then(funcs => funcs.map(toFunc))
-		.then(() => true);
+		.then(() =>true);
 }

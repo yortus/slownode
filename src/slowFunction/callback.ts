@@ -11,5 +11,5 @@ function callback(functionId: string, ...args: any[]): Promise<any> {
 	
 	return store.getFunction(functionId)
 		.then(deserialise)
-		.then(func => func.body.apply(args))
+		.then(func => func.body.apply(func.body, args))
 }
