@@ -37,7 +37,7 @@ function wrapFunction(slowFunc, func) {
         .join("; ");
     eval(deps);
     if (SlowNode.DEBUG)
-        log.info(slowFunc.id + ": Function executed");
+        log.info(slowFunc.id + ": executed");
     return func.bind(this);
 }
 function inject(dependency) {

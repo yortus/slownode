@@ -46,7 +46,7 @@ function wrapFunction(slowFunc: Types.ISlowFunction, func: Function) {
 	
 	eval(deps);
 	
-	if (SlowNode.DEBUG) log.info(`${slowFunc.id}: Function executed`);
+	if (SlowNode.DEBUG) log.info(`${slowFunc.id}: executed`);
 	return func.bind(this);
 }
 
