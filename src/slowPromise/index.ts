@@ -1,18 +1,27 @@
 import Types = require("slownode");
+import SlowNode = require("../index");
 import store = require("../store/index");
 
-export function create(callback: (resolve: SlowResolve, reject: SlowReject) => any) {
+var SlowPromise = (() => {
+	
+	var fn: any = create;
+	fn.then = then;
+	fn.catch = fail;
+	
+})();
+
+function create(callback) {
 	
 }
 
-
-
-interface SlowResolve {
-	(): void;
-	(value: any): any; 
+function then(callback) {
+	
 }
 
-interface SlowReject {
-	(): void;
-	(reason: any): any;
+function fail(callback) {
+	
+}
+
+function run(promiseId: string) {
+	
 }
