@@ -43,7 +43,7 @@ export function on(event: string, listener: (...args: any[]) => any, options?: T
 
 export function once(event: string, listener: (...args: any[]) => any, options?: Types.ISlowOptions) {
 	options = options || {};
-	options.callOnce = 1;
+	options.runOnce = 1;
 
 	return addListener(event, listener, options);
 }

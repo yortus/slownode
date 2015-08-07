@@ -37,7 +37,7 @@ function on(event, listener, options) {
 exports.on = on;
 function once(event, listener, options) {
     options = options || {};
-    options.callOnce = 1;
+    options.runOnce = 1;
     return addListener(event, listener, options);
 }
 exports.once = once;
