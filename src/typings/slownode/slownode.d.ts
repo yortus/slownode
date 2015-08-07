@@ -57,7 +57,7 @@ declare module "slownode" {
 	export interface ISlowOptions {
 		dependencies?: Array<IDependency>
 		runAt?: number;
-		callOnce?: number;
+		runOnce?: number;
 		intervalMs?: number;
 		retryCount?: number;
 		retryIntervalMs?: number;
