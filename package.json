@@ -1,11 +1,13 @@
 {
   "name": "slownode",
-  "version": "0.1.0",
-  "description": "",
-  "main": "src/index",
+  "version": "0.2.0",
+  "description": "slownode",
+  "readmeFilename": "README.md",
+  "main": "built/index",
   "scripts": {
-    "test": "mocha",
-    "build": "tsglob && tsc",
+    "build": "tsc -p src && tsc -p test",
+    "prepublish": "npm run build && require-self",
+    "test": "mocha built/test/*.js",
     "start": "node src/dryrun"
   },
   "repository": {
@@ -21,18 +23,32 @@
     "slow",
     "function"
   ],
-  "author": "Carl Winkler",
+  "contributors": [
+    {
+      "name": "Carl Winkler",
+      "email": "carl@carlossus.com"
+    },
+    {
+      "name": "Troy Gerwien",
+      "email": "yortus@gmail.com"
+    }
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/paypac/slownode/issues"
   },
   "homepage": "https://github.com/paypac/slownode",
   "dependencies": {
+    "asyncawait": "^0.7.4",
     "bluebird": "^2.9.34",
-    "chai": "^3.2.0",
     "knex": "^0.8.6",
+    "sqlite3": "^3.0.9"
+  },
+  "devDependencies": {
+    "chai": "^3.2.0",
     "ls-logger": "^0.1.3",
     "mocha": "^2.2.5",
-    "sqlite3": "^3.0.9"
+    "require-self": "^0.1.0",
+    "typescript": "^1.5.3"
   }
 }

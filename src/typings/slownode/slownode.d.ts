@@ -3,6 +3,29 @@
 /// <reference path="../node/node.d.ts" />
 
 declare module "slownode" {
+
+
+    // TODO: temp testing...
+    export function Callback(functionId: string, ...args: any[]): Promise<any>;
+    export var DEBUG: boolean;
+    export var errors: {
+	    FunctionExists: string;
+	    NoHandler: string;
+	    InvalidDatabaseName: string;
+	    MustBeNumber: string;
+	    InvalidPollDelay: string;
+	    NotInfinity: string;
+	    InvalidConnection: string;
+	    DatabaseInvalid: string;
+	    MustBeFunction: string;
+	    MustBeString: string;
+	    UnableToDeserialise: string;
+	    DidNotParseAsFunction: string;
+	    DatabaseInitFailed: string;
+	    TimedFuncsMustHaveOptions: string;
+    }
+
+
 	import Knex = require("knex");
 
 	export var configuration: ISlowConfig;

@@ -1,0 +1,172 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{9d9eb3d2-039f-403c-b42b-bb2e1365bec5}</ProjectGuid>
+    <ProjectHome />
+    <ProjectView>ShowAllFiles</ProjectView>
+    <StartupFile>./node_modules/mocha/bin/_mocha</StartupFile>
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <ProjectTypeGuids>{3AF33F2E-1136-4D97-BBB7-1795711AC8B8};{349c5851-65df-11da-9384-00065b846f21};{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}</ProjectTypeGuids>
+    <TypeScriptSourceMap>true</TypeScriptSourceMap>
+    <TypeScriptModuleKind>CommonJS</TypeScriptModuleKind>
+    <EnableTypeScript>true</EnableTypeScript>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">11.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <ScriptArguments>built\test\*.js</ScriptArguments>
+    <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
+    <StartWebBrowser>False</StartWebBrowser>
+    <NodeExeArguments>
+    </NodeExeArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
+  <ItemGroup>
+    <Content Include="package.json" />
+    <Content Include="README.md" />
+    <Content Include="test\tsconfig.json" />
+    <Content Include="src\tsconfig.json" />
+    <Content Include="tsd.json" />
+    <TypeScriptCompile Include="src\dryrun.ts" />
+    <TypeScriptCompile Include="src\errors.ts" />
+    <TypeScriptCompile Include="src\index.ts" />
+    <TypeScriptCompile Include="src\start.ts" />
+    <TypeScriptCompile Include="src\stop.ts" />
+    <TypeScriptCompile Include="src\typings\asyncawait\asyncawait.d.ts" />
+    <TypeScriptCompile Include="src\validateConfig.ts" />
+    <TypeScriptCompile Include="test\main.ts" />
+    <TypeScriptCompile Include="src\eventEmitter\index.ts" />
+    <TypeScriptCompile Include="src\eventLoop\exec.ts" />
+    <TypeScriptCompile Include="src\eventLoop\index.ts" />
+    <TypeScriptCompile Include="src\slowFunction\callback.ts" />
+    <TypeScriptCompile Include="src\slowFunction\cps.ts" />
+    <TypeScriptCompile Include="src\slowFunction\declare.ts" />
+    <TypeScriptCompile Include="src\slowFunction\deserialise.ts" />
+    <TypeScriptCompile Include="src\slowFunction\serialise.ts" />
+    <TypeScriptCompile Include="src\slowFunction\setImmediate.ts" />
+    <TypeScriptCompile Include="src\slowFunction\setInterval.ts" />
+    <TypeScriptCompile Include="src\slowFunction\setTimeout.ts" />
+    <TypeScriptCompile Include="src\slowPromise\index.ts" />
+    <TypeScriptCompile Include="src\store\create.ts" />
+    <TypeScriptCompile Include="src\store\db.ts" />
+    <TypeScriptCompile Include="src\store\index.ts" />
+    <TypeScriptCompile Include="src\store\eventLoop\add.ts" />
+    <TypeScriptCompile Include="src\store\eventLoop\next.ts" />
+    <TypeScriptCompile Include="src\store\eventLoop\remove.ts" />
+    <TypeScriptCompile Include="src\store\listener\add.ts" />
+    <TypeScriptCompile Include="src\store\listener\get.ts" />
+    <TypeScriptCompile Include="src\store\listener\remove.ts" />
+    <TypeScriptCompile Include="src\store\listener\removeAll.ts" />
+    <TypeScriptCompile Include="src\store\promise\add.ts" />
+    <TypeScriptCompile Include="src\store\promise\get.ts" />
+    <TypeScriptCompile Include="src\store\promise\reject.ts" />
+    <TypeScriptCompile Include="src\store\promise\resolve.ts" />
+    <TypeScriptCompile Include="src\store\slowFunction\add.ts" />
+    <TypeScriptCompile Include="src\store\slowFunction\addTimed.ts" />
+    <TypeScriptCompile Include="src\store\slowFunction\get.ts" />
+    <TypeScriptCompile Include="src\store\slowFunction\remove.ts" />
+    <TypeScriptCompile Include="src\store\slowFunction\toStorable.ts" />
+    <TypeScriptCompile Include="src\typings\bluebird\bluebird.d.ts" />
+    <TypeScriptCompile Include="src\typings\chai\chai.d.ts" />
+    <TypeScriptCompile Include="src\typings\knex\knex.d.ts" />
+    <TypeScriptCompile Include="src\typings\mocha\mocha.d.ts" />
+    <TypeScriptCompile Include="src\typings\node\node.d.ts" />
+    <TypeScriptCompile Include="src\typings\slownode\slownode.d.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="src" />
+    <Folder Include="src\eventEmitter" />
+    <Folder Include="src\eventLoop" />
+    <Folder Include="src\slowFunction" />
+    <Folder Include="src\slowPromise" />
+    <Folder Include="src\store" />
+    <Folder Include="src\store\eventLoop" />
+    <Folder Include="src\store\listener" />
+    <Folder Include="src\store\promise" />
+    <Folder Include="src\store\slowFunction" />
+    <Folder Include="src\typings" />
+    <Folder Include="src\typings\bluebird" />
+    <Folder Include="src\typings\chai" />
+    <Folder Include="src\typings\knex" />
+    <Folder Include="src\typings\mocha" />
+    <Folder Include="src\typings\asyncawait\" />
+    <Folder Include="src\typings\node" />
+    <Folder Include="src\typings\slownode" />
+    <Folder Include="test" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <!--Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them.-->
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|Any CPU'">
+    <TypeScriptTarget>ES5</TypeScriptTarget>
+    <TypeScriptCompileOnSaveEnabled>False</TypeScriptCompileOnSaveEnabled>
+    <TypeScriptNoImplicitAny>False</TypeScriptNoImplicitAny>
+    <TypeScriptRemoveComments>False</TypeScriptRemoveComments>
+    <TypeScriptOutFile />
+    <TypeScriptOutDir />
+    <TypeScriptGeneratesDeclarations>False</TypeScriptGeneratesDeclarations>
+    <TypeScriptNoEmitOnError>True</TypeScriptNoEmitOnError>
+    <TypeScriptMapRoot />
+    <TypeScriptSourceRoot />
+    <TypeScriptSourceMap>False</TypeScriptSourceMap>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|Any CPU'">
+    <TypeScriptTarget>ES5</TypeScriptTarget>
+    <TypeScriptCompileOnSaveEnabled>False</TypeScriptCompileOnSaveEnabled>
+    <TypeScriptNoImplicitAny>False</TypeScriptNoImplicitAny>
+    <TypeScriptRemoveComments>False</TypeScriptRemoveComments>
+    <TypeScriptOutFile />
+    <TypeScriptOutDir />
+    <TypeScriptGeneratesDeclarations>False</TypeScriptGeneratesDeclarations>
+    <TypeScriptNoEmitOnError>True</TypeScriptNoEmitOnError>
+    <TypeScriptMapRoot />
+    <TypeScriptSourceRoot />
+  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="False" />
+  <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsTools.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>False</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>0</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:48022/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>True</UseCustomServer>
+          <CustomServerUrl>http://localhost:1337</CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}" User="">
+        <WebProjectProperties>
+          <StartPageUrl>
+          </StartPageUrl>
+          <StartAction>CurrentPage</StartAction>
+          <AspNetDebugging>True</AspNetDebugging>
+          <SilverlightDebugging>False</SilverlightDebugging>
+          <NativeDebugging>False</NativeDebugging>
+          <SQLDebugging>False</SQLDebugging>
+          <ExternalProgram>
+          </ExternalProgram>
+          <StartExternalURL>
+          </StartExternalURL>
+          <StartCmdLineArguments>
+          </StartCmdLineArguments>
+          <StartWorkingDirectory>
+          </StartWorkingDirectory>
+          <EnableENC>False</EnableENC>
+          <AlwaysStartWebServerOnDebug>False</AlwaysStartWebServerOnDebug>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <Target Name="PrepareForBuild" />
+  <Target Name="Build">
+    <Message Text="npm run build..." Importance="high" />
+    <Exec Command="npm run build" />
+  </Target>
+  <Target Name="AfterBuild" />
+</Project>

@@ -1,5 +1,4 @@
-var SlowNode = require("../src/index");
-var errors = require("../src/errors");
+var SlowNode = require("slownode");
 var chai = require("chai");
 var expect = chai.expect;
 SlowNode.DEBUG = true;
@@ -12,13 +11,13 @@ describe("EventLoop behaviour tests", function () {
     });
     it("will throw when provided a non-number polling delay", function () {
         var delay = "string";
-        expect(start.bind(start, delay)).to.throw(errors.MustBeNumber);
+        expect(start.bind(start, delay)).to.throw(SlowNode.errors.MustBeNumber);
     });
     it("will throw when provided <50 polling delay", function () {
-        expect(start.bind(start, 49)).to.throw(errors.InvalidPollDelay);
+        expect(start.bind(start, 49)).to.throw(SlowNode.errors.InvalidPollDelay);
     });
     it("will throw when provided polling delay of infinity", function () {
-        expect(start.bind(start, Infinity)).to.throw(errors.NotInfinity);
+        expect(start.bind(start, Infinity)).to.throw(SlowNode.errors.NotInfinity);
     });
     it("will create an instance of EventLoop and create the database", function (done) {
         start(50)
