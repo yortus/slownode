@@ -1,4 +1,6 @@
 import fs = require("fs");
+import async = require('asyncawait/async');
+import await = require('asyncawait/await');
 import Promise = require("bluebird");
 import SlowNode = require("slownode");
 import chai = require("chai");
@@ -9,6 +11,15 @@ SlowNode.DEBUG = true;
 
 
 describe("EventLoop behaviour tests", () => {
+
+	it("will remove the previous database before starting", async.cps(() => {
+		SlowNode.stop();
+	}));
+
+
+
+
+
 
 	it("will remove the previous database before starting", done => {
 		SlowNode.stop()
@@ -126,8 +137,8 @@ function start(pollIntervalMs: number, retryCount?: number, retryIntervalMs?: nu
 
 	return SlowNode.start({
 		pollIntervalMs: pollIntervalMs,
-		retryCount: retryCount,
-		retryIntervalMs: retryIntervalMs
+		//retryCount: retryCount,
+		//retryIntervalMs: retryIntervalMs
 	});
 }
 

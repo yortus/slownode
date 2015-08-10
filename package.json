@@ -3,9 +3,9 @@
   "version": "0.2.0",
   "description": "slownode",
   "readmeFilename": "README.md",
-  "main": "built/index",
+  "main": "built/src/index",
   "scripts": {
-    "build": "tsc -p src && tsc -p test",
+    "build": "tsc",
     "prepublish": "npm run build && require-self",
     "test": "mocha built/test/*.js",
     "start": "node src/dryrun"
@@ -41,6 +41,7 @@
   "dependencies": {
     "asyncawait": "^0.7.4",
     "bluebird": "^2.9.34",
+    "find-root": "^0.1.1",
     "knex": "^0.8.6",
     "sqlite3": "^3.0.9"
   },
@@ -49,6 +50,9 @@
     "ls-logger": "^0.1.3",
     "mocha": "^2.2.5",
     "require-self": "^0.1.0",
-    "typescript": "^1.5.3"
+    "typescript": "next"
+  },
+  "slownode": {
+    "database": "slownode.db"
   }
 }

@@ -1,1 +1,0 @@
-{"version":3,"file":"db.js","sourceRoot":"","sources":["../../src/store/db.ts"],"names":["createConnection"],"mappings":"AAAA,IAAO,IAAI,WAAW,MAAM,CAAC,CAAC;AAG9B;IACCA,MAAMA,CAACA,IAAIA,CAACA;QACXA,MAAMA,EAAEA,SAASA;QACjBA,UAAUA,EAAEA;YACXA,QAAQA,EAAEA,aAAaA;SACvBA;KACDA,CAACA,CAACA;AACJA,CAACA;AATD,iBAAS,gBAAgB,CAAC;AAU1B,kDAAkD"}

@@ -4,7 +4,7 @@ import Knex = require("knex");
 import fs = require("fs");
 import SlowNode = require("./index");
 import EventLoop = require("./eventLoop/index");
-import createDb = require("./store/db");
+import db = require("./store/db");
 import validateConfig = require("./validateConfig");
 import errors = require("./errors");
 import createSchema = require("./store/create");
@@ -14,7 +14,7 @@ export = start;
 function start(config: Types.ISlowConfig) {
 	validateConfig(config);
 	SlowNode.configuration = config;
-	SlowNode.connection = createDb();
+	SlowNode.connection = db;
 	
 	count = 3;
 	return prepareDatabase();

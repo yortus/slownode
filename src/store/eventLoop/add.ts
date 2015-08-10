@@ -14,7 +14,7 @@ function add(functionId: string, options?: Types.ISlowOptions) {
 }
 
 function toStorableCall(functionId: string, options?: Types.ISlowOptions): Types.Schema.EventLoop {
-	var options = options || {};
+	var options = options || <Types.ISlowOptions> {};
 	var runAt = options.runAt || 0;
 	var runAtReadable = new Date(runAt).toString();
 
