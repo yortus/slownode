@@ -25,11 +25,14 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
   <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
   <ItemGroup>
+    <Content Include="empty.db" />
     <Content Include="package.json" />
     <Content Include="README.md" />
     <Content Include="tsconfig.json" />
     <Content Include="tsd.json" />
     <Compile Include="debug.js" />
+    <TypeScriptCompile Include="src2\databaseLocation.ts" />
+    <TypeScriptCompile Include="src2\index.ts" />
     <TypeScriptCompile Include="src\settings.ts" />
     <TypeScriptCompile Include="src\dryrun.ts" />
     <TypeScriptCompile Include="src\errors.ts" />
@@ -80,6 +83,7 @@
     <TypeScriptCompile Include="src\typings\slownode\slownode.d.ts" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="src2\" />
     <Folder Include="src" />
     <Folder Include="src\eventEmitter" />
     <Folder Include="src\eventLoop" />

@@ -2,6 +2,18 @@
 /// <reference path="../bluebird/bluebird.d.ts" />
 /// <reference path="../node/node.d.ts" />
 
+
+declare module "slownode2" {
+
+
+
+
+
+
+}
+
+
+
 declare module "slownode" {
 
     export var ready: Promise<void>;
