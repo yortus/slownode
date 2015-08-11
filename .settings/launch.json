@@ -5,13 +5,13 @@
 	"configurations": [
 		{
 			// Name of configuration; appears in the launch configuration drop down menu.
-			"name": "Launch extras/main",
+			"name": "debug.js",
 			// Type of configuration. Possible values: "node", "mono".
 			"type": "node",
 			// Workspace relative or absolute path to the program.
-			"program": "built/extras/main.js",
+			"program": "debug.js",
 			// Automatically stop program after launch.
-			"stopOnEntry": true,
+			"stopOnEntry": false,
 			// Command line arguments passed to the program.
 			"args": [],
 			// Workspace relative or absolute path to the working directory of the program being debugged. Default is the current workspace.
@@ -25,7 +25,7 @@
 			// Use JavaScript source maps (if they exist).
 			"sourceMaps": true,
 			// If JavaScript source maps are enabled, the generated code is expected in this directory.
-			"outDir": null
+			"outDir": ""
 		}, 
 		{
 			"name": "Attach",

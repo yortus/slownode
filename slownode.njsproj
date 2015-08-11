@@ -5,8 +5,8 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{9d9eb3d2-039f-403c-b42b-bb2e1365bec5}</ProjectGuid>
     <ProjectHome />
-    <ProjectView>ShowAllFiles</ProjectView>
-    <StartupFile>built\extras\main.js</StartupFile>
+    <ProjectView>ProjectFiles</ProjectView>
+    <StartupFile>debug.js</StartupFile>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <ProjectTypeGuids>{3AF33F2E-1136-4D97-BBB7-1795711AC8B8};{349c5851-65df-11da-9384-00065b846f21};{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}</ProjectTypeGuids>
@@ -15,7 +15,8 @@
     <EnableTypeScript>true</EnableTypeScript>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">11.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
-    <ScriptArguments>built\test\*.js</ScriptArguments>
+    <ScriptArguments>
+    </ScriptArguments>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
     <StartWebBrowser>False</StartWebBrowser>
     <NodeExeArguments>
@@ -35,6 +36,7 @@
     <Content Include="src\stop.ts" />
     <Content Include="src\typings\asyncawait\asyncawait.d.ts" />
     <Content Include="src\validateConfig.ts" />
+    <Compile Include="debug.js" />
     <Compile Include="test\main.ts" />
     <Compile Include="src\eventEmitter\index.ts" />
     <Content Include="src\eventLoop\exec.ts" />
@@ -75,7 +77,6 @@
     <Content Include="src\typings\slownode\slownode.d.ts" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="extras\" />
     <Folder Include="src" />
     <Folder Include="src\eventEmitter" />
     <Folder Include="src\eventLoop" />
@@ -99,9 +100,6 @@
   <ItemGroup>
     <Compile Include="src\dbpath.ts" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="extras\main.ts" />
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <!--Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them.-->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|Any CPU'">
@@ -109,12 +107,16 @@
     <TypeScriptCompileOnSaveEnabled>False</TypeScriptCompileOnSaveEnabled>
     <TypeScriptNoImplicitAny>False</TypeScriptNoImplicitAny>
     <TypeScriptRemoveComments>False</TypeScriptRemoveComments>
-    <TypeScriptOutFile>./built/stupidvs</TypeScriptOutFile>
-    <TypeScriptOutDir />
+    <TypeScriptOutFile>
+    </TypeScriptOutFile>
+    <TypeScriptOutDir>
+    </TypeScriptOutDir>
     <TypeScriptGeneratesDeclarations>False</TypeScriptGeneratesDeclarations>
     <TypeScriptNoEmitOnError>True</TypeScriptNoEmitOnError>
-    <TypeScriptMapRoot />
-    <TypeScriptSourceRoot />
+    <TypeScriptMapRoot>
+    </TypeScriptMapRoot>
+    <TypeScriptSourceRoot>
+    </TypeScriptSourceRoot>
     <TypeScriptSourceMap>False</TypeScriptSourceMap>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
   </PropertyGroup>

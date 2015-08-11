@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "description": "slownode",
   "readmeFilename": "README.md",
-  "main": "built/src/index",
+  "main": "src/index",
   "scripts": {
     "build": "tsc",
     "prepublish": "npm run build && require-self",
