@@ -7,7 +7,7 @@ var createSchema = require('./create');
 var connect = async(function () {
     // Check if the database exists before connecting.
     var exists = await(dbexists());
-    // Connect the the database. This will create the database if if doens't already exist.
+    // Connect the the database. This will create the database if it doens't already exist.
     var db = Knex({
         client: "sqlite3",
         connection: {
