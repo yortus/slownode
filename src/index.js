@@ -1,11 +1,12 @@
-exports.errors = require('./errors');
-exports.start = require('./start');
-exports.stop = require('./stop');
-exports.setTimeout = require('./slowFunction/setTimeout');
-exports.setImmediate = require('./slowFunction/setImmediate');
-exports.setInterval = require('./slowFunction/setInterval');
-;
-exports.SlowFunction = require('./slowFunction/declare');
-exports.EventEmitter = require('./eventEmitter/index');
-exports.Callback = require('./slowFunction/callback');
+var fs = require('fs');
+var path = require('path');
+var databaseLocation = require('./databaseLocation');
+// Resume the current epoch (if DB exists) or start a new epoch (if no DB).
+// NB: Module initialisation must be synchronous, so we use only sync methods here.
+if (!fs.existsSync(databaseLocation)) {
+    // Start a new epoch by copying from the empty template database (synchronously).
+    var templateLocation = path.join(__dirname, '../empty.db');
+    fs.writeFileSync(databaseLocation, fs.readFileSync(templateLocation));
+}
+// TODO: Build the API for export...
 //# sourceMappingURL=index.js.map

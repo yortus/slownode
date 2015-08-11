@@ -1,14 +1,17 @@
-import ready = require('./ready');
+﻿import fs = require('fs');
+import path = require('path');
+import Types = require('slownode');
+import databaseLocation = require('./databaseLocation');
 
-export import errors = require('./errors');
 
-export import start = require('./start');
-export import stop = require('./stop');
+// Resume the current epoch (if DB exists) or start a new epoch (if no DB).
+// NB: Module initialisation must be synchronous, so we use only sync methods here.
+if (!fs.existsSync(databaseLocation)) {
 
-export import setTimeout = require('./slowFunction/setTimeout');
-export import setImmediate = require('./slowFunction/setImmediate');
-export import setInterval = require('./slowFunction/setInterval');;
+    // Start a new epoch by copying from the empty template database (synchronously).
+    var templateLocation = path.join(__dirname, '../empty.db');
+    fs.writeFileSync(databaseLocation, fs.readFileSync(templateLocation));
+}
 
-export import SlowFunction = require('./slowFunction/declare');
-export import EventEmitter = require('./eventEmitter/index');
-export import Callback = require('./slowFunction/callback');
+
+// TODO: Build the API for export...
