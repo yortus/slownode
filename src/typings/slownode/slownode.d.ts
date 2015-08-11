@@ -4,6 +4,7 @@
 
 declare module "slownode" {
 
+    export var ready: Promise<void>;
 
     // TODO: temp testing...
     export function Callback(functionId: string, ...args: any[]): Promise<any>;

@@ -33,6 +33,7 @@
     <TypeScriptCompile Include="src\dryrun.ts" />
     <TypeScriptCompile Include="src\errors.ts" />
     <TypeScriptCompile Include="src\index.ts" />
+    <TypeScriptCompile Include="src\ready.ts" />
     <TypeScriptCompile Include="src\start.ts" />
     <TypeScriptCompile Include="src\stop.ts" />
     <TypeScriptCompile Include="src\typings\asyncawait\asyncawait.d.ts" />
