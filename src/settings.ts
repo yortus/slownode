@@ -6,7 +6,7 @@ export = settings;
 // TODO: rename to 'globals' or 'state' or ...
 var settings = {
     DEBUG: false,
-    configuration: <Types.ISlowConfig> null,
+    configuration: <Types.SlowConfig> null,
     connection: <Knex> null,
     flushCallback: <NodeJS.Timer> null
 };

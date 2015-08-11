@@ -29,18 +29,18 @@ declare module "slownode" {
 
     import Knex = require("knex");
 
-    export function start(config: ISlowConfig): Promise<void>;
+    export function start(config: SlowConfig): Promise<void>;
     export function stop(): Promise<void>;
 
-    export function setTimeout(func: () => any, delayMs: number, options ?: ISlowOptions): Promise<number>;
-    export function setImmediate(func: () => any, options ?: ISlowOptions): Promise<number>;
-    export function setInterval(funct: () => any, delayMs: number, options ?: ISlowOptions): Promise<number>;
+    export function setTimeout(func: () => any, delayMs: number, options ?: SlowOptions): Promise<number>;
+    export function setImmediate(func: () => any, options ?: SlowOptions): Promise<number>;
+    export function setInterval(funct: () => any, delayMs: number, options ?: SlowOptions): Promise<number>;
 
-    export function SlowFunction(id: string, callback: (...args: any[]) => any, options ?: ISlowOptions): Promise<string>;
+    export function SlowFunction(id: string, callback: (...args: any[]) => any, options ?: SlowOptions): Promise<string>;
     export var EventEmitter: {
-        addListener(event: string, listener: (...args: any[]) => any, options?: ISlowOptions): Promise<boolean>,
-        on(event: string, listener: (...args: any[]) => any, options?: ISlowOptions): Promise<boolean>,
-        once(event: string, listener: (...args: any[]) => any, options?: ISlowOptions): Promise<boolean>,
+        addListener(event: string, listener: (...args: any[]) => any, options?: SlowOptions): Promise<boolean>,
+        on(event: string, listener: (...args: any[]) => any, options?: SlowOptions): Promise<boolean>,
+        once(event: string, listener: (...args: any[]) => any, options?: SlowOptions): Promise<boolean>,
         removeListener(event: string): Promise<boolean>,
         removeListeners(event: string): Promise<boolean>,
         listeners(event: string): Promise<Schema.EventListener[]>,
@@ -62,20 +62,20 @@ declare module "slownode" {
         Rejected
     }
 
-    export interface ISlowThenable {
+    export interface SlowThenable {
         then: (onFulfill?: SlowPromise, onReject?: SlowPromise) => Promise<{ fulfill: number, reject: number }>;
         slowPromise: SlowPromise;
         isReady: Promise<number>;
     }
 
-    export interface ISlowFunction {
+    export interface SlowFunction {
         id?: string;
         body: (...args: any[]) => any;
-        options: ISlowOptions;
+        options: SlowOptions;
     }
 
-    export interface ISlowOptions {
-        dependencies?: Array<IDependency>
+    export interface SlowOptions {
+        dependencies?: Array<Dependency>
         runAt?: number;
         runOnce?: number;
         intervalMs?: number;
@@ -84,19 +84,17 @@ declare module "slownode" {
         arguments?: {};
     }
 
-    export interface IDependency {
+    export interface Dependency {
         reference?: string;
         value?: any;
         as: string;
     }
 
-    export interface ISlowConfig {
+    export interface SlowConfig {
         pollIntervalMs?: number;
     }
 
 
-
-    // TODO: used anywhere? ----------------
     export module Schema {
 
         export interface Function {

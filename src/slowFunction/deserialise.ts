@@ -10,8 +10,8 @@ slow.errors;
 
 
 // TODO: (De)serialisation should be smarter
-function deserialise(func: slow.Schema.Function): slow.ISlowFunction {
-    var dependencies: Array<slow.IDependency> = JSON.parse(func.dependencies);
+function deserialise(func: slow.Schema.Function): slow.SlowFunction {
+    var dependencies: Array<slow.Dependency> = JSON.parse(func.dependencies);
     
     var output = {
         id: func.id,
@@ -42,7 +42,7 @@ function parseFunction(body: string): (...args: any[]) => any {
     }
 }
 
-function wrapFunction(slowFunc: slow.ISlowFunction, func: Function) {
+function wrapFunction(slowFunc: slow.SlowFunction, func: Function) {
     var deps = slowFunc.options.dependencies
         .map(dep => `this.${dep.as} = ${inject(dep)}`)
         .join("; ");
@@ -53,7 +53,7 @@ function wrapFunction(slowFunc: slow.ISlowFunction, func: Function) {
     return func.bind(this);
 }
 
-function inject(dependency: slow.IDependency) {
+function inject(dependency: slow.Dependency) {
     return dependency.reference == null
         ? JSON.stringify(dependency.value)
         : `require("${dependency.reference}")`;

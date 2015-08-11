@@ -29,7 +29,7 @@ function cacheFunc(rawFunc: Types.Schema.Function) {
 }
 
 
-function createCall(slowFunc: Types.ISlowFunction, call: Types.Schema.EventLoop) {
+function createCall(slowFunc: Types.SlowFunction, call: Types.Schema.EventLoop) {
     var args = JSON.parse(call.arguments);
     
     var result = slowFunc.body.apply(slowFunc.body, args);

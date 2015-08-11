@@ -8,7 +8,7 @@ import validateConfig = require("./validateConfig");
 export = start;
 
 
-var start = async((config: Types.ISlowConfig) => {
+var start = async((config: Types.SlowConfig) => {
     validateConfig(config);
     settings.configuration = config;
     settings.connection = await(connect());

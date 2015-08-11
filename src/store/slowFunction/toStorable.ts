@@ -4,8 +4,8 @@ import serialise = require("../../slowFunction/serialise");
 export = toStorable;
 
 
-function toStorable(slowFunction: Types.ISlowFunction): Types.Schema.Function {
-    var options = slowFunction.options || <Types.ISlowOptions> {};
+function toStorable(slowFunction: Types.SlowFunction): Types.Schema.Function {
+    var options = slowFunction.options || <Types.SlowOptions> {};
     
     var body = serialise(slowFunction.body);
     var id = slowFunction.id || generateFunctionId(body);

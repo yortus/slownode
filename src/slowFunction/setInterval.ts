@@ -3,7 +3,7 @@ import store = require("../store/index");
 
 export = interval;
 
-function interval(func: () => any, delayMs: number, options?: Types.ISlowOptions) {
+function interval(func: () => any, delayMs: number, options?: Types.SlowOptions) {
     options = options || {};
     options.runAt = Date.now();
     options.intervalMs = delayMs;

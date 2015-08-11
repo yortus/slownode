@@ -21,19 +21,19 @@ describe("EventLoop behaviour tests", () => {
 
     it("will throw when provided a non-number polling delay", async.cps(() => {
         await(slow.ready);
-        var config: slow.ISlowConfig = { pollIntervalMs: <any> "string" };
+        var config: slow.SlowConfig = { pollIntervalMs: <any> "string" };
         expect(() => await(slow.start(config))).to.throw(slow.errors.MustBeNumber);
     }));
 
     it("will throw when provided <50 polling delay", async.cps(() => {
         await(slow.ready);
-        var config: slow.ISlowConfig = { pollIntervalMs: 49 };
+        var config: slow.SlowConfig = { pollIntervalMs: 49 };
         expect(() => await(slow.start(config))).to.throw(slow.errors.InvalidPollDelay);
     }));
 
     it("will throw when provided polling delay of infinity", async.cps(() => {
         await(slow.ready);
-        var config: slow.ISlowConfig = { pollIntervalMs: Infinity };
+        var config: slow.SlowConfig = { pollIntervalMs: Infinity };
         expect(() => await(slow.start(config))).to.throw(slow.errors.NotInfinity);
     }));
 

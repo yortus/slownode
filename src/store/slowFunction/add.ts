@@ -3,7 +3,7 @@ import settings = require("../../settings");
 import toStorable = require("./toStorable");
 export = add;
 
-function add(slowFunction: Types.ISlowFunction) {
+function add(slowFunction: Types.SlowFunction) {
     var storableFunc = toStorable(slowFunction);
     slowFunction.id = storableFunc.id;
 

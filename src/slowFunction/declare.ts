@@ -2,10 +2,10 @@ import Types = require("slownode");
 import store = require("../store/index");
 export = slowFunction;
 
-function slowFunction(id: string, callback: (...args: any[]) => any, options?: Types.ISlowOptions) {
+function slowFunction(id: string, callback: (...args: any[]) => any, options?: Types.SlowOptions) {
     options = options || {};
 
-    var slowFunc: Types.ISlowFunction = {
+    var slowFunc: Types.SlowFunction = {
         id,
         body: callback,
         options

@@ -6,7 +6,7 @@ import addCall = require("../eventLoop/add");
 import errors = require("../../errors");
 export = addTimed;
 
-function addTimed(slowFunc: Types.ISlowFunction) {
+function addTimed(slowFunc: Types.SlowFunction) {
     slowFunc.options.runOnce = 1;
     
     var timedId = 0;

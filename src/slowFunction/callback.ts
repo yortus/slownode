@@ -4,7 +4,7 @@ import deserialise = require("./deserialise");
 export = callback;
 
 function callback(functionId: string, ...args: any[]): Promise<any> {
-    var opts: Types.ISlowOptions = {
+    var opts: Types.SlowOptions = {
         arguments: args,
         runAt: 0
     };

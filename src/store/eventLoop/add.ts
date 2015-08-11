@@ -3,7 +3,7 @@ import Types = require("slownode");
 import settings = require("../../settings");
 export = add;
 
-function add(functionId: string, options?: Types.ISlowOptions) {
+function add(functionId: string, options?: Types.SlowOptions) {
     options = options || {};
     options.arguments = options.arguments || [];
          
@@ -13,8 +13,8 @@ function add(functionId: string, options?: Types.ISlowOptions) {
         .insert(storable);
 }
 
-function toStorableCall(functionId: string, options?: Types.ISlowOptions): Types.Schema.EventLoop {
-    var options = options || <Types.ISlowOptions> {};
+function toStorableCall(functionId: string, options?: Types.SlowOptions): Types.Schema.EventLoop {
+    var options = options || <Types.SlowOptions> {};
     var runAt = options.runAt || 0;
     var runAtReadable = new Date(runAt).toString();
 
