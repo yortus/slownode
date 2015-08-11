@@ -6,7 +6,6 @@
         "sourceMap": true
     },
     "exclude": [
-        "node_modules",
-        "built"
+        "node_modules"
     ]
 }

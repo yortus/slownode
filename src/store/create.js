@@ -1,30 +1,11 @@
-var Promise = require("bluebird");
-var errors = require("../errors");
-var index_1 = require("../index");
-var tables = ["function", "eventLoop", "listener", "promise"];
-function create() {
-    return tablesExists()
-        .then(createTable)
-        .then(function () { return Promise.resolve(true); });
-}
-function tablesExists() {
-    var toPromise = function (table) { return index_1.connection.schema.hasTable(table); };
-    return Promise.all(tables.map(toPromise));
-}
-function createTable(exists) {
-    if (exists.every(function (e) { return e === true; }))
-        return Promise.resolve(true);
-    if (exists.some(function (e) { return e === true; }))
-        throw new Error(errors.DatabaseInvalid);
-    var promises = [
-        index_1.connection.schema.createTable("function", functionTable),
-        index_1.connection.schema.createTable("eventLoop", eventLoopTable),
-        index_1.connection.schema.createTable("listener", listenerTable),
-        index_1.connection.schema.createTable("promise", promiseTable)
-    ];
-    return Promise.all(promises)
-        .then(function () { return true; });
-}
+var async = require('asyncawait/async');
+var await = require('asyncawait/await');
+var create = async(function (db) {
+    await(db.schema.createTable("function", functionTable));
+    await(db.schema.createTable("eventLoop", eventLoopTable));
+    await(db.schema.createTable("listener", listenerTable));
+    await(db.schema.createTable("promise", promiseTable));
+});
 function functionTable(table) {
     table.text("id").unique();
     table.text("body");

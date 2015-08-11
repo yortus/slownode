@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "prepublish": "npm run build && require-self",
-    "test": "mocha built/test/*.js",
+    "test": "mocha test/*.js",
     "start": "node src/dryrun"
   },
   "repository": {
@@ -47,6 +47,7 @@
   },
   "devDependencies": {
     "chai": "^3.2.0",
+    "chai-as-promised": "^5.1.0",
     "ls-logger": "^0.1.3",
     "mocha": "^2.2.5",
     "require-self": "^0.1.0",

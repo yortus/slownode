@@ -1,9 +1,11 @@
 import Knex = require("knex");
 import Types = require("slownode");
-import db = require("./store/db");
+import connect = require("./store/connect");
+
+export import errors = require('./errors');
 
 export var configuration: Types.ISlowConfig = null;
-export var connection = db;
+export var connection: Knex = null;
 export var flushCallback: NodeJS.Timer = null;
 
 export import start = require("./start");

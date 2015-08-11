@@ -32,8 +32,8 @@ declare module "slownode" {
 	export var connection: Knex;
 	export var flushCallback: NodeJS.Timer;
 
-	export function start(config: ISlowConfig): Promise<boolean>;
-	export function stop(): Promise<boolean>;
+	export function start(config: ISlowConfig): Promise<void>;
+	export function stop(): Promise<void>;
 
 	export function setTimeout(func: () => any, delayMs: number, options ?: ISlowOptions): Promise<number>;
 	export function setImmediate(func: () => any, options ?: ISlowOptions): Promise<number>;

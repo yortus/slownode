@@ -1,6 +1,6 @@
-var db = require("./store/db");
+exports.errors = require('./errors');
 exports.configuration = null;
-exports.connection = db;
+exports.connection = null;
 exports.flushCallback = null;
 exports.start = require("./start");
 exports.stop = require("./stop");

@@ -29,52 +29,53 @@
     <Content Include="README.md" />
     <Content Include="tsconfig.json" />
     <Content Include="tsd.json" />
-    <Content Include="src\dryrun.ts" />
-    <Content Include="src\errors.ts" />
-    <Content Include="src\index.ts" />
-    <Content Include="src\start.ts" />
-    <Content Include="src\stop.ts" />
-    <Content Include="src\typings\asyncawait\asyncawait.d.ts" />
-    <Content Include="src\validateConfig.ts" />
     <Compile Include="debug.js" />
-    <Compile Include="test\main.ts" />
-    <Compile Include="src\eventEmitter\index.ts" />
-    <Content Include="src\eventLoop\exec.ts" />
-    <Content Include="src\eventLoop\index.ts" />
-    <Content Include="src\slowFunction\callback.ts" />
-    <Content Include="src\slowFunction\cps.ts" />
-    <Content Include="src\slowFunction\declare.ts" />
-    <Content Include="src\slowFunction\deserialise.ts" />
-    <Content Include="src\slowFunction\serialise.ts" />
-    <Content Include="src\slowFunction\setImmediate.ts" />
-    <Content Include="src\slowFunction\setInterval.ts" />
-    <Content Include="src\slowFunction\setTimeout.ts" />
-    <Content Include="src\slowPromise\index.ts" />
-    <Content Include="src\store\create.ts" />
-    <Content Include="src\store\db.ts" />
-    <Content Include="src\store\index.ts" />
-    <Content Include="src\store\eventLoop\add.ts" />
-    <Content Include="src\store\eventLoop\next.ts" />
-    <Content Include="src\store\eventLoop\remove.ts" />
-    <Content Include="src\store\listener\add.ts" />
-    <Content Include="src\store\listener\get.ts" />
-    <Content Include="src\store\listener\remove.ts" />
-    <Content Include="src\store\listener\removeAll.ts" />
-    <Content Include="src\store\promise\add.ts" />
-    <Content Include="src\store\promise\get.ts" />
-    <Content Include="src\store\promise\reject.ts" />
-    <Content Include="src\store\promise\resolve.ts" />
-    <Content Include="src\store\slowFunction\add.ts" />
-    <Content Include="src\store\slowFunction\addTimed.ts" />
-    <Content Include="src\store\slowFunction\get.ts" />
-    <Content Include="src\store\slowFunction\remove.ts" />
-    <Content Include="src\store\slowFunction\toStorable.ts" />
-    <Content Include="src\typings\bluebird\bluebird.d.ts" />
-    <Content Include="src\typings\chai\chai.d.ts" />
-    <Content Include="src\typings\knex\knex.d.ts" />
-    <Content Include="src\typings\mocha\mocha.d.ts" />
-    <Content Include="src\typings\node\node.d.ts" />
-    <Content Include="src\typings\slownode\slownode.d.ts" />
+    <TypeScriptCompile Include="src\dryrun.ts" />
+    <TypeScriptCompile Include="src\errors.ts" />
+    <TypeScriptCompile Include="src\index.ts" />
+    <TypeScriptCompile Include="src\start.ts" />
+    <TypeScriptCompile Include="src\stop.ts" />
+    <TypeScriptCompile Include="src\typings\asyncawait\asyncawait.d.ts" />
+    <TypeScriptCompile Include="src\typings\chai-as-promised\chai-as-promised.d.ts" />
+    <TypeScriptCompile Include="src\validateConfig.ts" />
+    <TypeScriptCompile Include="test\main.ts" />
+    <TypeScriptCompile Include="src\eventEmitter\index.ts" />
+    <TypeScriptCompile Include="src\eventLoop\exec.ts" />
+    <TypeScriptCompile Include="src\eventLoop\index.ts" />
+    <TypeScriptCompile Include="src\slowFunction\callback.ts" />
+    <TypeScriptCompile Include="src\slowFunction\cps.ts" />
+    <TypeScriptCompile Include="src\slowFunction\declare.ts" />
+    <TypeScriptCompile Include="src\slowFunction\deserialise.ts" />
+    <TypeScriptCompile Include="src\slowFunction\serialise.ts" />
+    <TypeScriptCompile Include="src\slowFunction\setImmediate.ts" />
+    <TypeScriptCompile Include="src\slowFunction\setInterval.ts" />
+    <TypeScriptCompile Include="src\slowFunction\setTimeout.ts" />
+    <TypeScriptCompile Include="src\slowPromise\index.ts" />
+    <TypeScriptCompile Include="src\store\create.ts" />
+    <TypeScriptCompile Include="src\store\connect.ts" />
+    <TypeScriptCompile Include="src\store\index.ts" />
+    <TypeScriptCompile Include="src\store\eventLoop\add.ts" />
+    <TypeScriptCompile Include="src\store\eventLoop\next.ts" />
+    <TypeScriptCompile Include="src\store\eventLoop\remove.ts" />
+    <TypeScriptCompile Include="src\store\listener\add.ts" />
+    <TypeScriptCompile Include="src\store\listener\get.ts" />
+    <TypeScriptCompile Include="src\store\listener\remove.ts" />
+    <TypeScriptCompile Include="src\store\listener\removeAll.ts" />
+    <TypeScriptCompile Include="src\store\promise\add.ts" />
+    <TypeScriptCompile Include="src\store\promise\get.ts" />
+    <TypeScriptCompile Include="src\store\promise\reject.ts" />
+    <TypeScriptCompile Include="src\store\promise\resolve.ts" />
+    <TypeScriptCompile Include="src\store\slowFunction\add.ts" />
+    <TypeScriptCompile Include="src\store\slowFunction\addTimed.ts" />
+    <TypeScriptCompile Include="src\store\slowFunction\get.ts" />
+    <TypeScriptCompile Include="src\store\slowFunction\remove.ts" />
+    <TypeScriptCompile Include="src\store\slowFunction\toStorable.ts" />
+    <TypeScriptCompile Include="src\typings\bluebird\bluebird.d.ts" />
+    <TypeScriptCompile Include="src\typings\chai\chai.d.ts" />
+    <TypeScriptCompile Include="src\typings\knex\knex.d.ts" />
+    <TypeScriptCompile Include="src\typings\mocha\mocha.d.ts" />
+    <TypeScriptCompile Include="src\typings\node\node.d.ts" />
+    <TypeScriptCompile Include="src\typings\slownode\slownode.d.ts" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src" />
@@ -93,12 +94,16 @@
     <Folder Include="src\typings\knex" />
     <Folder Include="src\typings\mocha" />
     <Folder Include="src\typings\asyncawait\" />
+    <Folder Include="src\typings\chai-as-promised\" />
     <Folder Include="src\typings\node" />
     <Folder Include="src\typings\slownode" />
     <Folder Include="test" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="src\dbpath.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="src\store\dbexists.ts" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <!--Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them.-->
