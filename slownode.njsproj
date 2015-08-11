@@ -40,9 +40,21 @@
     <TypeScriptCompile Include="src-prev\ready.ts" />
     <TypeScriptCompile Include="src-prev\start.ts" />
     <TypeScriptCompile Include="src-prev\stop.ts" />
-    <TypeScriptCompile Include="src-prev\typings\asyncawait\asyncawait.d.ts" />
-    <TypeScriptCompile Include="src-prev\typings\chai-as-promised\chai-as-promised.d.ts" />
+    <TypeScriptCompile Include="src\knexConnection.ts" />
+    <TypeScriptCompile Include="src\slowAsyncFunction\index.ts" />
+    <TypeScriptCompile Include="src\slowAsyncFunction\match.ts" />
+    <TypeScriptCompile Include="src\slowAsyncFunction\rewrite.ts" />
+    <TypeScriptCompile Include="src\slowAsyncFunction\slowfunc.ts" />
+    <TypeScriptCompile Include="src\slowAsyncFunction\tempTest.ts" />
+    <TypeScriptCompile Include="src\slowAsyncFunction\traverse.ts" />
+    <TypeScriptCompile Include="src\typings\asyncawait\asyncawait.d.ts" />
+    <TypeScriptCompile Include="src\typings\chai-as-promised\chai-as-promised.d.ts" />
     <TypeScriptCompile Include="src-prev\validateConfig.ts" />
+    <TypeScriptCompile Include="src\typings\escodegen\escodegen.d.ts" />
+    <TypeScriptCompile Include="src\typings\esprima\esprima.d.ts" />
+    <TypeScriptCompile Include="src\typings\estree\estree.d.ts" />
+    <TypeScriptCompile Include="src\typings\lodash\lodash.d.ts" />
+    <TypeScriptCompile Include="test\fixtures\slowfuncs\1.ts" />
     <TypeScriptCompile Include="test\main.ts" />
     <TypeScriptCompile Include="src-prev\eventEmitter\index.ts" />
     <TypeScriptCompile Include="src-prev\eventLoop\exec.ts" />
@@ -75,12 +87,12 @@
     <TypeScriptCompile Include="src-prev\store\slowFunction\get.ts" />
     <TypeScriptCompile Include="src-prev\store\slowFunction\remove.ts" />
     <TypeScriptCompile Include="src-prev\store\slowFunction\toStorable.ts" />
-    <TypeScriptCompile Include="src-prev\typings\bluebird\bluebird.d.ts" />
-    <TypeScriptCompile Include="src-prev\typings\chai\chai.d.ts" />
-    <TypeScriptCompile Include="src-prev\typings\knex\knex.d.ts" />
-    <TypeScriptCompile Include="src-prev\typings\mocha\mocha.d.ts" />
-    <TypeScriptCompile Include="src-prev\typings\node\node.d.ts" />
-    <TypeScriptCompile Include="src-prev\typings\slownode\slownode.d.ts" />
+    <TypeScriptCompile Include="src\typings\bluebird\bluebird.d.ts" />
+    <TypeScriptCompile Include="src\typings\chai\chai.d.ts" />
+    <TypeScriptCompile Include="src\typings\knex\knex.d.ts" />
+    <TypeScriptCompile Include="src\typings\mocha\mocha.d.ts" />
+    <TypeScriptCompile Include="src\typings\node\node.d.ts" />
+    <TypeScriptCompile Include="src\typings\slownode\slownode.d.ts" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\" />
@@ -94,16 +106,23 @@
     <Folder Include="src-prev\store\listener\" />
     <Folder Include="src-prev\store\promise\" />
     <Folder Include="src-prev\store\slowFunction\" />
-    <Folder Include="src-prev\typings\" />
-    <Folder Include="src-prev\typings\bluebird\" />
-    <Folder Include="src-prev\typings\chai\" />
-    <Folder Include="src-prev\typings\knex\" />
-    <Folder Include="src-prev\typings\mocha\" />
-    <Folder Include="src-prev\typings\asyncawait\" />
-    <Folder Include="src-prev\typings\chai-as-promised\" />
-    <Folder Include="src-prev\typings\node\" />
-    <Folder Include="src-prev\typings\slownode\" />
+    <Folder Include="src\slowAsyncFunction\" />
+    <Folder Include="src\typings\" />
+    <Folder Include="src\typings\bluebird\" />
+    <Folder Include="src\typings\chai\" />
+    <Folder Include="src\typings\escodegen\" />
+    <Folder Include="src\typings\esprima\" />
+    <Folder Include="src\typings\estree\" />
+    <Folder Include="src\typings\knex\" />
+    <Folder Include="src\typings\mocha\" />
+    <Folder Include="src\typings\asyncawait\" />
+    <Folder Include="src\typings\chai-as-promised\" />
+    <Folder Include="src\typings\lodash\" />
+    <Folder Include="src\typings\node\" />
+    <Folder Include="src\typings\slownode\" />
     <Folder Include="test" />
+    <Folder Include="test\fixtures\" />
+    <Folder Include="test\fixtures\slowfuncs\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="src-prev\dbpath.ts" />

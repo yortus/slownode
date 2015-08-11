@@ -5,7 +5,8 @@
 
 declare module "slownode" {
 
-
+    // TODO: temp testing...
+    export function slowfunc<T extends Function>(fn: T): T;
 
 }
 

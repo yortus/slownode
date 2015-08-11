@@ -40,8 +40,11 @@
   "dependencies": {
     "asyncawait": "^0.7.4",
     "bluebird": "^2.9.34",
+    "escodegen": "^1.6.1",
+    "esprima": "^2.5.0",
     "find-root": "^0.1.1",
     "knex": "^0.8.6",
+    "lodash": "^3.10.1",
     "sqlite3": "^3.0.9"
   },
   "devDependencies": {

@@ -1,0 +1,1 @@
+{"version":3,"file":"knexConnection.js","sourceRoot":"","sources":["knexConnection.ts"],"names":[],"mappings":"AAAA,IAAO,IAAI,WAAW,MAAM,CAAC,CAAC;AAC9B,IAAO,gBAAgB,WAAW,oBAAoB,CAAC,CAAC;AAIxD,IAAI,EAAE,GAAG,IAAI,CAAC;IACV,MAAM,EAAE,SAAS;IACjB,UAAU,EAAE;QACR,QAAQ,EAAE,gBAAgB;KAC7B;CACJ,CAAC,CAAC;AARH,iBAAS,EAAE,CAAC"}

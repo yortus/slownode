@@ -8,5 +8,8 @@ if (!fs.existsSync(databaseLocation)) {
     var templateLocation = path.join(__dirname, '../empty.db');
     fs.writeFileSync(databaseLocation, fs.readFileSync(templateLocation));
 }
-// TODO: Build the API for export...
+// Connect to the database
+var db = require('./knexConnection');
+// TODO: temp testing... Build the API for export...
+exports.slowfunc = require('./slowAsyncFunction/slowfunc');
 //# sourceMappingURL=index.js.map
