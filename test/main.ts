@@ -2,64 +2,64 @@ import fs = require("fs");
 import async = require('asyncawait/async');
 import await = require('asyncawait/await');
 import Promise = require("bluebird");
-import SlowNode = require("slownode");
+import slow = require("slownode");
 import chai = require("chai");
 chai.use(require('chai-as-promised'));
 var expect = chai.expect;
 
 
-SlowNode.DEBUG = true;
+slow.DEBUG = true;
 
 
 describe("EventLoop behaviour tests", () => {
 
     it("will remove the previous database before starting", async.cps(() => {
-        await(SlowNode.ready);
-        await(SlowNode.stop());
+        await(slow.ready);
+        await(slow.stop());
     }));
 
     it("will throw when provided a non-number polling delay", async.cps(() => {
-        await(SlowNode.ready);
-        var config: SlowNode.ISlowConfig = { pollIntervalMs: <any> "string" };
-        expect(() => await(SlowNode.start(config))).to.throw(SlowNode.errors.MustBeNumber);
+        await(slow.ready);
+        var config: slow.ISlowConfig = { pollIntervalMs: <any> "string" };
+        expect(() => await(slow.start(config))).to.throw(slow.errors.MustBeNumber);
     }));
 
     it("will throw when provided <50 polling delay", async.cps(() => {
-        await(SlowNode.ready);
-        var config: SlowNode.ISlowConfig = { pollIntervalMs: 49 };
-        expect(() => await(SlowNode.start(config))).to.throw(SlowNode.errors.InvalidPollDelay);
+        await(slow.ready);
+        var config: slow.ISlowConfig = { pollIntervalMs: 49 };
+        expect(() => await(slow.start(config))).to.throw(slow.errors.InvalidPollDelay);
     }));
 
     it("will throw when provided polling delay of infinity", async.cps(() => {
-        await(SlowNode.ready);
-        var config: SlowNode.ISlowConfig = { pollIntervalMs: Infinity };
-        expect(() => await(SlowNode.start(config))).to.throw(SlowNode.errors.NotInfinity);
+        await(slow.ready);
+        var config: slow.ISlowConfig = { pollIntervalMs: Infinity };
+        expect(() => await(slow.start(config))).to.throw(slow.errors.NotInfinity);
     }));
 
     it("will create an instance of EventLoop and create the database", async.cps(() => {
-        await(SlowNode.ready);
-        expect(await(SlowNode.start({ pollIntervalMs: 50 }))).to.be.undefined;
+        await(slow.ready);
+        expect(await(slow.start({ pollIntervalMs: 50 }))).to.be.undefined;
     }));
 
     it("will have SlowNode implicitly available in a SlowFunction", async.cps(() => {
-        await(SlowNode.ready);
-        await(SlowNode.setImmediate(function() {
-            this.chai.expect(SlowNode).to.exist;
+        await(slow.ready);
+        await(slow.setImmediate(function() {
+            this.chai.expect(slow).to.exist;
         }, dep()));
         await(Promise.delay(150));
     }));
 
     it("will create an immediate function call with injected reference", async.cps(() => {
-        await(SlowNode.ready);
-        await(SlowNode.setImmediate(function() {
+        await(slow.ready);
+        await(slow.setImmediate(function() {
             this.chai.expect(this.h.STATUS_CODES['200']).to.equal("OK");
         }, dep("h", "http")));
         await(Promise.delay(150));
     }));
 
     it("will create an immediate function call with injected value", async.cps(() => {
-        await(SlowNode.ready);
-        await(SlowNode.setImmediate(function() {
+        await(slow.ready);
+        await(slow.setImmediate(function() {
             this.chai.expect(this.injectedValue).to.equal("OK");
         }, dep("injectedValue", null, "OK")));
         await(Promise.delay(150));
@@ -68,8 +68,8 @@ describe("EventLoop behaviour tests", () => {
     it("will create and call a function with a delay", async.cps(() => {
         var start = Date.now();
 
-        await(SlowNode.ready);
-        await(SlowNode.setTimeout(function() {
+        await(slow.ready);
+        await(slow.setTimeout(function() {
             var diff = Date.now() - this.start;
             this.chai.expect(diff).to.be.above(249);
             this.chai.expect(diff).to.be.below(500);
@@ -82,38 +82,38 @@ describe("EventLoop behaviour tests", () => {
             this.chai.expect(arg).to.equal("argument");
         }
 
-        await(SlowNode.ready);
-        var res = await(SlowNode.EventEmitter.once("test", func, dep()));
+        await(slow.ready);
+        var res = await(slow.EventEmitter.once("test", func, dep()));
         expect(res).to.be.equal(true);
-        await(SlowNode.EventEmitter.emit("test", "argument"));
+        await(slow.EventEmitter.emit("test", "argument"));
         await(Promise.delay(150));
     }));
 
     it("will create a named SlowFunction", async.cps(() => {
-        await(SlowNode.ready);
-        var id = await(SlowNode.SlowFunction("testFunction", function(args) {
+        await(slow.ready);
+        var id = await(slow.SlowFunction("testFunction", function(args) {
             return args;
         }, dep()));
         expect(id).to.equal("testFunction");
     }));
 
     it("will callback a named function with arguments", async.cps(() => {
-        await(SlowNode.ready);
-        var val = await(SlowNode.Callback("testFunction", "test callback"));
+        await(slow.ready);
+        var val = await(slow.Callback("testFunction", "test callback"));
         expect(val).to.be.equal("test callback");
     }));
 
     it("will created a named SlowFunction that takes 2 arguments", async.cps(() => {
-        await(SlowNode.ready);
-        var id = await(SlowNode.SlowFunction("secondFunction", function(left, right) {
+        await(slow.ready);
+        var id = await(slow.SlowFunction("secondFunction", function(left, right) {
             return left + right;
         }, dep()));
         expect(id).to.equal("secondFunction");
     }));
 
     it("will callback a named function with 2 arguments", async.cps(() => {
-        await(SlowNode.ready);
-        var val = await(SlowNode.Callback("secondFunction", 3, 7));
+        await(slow.ready);
+        var val = await(slow.Callback("secondFunction", 3, 7));
         expect(val).to.equal(10);
         await(Promise.delay(150));
     }));
