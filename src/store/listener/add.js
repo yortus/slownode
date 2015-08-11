@@ -1,6 +1,6 @@
-var SlowNode = require("../../index");
+var settings = require("../../settings");
 function add(listener) {
-    return SlowNode.connection("listener")
+    return settings.connection("listener")
         .insert(listener);
 }
 module.exports = add;

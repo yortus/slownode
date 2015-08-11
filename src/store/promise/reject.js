@@ -1,6 +1,6 @@
-var SlowNode = require("../../index");
+var settings = require("../../settings");
 function reject(promiseId) {
-    return SlowNode
+    return settings
         .connection("promise")
         .update({ state: 2 })
         .where("id", "=", promiseId);

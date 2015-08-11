@@ -1,7 +1,7 @@
-var SlowNode = require("../../index");
+var settings = require("../../settings");
 function add(promise) {
     // State validation?
-    return SlowNode
+    return settings
         .connection("promise")
         .insert(promise);
 }

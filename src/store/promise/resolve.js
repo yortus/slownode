@@ -1,6 +1,6 @@
-var SlowNode = require("../../index");
+var settings = require("../../settings");
 function resolve(promiseId) {
-    return SlowNode
+    return settings
         .connection("promise")
         .update({ state: 1 })
         .where("id", "=", promiseId);

@@ -1,4 +1,3 @@
-import SlowNode = require("../index");
 import Types = require("slownode");
 export = cps;
 

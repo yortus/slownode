@@ -1,11 +1,11 @@
 var EventLoop = require("./index");
 var store = require("../store/index");
 var deserialise = require("../slowFunction/deserialise");
-var SlowNode = require("../index");
+var settings = require('../settings');
 function callFunc(funcCall) {
     var startTime = Date.now();
     if (!funcCall) {
-        SlowNode.flushCallback = setTimeout(function () { return EventLoop.flush(); }, SlowNode.configuration.pollIntervalMs);
+        settings.flushCallback = setTimeout(function () { return EventLoop.flush(); }, settings.configuration.pollIntervalMs);
         return Promise.resolve(true);
     }
     return getSlowFunc(funcCall.funcId)

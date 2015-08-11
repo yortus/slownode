@@ -1,7 +1,7 @@
-var SlowNode = require("../../index");
+var settings = require("../../settings");
 function next() {
     var now = Date.now();
-    return SlowNode.connection("eventLoop")
+    return settings.connection("eventLoop")
         .select()
         .where("runAt", ">=", 0)
         .andWhere("runAt", "<=", now)

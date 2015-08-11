@@ -1,8 +1,8 @@
 import Types = require("slownode");
-import SlowNode = require("../../index");
+import settings = require("../../settings");
 export = add;
 
 function add(listener: Types.Schema.EventListener) {
-	return SlowNode.connection("listener")
+	return settings.connection("listener")
 		.insert(listener);
 }

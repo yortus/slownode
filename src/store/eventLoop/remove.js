@@ -1,6 +1,6 @@
-var SlowNode = require("../../index");
+var settings = require("../../settings");
 function remove(id) {
-    return SlowNode.connection("eventLoop")
+    return settings.connection("eventLoop")
         .delete()
         .where("id", "=", id);
 }

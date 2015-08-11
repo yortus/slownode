@@ -1,7 +1,7 @@
-var SlowNode = require("../../index");
+var settings = require("../../settings");
 // TODO: Type definition
 function get(promiseId) {
-    return SlowNode
+    return settings
         .connection("promise")
         .select()
         .where("id", "=", promiseId)

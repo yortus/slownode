@@ -1,7 +1,9 @@
-var SlowNode = require("../index");
+var settings = require('../settings');
 var errors = require("../errors");
 var log = require("ls-logger");
-SlowNode;
+// TODO: temp testing... to make unit test pass..
+var slow = require("slownode");
+slow.errors;
 // TODO: (De)serialisation should be smarter
 function deserialise(func) {
     var dependencies = JSON.parse(func.dependencies);
@@ -36,7 +38,7 @@ function wrapFunction(slowFunc, func) {
         .map(function (dep) { return ("this." + dep.as + " = " + inject(dep)); })
         .join("; ");
     eval(deps);
-    if (SlowNode.DEBUG)
+    if (settings.DEBUG)
         log.info(slowFunc.id + ": executed");
     return func.bind(this);
 }

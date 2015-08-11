@@ -1,10 +1,10 @@
-import SlowNode = require("../../index");
+import settings = require("../../settings");
 import Types = require("slownode");
 export = reject;
 
 function reject(promiseId: number) {
 	
-	return SlowNode
+	return settings
 		.connection("promise")
 		.update({ state: 2 })
 		.where("id", "=", promiseId);	

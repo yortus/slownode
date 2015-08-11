@@ -1,6 +1,6 @@
-var SlowNode = require("../../index");
+var settings = require("../../settings");
 function get(functionId) {
-    return SlowNode.connection("function")
+    return settings.connection("function")
         .select()
         .where("id", "=", functionId)
         .then(function (funcs) { return funcs[0]; });

@@ -1,11 +1,11 @@
-import SlowNode = require("../../index");
+import settings = require("../../settings");
 import Types = require("slownode");
 export = get;
 
 // TODO: Type definition
 function get(promiseId: number) {
 	
-	return SlowNode
+	return settings
 		.connection("promise")
 		.select()
 		.where("id", "=", promiseId)

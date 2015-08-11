@@ -2,10 +2,11 @@ var async = require('asyncawait/async');
 var await = require('asyncawait/await');
 var Promise = require("bluebird");
 var slow = require("slownode");
+var settings = require('../src/settings');
 var chai = require("chai");
 chai.use(require('chai-as-promised'));
 var expect = chai.expect;
-slow.DEBUG = true;
+settings.DEBUG = true;
 describe("EventLoop behaviour tests", function () {
     it("will remove the previous database before starting", async.cps(function () {
         await(slow.ready);

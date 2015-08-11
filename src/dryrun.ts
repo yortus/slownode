@@ -1,8 +1,6 @@
-import Promise = require("bluebird");
-import fs = require("fs");
-import SlowNode = require("./index");
+import start = require("./start");
+import stop = require("./stop");
 
 
-SlowNode.stop()
-	.then(() => SlowNode.start({ pollIntervalMs: 100 }));
+stop().then(() => start({ pollIntervalMs: 100 }));
 	

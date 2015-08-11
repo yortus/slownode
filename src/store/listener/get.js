@@ -1,6 +1,6 @@
-var SlowNode = require("../../index");
+var settings = require("../../settings");
 function get(event) {
-    return SlowNode.connection("listener")
+    return settings.connection("listener")
         .select()
         .where("topic", "=", event)
         .innerJoin("function", "listener.funcId", "function.id");

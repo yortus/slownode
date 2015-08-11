@@ -3,6 +3,7 @@ import crypto = require("crypto");
 import serialise = require("../../slowFunction/serialise");
 export = toStorable;
 
+
 function toStorable(slowFunction: Types.ISlowFunction): Types.Schema.Function {
 	var options = slowFunction.options || <Types.ISlowOptions> {};
 	
@@ -19,6 +20,7 @@ function toStorable(slowFunction: Types.ISlowFunction): Types.Schema.Function {
 		retryIntervalMs: options.retryIntervalMs || 0
 	};
 }
+
 
 function generateFunctionId(body: string) {
 	return crypto.createHash("md5")

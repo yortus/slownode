@@ -1,4 +1,4 @@
-var SlowNode = require("../index");
+var settings = require('../settings');
 var store = require("../store/index");
 var deserialise = require("../slowFunction/deserialise");
 /**
@@ -19,7 +19,7 @@ function addListener(event, listener, options) {
         topic: event,
         funcId: ""
     };
-    return SlowNode.connection.transaction(function (trx) {
+    return settings.connection.transaction(function (trx) {
         store
             .addFunction(func).transacting(trx)
             .then(function () { return listenRow.funcId = func.id; })

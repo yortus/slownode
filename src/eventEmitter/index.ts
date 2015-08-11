@@ -1,6 +1,6 @@
 import Promise = require("bluebird")
 import Types = require("slownode");
-import SlowNode = require("../index");
+import settings = require('../settings');
 import store = require("../store/index");
 import deserialise = require("../slowFunction/deserialise");
 /**
@@ -25,7 +25,7 @@ export function addListener(event: string, listener: (...args: any[]) => any, op
 		funcId: ""
 	}
 
-	return SlowNode.connection.transaction(trx => {
+	return settings.connection.transaction(trx => {
 		store
 			.addFunction(func).transacting(trx)
 			.then(() => listenRow.funcId = func.id)

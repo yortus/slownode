@@ -1,9 +1,9 @@
 import Types = require("slownode");
-import SlowNode = require("../../index");
+import settings = require("../../settings");
 export = get;
 
 function get(functionId: string): Promise<Types.Schema.Function> {
-	return SlowNode.connection("function")
+	return settings.connection("function")
 		.select()
 		.where("id", "=", functionId)
 		.then(funcs => funcs[0]);

@@ -30,6 +30,7 @@
     <Content Include="tsconfig.json" />
     <Content Include="tsd.json" />
     <Compile Include="debug.js" />
+    <TypeScriptCompile Include="src\settings.ts" />
     <TypeScriptCompile Include="src\dryrun.ts" />
     <TypeScriptCompile Include="src\errors.ts" />
     <TypeScriptCompile Include="src\index.ts" />

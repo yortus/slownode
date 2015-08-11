@@ -2,13 +2,13 @@ import Types = require("slownode");
 import EventLoop = require("./index");
 import store = require("../store/index");
 import deserialise = require("../slowFunction/deserialise");
-import SlowNode = require("../index");
+import settings = require('../settings');
 export = callFunc;
 
 function callFunc(funcCall?: Types.Schema.EventLoop): any {
 	var startTime = Date.now();
 	if (!funcCall) {
-		SlowNode.flushCallback = setTimeout(() => EventLoop.flush(), SlowNode.configuration.pollIntervalMs);
+		settings.flushCallback = setTimeout(() => EventLoop.flush(), settings.configuration.pollIntervalMs);
 		return Promise.resolve(true);
 	}
 	

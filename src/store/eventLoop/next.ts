@@ -1,11 +1,11 @@
 import Types = require("slownode");
-import SlowNode = require("../../index");
+import settings = require("../../settings");
 export = next;
 
 function next(): Promise<Types.Schema.EventLoop> {
 	var now = Date.now();
 
-	return SlowNode.connection("eventLoop")
+	return settings.connection("eventLoop")
 		.select()
 		.where("runAt", ">=", 0)
 		.andWhere("runAt", "<=", now)

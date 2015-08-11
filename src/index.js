@@ -1,7 +1,4 @@
 exports.errors = require('./errors');
-exports.configuration = null;
-exports.connection = null;
-exports.flushCallback = null;
 exports.start = require('./start');
 exports.stop = require('./stop');
 exports.setTimeout = require('./slowFunction/setTimeout');
@@ -11,6 +8,4 @@ exports.setInterval = require('./slowFunction/setInterval');
 exports.SlowFunction = require('./slowFunction/declare');
 exports.EventEmitter = require('./eventEmitter/index');
 exports.Callback = require('./slowFunction/callback');
-exports.Promise = null;
-exports.DEBUG = false;
 //# sourceMappingURL=index.js.map

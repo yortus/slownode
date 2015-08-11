@@ -1,14 +1,17 @@
-import Types = require("slownode");
-import SlowNode = require("../index");
+import settings = require('../settings');
 import errors = require("../errors");
 var log = require("ls-logger"); 
 export = deserialise;
 
-SlowNode;
+
+// TODO: temp testing... to make unit test pass..
+import slow = require("slownode");
+slow.errors;
+
 
 // TODO: (De)serialisation should be smarter
-function deserialise(func: Types.Schema.Function): Types.ISlowFunction {
-	var dependencies: Array<Types.IDependency> = JSON.parse(func.dependencies);
+function deserialise(func: slow.Schema.Function): slow.ISlowFunction {
+	var dependencies: Array<slow.IDependency> = JSON.parse(func.dependencies);
 	
 	var output = {
 		id: func.id,
@@ -39,18 +42,18 @@ function parseFunction(body: string): (...args: any[]) => any {
 	}
 }
 
-function wrapFunction(slowFunc: Types.ISlowFunction, func: Function) {
+function wrapFunction(slowFunc: slow.ISlowFunction, func: Function) {
 	var deps = slowFunc.options.dependencies
 		.map(dep => `this.${dep.as} = ${inject(dep)}`)
 		.join("; ");
 	
 	eval(deps);
 	
-	if (SlowNode.DEBUG) log.info(`${slowFunc.id}: executed`);
+	if (settings.DEBUG) log.info(`${slowFunc.id}: executed`);
 	return func.bind(this);
 }
 
-function inject(dependency: Types.IDependency) {
+function inject(dependency: slow.IDependency) {
 	return dependency.reference == null
 		? JSON.stringify(dependency.value)
 		: `require("${dependency.reference}")`;

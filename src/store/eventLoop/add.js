@@ -1,9 +1,9 @@
-var SlowNode = require("../../index");
+var settings = require("../../settings");
 function add(functionId, options) {
     options = options || {};
     options.arguments = options.arguments || [];
     var storable = toStorableCall(functionId, options);
-    return SlowNode.connection("eventLoop")
+    return settings.connection("eventLoop")
         .insert(storable);
 }
 function toStorableCall(functionId, options) {

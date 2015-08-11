@@ -2,7 +2,7 @@ var fs = require("fs");
 var async = require('asyncawait/async');
 var await = require('asyncawait/await');
 var Promise = require("bluebird");
-var slow = require('./index');
+var settings = require('./settings');
 var dbpath = require('./dbpath');
 var dbexists = require('./store/dbexists');
 var unlink = Promise.promisify(fs.unlink);
@@ -11,9 +11,10 @@ var stop = async(function () {
     if (!await(dbexists()))
         return true;
     // The file does exist. Attempt to delete it.
-    var db = slow.connection;
-    if (db)
-        await(db.destroy());
+    if (settings.flushCallback)
+        clearTimeout(settings.flushCallback);
+    if (settings.connection)
+        await(settings.connection.destroy());
     await(unlink(dbpath));
 });
 module.exports = stop;

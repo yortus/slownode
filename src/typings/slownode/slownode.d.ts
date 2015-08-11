@@ -8,7 +8,7 @@ declare module "slownode" {
 
     // TODO: temp testing...
     export function Callback(functionId: string, ...args: any[]): Promise<any>;
-    export var DEBUG: boolean;
+    //export var DEBUG: boolean;
     export var errors: {
 	    FunctionExists: string;
 	    NoHandler: string;
@@ -28,10 +28,6 @@ declare module "slownode" {
 
 
 	import Knex = require("knex");
-
-	export var configuration: ISlowConfig;
-	export var connection: Knex;
-	export var flushCallback: NodeJS.Timer;
 
 	export function start(config: ISlowConfig): Promise<void>;
 	export function stop(): Promise<void>;
@@ -98,6 +94,9 @@ declare module "slownode" {
 		pollIntervalMs?: number;
 	}
 
+
+
+    // TODO: used anywhere? ----------------
 	export module Schema {
 
 		export interface Function {

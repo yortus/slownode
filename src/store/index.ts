@@ -1,8 +1,3 @@
-import Promise = require("bluebird");
-import Types = require("slownode");
-import SlowNode = require("../index");
-import errors = require("../errors");
-
 export import addCall = require("./eventLoop/add");
 export import nextCall = require("./eventLoop/next");
 export import removeCall = require("./eventLoop/remove");

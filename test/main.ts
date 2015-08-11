@@ -3,12 +3,13 @@ import async = require('asyncawait/async');
 import await = require('asyncawait/await');
 import Promise = require("bluebird");
 import slow = require("slownode");
+import settings = require('../src/settings');
 import chai = require("chai");
 chai.use(require('chai-as-promised'));
 var expect = chai.expect;
 
 
-slow.DEBUG = true;
+settings.DEBUG = true;
 
 
 describe("EventLoop behaviour tests", () => {
