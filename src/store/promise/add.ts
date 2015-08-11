@@ -3,9 +3,9 @@ import Types = require("slownode");
 export = add;
 
 function add(promise: Types.Schema.Promise) {
-	// State validation?
-	
-	return settings
-		.connection("promise")
-		.insert(promise);
+    // State validation?
+    
+    return settings
+        .connection("promise")
+        .insert(promise);
 }

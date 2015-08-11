@@ -3,9 +3,9 @@ import Types = require("slownode");
 export = reject;
 
 function reject(promiseId: number) {
-	
-	return settings
-		.connection("promise")
-		.update({ state: 2 })
-		.where("id", "=", promiseId);	
+    
+    return settings
+        .connection("promise")
+        .update({ state: 2 })
+        .where("id", "=", promiseId);    
 }

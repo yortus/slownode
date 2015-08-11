@@ -9,8 +9,8 @@ export = start;
 
 
 var start = async((config: Types.ISlowConfig) => {
-	validateConfig(config);
-	settings.configuration = config;
-	settings.connection = await(connect());
+    validateConfig(config);
+    settings.configuration = config;
+    settings.connection = await(connect());
     EventLoop.flush();
 });

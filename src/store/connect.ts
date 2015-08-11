@@ -14,10 +14,10 @@ var connect = async(() => {
 
     // Connect the the database. This will create the database if if doens't already exist.
     var db = Knex({
-	    client: "sqlite3",
-	    connection: {
-		    filename: dbpath
-	    }
+        client: "sqlite3",
+        connection: {
+            filename: dbpath
+        }
     });
 
     // If the database was just created, initialise its schema now.

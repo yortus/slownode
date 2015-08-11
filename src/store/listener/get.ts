@@ -4,8 +4,8 @@ export = get;
 
 function get(event: string) {
 
-	return settings.connection("listener")
-		.select()
-		.where("topic", "=", event)
-		.innerJoin("function", "listener.funcId", "function.id");
+    return settings.connection("listener")
+        .select()
+        .where("topic", "=", event)
+        .innerJoin("function", "listener.funcId", "function.id");
 }

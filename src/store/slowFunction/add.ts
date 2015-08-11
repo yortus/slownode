@@ -4,8 +4,8 @@ import toStorable = require("./toStorable");
 export = add;
 
 function add(slowFunction: Types.ISlowFunction) {
-	var storableFunc = toStorable(slowFunction);
-	slowFunction.id = storableFunc.id;
+    var storableFunc = toStorable(slowFunction);
+    slowFunction.id = storableFunc.id;
 
-	return settings.connection("function").insert(storableFunc);
+    return settings.connection("function").insert(storableFunc);
 }
