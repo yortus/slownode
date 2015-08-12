@@ -5,9 +5,17 @@
 
 declare module "slownode" {
 
-    // TODO: temp testing...
-    export function slowfunc<T extends Function>(fn: T): T;
+    var slowfunc: SlowAsyncFunctionCtor;
 
+    // TODO: temp testing...
+    interface SlowAsyncFunctionCtor {
+        <TReturn>(fn: () => TReturn): { __sfid: string; (): Promise<TReturn>; }
+        <TReturn, T0>(fn: (a: T0) => TReturn): { __sfid: string; (a: T0): Promise<TReturn>; }
+        <TReturn, T0, T1>(fn: (a: T0, b: T1) => TReturn): { __sfid: string; (a: T0, b: T1): Promise<TReturn>; }
+        <TReturn, T0, T1, T2>(fn: (a: T0, b: T1, c: T2) => TReturn): { __sfid: string; (a: T0, b: T1, c: T2): Promise<TReturn>; }
+        <TReturn, T0, T1, T2, T3>(fn: (a: T0, b: T1, c: T2, d: T3) => TReturn): { __sfid: string; (a: T0, b: T1, c: T2, d: T3): Promise<TReturn>; }
+        <TReturn>(fn: (...args) => TReturn): { __sfid: string; (...args): Promise<TReturn>; }
+    }
 }
 
 

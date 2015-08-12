@@ -1,42 +1,36 @@
-function slowAsyncFunctionBody(first, limit) {
-    var $;
-    $ = {
-        pos: '@start',
-        local: {},
-        temp: {},
-        error: { handler: '@fail' },
-        finalizers: {},
-        result: void 0
-    };
+(function slowAsyncFunctionBody($) {
+    $.pos = $.pos || '@start';
+    $.local = $.local || {};
+    $.temp = $.temp || {};
+    $.error = $.error || { handler: '@fail' };
+    $.finalizers = $.finalizers || {};
     $main: while (true) {
         try {
             switch ($.pos) {
                 case '@start':
                 case '@1':
-                    $.temp.obj = arguments;
-                    $.temp.key = 0;
-                    $.local.first = $.temp.obj[$.temp.key];
-                    $.temp.obj = arguments;
-                    $.temp.key = 1;
-                    $.local.limit = $.temp.obj[$.temp.key];
+                    $.local.first = $.arguments[0];
+                    $.local.limit = $.arguments[1];
                     $.local.result = [];
                 case '@outer-entry':
-                    $.temp.obj = arguments;
-                    $.temp.key = 0;
-                    $.local.i = $.temp.obj[$.temp.key];
+                    $.local.i = $.local.first;
                 case '@outer-exit':
                 case '@2':
                     $.temp.test = true;
                     $.pos = $.temp.test ? '@3' : '@4';
                     continue;
                 case '@3':
+                    $.temp.receiver = $.local.console;
+                    $.temp.func = $.temp.receiver['log'];
+                    $.temp.args = [];
+                    $.temp.arg = $.local.i;
+                    $.temp.args.push($.temp.arg);
+                    $.temp.void = $.temp.func.apply($.temp.receiver, $.temp.args);
                     $.error.handler = '@5';
                     $.error.occurred = false;
                     $.temp.lhs = 1;
                     $.temp.lhs1 = $.local.i;
-                    $.temp.obj = arguments;
-                    $.temp.key = 1;
-                    $.temp.rhs1 = $.temp.obj[$.temp.key];
+                    $.temp.rhs1 = $.local.limit;
                     $.temp.rhs = $.temp.lhs1 - $.temp.rhs1;
                     $.local.j = $.temp.lhs / $.temp.rhs;
                     $.temp.lhs = $.local.j;
@@ -115,5 +109,5 @@ function slowAsyncFunctionBody(first, limit) {
         }
     }
     return $.result;
-}
+});
 //# sourceMappingURL=1.slow.js.map

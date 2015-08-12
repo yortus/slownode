@@ -43,7 +43,7 @@
     <TypeScriptCompile Include="src\knexConnection.ts" />
     <TypeScriptCompile Include="src\slowAsyncFunction\index.ts" />
     <TypeScriptCompile Include="src\slowAsyncFunction\match.ts" />
-    <TypeScriptCompile Include="src\slowAsyncFunction\rewrite.ts" />
+    <TypeScriptCompile Include="src\slowAsyncFunction\bodyRewriter.ts" />
     <TypeScriptCompile Include="src\slowAsyncFunction\slowfunc.ts" />
     <TypeScriptCompile Include="src\slowAsyncFunction\tempTest.ts" />
     <TypeScriptCompile Include="src\slowAsyncFunction\traverse.ts" />

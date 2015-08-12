@@ -3,11 +3,19 @@ export = traverse;
 
 
 // TODO: temp testing... depth-first preorder
-function traverse(node: ESTree.Node, action: (node: ESTree.Node) => void): void {
+function traverse(node: ESTree.Node, action: (node: ESTree.Node) => any): void {
 
     // TODO: ...
-    action(node);
+    var actionResult = action(node);
+    if (actionResult === false) return; // break traversal immediately
+    if (actionResult && actionResult.type) {
 
+        // continue traversing on returned replacement node
+        traverse(actionResult, action);
+        return;
+    }
+
+    // TODO: ...
     match(node, {
 
         EmptyStatement: (stmt) => {},

@@ -1,12 +1,16 @@
 ﻿import assert = require('assert');
+import _ = require('lodash');
+import Types = require('slownode');
 import esprima = require('esprima');
 import escodegen = require('escodegen');
 import traverse = require('./traverse');
-import rewrite = require('./rewrite');
-export = slowfunc;
+import bodyRewriter = require('./bodyRewriter');
+import match = require('./match');
+export = makeSlowAsyncFunction;
 
 
-function slowfunc(fn: Function): Function {
+// TODO: improve typing...
+var makeSlowAsyncFunction: Types.SlowAsyncFunctionCtor = (fn: Function) => {
 
     // Validate argument.
     assert(typeof fn === 'function');
@@ -44,15 +48,63 @@ function slowfunc(fn: Function): Function {
     traverse(funcExpr.body, node => nodes.push(node));
 
     // TODO: temp testing... list all the local variable names
-    var declarators = nodes
-        .filter(node => node.type === 'VariableDeclaration')
-        .map((decl: ESTree.VariableDeclaration) => decl.declarations);
-    var localIdentifiers: string[] = [].concat.apply([], declarators).map(decl => decl.id.name);
+    var paramNames = funcExpr.params.map(p => <string> p['name']);
+    var declarators = nodes.filter(node => node.type === 'VariableDeclaration').map((decl: ESTree.VariableDeclaration) => decl.declarations);
+    var declaredNames = _(declarators).flatten().map(decl => <string> decl.id.name).value();
+    var catchParamNames = nodes.filter(node => node.type === 'TryStatement' && node['handler']).map((stmt: ESTree.TryStatement) => <string> stmt.handler.param['name'] );
+    var localIdentifiers = [].concat(paramNames, declaredNames, catchParamNames);
 
-    //// TODO: temp testing... list all the referenced identifier names
-    //// NB: refs contains repeats and labels
-    //var refs = nodes.filter(node => node.type === 'Identifier').map(id => <string> id['name']);
+    //TODO: doc this... implements one of the validation rules above...
+    assert(catchParamNames.length === _.unique(catchParamNames).length);
+    assert(_.intersection(paramNames, declaredNames, catchParamNames).length === 0);
 
+
+    // TODO: list all label identifiers
+//    var labelIdentifiers = nodes.filter(node => node.type === 'LabelledStatement').map((node: ESTree.LabeledStatement) => node.label.name);
+
+    // TODO: temp testing... list all the nonlocal identifiers by traversing and excluding all identifiers that don't represent nonlocals
+    // - identifiers that are in localIdentifiers
+    // - identifiers that are object keys
+    // - identifiers that are member expression properties
+    var nonlocalIdentifiers: string[] = [];
+    traverse(funcExpr.body, node => {
+        return match<any>(node, {
+
+            LabeledStatement: (stmt) => false,
+
+            // TODO: the following two are really validation checks - separate them out...
+            AssignmentExpression: (expr) => {
+                // TODO: don't allow mutating to a nonlocal identifier!!!
+                if (expr.left.type !== 'Identifier') return;
+                var name = expr.left['name'];
+                if (localIdentifiers.indexOf(name) === -1) throw new Error(`slowfunc: cannot mutate nonlocal identifier '${name}'`); // TODO: add test case for test this...
+            },
+
+            UpdateExpression: (expr) => {
+                // TODO: don't allow mutating to a nonlocal identifier!!!
+                if (expr.argument.type !== 'Identifier') return;
+                var name = expr.argument['name'];
+                if (localIdentifiers.indexOf(name) === -1) throw new Error(`slowfunc: cannot mutate nonlocal identifier '${name}'`); // TODO: add test case for test this...
+            },
+
+            MemberExpression: (expr) => {
+                if (!expr.computed) return expr.object;
+            },
+
+            ObjectExpression: (expr) => {
+                var computedKeyExprs = expr.properties.filter(p => p.computed).map(p => p.key);
+                var valueExprs = expr.properties.map(p => p.value);
+                return { type: 'ArrayExpression', elements: computedKeyExprs.concat(valueExprs) };
+            },
+
+            Identifier: (expr) => {
+                if (localIdentifiers.indexOf(expr.name) === -1) nonlocalIdentifiers.push(expr.name);
+            },
+
+            Otherwise: (node) => { /* pass-through */ }
+        });
+    });
+    nonlocalIdentifiers = _.unique(nonlocalIdentifiers);
 
 
     // TODO: list all!!!
@@ -60,18 +112,60 @@ function slowfunc(fn: Function): Function {
     var whitelistedNonlocalIdentifiers = [
         'arguments',
         'Error',
-        'Infinity'
+        'Infinity',
+        'console'
     ];
 
-
+    // TODO: doc... rule check...
+    var illegalNonlocals = _.difference(nonlocalIdentifiers, whitelistedNonlocalIdentifiers);
+    if (illegalNonlocals.length > 0) throw new Error(`slowfunc: illegal nonlocal(s): '${illegalNonlocals.join("', '")}'`);
 
     // Rewrite the AST into a form that supports persisting to storage.
-    var modifiedAST = rewrite(funcExpr, whitelistedNonlocalIdentifiers);
+    var result = rewrite(funcExpr, nonlocalIdentifiers);
 
-    // Synthesise: modified AST --> source code --> function.
-    var modifiedSource = '(' + escodegen.generate(modifiedAST) + ')';
-    var modifiedFunction = eval(modifiedSource);
+    // TODO: give the slowfunc its ID
+    // TODO: use hashing!!
+    result.__sfid = '123';
 
     // Return the augmented function.
-    return modifiedFunction;
+    return result;
+};
+
+
+function rewrite(funcExpr: ESTree.FunctionExpression, nonlocalIdentifierNames: string[]) {
+
+    // TODO: function body...
+    var bodyAST = bodyRewriter.rewrite(funcExpr, nonlocalIdentifierNames);
+    var bodySource = '(' + escodegen.generate(bodyAST) + ')';
+    var bodyFunc = eval(bodySource);
+
+    // TODO: function parameters...
+    assert(funcExpr.params.every(p => p.type === 'Identifier'));
+    var paramNames = funcExpr.params.map(p => <string> p['name']);
+
+    // TODO: ...
+    //var source = `
+    //    (function slowAsyncFunction(${paramNames.join(', ')}) {
+    //        for (var args = [], i = 0; i < arguments.length; ++i) args.push(arguments[i]);
+    //        var state = { local: { arguments: args };
+    //        var promise = bodyFunc(state);
+    //        return promise;
+    //    })
+    //`;
+    //var func = eval(source);
+
+
+    var func: any = function(...args) {
+        var state = { local: { arguments: args } };
+        var promise = bodyFunc(state);
+        return promise;
+    };
+
+
+    return func;
 }
+
+
+
+// TODO: use ES6 Symbol when TS supports them properly (TS1.5 only supports a subset of ES6 Symbol functionality)
+var SlowFunctionIdPropertyKey = '__sfid';

@@ -2,7 +2,15 @@ var match = require('./match');
 // TODO: temp testing... depth-first preorder
 function traverse(node, action) {
     // TODO: ...
-    action(node);
+    var actionResult = action(node);
+    if (actionResult === false)
+        return; // break traversal immediately
+    if (actionResult && actionResult.type) {
+        // continue traversing on returned replacement node
+        traverse(actionResult, action);
+        return;
+    }
+    // TODO: ...
     match(node, {
         EmptyStatement: function (stmt) { },
         BlockStatement: function (stmt) { return stmt.body.forEach(function (stmt) { return traverse(stmt, action); }); },
