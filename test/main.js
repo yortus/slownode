@@ -1,4 +1,5 @@
 var async = require('asyncawait/async');
+var await = require('asyncawait/await');
 var chai = require("chai");
 chai.use(require('chai-as-promised'));
 var expect = chai.expect;
@@ -19,7 +20,7 @@ describe('slowfunc', function () {
             var modifiedSource = modifieds[i].func.toString(); // NB: Used only for inspection during debugging
             var originalResult = originals[i].func.apply(null, originals[i].args);
             expect(originalResult).to.deep.equal(originals[i].result);
-            var modifiedResult = modifieds[i].func.apply(null, modifieds[i].args);
+            var modifiedResult = await(modifieds[i].func.apply(null, modifieds[i].args));
             expect(modifiedResult).to.deep.equal(modifieds[i].result);
         }
     }));

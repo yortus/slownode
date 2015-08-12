@@ -36,6 +36,8 @@ export function rewrite(funcExpr: ESTree.FunctionExpression, nonlocalIdentifierN
 // TODO: unused... keep? just for documentation purposes?
 export interface State {
 
+    resolver: { resolve: Function; reject: Function; }
+
     pos?: string;
 
     local?: { [name: string]: any; };
@@ -161,18 +163,17 @@ class Rewriter {
                 $.temp = $.temp || {};
                 $.error = $.error || { handler: '@fail' };
                 $.finalizers = $.finalizers || { pending: [] };
-                $main:
                 while (true) {
                     try {
                         switch ($.pos) {
                             case '@start':
                                 ${fromFragment || ''}
                             case '@done':
-                                break $main;
+                                $.resolver.resolve($.result);
+                                return;
                             case '@fail':
-                                // TODO: ...
-                                '========== TODO ==========';
-                                console.log($.error);
+                                $.resolver.reject($.error.value);
+                                return;
                             case '@finalize':
                                 $.pos = $.finalizers.pending.pop() || $.finalizers.afterward;
                                 continue;
@@ -184,16 +185,12 @@ class Rewriter {
                         $.pos = $.error.handler;
                         continue;
                     }
-                    finally {
-                    }
                 }
-                return $.result;
             })
         `;
         var ast = esprima.parse(source);
         var funcExpr = <ESTree.FunctionExpression> ast.body[0]['expression'];
-        var labelStmt = <ESTree.LabeledStatement> funcExpr.body['body'][5];
-        var whileStmt = <ESTree.WhileStatement> labelStmt.body;
+        var whileStmt = <ESTree.WhileStatement> funcExpr.body['body'][5];
         var tryStmt = <ESTree.TryStatement> whileStmt.body['body'][0];
         var switchStmt = <ESTree.SwitchStatement> tryStmt.block['body'][0];
         if (fromFragment) {

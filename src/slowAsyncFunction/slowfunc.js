@@ -1,5 +1,6 @@
 var assert = require('assert');
 var _ = require('lodash');
+var Promise = require('bluebird');
 var esprima = require('esprima');
 var escodegen = require('escodegen');
 var traverse = require('./traverse');
@@ -117,7 +118,8 @@ function rewrite(funcExpr, nonlocalIdentifierNames) {
     // TODO: function parameters...
     assert(funcExpr.params.every(function (p) { return p.type === 'Identifier'; }));
     var paramNames = funcExpr.params.map(function (p) { return p['name']; });
-    // TODO: ...
+    // TODO: reinstate this...
+    // TODO: add promise code...
     //var source = `
     //    (function slowAsyncFunction(${paramNames.join(', ')}) {
     //        for (var args = [], i = 0; i < arguments.length; ++i) args.push(arguments[i]);
@@ -132,8 +134,14 @@ function rewrite(funcExpr, nonlocalIdentifierNames) {
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i - 0] = arguments[_i];
         }
-        var state = { local: { arguments: args } };
-        var promise = bodyFunc(state);
+        // TODO: make resolver...
+        var resolver;
+        var promise = new Promise(function (resolve, reject) { resolver = { resolve: resolve, reject: reject }; });
+        var state = {
+            resolver: resolver,
+            local: { arguments: args }
+        };
+        bodyFunc(state);
         return promise;
     };
     return func;

@@ -1,5 +1,6 @@
 ﻿import assert = require('assert');
 import _ = require('lodash');
+import Promise = require('bluebird');
 import Types = require('slownode');
 import esprima = require('esprima');
 import escodegen = require('escodegen');
@@ -143,7 +144,8 @@ function rewrite(funcExpr: ESTree.FunctionExpression, nonlocalIdentifierNames: s
     assert(funcExpr.params.every(p => p.type === 'Identifier'));
     var paramNames = funcExpr.params.map(p => <string> p['name']);
 
-    // TODO: ...
+    // TODO: reinstate this...
+    // TODO: add promise code...
     //var source = `
     //    (function slowAsyncFunction(${paramNames.join(', ')}) {
     //        for (var args = [], i = 0; i < arguments.length; ++i) args.push(arguments[i]);
@@ -156,8 +158,16 @@ function rewrite(funcExpr: ESTree.FunctionExpression, nonlocalIdentifierNames: s
 
 
     var func: any = function(...args) {
-        var state = { local: { arguments: args } };
-        var promise = bodyFunc(state);
+
+        // TODO: make resolver...
+        var resolver;
+        var promise = new Promise((resolve, reject) => { resolver = {resolve, reject}; });
+
+        var state = <bodyRewriter.State> {
+            resolver: resolver,
+            local: { arguments: args }
+        };
+        bodyFunc(state);
         return promise;
     };
 

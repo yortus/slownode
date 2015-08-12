@@ -31,7 +31,7 @@ describe('slowfunc', () => {
             var originalResult = originals[i].func.apply(null, originals[i].args);
             expect(originalResult).to.deep.equal(originals[i].result);
 
-            var modifiedResult = modifieds[i].func.apply(null, modifieds[i].args);
+            var modifiedResult = await(modifieds[i].func.apply(null, modifieds[i].args));
             expect(modifiedResult).to.deep.equal(modifieds[i].result);
         }
     }));
