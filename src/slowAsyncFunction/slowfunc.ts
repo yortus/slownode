@@ -34,26 +34,38 @@ function slowfunc(fn: Function): Function {
     // NB: no need to check for syntactic validity, since the function must be syntactically valid to have been passed in here.
     //---------------------------------------------
 
-    // Rewrite the AST into a form that supports persisting to storage.
+
+    // TODO: Analyze and validate function...
     var exprStmt = <ESTree.ExpressionStatement> originalAST.body[0];
     var funcExpr = <ESTree.FunctionExpression> exprStmt.expression;
-    var modifiedAST = rewrite(funcExpr);
 
+    // TODO: List all nodes...
+    var nodes: ESTree.Node[] = [];
+    traverse(funcExpr.body, node => nodes.push(node));
 
-    //// TODO: List all nodes...
-    //var nodes: ESTree.Node[] = [];
-    //traverse(funcExpr.body, node => nodes.push(node));
-
-    //// TODO: temp testing... list all the local variable names
-    //var declarators = nodes
-    //    .filter(node => node.type === 'VariableDeclaration')
-    //    .map((decl: ESTree.VariableDeclaration) => decl.declarations);
-    //var defs: string[] = [].concat.apply([], declarators).map(decl => decl.id.name);
+    // TODO: temp testing... list all the local variable names
+    var declarators = nodes
+        .filter(node => node.type === 'VariableDeclaration')
+        .map((decl: ESTree.VariableDeclaration) => decl.declarations);
+    var localIdentifiers: string[] = [].concat.apply([], declarators).map(decl => decl.id.name);
 
     //// TODO: temp testing... list all the referenced identifier names
     //// NB: refs contains repeats and labels
     //var refs = nodes.filter(node => node.type === 'Identifier').map(id => <string> id['name']);
 
+
+
+    // TODO: list all!!!
+    // TODO: ensure no clashes with generated locals like '$' (just reserve all names starting with '$'?)
+    var whitelistedNonlocalIdentifiers = [
+        'Error',
+        'Infinity'
+    ];
+
+
+
+    // Rewrite the AST into a form that supports persisting to storage.
+    var modifiedAST = rewrite(funcExpr, whitelistedNonlocalIdentifiers);
 
     // Synthesise: modified AST --> source code --> function.
     var modifiedSource = '(' + escodegen.generate(modifiedAST) + ')';

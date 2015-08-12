@@ -5,8 +5,6 @@ import match = require('./match');
 export = rewrite;
 
 
-// TODO: ensure no clash of user vars with emitter vars
-// TODO: ensure no clash of user labels with emitter labels
 // TODO: graceful checking & feedback of unsupported constructs
 // TODO: 'closure variable' handling
 // TODO: 'await()' handling
@@ -19,12 +17,18 @@ export = rewrite;
 
 
 // TODO: temp testing...
-function rewrite(funcExpr: ESTree.FunctionExpression, options?: {}): ESTree.FunctionExpression {
-    assert(!funcExpr.generator)
+function rewrite(funcExpr: ESTree.FunctionExpression, nonlocalIdentifierNames: string[]): ESTree.FunctionExpression {
+
+    // TODO: ...
+    assert(!funcExpr.generator);
     assert(funcExpr.params.every(p => p.type === 'Identifier'));
     assert(funcExpr.body.type === 'BlockStatement');
-    var rewriter = new Rewriter();
-    funcExpr.params.forEach(p => rewriter.declareLocalIdentifier(p['name'])); // TODO: review this...
+
+    // TODO: don't need to do anything with these... refs will be assumed to be local ids
+    var funcParamNames = funcExpr.params.map(p => <string> p['name']);
+
+    // TODO: ...
+    var rewriter = new Rewriter(nonlocalIdentifierNames);
     rewriter.emitStmt(funcExpr.body);
     var newFuncExpr = <ESTree.FunctionExpression> rewriter.generateAST();
     newFuncExpr.params = funcExpr.params;
@@ -35,50 +39,38 @@ function rewrite(funcExpr: ESTree.FunctionExpression, options?: {}): ESTree.Func
 // TODO: temp testing...
 class Rewriter {
 
-    constructor() {
+    constructor(private nonlocalIdentifierNames: string[]) {
         this.emitCase(this.newLabel());
         this.pushJumpTarget(JumpTarget.Throw, '@fail');
         this.pushJumpTarget(JumpTarget.Return, '@done');
     }
 
-    // TODO: was...
-    //localVars: string[] = ['$state', '$pos', '$result', '$error', '$finalizers'];
-    whitelistedNonlocalIdentifiers = [
-        'Error',
-        'Infinity'
-        // TODO: list all!!!
-    ];
-
-
     currentThrowTarget: string;
 
     // TODO: temp testing...
-    declareLocalIdentifier(name: string): string {
-        // TODO: temp testing...
-        return this.referenceLocalIdentifier(name);
-    }
+    referenceIdentifier(name: string): string {
 
-    // TODO: temp testing...
-    referenceLocalIdentifier(name: string): string {
         // TODO: temp testing...
-        var isNonlocal = this.whitelistedNonlocalIdentifiers.indexOf(name) !== -1;
+        var isNonlocal = this.nonlocalIdentifierNames.indexOf(name) !== -1;
         if (isNonlocal) return name;
-        return '$state.locals.' + name;
+
+        // TODO: must be local...
+        return '$.local.' + name;
     }
 
-    reserveName(name: string): string {
+    reserveTemporaryIdentifier(name: string): string {
         // TODO: test/step through
         for (var i = 0, isNameAvailable = false; !isNameAvailable; ++i) {
             var fullName = name + (i || '');
-            isNameAvailable = this.reservedNames.indexOf(fullName) === -1;
+            isNameAvailable = this.temporaryIdentifiersInUse.indexOf(fullName) === -1;
         }
-        this.reservedNames.push(fullName);
-        return '$state.' + fullName;
+        this.temporaryIdentifiersInUse.push(fullName);
+        return '$.temp.' + fullName;
     }
 
-    releaseName(name: string): void {
-        var i = this.reservedNames.indexOf(name);
-        this.reservedNames.splice(i, 1);
+    releaseTemporaryIdentifier(name: string): void {
+        var i = this.temporaryIdentifiersInUse.indexOf(name);
+        this.temporaryIdentifiersInUse.splice(i, 1);
     }
 
     newLabel(): string {
@@ -124,13 +116,13 @@ class Rewriter {
         var label = this.jumpTargets[i].value;
         var finalizers = this.jumpTargets.slice(i + 1).filter(tgt => tgt.type === JumpTarget.Finalize).map(tgt => tgt.value);
         if (finalizers.length > 0) {
-            this.emitText(`$finalizers.pending = ['${finalizers.join("', '")}'];`);
-            this.emitText(`$finalizers.afterward = '${label}';`);
-            this.emitText(`$pos = '@finalize';`);
+            this.emitText(`$.finalizers.pending = ['${finalizers.join("', '")}'];`);
+            this.emitText(`$.finalizers.afterward = '${label}';`);
+            this.emitText(`$.pos = '@finalize';`);
             this.emitText('continue;');
         }
         else {
-            this.emitText(`$pos = '${label}';`);
+            this.emitText(`$.pos = '${label}';`);
             this.emitText('continue;');
         }
     }
@@ -138,12 +130,12 @@ class Rewriter {
     generateAST(fromFragment?: string): ESTree.FunctionExpression | ESTree.Statement {
         var source = `
             (function slowAsyncFunctionBody() {
-                var $state, $pos, $error, $finalizers, $result;
-                $state = { locals: {} }, $pos = '@start', $error = { handler: '@fail' }, $finalizers = {};
+                var $;
+                $ = { pos: '@start', local: {}, temp: {}, error: { handler: '@fail' }, finalizers: {}, result: void 0 };
                 $main:
                 while (true) {
                     try {
-                        switch ($pos) {
+                        switch ($.pos) {
                             case '@start':
                                 ${fromFragment || ''}
                             case '@done':
@@ -152,20 +144,20 @@ class Rewriter {
                                 // TODO: ...
                                 '========== TODO ==========';
                             case '@finalize':
-                                $pos = $finalizers.pending.pop() || $finalizers.afterward;
+                                $.pos = $.finalizers.pending.pop() || $.finalizers.afterward;
                                 continue;
                         }
                     }
                     catch (ex) {
-                        $error.occurred = true;
-                        $error.value = ex;
-                        $pos = $error.handler;
+                        $.error.occurred = true;
+                        $.error.value = ex;
+                        $.pos = $.error.handler;
                         continue;
                     }
                     finally {
                     }
                 }
-                return $result;
+                return $.result;
             })
         `;
         var ast = esprima.parse(source);
@@ -185,7 +177,7 @@ class Rewriter {
         }
     }
 
-    private reservedNames = ['locals']; // TODO: review this... correct?
+    private temporaryIdentifiersInUse: string[] = [];
 
     private nextLabel = 0;
 
@@ -217,23 +209,23 @@ function rewriteStatement(stmt: ESTree.Statement, emitter: Rewriter): void {
         },
 
         ExpressionStatement: (stmt) => {
-            var $void = emitter.reserveName('void');
+            var $void = emitter.reserveTemporaryIdentifier('void');
             emitter.emitExpr(stmt.expression, $void);
-            emitter.releaseName($void);
+            emitter.releaseTemporaryIdentifier($void);
         },
 
         IfStatement: (stmt) => {
             var conLabel = emitter.newLabel();
             var altLabel = emitter.newLabel();
             var exitLabel = emitter.newLabel();
-            var $test = emitter.reserveName('test');
+            var $test = emitter.reserveTemporaryIdentifier('test');
             emitter.emitExpr(stmt.test, $test);
-            emitter.emitText(`$pos = ${$test} ? '${conLabel}' : '${altLabel}';`);
-            emitter.releaseName($test);
+            emitter.emitText(`$.pos = ${$test} ? '${conLabel}' : '${altLabel}';`);
+            emitter.releaseTemporaryIdentifier($test);
             emitter.emitText(`continue;`);
             emitter.emitCase(conLabel);
             emitter.emitStmt(stmt.consequent);
-            emitter.emitText(`$pos = '${exitLabel}';`);
+            emitter.emitText(`$.pos = '${exitLabel}';`);
             emitter.emitText(`continue;`);
             emitter.emitCase(altLabel);
             if (stmt.alternate) emitter.emitStmt(stmt.alternate);
@@ -243,15 +235,15 @@ function rewriteStatement(stmt: ESTree.Statement, emitter: Rewriter): void {
         SwitchStatement: (stmt) => {
             var exitLabel = emitter.newLabel();
             emitter.pushJumpTarget(JumpTarget.Break, exitLabel);
-            var $discriminant = emitter.reserveName('discriminant');
-            var $test = emitter.reserveName('test');
+            var $discriminant = emitter.reserveTemporaryIdentifier('discriminant');
+            var $test = emitter.reserveTemporaryIdentifier('test');
             emitter.emitExpr(stmt.discriminant, $discriminant);
             stmt.cases.forEach(switchCase => {
                 var matchLabel = emitter.newLabel();
                 var skipLabel = emitter.newLabel();
                 if (switchCase.test) {
                     emitter.emitExpr(switchCase.test, $test);
-                    emitter.emitText(`$pos = ${$discriminant} === ${$test} ? '${matchLabel}' : '${skipLabel}'`);
+                    emitter.emitText(`$.pos = ${$discriminant} === ${$test} ? '${matchLabel}' : '${skipLabel}'`);
                     emitter.emitText('continue;');
                 }
                 emitter.emitCase(matchLabel);
@@ -259,8 +251,8 @@ function rewriteStatement(stmt: ESTree.Statement, emitter: Rewriter): void {
                 emitter.emitCase(skipLabel);
             });
             emitter.emitCase(exitLabel);
-            emitter.releaseName($discriminant);
-            emitter.releaseName($test);
+            emitter.releaseTemporaryIdentifier($discriminant);
+            emitter.releaseTemporaryIdentifier($test);
             emitter.popJumpTarget();
         },
 
@@ -271,14 +263,14 @@ function rewriteStatement(stmt: ESTree.Statement, emitter: Rewriter): void {
             emitter.pushJumpTarget(JumpTarget.Break, exitLabel);
             emitter.pushJumpTarget(JumpTarget.Continue, entryLabel);
             emitter.emitCase(entryLabel);
-            var $test = emitter.reserveName('test');
+            var $test = emitter.reserveTemporaryIdentifier('test');
             emitter.emitExpr(stmt.test, $test);
-            emitter.emitText(`$pos = ${$test} ? '${iterLabel}' : '${exitLabel}';`);
-            emitter.releaseName($test);
+            emitter.emitText(`$.pos = ${$test} ? '${iterLabel}' : '${exitLabel}';`);
+            emitter.releaseTemporaryIdentifier($test);
             emitter.emitText(`continue;`);
             emitter.emitCase(iterLabel);
             emitter.emitStmt(stmt.body);
-            emitter.emitText(`$pos = '${entryLabel}';`);
+            emitter.emitText(`$.pos = '${entryLabel}';`);
             emitter.emitText(`continue;`);
             emitter.emitCase(exitLabel);
             emitter.popJumpTarget(2);
@@ -292,10 +284,10 @@ function rewriteStatement(stmt: ESTree.Statement, emitter: Rewriter): void {
             emitter.pushJumpTarget(JumpTarget.Continue, entryLabel);
             emitter.emitCase(entryLabel);
             emitter.emitStmt(stmt.body);
-            var $test = emitter.reserveName('test');
+            var $test = emitter.reserveTemporaryIdentifier('test');
             emitter.emitExpr(stmt.test, $test);
-            emitter.emitText(`$pos = ${$test} ? '${entryLabel}' : '${exitLabel}';`);
-            emitter.releaseName($test);
+            emitter.emitText(`$.pos = ${$test} ? '${entryLabel}' : '${exitLabel}';`);
+            emitter.releaseTemporaryIdentifier($test);
             emitter.emitText(`continue;`);
             emitter.emitCase(exitLabel);
             emitter.popJumpTarget(2);
@@ -312,27 +304,27 @@ function rewriteStatement(stmt: ESTree.Statement, emitter: Rewriter): void {
                     emitter.emitStmt(stmt.init);
                 }
                 else {
-                    var $void = emitter.reserveName('void');
+                    var $void = emitter.reserveTemporaryIdentifier('void');
                     emitter.emitExpr(stmt.init, $void);
-                    emitter.releaseName($void);
+                    emitter.releaseTemporaryIdentifier($void);
                 }
             }
             emitter.emitCase(entryLabel);
             if (stmt.test) {
-                var $test = emitter.reserveName('test');
+                var $test = emitter.reserveTemporaryIdentifier('test');
                 emitter.emitExpr(stmt.test, $test);
-                emitter.emitText(`$pos = ${$test} ? '${iterLabel}' : '${exitLabel}';`);
-                emitter.releaseName($test);
+                emitter.emitText(`$.pos = ${$test} ? '${iterLabel}' : '${exitLabel}';`);
+                emitter.releaseTemporaryIdentifier($test);
                 emitter.emitText(`continue;`);
             }
             emitter.emitCase(iterLabel);
             emitter.emitStmt(stmt.body);
             if (stmt.update) {
-                var $void = emitter.reserveName('void');
+                var $void = emitter.reserveTemporaryIdentifier('void');
                 emitter.emitExpr(stmt.update, $void);
-                emitter.releaseName($void);
+                emitter.releaseTemporaryIdentifier($void);
             }
-            emitter.emitText(`$pos = '${entryLabel}';`);
+            emitter.emitText(`$.pos = '${entryLabel}';`);
             emitter.emitText(`continue;`);
             emitter.emitCase(exitLabel);
             emitter.popJumpTarget(2);
@@ -343,23 +335,23 @@ function rewriteStatement(stmt: ESTree.Statement, emitter: Rewriter): void {
             if (loopVar.type !== 'Identifier') throw new Error(`slowfunc: unsupported for..in loop variable type: '${loopVar.type}'`);
             if (stmt.left.type === 'VariableDeclaration') {
                 if (stmt.left['declarations'][0].init) throw new Error(`slowfunc: for..in loop variable initialiser is not supported.`);
-                emitter.declareLocalIdentifier(loopVar.name);
+                // TODO: remove.   was...   emitter.declareLocalIdentifier(loopVar.name);
             }
             var $name: string = loopVar.name;
-            var $obj = emitter.reserveName('obj');
-            var $props = emitter.reserveName('props');
-            var $i = emitter.reserveName('i');
+            var $obj = emitter.reserveTemporaryIdentifier('obj');
+            var $props = emitter.reserveTemporaryIdentifier('props');
+            var $i = emitter.reserveTemporaryIdentifier('i');
             emitter.emitExpr(stmt.right, $obj);
-            var $o = emitter.reserveName('o');
+            var $o = emitter.reserveTemporaryIdentifier('o');
             emitter.emitText(`for (${$o} = ${$obj}, ${$props} = []; ${$o}; ${$props} = ${$props}.concat(Object.keys(${$o})), ${$o} = ${$o}.prototype) ;`);
-            emitter.releaseName('$o');
+            emitter.releaseTemporaryIdentifier('$o');
             var forStmt = <ESTree.ForStatement> esprima.parse(`for (${$i} = 0; ${$i} < ${$props}.length; ++${$i}) { ${$name} = ${$props}[${$i}]; }`).body[0];
             var forBody = (<ESTree.BlockStatement> forStmt.body);
             forBody.body = forBody.body.concat(stmt.body.type === 'BlockStatement' ? stmt.body['body'] : stmt.body);
             emitter.emitStmt(forStmt);
-            emitter.releaseName('$obj');
-            emitter.releaseName('$props');
-            emitter.releaseName('$i');
+            emitter.releaseTemporaryIdentifier('$obj');
+            emitter.releaseTemporaryIdentifier('$props');
+            emitter.releaseTemporaryIdentifier('$i');
         },
 
         TryStatement: (stmt) => {
@@ -375,32 +367,32 @@ function rewriteStatement(stmt: ESTree.Statement, emitter: Rewriter): void {
 
             // try & catch sub-blocks
             emitter.pushJumpTarget(JumpTarget.Throw, catchLabel);
-            emitter.emitText(`$error.handler = '${emitter.currentThrowTarget}';`);
-            emitter.emitText(`$error.occurred = false;`);
+            emitter.emitText(`$.error.handler = '${emitter.currentThrowTarget}';`);
+            emitter.emitText(`$.error.occurred = false;`);
             emitter.emitStmt(stmt.block);
             emitter.emitCase(catchLabel);
             emitter.popJumpTarget(); // Throw
-            emitter.emitText(`$error.handler = '${emitter.currentThrowTarget}';`);
-            emitter.emitText(`$pos = $error.occurred ? '${conLabel}' : '${altLabel}';`);
+            emitter.emitText(`$.error.handler = '${emitter.currentThrowTarget}';`);
+            emitter.emitText(`$.pos = $.error.occurred ? '${conLabel}' : '${altLabel}';`);
             emitter.emitText('continue;');
             emitter.emitCase(conLabel);
             if (stmt.handler) {
                 if (stmt.handler.param.type !== 'Identifier') throw new Error(`slowfunc: catch parameter must be an identifier`);
-                var $ex = emitter.declareLocalIdentifier(stmt.handler.param['name']);
-                emitter.emitText(`${$ex} = $error.value;`);
+                var $ex = emitter.referenceIdentifier(stmt.handler.param['name']);
+                emitter.emitText(`${$ex} = $.error.value;`);
                 emitter.emitStmt(stmt.handler.body);
             }
             else {
-                emitter.emitText(`throw $error.value;`);
+                emitter.emitText(`throw $.error.value;`);
             }
             emitter.emitCase(altLabel);
             emitter.emitJump(JumpTarget.AfterTry);
 
             // finally sub-block
             emitter.emitCase(finallyLabel);
-            emitter.emitText(`$error.handler = '${emitter.currentThrowTarget}';`);
+            emitter.emitText(`$.error.handler = '${emitter.currentThrowTarget}';`);
             if (stmt.finalizer) emitter.emitStmt(stmt.finalizer);
-            emitter.emitText(`$pos = '@finalize';`);
+            emitter.emitText(`$.pos = '@finalize';`);
             emitter.emitText('continue');
 
             // block exit
@@ -431,25 +423,25 @@ function rewriteStatement(stmt: ESTree.Statement, emitter: Rewriter): void {
 
         ReturnStatement: (stmt) => {
             if (stmt.argument) {
-                emitter.emitExpr(stmt.argument, '$result');
+                emitter.emitExpr(stmt.argument, '$.result');
             }
             else {
-                emitter.emitText(`$result = void 0;`);
+                emitter.emitText(`$.result = void 0;`);
             }
             emitter.emitJump(JumpTarget.Return);
         },
 
         ThrowStatement: (stmt) => {
-            var $arg = emitter.reserveName('arg');
+            var $arg = emitter.reserveTemporaryIdentifier('arg');
             emitter.emitExpr(stmt.argument, $arg);
             emitter.emitText(`throw ${$arg};`);
-            emitter.releaseName($arg);
+            emitter.releaseTemporaryIdentifier($arg);
         },
 
         VariableDeclaration: (stmt) => {
             stmt.declarations.forEach(decl => {
                 if (decl.id.type !== 'Identifier') throw new Error(`slowfunc: unsupported declarator ID type: '${decl.id.type}'`);
-                var $name = emitter.declareLocalIdentifier(decl.id['name']);
+                var $name = emitter.referenceIdentifier(decl.id['name']);
                 if (decl.init) emitter.emitExpr(decl.init, $name);
             });
         },
@@ -473,11 +465,11 @@ function rewriteExpression(expr: ESTree.Expression, $tgt: string, emitter: Rewri
 
         AssignmentExpression: (expr) => {
             // NB: order of evaluation for 'a[b] += c' is: a then b then c 
-            var $rhs = emitter.reserveName('rhs');
-            var $obj = emitter.reserveName('obj');
-            var $key = emitter.reserveName('key');
+            var $rhs = emitter.reserveTemporaryIdentifier('rhs');
+            var $obj = emitter.reserveTemporaryIdentifier('obj');
+            var $key = emitter.reserveTemporaryIdentifier('key');
             if (expr.left.type === 'Identifier') {
-                var lhsText: string = emitter.referenceLocalIdentifier(expr.left['name']);
+                var lhsText: string = emitter.referenceIdentifier(expr.left['name']);
             }
             else if (expr.left.type === 'MemberExpression') {
                 var left = <ESTree.MemberExpression> expr.left;
@@ -495,23 +487,23 @@ function rewriteExpression(expr: ESTree.Expression, $tgt: string, emitter: Rewri
             }
             emitter.emitExpr(expr.right, $rhs);
             emitter.emitText(`${$tgt} = ${lhsText} ${expr.operator} ${$rhs};`);
-            emitter.releaseName($rhs);
-            emitter.releaseName($obj);
-            emitter.releaseName($key);
+            emitter.releaseTemporaryIdentifier($rhs);
+            emitter.releaseTemporaryIdentifier($obj);
+            emitter.releaseTemporaryIdentifier($key);
         },
 
         ConditionalExpression: (expr) => {
             var conLabel = emitter.newLabel();
             var altLabel = emitter.newLabel();
             var exitLabel = emitter.newLabel();
-            var $test = emitter.reserveName('test');
+            var $test = emitter.reserveTemporaryIdentifier('test');
             emitter.emitExpr(expr.test, $test);
-            emitter.emitText(`$pos = ${$test} ? '${conLabel}' : '${altLabel}';`);
-            emitter.releaseName($test);
+            emitter.emitText(`$.pos = ${$test} ? '${conLabel}' : '${altLabel}';`);
+            emitter.releaseTemporaryIdentifier($test);
             emitter.emitText(`continue;`);
             emitter.emitCase(conLabel);
             emitter.emitExpr(expr.consequent, $tgt);
-            emitter.emitText(`$pos = '${exitLabel}';`);
+            emitter.emitText(`$.pos = '${exitLabel}';`);
             emitter.emitText(`continue;`);
             emitter.emitCase(altLabel);
             emitter.emitExpr(expr.alternate, $tgt);
@@ -522,7 +514,7 @@ function rewriteExpression(expr: ESTree.Expression, $tgt: string, emitter: Rewri
             var rhsLabel = emitter.newLabel();
             var exitLabel = emitter.newLabel();
             emitter.emitExpr(expr.left, $tgt);
-            emitter.emitText(`$pos = ${expr.operator === '&&' ? '' : '!'}${$tgt} ? '${rhsLabel}' : '${exitLabel}';`);
+            emitter.emitText(`$.pos = ${expr.operator === '&&' ? '' : '!'}${$tgt} ? '${rhsLabel}' : '${exitLabel}';`);
             emitter.emitText('continue;');
             emitter.emitCase(rhsLabel);
             emitter.emitExpr(expr.right, $tgt);
@@ -530,13 +522,13 @@ function rewriteExpression(expr: ESTree.Expression, $tgt: string, emitter: Rewri
         },
 
         BinaryExpression: (expr) => {
-            var $lhs = emitter.reserveName('lhs');
-            var $rhs = emitter.reserveName('rhs');
+            var $lhs = emitter.reserveTemporaryIdentifier('lhs');
+            var $rhs = emitter.reserveTemporaryIdentifier('rhs');
             emitter.emitExpr(expr.left, $lhs);
             emitter.emitExpr(expr.right, $rhs);
             emitter.emitText(`${$tgt} = ${$lhs} ${expr.operator} ${$rhs};`);
-            emitter.releaseName($lhs);
-            emitter.releaseName($rhs);
+            emitter.releaseTemporaryIdentifier($lhs);
+            emitter.releaseTemporaryIdentifier($rhs);
         },
 
         UnaryExpression: (expr) => {
@@ -545,10 +537,10 @@ function rewriteExpression(expr: ESTree.Expression, $tgt: string, emitter: Rewri
         },
 
         UpdateExpression: (expr) => {
-            var $obj = emitter.reserveName('obj');
-            var $key = emitter.reserveName('key');
+            var $obj = emitter.reserveTemporaryIdentifier('obj');
+            var $key = emitter.reserveTemporaryIdentifier('key');
             if (expr.argument.type === 'Identifier') {
-                var argText: string = emitter.referenceLocalIdentifier(expr.argument['name']);
+                var argText: string = emitter.referenceIdentifier(expr.argument['name']);
             }
             else if (expr.argument.type === 'MemberExpression') {
                 var arg = <ESTree.MemberExpression> expr.argument;
@@ -567,15 +559,15 @@ function rewriteExpression(expr: ESTree.Expression, $tgt: string, emitter: Rewri
             var pre = expr.prefix ? expr.operator : '';
             var post = expr.prefix ? '' : expr.operator;
             emitter.emitText(`${$tgt} = ${pre}${argText}${post};`);
-            emitter.releaseName($obj);
-            emitter.releaseName($key);
+            emitter.releaseTemporaryIdentifier($obj);
+            emitter.releaseTemporaryIdentifier($key);
         },
 
         CallExpression: (expr) => {
-            var $receiver = emitter.reserveName('receiver');
-            var $func = emitter.reserveName('func');
-            var $args = emitter.reserveName('args');
-            var $arg = emitter.reserveName('arg');
+            var $receiver = emitter.reserveTemporaryIdentifier('receiver');
+            var $func = emitter.reserveTemporaryIdentifier('func');
+            var $args = emitter.reserveTemporaryIdentifier('args');
+            var $arg = emitter.reserveTemporaryIdentifier('arg');
             if (expr.callee.type === 'MemberExpression') {
                 var callee = <ESTree.MemberExpression> expr.callee;
                 emitter.emitExpr(callee.object, $receiver);
@@ -597,16 +589,16 @@ function rewriteExpression(expr: ESTree.Expression, $tgt: string, emitter: Rewri
                 emitter.emitText(`${$args}.push(${$arg});`);
             }
             emitter.emitText(`${$tgt} = ${$func}.apply(${$receiver}, ${$args});`);
-            emitter.releaseName($receiver);
-            emitter.releaseName($func);
-            emitter.releaseName($args);
-            emitter.releaseName($arg);
+            emitter.releaseTemporaryIdentifier($receiver);
+            emitter.releaseTemporaryIdentifier($func);
+            emitter.releaseTemporaryIdentifier($args);
+            emitter.releaseTemporaryIdentifier($arg);
         },
 
         NewExpression: (expr) => {
-            var $func = emitter.reserveName('func');
-            var $args = emitter.reserveName('args');
-            var $arg = emitter.reserveName('arg');
+            var $func = emitter.reserveTemporaryIdentifier('func');
+            var $args = emitter.reserveTemporaryIdentifier('args');
+            var $arg = emitter.reserveTemporaryIdentifier('arg');
             emitter.emitExpr(expr.callee, $func);
             emitter.emitText(`${$args} = [];`);
             for (var i = 0; i < expr.arguments.length; ++i) {
@@ -615,38 +607,38 @@ function rewriteExpression(expr: ESTree.Expression, $tgt: string, emitter: Rewri
             }
             emitter.emitText(`${$tgt} = Object.create(${$func}.prototype);`);
             emitter.emitText(`${$tgt} = ${$func}.apply(${$tgt}, ${$args}) || ${$tgt};`);
-            emitter.releaseName($func);
-            emitter.releaseName($args);
-            emitter.releaseName($arg);
+            emitter.releaseTemporaryIdentifier($func);
+            emitter.releaseTemporaryIdentifier($args);
+            emitter.releaseTemporaryIdentifier($arg);
         },
 
         MemberExpression: (expr) => {
-            var $obj = emitter.reserveName('obj');
+            var $obj = emitter.reserveTemporaryIdentifier('obj');
             emitter.emitExpr(expr.object, $obj);
             if (expr.computed) {
-                var $key = emitter.reserveName('key');
+                var $key = emitter.reserveTemporaryIdentifier('key');
                 emitter.emitExpr(expr.property, $key);
                 emitter.emitText(`${$tgt} = ${$obj}[${$key}];`);
-                emitter.releaseName($key);
+                emitter.releaseTemporaryIdentifier($key);
             }
             else {
                 emitter.emitText(`${$tgt} = ${$obj}['${expr.property['name']}'];`);
             }
-            emitter.releaseName($obj);
+            emitter.releaseTemporaryIdentifier($obj);
         },
 
         ArrayExpression: (expr) => {
-            var $elem = emitter.reserveName('elem');
+            var $elem = emitter.reserveTemporaryIdentifier('elem');
             emitter.emitText(`${$tgt} = [];`);
             for (var i = 0; i < expr.elements.length; ++i) {
                 emitter.emitExpr(expr.elements[i], $elem);
                 emitter.emitText(`${$tgt}.push(${$elem});`);
             }
-            emitter.releaseName($elem);
+            emitter.releaseTemporaryIdentifier($elem);
         },
 
         ObjectExpression: (expr) => {
-            var $key = emitter.reserveName('key');
+            var $key = emitter.reserveTemporaryIdentifier('key');
             emitter.emitText(`${$tgt} = {};`);
             for (var i = 0; i < expr.properties.length; ++i) {
                 var prop = expr.properties[i];
@@ -658,18 +650,16 @@ function rewriteExpression(expr: ESTree.Expression, $tgt: string, emitter: Rewri
                 }
                 emitter.emitExpr(prop.value, `${$tgt}[${$key}]`);
             }
-            emitter.releaseName($key);
+            emitter.releaseTemporaryIdentifier($key);
         },
 
         Identifier: (expr) => {
-
-            // TODO: what if it is a non-local identifier???
-            var $name = emitter.referenceLocalIdentifier(expr.name);
+            var $name = emitter.referenceIdentifier(expr.name);
             return emitter.emitText(`${$tgt} = ${$name};`);
         },
 
         TemplateLiteral: (expr) => {
-            var $expr = emitter.reserveName('expr');
+            var $expr = emitter.reserveTemporaryIdentifier('expr');
             emitter.emitText(`${$tgt} = '';`);
             for (var i = 0; i < expr.expressions.length; ++i) {
                 emitter.emitText(`${$tgt} += ${JSON.stringify(expr.quasis[i].value.cooked)};`);
@@ -677,7 +667,7 @@ function rewriteExpression(expr: ESTree.Expression, $tgt: string, emitter: Rewri
                 emitter.emitText(`${$tgt} += ${$expr};`);
             }
             emitter.emitText(`${$tgt} += ${JSON.stringify(expr.quasis[i].value.cooked)};`);
-            emitter.releaseName($expr);
+            emitter.releaseTemporaryIdentifier($expr);
         },
 
         Literal: (expr) => {
