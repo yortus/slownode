@@ -3,7 +3,7 @@
 
 
 
-function slowAsyncFunctionBody(a, b) {
+function slowAsyncFunctionBody(first, limit) {
     var $;
     $ = {
         pos: '@start',
@@ -19,9 +19,17 @@ function slowAsyncFunctionBody(a, b) {
                 switch ($.pos) {
                 case '@start':
                 case '@1':
+                    $.temp.obj = arguments;
+                    $.temp.key = 0;
+                    $.local.first = $.temp.obj[$.temp.key];
+                    $.temp.obj = arguments;
+                    $.temp.key = 1;
+                    $.local.limit = $.temp.obj[$.temp.key];
                     $.local.result = [];
                 case '@outer-entry':
-                    $.local.i = 1;
+                    $.temp.obj = arguments;
+                    $.temp.key = 0;
+                    $.local.i = $.temp.obj[$.temp.key];
                 case '@outer-exit':
                 case '@2':
                     $.temp.test = true;
@@ -32,7 +40,9 @@ function slowAsyncFunctionBody(a, b) {
                     $.error.occurred = false;
                     $.temp.lhs = 1;
                     $.temp.lhs1 = $.local.i;
-                    $.temp.rhs1 = 10;
+                    $.temp.obj = arguments;
+                    $.temp.key = 1;
+                    $.temp.rhs1 = $.temp.obj[$.temp.key];
                     $.temp.rhs = $.temp.lhs1 - $.temp.rhs1;
                     $.local.j = $.temp.lhs / $.temp.rhs;
                     $.temp.lhs = $.local.j;

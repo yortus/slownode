@@ -20,15 +20,14 @@ function rewrite(funcExpr, nonlocalIdentifierNames) {
     // TODO: don't need to do anything with these... refs will be assumed to be local ids
     var funcParamNames = funcExpr.params.map(function (p) { return p['name']; });
     // TODO: ...
-    var rewriter = new Rewriter(nonlocalIdentifierNames);
-    rewriter.emitStmt(funcExpr.body);
+    var rewriter = new Rewriter(funcExpr.body, funcExpr.params, nonlocalIdentifierNames);
     var newFuncExpr = rewriter.generateAST();
     newFuncExpr.params = funcExpr.params;
     return newFuncExpr;
 }
 // TODO: temp testing...
 var Rewriter = (function () {
-    function Rewriter(nonlocalIdentifierNames) {
+    function Rewriter(body, params, nonlocalIdentifierNames) {
         this.nonlocalIdentifierNames = nonlocalIdentifierNames;
         this.temporaryIdentifiersInUse = [];
         this.nextLabel = 0;
@@ -37,6 +36,16 @@ var Rewriter = (function () {
         this.emitCase(this.newLabel());
         this.pushJumpTarget(JumpTarget.Throw, '@fail');
         this.pushJumpTarget(JumpTarget.Return, '@done');
+        // TODO: temp testing...
+        for (var i = 0; i < params.length; ++i) {
+            this.emitExpr({
+                type: 'MemberExpression',
+                object: { type: 'Identifier', name: 'arguments' },
+                property: { type: 'Literal', value: i },
+                computed: true
+            }, this.referenceIdentifier(params[i].name));
+        }
+        this.emitStmt(body);
     }
     // TODO: temp testing...
     Rewriter.prototype.referenceIdentifier = function (name) {

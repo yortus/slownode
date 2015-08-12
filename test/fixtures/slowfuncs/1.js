@@ -1,9 +1,9 @@
 function fn(first, limit) {
     var result = [];
-    outer: var i = 1; //first;
+    outer: var i = first;
     while (true) {
         try {
-            var j = 1 / (i - 10); //limit);
+            var j = 1 / (i - limit);
             if (j === Infinity)
                 throw new Error('stop');
         }

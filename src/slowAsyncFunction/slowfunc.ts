@@ -58,6 +58,7 @@ function slowfunc(fn: Function): Function {
     // TODO: list all!!!
     // TODO: ensure no clashes with generated locals like '$' (just reserve all names starting with '$'?)
     var whitelistedNonlocalIdentifiers = [
+        'arguments',
         'Error',
         'Infinity'
     ];

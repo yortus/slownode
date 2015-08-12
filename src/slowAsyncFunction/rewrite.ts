@@ -28,8 +28,7 @@ function rewrite(funcExpr: ESTree.FunctionExpression, nonlocalIdentifierNames: s
     var funcParamNames = funcExpr.params.map(p => <string> p['name']);
 
     // TODO: ...
-    var rewriter = new Rewriter(nonlocalIdentifierNames);
-    rewriter.emitStmt(funcExpr.body);
+    var rewriter = new Rewriter(<any> funcExpr.body, <any> funcExpr.params, nonlocalIdentifierNames);
     var newFuncExpr = <ESTree.FunctionExpression> rewriter.generateAST();
     newFuncExpr.params = funcExpr.params;
     return newFuncExpr;
@@ -39,10 +38,21 @@ function rewrite(funcExpr: ESTree.FunctionExpression, nonlocalIdentifierNames: s
 // TODO: temp testing...
 class Rewriter {
 
-    constructor(private nonlocalIdentifierNames: string[]) {
+    constructor(body: ESTree.BlockStatement, params: ESTree.Identifier[], private nonlocalIdentifierNames: string[]) {
         this.emitCase(this.newLabel());
         this.pushJumpTarget(JumpTarget.Throw, '@fail');
         this.pushJumpTarget(JumpTarget.Return, '@done');
+
+        // TODO: temp testing...
+        for (var i = 0; i < params.length; ++i) {
+            this.emitExpr(<any>{
+                type: 'MemberExpression',
+                object: { type: 'Identifier', name: 'arguments' },
+                property: { type: 'Literal', value: i },
+                computed: true
+            }, this.referenceIdentifier(params[i].name));
+        }
+        this.emitStmt(body);
     }
 
     currentThrowTarget: string;
