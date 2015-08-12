@@ -137,11 +137,14 @@ function rewrite(funcExpr, nonlocalIdentifierNames) {
         // TODO: make resolver...
         var resolver;
         var promise = new Promise(function (resolve, reject) { resolver = { resolve: resolve, reject: reject }; });
+        // TODO: set up initial state
         var state = {
             resolver: resolver,
             local: { arguments: args }
         };
+        // TODO: invoke...
         bodyFunc(state);
+        // TODO: return the promise of a result...
         return promise;
     };
     return func;

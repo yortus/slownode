@@ -163,11 +163,16 @@ function rewrite(funcExpr: ESTree.FunctionExpression, nonlocalIdentifierNames: s
         var resolver;
         var promise = new Promise((resolve, reject) => { resolver = {resolve, reject}; });
 
+        // TODO: set up initial state
         var state = <bodyRewriter.State> {
             resolver: resolver,
             local: { arguments: args }
         };
+
+        // TODO: invoke...
         bodyFunc(state);
+
+        // TODO: return the promise of a result...
         return promise;
     };
 
