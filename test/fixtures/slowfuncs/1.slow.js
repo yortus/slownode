@@ -1,17 +1,18 @@
-(function slowAsyncFunctionBody($) {
+(function slowRoutineBody($) {
     $.pos = $.pos || '@start';
     $.local = $.local || {};
     $.temp = $.temp || {};
     $.error = $.error || { handler: '@fail' };
-    $.finalizers = $.finalizers || {};
-    $main: while (true) {
+    $.finalizers = $.finalizers || { pending: [] };
+    $.incoming = $.incoming || { type: 'yield' };
+    $.outgoing = $.outgoing || { type: 'return' };
+    while (true) {
         try {
             switch ($.pos) {
                 case '@start':
                 case '@1':
-                    $.local.first = $.arguments[0];
-                    $.local.limit = $.arguments[1];
-                    $.local.result = [];
+                    $.local.first = $.local.arguments[0];
+                    $.local.limit = $.local.arguments[1];
                 case '@outer-entry':
                     $.local.i = $.local.first;
                 case '@outer-exit':
@@ -20,12 +21,6 @@
                     $.pos = $.temp.test ? '@3' : '@4';
                     continue;
                 case '@3':
-                    $.temp.receiver = $.local.console;
-                    $.temp.func = $.temp.receiver['log'];
-                    $.temp.args = [];
-                    $.temp.arg = $.local.i;
-                    $.temp.args.push($.temp.arg);
-                    $.temp.void = $.temp.func.apply($.temp.receiver, $.temp.args);
                     $.error.handler = '@5';
                     $.error.occurred = false;
                     $.temp.lhs = 1;
@@ -56,13 +51,28 @@
                     continue;
                 case '@6':
                     $.local.er = $.error.value;
-                    $.temp.receiver = $.local.result;
-                    $.temp.func = $.temp.receiver['push'];
-                    $.temp.args = [];
+                    $.outgoing.type = 'yield';
                     $.temp.obj = $.local.er;
-                    $.temp.arg = $.temp.obj['message'];
-                    $.temp.args.push($.temp.arg);
-                    $.temp.void = $.temp.func.apply($.temp.receiver, $.temp.args);
+                    $.outgoing.value = $.temp.obj['message'];
+                    $.pos = '@13';
+                    return;
+                case '@13':
+                    $.pos = {
+                        yield: '@14',
+                        throw: '@15',
+                        return: '@16'
+                    }[$.incoming.type];
+                    continue;
+                case '@15':
+                    throw $.incoming.value;
+                case '@16':
+                    $.outgoing.value = $.incoming.value;
+                    $.finalizers.pending = ['@8'];
+                    $.finalizers.afterward = '@done';
+                    $.pos = '@finalize';
+                    continue;
+                case '@14':
+                    $.local.YIELDED = $.incoming.value;
                     $.finalizers.pending = ['@8'];
                     $.finalizers.afterward = '@4';
                     $.pos = '@finalize';
@@ -81,19 +91,35 @@
                     $.pos = '@2';
                     continue;
                 case '@4':
-                    $.temp.receiver = $.local.result;
-                    $.temp.func = $.temp.receiver['push'];
-                    $.temp.args = [];
-                    $.temp.arg = $.local.i;
-                    $.temp.args.push($.temp.arg);
-                    $.temp.void = $.temp.func.apply($.temp.receiver, $.temp.args);
-                    $.result = $.local.result;
+                    $.outgoing.type = 'yield';
+                    $.outgoing.value = $.local.i;
+                    $.pos = '@17';
+                    return;
+                case '@17':
+                    $.pos = {
+                        yield: '@18',
+                        throw: '@19',
+                        return: '@20'
+                    }[$.incoming.type];
+                    continue;
+                case '@19':
+                    throw $.incoming.value;
+                case '@20':
+                    $.outgoing.value = $.incoming.value;
+                    $.pos = '@done';
+                    continue;
+                case '@18':
+                    $.temp.void = $.incoming.value;
+                    $.outgoing.value = 'done';
                     $.pos = '@done';
                     continue;
                 case '@done':
-                    break $main;
+                    $.outgoing.type = 'return';
+                    return;
                 case '@fail':
-                    '========== TODO ==========';
+                    $.outgoing.type = 'throw';
+                    $.outgoing.value = $.error.value;
+                    return;
                 case '@finalize':
                     $.pos = $.finalizers.pending.pop() || $.finalizers.afterward;
                     continue;
@@ -105,9 +131,6 @@
             $.pos = $.error.handler;
             continue;
         }
-        finally {
-        }
     }
-    return $.result;
 });
 //# sourceMappingURL=1.slow.js.map

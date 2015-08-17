@@ -12,4 +12,5 @@ if (!fs.existsSync(databaseLocation)) {
 var db = require('./knexConnection');
 // TODO: temp testing... Build the API for export...
 exports.slowfunc = require('./slowAsyncFunction/slowfunc');
+exports.SlowRoutine = require('./slowRoutine/slowRoutine');
 //# sourceMappingURL=index.js.map

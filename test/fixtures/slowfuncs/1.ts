@@ -1,8 +1,9 @@
-﻿export = fn;
+﻿declare var __yield;
+export = fn;
 
 
 function fn(first, limit) {
-    var result = [];
+    //var result = [];
 
     outer:
     var i = first;
@@ -12,13 +13,15 @@ function fn(first, limit) {
             if (j === Infinity) throw new Error('stop');
         }
         catch (er) {
-            result.push(er.message);
+            //result.push(er.message);
+            var YIELDED = __yield(er.message);
             break;
         }
         finally {
             ++i;
         }
     }
-    result.push(i);
-    return result;
-}
+    //result.push(i);
+    __yield(i);
+    return 'done';//result;
+};

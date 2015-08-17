@@ -1,27 +1,54 @@
 var async = require('asyncawait/async');
-var await = require('asyncawait/await');
 var chai = require("chai");
+var slow = require('slownode');
 chai.use(require('chai-as-promised'));
 var expect = chai.expect;
 describe('epoch', function () {
     it('starts when the slownode module is required', async.cps(function () {
-        var slow = require('slownode');
         slow.slowfunc;
     }));
 });
-describe('slowfunc', function () {
+describe('SlowRoutine constructor function', function () {
+    var mockRunner = function (fn, args) {
+        var result = [];
+        var __yield = function (value) { return result.push(value); };
+        var fn = eval('(' + fn.toString() + ')');
+        try {
+            result.push(fn.apply(null, args));
+        }
+        catch (ex) {
+            result.push(ex);
+        }
+        return result;
+    };
+    var realRunner = function (fn, args) {
+        var result = [];
+        var slowfunc = new slow.SlowRoutine(fn, '__yield');
+        var sloro = slowfunc.apply(null, args);
+        while (true) {
+            try {
+                var yielded = sloro.next();
+                result.push(yielded.value);
+                if (yielded.done)
+                    return result;
+            }
+            catch (ex) {
+                result.push(ex);
+                return result;
+            }
+        }
+    };
     it('works', async.cps(function () {
-        var slow = require('slownode');
         var originals = [
-            { func: require('./fixtures/slowfuncs/1'), args: [1, 10], result: ['stop', 11] }
+            { func: require('./fixtures/slowfuncs/1'), args: [1, 10], result: ['stop', 11, 'done'] },
+            { func: require('./fixtures/slowfuncs/2'), args: [10, 5], result: ['foo10', 'foo20', 'foo30', 'foo40', 'foo50', 'bar'] }
         ];
-        var modifieds = originals.map(function (orig) { return ({ func: slow.slowfunc(orig.func), args: orig.args, result: orig.result }); });
-        for (var i = 0; i < originals.length; ++i) {
-            var modifiedSource = modifieds[i].func.toString(); // NB: Used only for inspection during debugging
-            var originalResult = originals[i].func.apply(null, originals[i].args);
-            expect(originalResult).to.deep.equal(originals[i].result);
-            var modifiedResult = await(modifieds[i].func.apply(null, modifieds[i].args));
-            expect(modifiedResult).to.deep.equal(modifieds[i].result);
+        for (var _i = 0; _i < originals.length; _i++) {
+            var original = originals[_i];
+            var originalResult = mockRunner(original.func, original.args);
+            expect(originalResult).to.deep.equal(original.result);
+            var modifiedResult = realRunner(original.func, original.args);
+            expect(modifiedResult).to.deep.equal(original.result);
         }
     }));
 });

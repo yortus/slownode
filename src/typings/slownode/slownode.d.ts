@@ -5,6 +5,40 @@
 
 declare module "slownode" {
 
+
+    // TODO: temp testing...
+    interface SlowRoutine {
+
+        next(value?: any): { done: boolean; value: any; };
+        throw(value?: any): { done: boolean; value: any; };
+        return(value?: any): { done: boolean; value: any; };
+
+        _srid: string;
+        _body: Function;
+        _state: {
+            pos?: string;
+            local?: { [name: string]: any; };
+            temp?: { [name: string]: any; };
+            error?: { occurred?: boolean; value?: any; handler?: string; };
+            finalizers?: { pending?: string[]; afterward?: string; };
+            incoming?: { type?: string; /* 'yield'|'throw'|'return' */ value?: any; };
+            outgoing?: { type?: string; /* 'yield'|'throw'|'return' */ value?: any; };
+        };
+    }
+
+
+    interface SlowRoutineStatic {
+        // TODO: make yieldIdentifier optional?
+        new(body: Function, yieldIdentifier: string): { (...args): SlowRoutine; _sfid: string; };
+        (body: Function, yieldIdentifier: string): { (...args): SlowRoutine; _sfid: string; };
+    }
+
+    export var SlowRoutine: SlowRoutineStatic;
+
+
+
+
+
     var slowfunc: SlowAsyncFunctionCtor;
 
     // TODO: temp testing...
