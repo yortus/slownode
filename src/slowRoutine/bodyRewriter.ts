@@ -20,7 +20,7 @@ import match = require('./match');
 export function rewrite(funcExpr: ESTree.FunctionExpression, nonlocalIdentifierNames: string[]): ESTree.FunctionExpression {
 
     // TODO: ...
-    assert(!funcExpr.generator);
+    // TODO: test then remove... was... assert(!funcExpr.generator);
     assert(funcExpr.params.every(p => p.type === 'Identifier'));
     assert(funcExpr.body.type === 'BlockStatement');
 

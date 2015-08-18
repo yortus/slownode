@@ -5,8 +5,9 @@ var escodegen = require('escodegen');
 var traverse = require('./traverse');
 var bodyRewriter = require('./bodyRewriter');
 var match = require('./match');
-var SlowRoutine = (function (bodyFunction, yieldIdentifier) {
-    var body = transpileBodyFunction(bodyFunction, yieldIdentifier);
+var SlowRoutine = (function (bodyFunction, options) {
+    options = options || { yieldIdentifier: null, constIdentifier: null };
+    var body = transpileBodyFunction(bodyFunction, options.yieldIdentifier);
     // TODO: give the slowfunc its ID
     // TODO: use hashing!!
     body._sfid = '123';
@@ -123,7 +124,8 @@ var transpileBodyFunction = function (bodyFunction, yieldIdentifier) {
         'arguments',
         'Error',
         'Infinity',
-        'console'
+        'console',
+        'require'
     ];
     // TODO: doc... rule check...
     var illegalNonlocals = _.difference(nonlocalIdentifiers, whitelistedNonlocalIdentifiers);

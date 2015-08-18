@@ -26,11 +26,14 @@ declare module "slownode" {
         };
     }
 
-
     interface SlowRoutineStatic {
-        // TODO: make yieldIdentifier optional?
-        new(body: Function, yieldIdentifier: string): { (...args): SlowRoutine; _sfid: string; };
-        (body: Function, yieldIdentifier: string): { (...args): SlowRoutine; _sfid: string; };
+        new(bodyFunction: Function, options?: SlowRoutineOptions): { (...args): SlowRoutine; _sfid: string; };
+        (bodyFunction: Function, options?: SlowRoutineOptions): { (...args): SlowRoutine; _sfid: string; };
+    }
+
+    interface SlowRoutineOptions {
+        yieldIdentifier?: string;
+        constIdentifier?: string;
     }
 
     export var SlowRoutine: SlowRoutineStatic;

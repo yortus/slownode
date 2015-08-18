@@ -10,8 +10,10 @@ import match = require('./match');
 export = SlowRoutine;
 
 
-var SlowRoutine: Types.SlowRoutineStatic = <any> ((bodyFunction: Function, yieldIdentifier: string) => {
-    var body = transpileBodyFunction(bodyFunction, yieldIdentifier);
+var SlowRoutine: Types.SlowRoutineStatic = <any> ((bodyFunction: Function, options?: Types.SlowRoutineOptions) => {
+
+    options = options || { yieldIdentifier: null, constIdentifier: null };
+    var body = transpileBodyFunction(bodyFunction, options.yieldIdentifier);
 
     // TODO: give the slowfunc its ID
     // TODO: use hashing!!
@@ -147,7 +149,8 @@ var transpileBodyFunction = (bodyFunction: Function, yieldIdentifier: string) =>
         'arguments',
         'Error',
         'Infinity',
-        'console'
+        'console',
+        'require'
     ];
 
     // TODO: doc... rule check...
