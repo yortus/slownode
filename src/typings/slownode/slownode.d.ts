@@ -42,7 +42,7 @@ declare module "slownode" {
 
 
 
-    var slowfunc: SlowAsyncFunctionCtor;
+    //var slowfunc: SlowAsyncFunctionCtor;
 
     // TODO: temp testing...
     interface SlowAsyncFunctionCtor {

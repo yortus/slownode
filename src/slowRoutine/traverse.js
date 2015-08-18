@@ -20,6 +20,7 @@ function traverse(node, action) {
     }
     // Recursively traverse the root node's children.
     match(node, {
+        Program: function (prgm) { return prgm.body.forEach(function (stmt) { return traverse(stmt, action); }); },
         EmptyStatement: function (stmt) { },
         BlockStatement: function (stmt) { return stmt.body.forEach(function (stmt) { return traverse(stmt, action); }); },
         ExpressionStatement: function (stmt) { return traverse(stmt.expression, action); },
@@ -82,6 +83,12 @@ function traverse(node, action) {
                     traverse(decl.init, action);
             });
         },
+        FunctionDeclaration: function (stmt) {
+            if (stmt.id)
+                traverse(stmt.id, action);
+            stmt.params.forEach(function (p) { return traverse(p, action); });
+            traverse(stmt.body, action);
+        },
         SequenceExpression: function (expr) { return expr.expressions.forEach(function (expr) { return traverse(expr, action); }); },
         YieldExpression: function (expr) {
             if (expr.argument)
@@ -124,6 +131,12 @@ function traverse(node, action) {
                 traverse(prop.key, action);
                 traverse(prop.value, action);
             });
+        },
+        FunctionExpression: function (expr) {
+            if (expr.id)
+                traverse(expr.id, action);
+            expr.params.forEach(function (p) { return traverse(p, action); });
+            traverse(expr.body, action);
         },
         Identifier: function (expr) { },
         TemplateLiteral: function (expr) { return expr.expressions.forEach(function (expr) { return traverse(expr, action); }); },

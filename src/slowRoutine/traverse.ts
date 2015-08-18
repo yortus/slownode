@@ -27,6 +27,8 @@ function traverse(node: ESTree.Node, action: (node: ESTree.Node) => any): void {
     // Recursively traverse the root node's children.
     match(node, {
 
+        Program: (prgm) => prgm.body.forEach(stmt => traverse(stmt, action)),
+
         EmptyStatement: (stmt) => {},
 
         BlockStatement: (stmt) => stmt.body.forEach(stmt => traverse(stmt, action)),
@@ -99,6 +101,12 @@ function traverse(node: ESTree.Node, action: (node: ESTree.Node) => any): void {
             });
         },
 
+        FunctionDeclaration: (stmt) => {
+            if (stmt.id) traverse(stmt.id, action);
+            stmt.params.forEach(p => traverse(p, action));
+            traverse(stmt.body, action);
+        },
+
         SequenceExpression: (expr) => expr.expressions.forEach(expr => traverse(expr, action)),
 
         YieldExpression: (expr) => {
@@ -152,6 +160,12 @@ function traverse(node: ESTree.Node, action: (node: ESTree.Node) => any): void {
                 traverse(prop.key, action);
                 traverse(prop.value, action);
             });
+        },
+
+        FunctionExpression: (expr) => {
+            if (expr.id) traverse(expr.id, action);
+            expr.params.forEach(p => traverse(p, action));
+            traverse(expr.body, action);
         },
 
         Identifier: (expr) => {},

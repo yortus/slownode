@@ -61,6 +61,7 @@ var Rewriter = (function () {
     Rewriter.prototype.releaseTemporaryIdentifier = function (name) {
         var i = this.temporaryIdentifiersInUse.indexOf(name);
         this.temporaryIdentifiersInUse.splice(i, 1);
+        this.emitText(name + " = null;");
     };
     Rewriter.prototype.newLabel = function () {
         return '@' + ++this.nextLabel;
@@ -111,7 +112,7 @@ var Rewriter = (function () {
         }
     };
     Rewriter.prototype.generateAST = function (fromFragment) {
-        var source = "\n            (function slowRoutineBody($) {\n                $.pos = $.pos || '@start';\n                $.local = $.local || {};\n                $.temp = $.temp || {};\n                $.error = $.error || { handler: '@fail' };\n                $.finalizers = $.finalizers || { pending: [] };\n                $.incoming = $.incoming || { type: 'yield' };\n                $.outgoing = $.outgoing || { type: 'return' };\n                while (true) {\n                    try {\n                        switch ($.pos) {\n                            case '@start':\n                                " + (fromFragment || '') + "\n                            case '@done':\n                                $.outgoing.type = 'return';\n                                return;\n                            case '@fail':\n                                $.outgoing.type = 'throw';\n                                $.outgoing.value = $.error.value;\n                                return;\n                            case '@finalize':\n                                $.pos = $.finalizers.pending.pop() || $.finalizers.afterward;\n                                continue;\n                        }\n                    }\n                    catch (ex) {\n                        $.error.occurred = true;\n                        $.error.value = ex;\n                        $.pos = $.error.handler;\n                        continue;\n                    }\n                }\n            })\n        ";
+        var source = "\n            (function slowRoutineBody($) {\n                $.pos = $.pos || '@start';\n                $.local = $.local || {};\n                $.temp = $.temp || {};\n                $.error = $.error || { handler: '@fail' };\n                $.finalizers = $.finalizers || { pending: [] };\n                $.incoming = $.incoming || { type: 'yield' };\n                $.outgoing = $.outgoing || { type: 'return' };\n                while (true) {\n                    try {\n                        switch ($.pos) {\n                            case '@start':\n                                " + (fromFragment || '') + "\n                            case '@done':\n                                $.outgoing.type = 'return';\n                                $.outgoing.value = $.result;\n                                return;\n                            case '@fail':\n                                $.outgoing.type = 'throw';\n                                $.outgoing.value = $.error.value;\n                                return;\n                            case '@finalize':\n                                $.pos = $.finalizers.pending.pop() || $.finalizers.afterward;\n                                continue;\n                        }\n                    }\n                    catch (ex) {\n                        $.error.occurred = true;\n                        $.error.value = ex;\n                        $.pos = $.error.handler;\n                        continue;\n                    }\n                }\n            })\n        ";
         var ast = esprima.parse(source);
         var funcExpr = ast.body[0]['expression'];
         var whileStmt = funcExpr.body['body'][7];
@@ -121,7 +122,7 @@ var Rewriter = (function () {
             var stmts = switchStmt.cases[0].consequent;
             if (stmts.length === 1)
                 return stmts[0];
-            throw new Error('slowfunc: generateAST: fromFragment: expected a single statement');
+            throw new Error('SlowRoutine: generateAST: fromFragment: expected a single statement');
         }
         else {
             (_a = switchStmt.cases).splice.apply(_a, [1, 0].concat(this.switchCases));
@@ -268,10 +269,10 @@ function rewriteStatement(stmt, emitter) {
         ForInStatement: function (stmt) {
             var loopVar = stmt.left.type === 'VariableDeclaration' ? stmt.left['declarations'][0].id : stmt.left;
             if (loopVar.type !== 'Identifier')
-                throw new Error("slowfunc: unsupported for..in loop variable type: '" + loopVar.type + "'");
+                throw new Error("SlowRoutine: unsupported for..in loop variable type: '" + loopVar.type + "'");
             if (stmt.left.type === 'VariableDeclaration') {
                 if (stmt.left['declarations'][0].init)
-                    throw new Error("slowfunc: for..in loop variable initialiser is not supported.");
+                    throw new Error("SlowRoutine: for..in loop variable initialiser is not supported.");
             }
             var $name = loopVar.name;
             var $obj = emitter.reserveTemporaryIdentifier('obj');
@@ -311,7 +312,7 @@ function rewriteStatement(stmt, emitter) {
             emitter.emitCase(conLabel);
             if (stmt.handler) {
                 if (stmt.handler.param.type !== 'Identifier')
-                    throw new Error("slowfunc: catch parameter must be an identifier");
+                    throw new Error("SlowRoutine: catch parameter must be an identifier");
                 var $ex = emitter.getIdentifierReference(stmt.handler.param['name']);
                 emitter.emitText($ex + " = $.error.value;");
                 emitter.emitStmt(stmt.handler.body);
@@ -354,10 +355,10 @@ function rewriteStatement(stmt, emitter) {
         },
         ReturnStatement: function (stmt) {
             if (stmt.argument) {
-                emitter.emitExpr(stmt.argument, '$.outgoing.value');
+                emitter.emitExpr(stmt.argument, '$.result');
             }
             else {
-                emitter.emitText("$.outgoing.value = void 0;");
+                emitter.emitText("$.result = void 0;");
             }
             emitter.emitJump(JumpTarget.Return);
         },
@@ -370,14 +371,14 @@ function rewriteStatement(stmt, emitter) {
         VariableDeclaration: function (stmt) {
             stmt.declarations.forEach(function (decl) {
                 if (decl.id.type !== 'Identifier')
-                    throw new Error("slowfunc: unsupported declarator ID type: '" + decl.id.type + "'");
+                    throw new Error("SlowRoutine: unsupported declarator ID type: '" + decl.id.type + "'");
                 var $name = emitter.getIdentifierReference(decl.id['name']);
                 if (decl.init)
                     emitter.emitExpr(decl.init, $name);
             });
         },
         Otherwise: function (stmt) {
-            throw new Error("slowfunc: unsupported statement type: '" + stmt.type + "'");
+            throw new Error("SlowRoutine: unsupported statement type: '" + stmt.type + "'");
         }
     });
 }
@@ -434,7 +435,7 @@ function rewriteExpression(expr, $tgt, emitter) {
                 var lhsText = $obj + "[" + $key + "]";
             }
             else {
-                throw new Error("slowfunc: unsupported l-value type: '" + expr.left.type + "'");
+                throw new Error("SlowRoutine: unsupported l-value type: '" + expr.left.type + "'");
             }
             emitter.emitExpr(expr.right, $rhs);
             emitter.emitText($tgt + " = " + lhsText + " " + expr.operator + " " + $rhs + ";");
@@ -500,7 +501,7 @@ function rewriteExpression(expr, $tgt, emitter) {
                 var argText = $obj + "[" + $key + "]";
             }
             else {
-                throw new Error("slowfunc: unsupported l-value type: '" + expr.argument.type);
+                throw new Error("SlowRoutine: unsupported l-value type: '" + expr.argument.type);
             }
             var pre = expr.prefix ? expr.operator : '';
             var post = expr.prefix ? '' : expr.operator;
@@ -617,7 +618,7 @@ function rewriteExpression(expr, $tgt, emitter) {
             }
         },
         Otherwise: function (expr) {
-            throw new Error("slowfunc: unsupported expression type: '" + expr.type + "'");
+            throw new Error("SlowRoutine: unsupported expression type: '" + expr.type + "'");
         }
     });
 }

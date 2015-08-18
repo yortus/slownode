@@ -34,6 +34,7 @@ export function rewrite(funcExpr: ESTree.FunctionExpression, nonlocalIdentifierN
 
 // TODO: doc... this is the shape of the '$' state object inside the rewritten slow function's body
 // TODO: unused... keep? just for documentation purposes?
+// TODO: merge with same interface in .d.ts
 export interface State {
 
     pos?: string;
@@ -52,6 +53,8 @@ export interface State {
         pending?: string[];
         afterward?: string;
     };
+
+    result?: any;
 
     incoming?: { type?: string; /* 'yield'|'throw'|'return' */ value?: any; };
 
@@ -99,6 +102,7 @@ class Rewriter {
     releaseTemporaryIdentifier(name: string): void {
         var i = this.temporaryIdentifiersInUse.indexOf(name);
         this.temporaryIdentifiersInUse.splice(i, 1);
+        this.emitText(`${name} = null;`);
     }
 
     newLabel(): string {
@@ -172,6 +176,7 @@ class Rewriter {
                                 ${fromFragment || ''}
                             case '@done':
                                 $.outgoing.type = 'return';
+                                $.outgoing.value = $.result;
                                 return;
                             case '@fail':
                                 $.outgoing.type = 'throw';
@@ -199,7 +204,7 @@ class Rewriter {
         if (fromFragment) {
             var stmts = switchStmt.cases[0].consequent;
             if (stmts.length === 1) return stmts[0];
-            throw new Error('slowfunc: generateAST: fromFragment: expected a single statement');
+            throw new Error('SlowRoutine: generateAST: fromFragment: expected a single statement');
         }
         else {
             switchStmt.cases.splice(1, 0, ...this.switchCases);
@@ -362,9 +367,9 @@ function rewriteStatement(stmt: ESTree.Statement, emitter: Rewriter): void {
 
         ForInStatement: (stmt) => {
             var loopVar = stmt.left.type === 'VariableDeclaration' ? stmt.left['declarations'][0].id : stmt.left;
-            if (loopVar.type !== 'Identifier') throw new Error(`slowfunc: unsupported for..in loop variable type: '${loopVar.type}'`);
+            if (loopVar.type !== 'Identifier') throw new Error(`SlowRoutine: unsupported for..in loop variable type: '${loopVar.type}'`);
             if (stmt.left.type === 'VariableDeclaration') {
-                if (stmt.left['declarations'][0].init) throw new Error(`slowfunc: for..in loop variable initialiser is not supported.`);
+                if (stmt.left['declarations'][0].init) throw new Error(`SlowRoutine: for..in loop variable initialiser is not supported.`);
                 // TODO: remove.   was...   emitter.declareLocalIdentifier(loopVar.name);
             }
             var $name: string = loopVar.name;
@@ -407,7 +412,7 @@ function rewriteStatement(stmt: ESTree.Statement, emitter: Rewriter): void {
             emitter.emitText('continue;');
             emitter.emitCase(conLabel);
             if (stmt.handler) {
-                if (stmt.handler.param.type !== 'Identifier') throw new Error(`slowfunc: catch parameter must be an identifier`);
+                if (stmt.handler.param.type !== 'Identifier') throw new Error(`SlowRoutine: catch parameter must be an identifier`);
                 var $ex = emitter.getIdentifierReference(stmt.handler.param['name']);
                 emitter.emitText(`${$ex} = $.error.value;`);
                 emitter.emitStmt(stmt.handler.body);
@@ -453,10 +458,10 @@ function rewriteStatement(stmt: ESTree.Statement, emitter: Rewriter): void {
 
         ReturnStatement: (stmt) => {
             if (stmt.argument) {
-                emitter.emitExpr(stmt.argument, '$.outgoing.value');
+                emitter.emitExpr(stmt.argument, '$.result');
             }
             else {
-                emitter.emitText(`$.outgoing.value = void 0;`);
+                emitter.emitText(`$.result = void 0;`);
             }
             emitter.emitJump(JumpTarget.Return);
         },
@@ -470,14 +475,14 @@ function rewriteStatement(stmt: ESTree.Statement, emitter: Rewriter): void {
 
         VariableDeclaration: (stmt) => {
             stmt.declarations.forEach(decl => {
-                if (decl.id.type !== 'Identifier') throw new Error(`slowfunc: unsupported declarator ID type: '${decl.id.type}'`);
+                if (decl.id.type !== 'Identifier') throw new Error(`SlowRoutine: unsupported declarator ID type: '${decl.id.type}'`);
                 var $name = emitter.getIdentifierReference(decl.id['name']);
                 if (decl.init) emitter.emitExpr(decl.init, $name);
             });
         },
 
         Otherwise: (stmt) => {
-            throw new Error(`slowfunc: unsupported statement type: '${stmt.type}'`);
+            throw new Error(`SlowRoutine: unsupported statement type: '${stmt.type}'`);
         }
     });
 }
@@ -539,7 +544,7 @@ function rewriteExpression(expr: ESTree.Expression, $tgt: string, emitter: Rewri
                 var lhsText = `${$obj}[${$key}]`;
             }
             else {
-                throw new Error(`slowfunc: unsupported l-value type: '${expr.left.type}'`);
+                throw new Error(`SlowRoutine: unsupported l-value type: '${expr.left.type}'`);
             }
             emitter.emitExpr(expr.right, $rhs);
             emitter.emitText(`${$tgt} = ${lhsText} ${expr.operator} ${$rhs};`);
@@ -610,7 +615,7 @@ function rewriteExpression(expr: ESTree.Expression, $tgt: string, emitter: Rewri
                 var argText = `${$obj}[${$key}]`;
             }
             else {
-                throw new Error(`slowfunc: unsupported l-value type: '${expr.argument.type}`);
+                throw new Error(`SlowRoutine: unsupported l-value type: '${expr.argument.type}`);
             }
             var pre = expr.prefix ? expr.operator : '';
             var post = expr.prefix ? '' : expr.operator;
@@ -736,7 +741,7 @@ function rewriteExpression(expr: ESTree.Expression, $tgt: string, emitter: Rewri
         },
 
         Otherwise: (expr) => {
-            throw new Error(`slowfunc: unsupported expression type: '${expr.type}'`);
+            throw new Error(`SlowRoutine: unsupported expression type: '${expr.type}'`);
         }
     });
 }

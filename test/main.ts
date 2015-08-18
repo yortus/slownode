@@ -10,7 +10,7 @@ var expect = chai.expect;
 describe('epoch', () => {
 
     it('starts when the slownode module is required', async.cps(() => {
-        slow.slowfunc;
+        slow.SlowRoutine;
     }));
 });
 
@@ -20,6 +20,7 @@ describe('SlowRoutine constructor function', () => {
     var mockRunner = (fn, args) => {
         var result = [];
         var __yield = value => result.push(value);
+        var __const = value => value;
         var fn = eval('(' + fn.toString() + ')');
         try {
             result.push(fn.apply(null, args));

@@ -12,6 +12,8 @@ function match<TReturn>(node: ESTree.Node, match: PatternMatch<TReturn>) {
 /** Helper interface that provides static typing for the match() function. */
 interface PatternMatch<TReturn> {
     Program?:               (prog: ESTree.Program)                  => TReturn;
+    FunctionDeclaration?:   (expr: ESTree.FunctionDeclaration)      => TReturn;
+    FunctionExpression?:    (expr: ESTree.FunctionExpression)       => TReturn;
 
     // Statements
     EmptyStatement?:        (stmt: ESTree.EmptyStatement)           => TReturn;

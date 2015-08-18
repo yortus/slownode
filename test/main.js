@@ -5,13 +5,14 @@ chai.use(require('chai-as-promised'));
 var expect = chai.expect;
 describe('epoch', function () {
     it('starts when the slownode module is required', async.cps(function () {
-        slow.slowfunc;
+        slow.SlowRoutine;
     }));
 });
 describe('SlowRoutine constructor function', function () {
     var mockRunner = function (fn, args) {
         var result = [];
         var __yield = function (value) { return result.push(value); };
+        var __const = function (value) { return value; };
         var fn = eval('(' + fn.toString() + ')');
         try {
             result.push(fn.apply(null, args));

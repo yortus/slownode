@@ -20,5 +20,5 @@ var db = require('./knexConnection');
 
 
 // TODO: temp testing... Build the API for export...
-export var slowfunc = require('./slowAsyncFunction/slowfunc');
+//export var slowfunc = require('./slowAsyncFunction/slowfunc');
 export var SlowRoutine = require('./slowRoutine/slowRoutine');
