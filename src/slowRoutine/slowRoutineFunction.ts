@@ -31,6 +31,7 @@ export = SlowRoutineFunction;
 //---------------------------------------------
 
 
+/** Creates an instance of SlowRoutineFunction. */
 var SlowRoutineFunction: Types.SlowRoutineFunction = <any> ((bodyFunction: Function, options?: Types.SlowRoutineOptions) => {
 
     // Validate arguments.
@@ -56,14 +57,7 @@ var SlowRoutineFunction: Types.SlowRoutineFunction = <any> ((bodyFunction: Funct
     // Compile information about all 'ambient' variables.
     // This include all properties of the global object, plus all const declarations from the body function.
     var ambientNames = [].concat('require', Object.getOwnPropertyNames(global), constDecls.map(decl => decl.id['name']));
-    var ambientFactoryBody = `
-        ${constDecls.map(decl => `var ${decl.id['name']} = ${escodegen.generate(decl.init)};`).join('\n')}
-        var $ambient = Object.create(global);
-        $ambient.require = require.main.require;
-        ${constDecls.map(decl => `$ambient.${decl.id['name']} = ${decl.id['name']};`).join('\n')}
-        return $ambient;
-    `;
-    var ambientFactory = eval('(function () {\n' + ambientFactoryBody + '\n})');
+    var ambientFactory = makeAmbientFactoryFunction(constDecls);
 
     // Validate the AST.
     ensureOnlySupportedConstructsInBody(funcExpr, ambientNames);
@@ -86,7 +80,7 @@ var SlowRoutineFunction: Types.SlowRoutineFunction = <any> ((bodyFunction: Funct
 });
 
 
-/** In the given AST, convert direct calls to `yieldIdentifier` to equivalent yield expressions */
+/** In the given AST, converts direct calls to `yieldIdentifier` to equivalent yield expressions */
 function replaceYieldIdentifierCallsWithYieldExpressions(funcExpr: ESTree.FunctionExpression, yieldIdentifier: string) {
     traverse(funcExpr.body, node => {
         match(node, {
@@ -108,7 +102,7 @@ function replaceYieldIdentifierCallsWithYieldExpressions(funcExpr: ESTree.Functi
 }
 
 
-/** In the given AST, convert variable declarations whose 'init' is a direct call to `constIdentifier` to equivalent const declarations. */
+/** In the given AST, converts variable declarations whose 'init' is a direct call to `constIdentifier` to equivalent const declarations. */
 function replaceConstIdentifierCallsWithConstDeclarations(funcExpr: ESTree.FunctionExpression, constIdentifier: string) {
     traverse(funcExpr.body, node => {
         match(node, {
@@ -139,7 +133,7 @@ function replaceConstIdentifierCallsWithConstDeclarations(funcExpr: ESTree.Funct
 }
 
 
-/** Remove all const declarations from the given AST, and return an array of all the removed declarators. */
+/** Removes all const declarations from the given AST, and return an array of all the removed declarators. */
 function extractConstDeclarators(funcExpr: ESTree.FunctionExpression) {
     var result: ESTree.VariableDeclarator[] = [];
     traverse(funcExpr.body, node => {
@@ -154,6 +148,20 @@ function extractConstDeclarators(funcExpr: ESTree.FunctionExpression) {
         });
     });
     return result;
+}
+
+
+/** Returns a function that returns the $ambient object, based on the given declarators and on the global object. */
+function makeAmbientFactoryFunction(constDecls: ESTree.VariableDeclarator[]) {
+    var bodySource = `
+        ${constDecls.map(decl => `var ${decl.id['name']} = ${escodegen.generate(decl.init)};`).join('\n')}
+        var $ambient = Object.create(global);
+        $ambient.require = require.main.require;
+        ${constDecls.map(decl => `$ambient.${decl.id['name']} = ${decl.id['name']};`).join('\n')}
+        return $ambient;
+    `;
+    var factoryFunc = eval('(function () {\n' + bodySource + '\n})');
+    return factoryFunc;
 }
 
 
@@ -292,20 +300,21 @@ function ensureAmbientIdentifiersAreNotMutated(funcExpr: ESTree.FunctionExpressi
 }
 
 
-/** Construct a SlowRoutineFunction instance tailored to the given body code and parameter names. */
+/** Constructs a SlowRoutineFunction instance tailored to the given body code and parameter names. */
 function makeSlowRoutineFunction(bodyFunc: Function, paramNames: string[], ambientFactory: () => any): Types.SlowRoutineFunction {
 
     // This is the generic constructor function. It closes over bodyFunc and ambientFactory.
     function SlowRoutineFunction() {
+        var $ambient = ambientFactory();
         var inst: Types.SlowRoutine = <any> {
+            _ambientFactory: ambientFactory,
             _body: bodyFunc,
-            _state: { local: { arguments: Array.prototype.slice.call(arguments) } },
-            _ambient: ambientFactory()
+            _state: { local: { arguments: Array.prototype.slice.call(arguments) } }
         };
         ['next', 'throw', 'return'].forEach(method => {
             inst[method] = (value?: any) => {
                 inst._state.incoming = { type: method === 'next' ? 'yield' : method, value };
-                inst._body(inst._state, inst._ambient);
+                inst._body(inst._state, $ambient);
                 if (inst._state.outgoing.type === 'throw') throw inst._state.outgoing.value;
                 return { done: inst._state.outgoing.type === 'return', value: inst._state.outgoing.value };
             };

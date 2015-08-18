@@ -23,6 +23,7 @@ var match = require('./match');
 // NB: no need to check for syntactic validity, since the function must be syntactically valid to have been passed in here.
 // NB: either a normal function or generator function can be passed in - it makes no difference (doc why to do this (hint: yield keyword available in gens))
 //---------------------------------------------
+/** Creates an instance of SlowRoutineFunction. */
 var SlowRoutineFunction = (function (bodyFunction, options) {
     // Validate arguments.
     assert(typeof bodyFunction === 'function');
@@ -44,8 +45,7 @@ var SlowRoutineFunction = (function (bodyFunction, options) {
     // Compile information about all 'ambient' variables.
     // This include all properties of the global object, plus all const declarations from the body function.
     var ambientNames = [].concat('require', Object.getOwnPropertyNames(global), constDecls.map(function (decl) { return decl.id['name']; }));
-    var ambientFactoryBody = "\n        " + constDecls.map(function (decl) { return ("var " + decl.id['name'] + " = " + escodegen.generate(decl.init) + ";"); }).join('\n') + "\n        var $ambient = Object.create(global);\n        $ambient.require = require.main.require;\n        " + constDecls.map(function (decl) { return ("$ambient." + decl.id['name'] + " = " + decl.id['name'] + ";"); }).join('\n') + "\n        return $ambient;\n    ";
-    var ambientFactory = eval('(function () {\n' + ambientFactoryBody + '\n})');
+    var ambientFactory = makeAmbientFactoryFunction(constDecls);
     // Validate the AST.
     ensureOnlySupportedConstructsInBody(funcExpr, ambientNames);
     ensureIdentifierNamesAreValid(funcExpr);
@@ -62,7 +62,7 @@ var SlowRoutineFunction = (function (bodyFunction, options) {
     var result = makeSlowRoutineFunction(bodyFunc, paramNames, ambientFactory);
     return result;
 });
-/** In the given AST, convert direct calls to `yieldIdentifier` to equivalent yield expressions */
+/** In the given AST, converts direct calls to `yieldIdentifier` to equivalent yield expressions */
 function replaceYieldIdentifierCallsWithYieldExpressions(funcExpr, yieldIdentifier) {
     traverse(funcExpr.body, function (node) {
         match(node, {
@@ -84,7 +84,7 @@ function replaceYieldIdentifierCallsWithYieldExpressions(funcExpr, yieldIdentifi
         });
     });
 }
-/** In the given AST, convert variable declarations whose 'init' is a direct call to `constIdentifier` to equivalent const declarations. */
+/** In the given AST, converts variable declarations whose 'init' is a direct call to `constIdentifier` to equivalent const declarations. */
 function replaceConstIdentifierCallsWithConstDeclarations(funcExpr, constIdentifier) {
     traverse(funcExpr.body, function (node) {
         match(node, {
@@ -117,7 +117,7 @@ function replaceConstIdentifierCallsWithConstDeclarations(funcExpr, constIdentif
         return true;
     }
 }
-/** Remove all const declarations from the given AST, and return an array of all the removed declarators. */
+/** Removes all const declarations from the given AST, and return an array of all the removed declarators. */
 function extractConstDeclarators(funcExpr) {
     var result = [];
     traverse(funcExpr.body, function (node) {
@@ -133,6 +133,12 @@ function extractConstDeclarators(funcExpr) {
         });
     });
     return result;
+}
+/** Returns a function that returns the $ambient object, based on the given declarators and on the global object. */
+function makeAmbientFactoryFunction(constDecls) {
+    var bodySource = "\n        " + constDecls.map(function (decl) { return ("var " + decl.id['name'] + " = " + escodegen.generate(decl.init) + ";"); }).join('\n') + "\n        var $ambient = Object.create(global);\n        $ambient.require = require.main.require;\n        " + constDecls.map(function (decl) { return ("$ambient." + decl.id['name'] + " = " + decl.id['name'] + ";"); }).join('\n') + "\n        return $ambient;\n    ";
+    var factoryFunc = eval('(function () {\n' + bodySource + '\n})');
+    return factoryFunc;
 }
 /**
  * Traverses the AST, throwing an error if any unsupported constructs are encountered.
@@ -258,19 +264,20 @@ function ensureAmbientIdentifiersAreNotMutated(funcExpr, ambientIds) {
         });
     });
 }
-/** Construct a SlowRoutineFunction instance tailored to the given body code and parameter names. */
+/** Constructs a SlowRoutineFunction instance tailored to the given body code and parameter names. */
 function makeSlowRoutineFunction(bodyFunc, paramNames, ambientFactory) {
     // This is the generic constructor function. It closes over bodyFunc and ambientFactory.
     function SlowRoutineFunction() {
+        var $ambient = ambientFactory();
         var inst = {
+            _ambientFactory: ambientFactory,
             _body: bodyFunc,
-            _state: { local: { arguments: Array.prototype.slice.call(arguments) } },
-            _ambient: ambientFactory()
+            _state: { local: { arguments: Array.prototype.slice.call(arguments) } }
         };
         ['next', 'throw', 'return'].forEach(function (method) {
             inst[method] = function (value) {
                 inst._state.incoming = { type: method === 'next' ? 'yield' : method, value: value };
-                inst._body(inst._state, inst._ambient);
+                inst._body(inst._state, $ambient);
                 if (inst._state.outgoing.type === 'throw')
                     throw inst._state.outgoing.value;
                 return { done: inst._state.outgoing.type === 'return', value: inst._state.outgoing.value };
