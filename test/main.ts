@@ -71,19 +71,21 @@ describe('SlowRoutineFunction', () => {
 
 
 describe('The async(...) function', () => {
+
+    var fn = slow.async((delay: number, count: number) => {
+
+        const Promise = __const(require('bluebird'));
+
+        for (var i = 0; i < count; ++i) {
+            console.log('waiting...');
+            await (Promise.delay(delay));
+            if (i > 4) throw new Error('herp derp');
+        }
+        return 'done';
+    });
+
+
     it('works', async.cps(() => {
-
-        var fn = slow.async((delay: number, count: number) => {
-
-            const Promise = __const(require('bluebird'));
-
-            for (var i = 0; i < count; ++i) {
-                console.log('waiting...');
-                await (Promise.delay(delay));
-            }
-            return 'done';
-        });
-
         try {
             var result = await(fn(150, 6));
             console.log(result);
