@@ -5,10 +5,11 @@ chai.use(require('chai-as-promised'));
 var expect = chai.expect;
 describe('epoch', function () {
     it('starts when the slownode module is required', async.cps(function () {
+        // TODO: ...
         slow.SlowRoutineFunction;
     }));
 });
-describe('SlowRoutine constructor function', function () {
+describe('SlowRoutineFunction', function () {
     var mockRunner = function (fn, args) {
         var result = [];
         var __yield = function (value) { return result.push(value); };
@@ -39,7 +40,7 @@ describe('SlowRoutine constructor function', function () {
             }
         }
     };
-    it('works', async.cps(function () {
+    it('returns a SlowRoutine that yields the expected results', async.cps(function () {
         var originals = [
             { func: require('./fixtures/slowfuncs/1'), args: [1, 10], result: ['stop', 11, 'done'] },
             { func: require('./fixtures/slowfuncs/2'), args: [10, 5], result: ['foo10', 'foo20', 'foo30', 'foo40', 'foo50', 'bar'] },
