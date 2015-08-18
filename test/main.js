@@ -1,4 +1,5 @@
 var async = require('asyncawait/async');
+var await = require('asyncawait/await');
 var chai = require("chai");
 var slow = require('slownode');
 chai.use(require('chai-as-promised'));
@@ -52,6 +53,25 @@ describe('SlowRoutineFunction', function () {
             expect(originalResult).to.deep.equal(original.result);
             var modifiedResult = realRunner(original.func, original.args);
             expect(modifiedResult).to.deep.equal(original.result);
+        }
+    }));
+});
+describe('The async(...) function', function () {
+    it('works', async.cps(function () {
+        var fn = slow.async(function (delay, count) {
+            var Promise = __const(require('bluebird'));
+            for (var i = 0; i < count; ++i) {
+                console.log('waiting...');
+                await(Promise.delay(delay));
+            }
+            return 'done';
+        });
+        try {
+            var result = await(fn(150, 6));
+            console.log(result);
+        }
+        catch (ex) {
+            console.log('ERROR: ' + ex.message);
         }
     }));
 });

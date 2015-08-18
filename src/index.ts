@@ -3,6 +3,7 @@ import path = require('path');
 import Types = require('slownode');
 import databaseLocation = require('./databaseLocation');
 import SlowRoutineFunction = require('./slowRoutine/slowRoutineFunction');
+import async = require('./slowAsyncFunction/async');
 export = api;
 
 
@@ -24,3 +25,4 @@ var db = require('./knexConnection');
 // TODO: temp testing... Build the API for export...
 var api: typeof Types = <any> {};
 api.SlowRoutineFunction = SlowRoutineFunction;
+api.async = async;

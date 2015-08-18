@@ -1,9 +1,9 @@
 var assert = require('assert');
 var esprima = require('esprima');
 var escodegen = require('escodegen');
+var match = require('./match');
 var traverse = require('./traverse');
 var rewriteBodyAST = require('./rewriteBodyAST');
-var match = require('./match');
 //---------------------------------------------
 // TODO: doc all this in README...
 // Rules for SlowRoutine bodies:

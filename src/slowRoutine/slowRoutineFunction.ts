@@ -4,9 +4,9 @@ import Promise = require('bluebird');
 import Types = require('slownode');
 import esprima = require('esprima');
 import escodegen = require('escodegen');
+import match = require('./match');
 import traverse = require('./traverse');
 import rewriteBodyAST = require('./rewriteBodyAST');
-import match = require('./match');
 export = SlowRoutineFunction;
 
 

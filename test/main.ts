@@ -68,3 +68,28 @@ describe('SlowRoutineFunction', () => {
         }
     }));
 });
+
+
+describe('The async(...) function', () => {
+    it('works', async.cps(() => {
+
+        var fn = slow.async((delay: number, count: number) => {
+
+            const Promise = __const(require('bluebird'));
+
+            for (var i = 0; i < count; ++i) {
+                console.log('waiting...');
+                await (Promise.delay(delay));
+            }
+            return 'done';
+        });
+
+        try {
+            var result = await(fn(150, 6));
+            console.log(result);
+        }
+        catch (ex) {
+            console.log('ERROR: ' + ex.message);
+        }
+    }));
+});

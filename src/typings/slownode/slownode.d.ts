@@ -30,10 +30,9 @@ declare module "slownode" {
 
 
 
-    //var slowfunc: SlowAsyncFunctionCtor;
-
     // TODO: temp testing...
-    interface SlowAsyncFunctionCtor {
+    var async: SlowAsyncFunction;
+    interface SlowAsyncFunction {
         <TReturn>(fn: () => TReturn): { __sfid: string; (): Promise<TReturn>; }
         <TReturn, T0>(fn: (a: T0) => TReturn): { __sfid: string; (a: T0): Promise<TReturn>; }
         <TReturn, T0, T1>(fn: (a: T0, b: T1) => TReturn): { __sfid: string; (a: T0, b: T1): Promise<TReturn>; }
@@ -43,6 +42,12 @@ declare module "slownode" {
     }
 }
 
+
+// The await and __const pseudo-keywords are global.
+declare var await: {
+    <T>(arg: Promise<T>): T;
+};
+declare var __const: <T>(init: T) => T;
 
 
 declare module "slownode-prev" {
