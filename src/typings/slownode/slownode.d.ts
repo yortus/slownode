@@ -5,30 +5,9 @@
 
 declare module "slownode" {
 
-
-    // TODO: temp testing...
-    interface SlowRoutine {
-
-        next(value?: any): { done: boolean; value: any; };
-        throw(value?: any): { done: boolean; value: any; };
-        return(value?: any): { done: boolean; value: any; };
-
-        _srid: string;
-        _body: Function;
-        _state: {
-            pos?: string;
-            local?: { [name: string]: any; };
-            temp?: { [name: string]: any; };
-            error?: { occurred?: boolean; value?: any; handler?: string; };
-            finalizers?: { pending?: string[]; afterward?: string; };
-            incoming?: { type?: string; /* 'yield'|'throw'|'return' */ value?: any; };
-            outgoing?: { type?: string; /* 'yield'|'throw'|'return' */ value?: any; };
-        };
-    }
-
-    interface SlowRoutineStatic {
-        new(bodyFunction: Function, options?: SlowRoutineOptions): { (...args): SlowRoutine; _sfid: string; };
-        (bodyFunction: Function, options?: SlowRoutineOptions): { (...args): SlowRoutine; _sfid: string; };
+    interface SlowRoutineFunction {
+        new(bodyFunction: Function, options?: SlowRoutineOptions): (...args) => SlowRoutine;
+        (bodyFunction: Function, options?: SlowRoutineOptions): (...args) => SlowRoutine;
     }
 
     interface SlowRoutineOptions {
@@ -36,7 +15,16 @@ declare module "slownode" {
         constIdentifier?: string;
     }
 
-    export var SlowRoutine: SlowRoutineStatic;
+    interface SlowRoutine {
+        next(value?: any): { done: boolean; value: any; };
+        throw(value?: any): { done: boolean; value: any; };
+        return(value?: any): { done: boolean; value: any; };
+        _body: Function;
+        _state: any;
+        _ambient: { [name: string]: any; };
+    }
+
+    export var SlowRoutineFunction: SlowRoutineFunction;
 
 
 

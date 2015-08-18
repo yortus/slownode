@@ -2,6 +2,8 @@
 import path = require('path');
 import Types = require('slownode');
 import databaseLocation = require('./databaseLocation');
+import SlowRoutineFunction = require('./slowRoutine/slowRoutineFunction');
+export = api;
 
 
 // Resume the current epoch (if DB exists) or start a new epoch (if no DB).
@@ -20,5 +22,5 @@ var db = require('./knexConnection');
 
 
 // TODO: temp testing... Build the API for export...
-//export var slowfunc = require('./slowAsyncFunction/slowfunc');
-export var SlowRoutine = require('./slowRoutine/slowRoutine');
+var api: typeof Types = <any> {};
+api.SlowRoutineFunction = SlowRoutineFunction;

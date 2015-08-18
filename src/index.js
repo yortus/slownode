@@ -1,6 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 var databaseLocation = require('./databaseLocation');
+var SlowRoutineFunction = require('./slowRoutine/slowRoutineFunction');
 // Resume the current epoch (if DB exists) or start a new epoch (if no DB).
 // NB: Module initialisation must be synchronous, so we use only sync methods here.
 if (!fs.existsSync(databaseLocation)) {
@@ -11,6 +12,7 @@ if (!fs.existsSync(databaseLocation)) {
 // Connect to the database
 var db = require('./knexConnection');
 // TODO: temp testing... Build the API for export...
-//export var slowfunc = require('./slowAsyncFunction/slowfunc');
-exports.SlowRoutine = require('./slowRoutine/slowRoutine');
+var api = {};
+api.SlowRoutineFunction = SlowRoutineFunction;
+module.exports = api;
 //# sourceMappingURL=index.js.map

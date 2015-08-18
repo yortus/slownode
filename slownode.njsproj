@@ -41,9 +41,9 @@
     <TypeScriptCompile Include="src-prev\start.ts" />
     <TypeScriptCompile Include="src-prev\stop.ts" />
     <TypeScriptCompile Include="src\knexConnection.ts" />
-    <TypeScriptCompile Include="src\slowRoutine\bodyRewriter.ts" />
+    <TypeScriptCompile Include="src\slowRoutine\rewriteBodyAST.ts" />
     <TypeScriptCompile Include="src\slowRoutine\match.ts" />
-    <TypeScriptCompile Include="src\slowRoutine\slowRoutine.ts" />
+    <TypeScriptCompile Include="src\slowRoutine\slowRoutineFunction.ts" />
     <TypeScriptCompile Include="src\slowRoutine\traverse.ts" />
     <TypeScriptCompile Include="src\typings\asyncawait\asyncawait.d.ts" />
     <TypeScriptCompile Include="src\typings\chai-as-promised\chai-as-promised.d.ts" />

@@ -1,10 +1,9 @@
 function fn() {
-    try {
-        var knex = __const(require('knex'));
-        var a = 1 + 2 * 3;
-    }
-    catch (ex) {
-        console.log(a);
+    var limit = __const(1 + 2 + 3);
+    var fs = require('fs');
+    var exists = fs.existsSync('abc');
+    for (var i = 0; i < limit; ++i) {
+        __yield(i);
     }
 }
 ;

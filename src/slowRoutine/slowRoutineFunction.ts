@@ -5,13 +5,14 @@ import Types = require('slownode');
 import esprima = require('esprima');
 import escodegen = require('escodegen');
 import traverse = require('./traverse');
-import bodyRewriter = require('./bodyRewriter');
+import rewriteBodyAST = require('./rewriteBodyAST');
 import match = require('./match');
-export = SlowRoutine;
+export = SlowRoutineFunction;
 
 
 //---------------------------------------------
-// Rules for SlowFunction bodies:
+// TODO: doc all this in README...
+// Rules for SlowRoutine bodies:
 // - ensure the assumption of a *single* scope for identifiers within the function body is strictly met:
 //   - ensure function contains no closures (ie inner functions or lambdas)
 //   - ensure exception identifier names in catch blocks are disjoint with all other identifier names in the function
@@ -30,26 +31,11 @@ export = SlowRoutine;
 //---------------------------------------------
 
 
-var SlowRoutine: Types.SlowRoutineStatic = <any> ((bodyFunction: Function, options?: Types.SlowRoutineOptions) => {
-
-    options = options || { yieldIdentifier: null, constIdentifier: null };
-    var body = transpileBodyFunction(bodyFunction, options);
-
-    // TODO: give the slowfunc its ID
-    // TODO: use hashing!!
-    body._sfid = '123';
-
-
-    // TODO: temp testing...
-    return body;
-});
-
-
-// TODO: improve typing...
-var transpileBodyFunction = (bodyFunction: Function, options: Types.SlowRoutineOptions) => {
+var SlowRoutineFunction: Types.SlowRoutineFunction = <any> ((bodyFunction: Function, options?: Types.SlowRoutineOptions) => {
 
     // Validate arguments.
     assert(typeof bodyFunction === 'function');
+    options = options || { yieldIdentifier: null, constIdentifier: null };
 
     // Transform original function --> source code --> AST.
     var originalFunction = bodyFunction;
@@ -64,35 +50,40 @@ var transpileBodyFunction = (bodyFunction: Function, options: Types.SlowRoutineO
     // Convert variable declarations whose 'init' is a direct call to options.constIdentifier to equivalent const declarations.
     if (options.constIdentifier) replaceConstIdentifierCallsWithConstDeclarations(funcExpr, options.constIdentifier);
 
-    // TODO: Remove all const declarations from the function body. These will be inserted... where?
+    // Remove all const declarations from the function body.
     var constDecls = extractConstDeclarators(funcExpr);
 
-    // List all 'ambient' identifier names.
-    var ambientNames = [].concat(Object.getOwnPropertyNames(global), constDecls.map(decl => decl.id['name']));
+    // Compile information about all 'ambient' variables.
+    // This include all properties of the global object, plus all const declarations from the body function.
+    var ambientNames = [].concat('require', Object.getOwnPropertyNames(global), constDecls.map(decl => decl.id['name']));
+    var ambientFactoryBody = `
+        ${constDecls.map(decl => `var ${decl.id['name']} = ${escodegen.generate(decl.init)};`).join('\n')}
+        var $ambient = Object.create(global);
+        $ambient.require = require.main.require;
+        ${constDecls.map(decl => `$ambient.${decl.id['name']} = ${decl.id['name']};`).join('\n')}
+        return $ambient;
+    `;
+    var ambientFactory = eval('(function () {\n' + ambientFactoryBody + '\n})');
 
-    // Ensure the function body contains only supported constructs. This also implies it meets the single-scoped-body assumption.
+    // Validate the AST.
     ensureOnlySupportedConstructsInBody(funcExpr, ambientNames);
-
-    // TODO: ...
+    ensureIdentifierNamesAreValid(funcExpr);
     ensureAllIdentifierReferencesAreKnownLocalsOrAmbients(funcExpr, ambientNames);
     ensureAmbientIdentifiersAreNotMutated(funcExpr, ambientNames);
 
+    // Rewrite the AST in a form suitable for serialization/deserialization.
+    var bodyAST = rewriteBodyAST(funcExpr, ambientNames);
 
-    //---------------------------------------------
-    // TODO: static checks!!!
-    // - locally declared 'const' identifiers whose rhs is considered 'safe and idempotent' (as in the HTTP-method sense)
-    //   - TODO: rules for 'safe and idempotent'...
-    //---------------------------------------------
+    // Transform modified AST --> source code --> function.
+    var bodySource = '(' + escodegen.generate(bodyAST) + ')';
+    var bodyFunc = eval(bodySource);
 
-
-
-
-    // Rewrite the AST into a form that supports persisting to storage.
-    var result = rewrite(funcExpr, ambientNames);
-
-    // Return the augmented function.
+    // Generate and return a SlowRoutineFunction instance (ie a callable that returns a SlowRoutine).
+    assert(funcExpr.params.every(p => p.type === 'Identifier'));
+    var paramNames = funcExpr.params.map(p => <string> p['name']);
+    var result = makeSlowRoutineFunction(bodyFunc, paramNames, ambientFactory);
     return result;
-};
+});
 
 
 /** In the given AST, convert direct calls to `yieldIdentifier` to equivalent yield expressions */
@@ -219,6 +210,20 @@ function ensureOnlySupportedConstructsInBody(funcExpr: ESTree.FunctionExpression
 }
 
 
+/** Traverses the AST and throws an error if an identifier is encountered that contains exotic characters or is called '$' or '$ambient'. */
+function ensureIdentifierNamesAreValid(funcExpr: ESTree.FunctionExpression) {
+    traverse(funcExpr.body, node => {
+        return match<any>(node, {
+            Identifier: (expr) => {
+                if (expr.name !== '$' && expr.name !== '$ambient' && /^[a-zA-Z$_][a-zA-Z$_0-9]*$/.test(expr.name)) return;
+                throw new Error(`SlowRoutine: invalid or disallowed identifier name '${expr.name}'`);
+            },
+            Otherwise: (node) => { /* pass-through */ }
+        });
+    });
+}
+
+
 /** Traverses the AST, throwing an error if an unqualified identifier name is neither a local nor an ambient variable name. */
 function ensureAllIdentifierReferencesAreKnownLocalsOrAmbients(funcExpr: ESTree.FunctionExpression, ambientIds: string[]) {
 
@@ -287,59 +292,32 @@ function ensureAmbientIdentifiersAreNotMutated(funcExpr: ESTree.FunctionExpressi
 }
 
 
+/** Construct a SlowRoutineFunction instance tailored to the given body code and parameter names. */
+function makeSlowRoutineFunction(bodyFunc: Function, paramNames: string[], ambientFactory: () => any): Types.SlowRoutineFunction {
 
-
-
-
-
-
-
-
-
-
-
-
-function rewrite(funcExpr: ESTree.FunctionExpression, ambientIds: string[]) {
-
-    // TODO: function body...
-    var bodyAST = bodyRewriter.rewrite(funcExpr, ambientIds);
-    var bodySource = '(' + escodegen.generate(bodyAST) + ')';
-    var bodyFunc = eval(bodySource);
-
-    // TODO: function parameters...
-    assert(funcExpr.params.every(p => p.type === 'Identifier'));
-    var paramNames = funcExpr.params.map(p => <string> p['name']);
-
-    // Return a function with the same arity and parameter names as the body function it wraps.
-    var func = eval(`(function SlowRoutineFunction(${paramNames.join(', ')}) { return inner.apply(null, arguments); })`);
-    return func;
-
-    // TODO: ...
-    function inner(...args: any[]) {
-
-        // TODO: set up initial state
-        var state = <bodyRewriter.State> {
-            local: { arguments: args }
+    // This is the generic constructor function. It closes over bodyFunc and ambientFactory.
+    function SlowRoutineFunction() {
+        var inst: Types.SlowRoutine = <any> {
+            _body: bodyFunc,
+            _state: { local: { arguments: Array.prototype.slice.call(arguments) } },
+            _ambient: ambientFactory()
         };
+        ['next', 'throw', 'return'].forEach(method => {
+            inst[method] = (value?: any) => {
+                inst._state.incoming = { type: method === 'next' ? 'yield' : method, value };
+                inst._body(inst._state, inst._ambient);
+                if (inst._state.outgoing.type === 'throw') throw inst._state.outgoing.value;
+                return { done: inst._state.outgoing.type === 'return', value: inst._state.outgoing.value };
+            };
+        });
+        return inst;
+    }
 
-        // TODO: construct SlowRoutine instance...
-        var result: Types.SlowRoutine = <any> {};
-        result._srid = 'ABC123'; // TODO: assign proper ID!!!
-        result._body = bodyFunc;
-        result._state = state;
-        result.next = makeResumer('yield', state);
-        result.throw = makeResumer('throw', state);
-        result.return = makeResumer('return', state);
-        return result;
-    };
+    // Customise the generic constructor function to have the same parameters/arity as the supplied bodyFunc.
+    var originalSource = SlowRoutineFunction.toString();
+    var sourceWithParamNames = originalSource.replace('SlowRoutineFunction()', `SlowRoutineFunction(${paramNames.join(', ')})`);
+    var constructorFunction = eval('(' + sourceWithParamNames + ')');
 
-    // TODO: ...
-    function makeResumer(type: string, state: any) {
-        return (value?: any) => {
-            state.incoming = { type, value };
-            bodyFunc(state);
-            if (state.outgoing.type === 'throw') throw state.outgoing.value;
-            return { done: state.outgoing.type === 'return', value: state.outgoing.value };
-        };
-    };
+    // Return the customised constructor function.
+    return constructorFunction;
 }
