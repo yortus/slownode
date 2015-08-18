@@ -200,7 +200,6 @@ function ensureOnlySupportedConstructsInBody(funcExpr: ESTree.FunctionExpression
     });
 
     // Rule out catch block exception identifiers that shadow or are shadowed by any other identifier.
-    // TODO: should also check against 'ambient' identifiers
     var localIds = funcExpr.params.map(p => <string> p['name']);
     var catchIds: string[] = [];
     traverse(funcExpr.body, node => {

@@ -124,7 +124,7 @@ var Rewriter = (function () {
     };
     return Rewriter;
 })();
-// TODO: temp testing...
+// TODO: doc...
 var JumpTarget;
 (function (JumpTarget) {
     JumpTarget[JumpTarget["AfterTry"] = 0] = "AfterTry";
@@ -134,7 +134,7 @@ var JumpTarget;
     JumpTarget[JumpTarget["Return"] = 4] = "Return";
     JumpTarget[JumpTarget["Throw"] = 5] = "Throw";
 })(JumpTarget || (JumpTarget = {}));
-// TODO: temp testing...
+// TODO: doc...
 function rewriteStatement(stmt, emitter) {
     match(stmt, {
         EmptyStatement: function (stmt) { },
@@ -374,7 +374,7 @@ function rewriteStatement(stmt, emitter) {
         }
     });
 }
-// TODO: temp testing...
+// TODO: doc...
 function rewriteExpression(expr, $tgt, emitter) {
     match(expr, {
         SequenceExpression: function (expr) {

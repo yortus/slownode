@@ -174,7 +174,6 @@ function ensureOnlySupportedConstructsInBody(funcExpr, ambientIds) {
         }
     });
     // Rule out catch block exception identifiers that shadow or are shadowed by any other identifier.
-    // TODO: should also check against 'ambient' identifiers
     var localIds = funcExpr.params.map(function (p) { return p['name']; });
     var catchIds = [];
     traverse(funcExpr.body, function (node) {

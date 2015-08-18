@@ -219,7 +219,7 @@ class Rewriter {
 }
 
 
-// TODO: temp testing...
+// TODO: doc...
 enum JumpTarget {
     AfterTry,
     Break,
@@ -230,7 +230,7 @@ enum JumpTarget {
 }
 
 
-// TODO: temp testing...
+// TODO: doc...
 function rewriteStatement(stmt: ESTree.Statement, emitter: Rewriter): void {
     match(stmt, {
 
@@ -367,7 +367,6 @@ function rewriteStatement(stmt: ESTree.Statement, emitter: Rewriter): void {
             if (loopVar.type !== 'Identifier') throw new Error(`SlowRoutine: unsupported for..in loop variable type: '${loopVar.type}'`);
             if (stmt.left.type === 'VariableDeclaration') {
                 if (stmt.left['declarations'][0].init) throw new Error(`SlowRoutine: for..in loop variable initialiser is not supported.`);
-                // TODO: remove.   was...   emitter.declareLocalIdentifier(loopVar.name);
             }
             var $name: string = loopVar.name;
             var $obj = emitter.reserveTemporaryIdentifier('obj');
@@ -485,7 +484,7 @@ function rewriteStatement(stmt: ESTree.Statement, emitter: Rewriter): void {
 }
 
 
-// TODO: temp testing...
+// TODO: doc...
 function rewriteExpression(expr: ESTree.Expression, $tgt: string, emitter: Rewriter): void {
     match(expr, {
 
