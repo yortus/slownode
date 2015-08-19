@@ -21,12 +21,10 @@ function makeResumeMethod(type: string, body: Function, state: any) {
     return (value?: any) => {
         state.incoming = { type, value };
         body(state);
-        if (state.outgoing.type === 'throw') {
-            throw state.outgoing.value;
-        }
-        return {
-            done: state.outgoing.type === 'return',
-            value: state.outgoing.value
-        };
+        var outgoing = state.outgoing;
+        delete state.incoming;
+        delete state.outgoing;
+        if (outgoing.type === 'throw') throw outgoing.value;
+        return { done: outgoing.type === 'return', value: outgoing.value };
     };
 }

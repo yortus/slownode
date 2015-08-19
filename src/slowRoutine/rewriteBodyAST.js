@@ -23,7 +23,9 @@ var Rewriter = (function () {
     // TODO: doc all members...
     function Rewriter(body, params) {
         var _this = this;
+        this.temporaryIdentifierPool = [];
         this.constDecls = [];
+        this.temporaryIdentifierCounter = 0;
         this.temporaryIdentifiersInUse = [];
         this.nextLabel = 0;
         this.switchCases = [];
@@ -61,17 +63,19 @@ var Rewriter = (function () {
         return (isAmbient ? '$ambient' : '$.local') + "." + name;
     };
     Rewriter.prototype.reserveTemporaryIdentifier = function (name) {
-        for (var i = 0, isNameAvailable = false; !isNameAvailable; ++i) {
-            var fullName = name + (i || '');
-            isNameAvailable = this.temporaryIdentifiersInUse.indexOf(fullName) === -1;
-        }
-        this.temporaryIdentifiersInUse.push(fullName);
-        return '$.temp.' + fullName;
+        if (this.temporaryIdentifierPool.length > 0)
+            return this.temporaryIdentifierPool.pop();
+        var tempId = "$.temp.$" + ++this.temporaryIdentifierCounter;
+        this.temporaryIdentifiersInUse.push(tempId);
+        return tempId;
     };
     Rewriter.prototype.releaseTemporaryIdentifier = function (name) {
         var i = this.temporaryIdentifiersInUse.indexOf(name);
         this.temporaryIdentifiersInUse.splice(i, 1);
-        this.emitText(name + " = null;");
+        this.temporaryIdentifierPool.unshift(name);
+    };
+    Rewriter.prototype.isTemporaryIdentifier = function (name) {
+        return name.indexOf('$.temp') === 0;
     };
     Rewriter.prototype.newLabel = function () {
         return '@' + ++this.nextLabel;
@@ -122,10 +126,10 @@ var Rewriter = (function () {
         }
     };
     Rewriter.prototype.generateAST = function (fromFragment) {
-        var source = "\n            (function slowRoutineBody($) {\n                $.pos = $.pos || '@start';\n                $.local = $.local || {};\n                $.temp = $.temp || {};\n                $.error = $.error || { handler: '@fail' };\n                $.finalizers = $.finalizers || { pending: [] };\n                $.incoming = $.incoming || { type: 'yield' };\n                $.outgoing = $.outgoing || { type: 'return' };\n                $ambient = slowRoutineBody.ambient || (slowRoutineBody.ambient = (function () {\n                    " + this.constDecls.map(function (decl) { return ("var " + decl.id['name'] + " = " + escodegen.generate(decl.init) + ";"); }).join('\n') + "\n                    var $ambient = Object.create(global);\n                    $ambient.require = require.main.require;\n                    " + this.constDecls.map(function (decl) { return ("$ambient." + decl.id['name'] + " = " + decl.id['name'] + ";"); }).join('\n') + "\n                    return $ambient;\n                })());\n                while (true) {\n                    try {\n                        switch ($.pos) {\n                            case '@start':\n                                " + (fromFragment || '') + "\n                            case '@done':\n                                $.outgoing.type = 'return';\n                                $.outgoing.value = $.result;\n                                return;\n                            case '@fail':\n                                $.outgoing.type = 'throw';\n                                $.outgoing.value = $.error.value;\n                                return;\n                            case '@finalize':\n                                $.pos = $.finalizers.pending.pop() || $.finalizers.afterward;\n                                continue;\n                        }\n                    }\n                    catch (ex) {\n                        $.error.occurred = true;\n                        $.error.value = ex;\n                        $.pos = $.error.handler;\n                        continue;\n                    }\n                }\n            })\n        ";
+        var source = "\n            (function slowRoutineBody($) {\n                $.pos = $.pos || '@start';\n                $.local = $.local || {};\n                $.temp = $.temp || {};\n                $.error = $.error || { handler: '@fail' };\n                $.finalizers = $.finalizers || { pending: [] };\n                $ambient = slowRoutineBody.ambient || (slowRoutineBody.ambient = (function () {\n                    " + this.constDecls.map(function (decl) { return ("var " + decl.id['name'] + " = " + escodegen.generate(decl.init) + ";"); }).join('\n') + "\n                    var $ambient = Object.create(global);\n                    $ambient.require = require.main.require;\n                    " + this.constDecls.map(function (decl) { return ("$ambient." + decl.id['name'] + " = " + decl.id['name'] + ";"); }).join('\n') + "\n                    return $ambient;\n                })());\n                while (true) {\n                    try {\n                        switch ($.pos) {\n                            case '@start':\n                                " + (fromFragment || '') + "\n                            case '@done':\n                                $.outgoing = { type: 'return', value: $.result };\n                                return;\n                            case '@fail':\n                                $.outgoing = { type: 'throw', value: $.error.value };\n                                return;\n                            case '@finalize':\n                                $.pos = $.finalizers.pending.pop() || $.finalizers.afterward;\n                                continue;\n                        }\n                    }\n                    catch (ex) {\n                        $.error.occurred = true;\n                        $.error.value = ex;\n                        $.pos = $.error.handler;\n                        continue;\n                    }\n                }\n            })\n        ";
         var ast = esprima.parse(source);
         var funcExpr = ast.body[0]['expression'];
-        var whileStmt = funcExpr.body['body'][8];
+        var whileStmt = funcExpr.body['body'][6];
         var tryStmt = whileStmt.body['body'][0];
         var switchStmt = tryStmt.block['body'][0];
         if (fromFragment) {
@@ -405,13 +409,12 @@ function rewriteExpression(expr, $tgt, emitter) {
             var yieldLabel = emitter.newLabel();
             var throwLabel = emitter.newLabel();
             var returnLabel = emitter.newLabel();
-            emitter.emitText("$.outgoing.type = 'yield';");
-            if (expr.argument) {
-                emitter.emitExpr(expr.argument, '$.outgoing.value');
-            }
-            else {
-                emitter.emitText("$.outgoing.value = void 0;");
-            }
+            emitter.emitText("$.outgoing = { type: 'yield' };");
+            var arg = expr.argument || { type: 'UnaryExpression', operator: 'void', prefix: true, argument: { type: 'literal', value: 0 } };
+            emitter.emitExpr(arg, '$.outgoing.value');
+            emitter.temporaryIdentifierPool.forEach(function (id) { return emitter.emitText("delete " + id + ";"); });
+            if (emitter.isTemporaryIdentifier($tgt))
+                emitter.emitText("delete " + $tgt + ";");
             emitter.emitText("$.pos = '" + resumeLabel + "';");
             emitter.emitText('return;');
             emitter.emitCase(resumeLabel);
@@ -420,7 +423,7 @@ function rewriteExpression(expr, $tgt, emitter) {
             emitter.emitCase(throwLabel);
             emitter.emitText("throw $.incoming.value;");
             emitter.emitCase(returnLabel);
-            emitter.emitText("$.outgoing.value = $.incoming.value;");
+            emitter.emitText("$.result = $.incoming.value;");
             emitter.emitJump(JumpTarget.Return);
             emitter.emitCase(yieldLabel);
             emitter.emitText($tgt + " = $.incoming.value;");

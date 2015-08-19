@@ -14,13 +14,12 @@ function makeResumeMethod(type, body, state) {
     return function (value) {
         state.incoming = { type: type, value: value };
         body(state);
-        if (state.outgoing.type === 'throw') {
-            throw state.outgoing.value;
-        }
-        return {
-            done: state.outgoing.type === 'return',
-            value: state.outgoing.value
-        };
+        var outgoing = state.outgoing;
+        delete state.incoming;
+        delete state.outgoing;
+        if (outgoing.type === 'throw')
+            throw outgoing.value;
+        return { done: outgoing.type === 'return', value: outgoing.value };
     };
 }
 module.exports = SlowRoutine;

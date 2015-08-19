@@ -104,24 +104,28 @@ class Rewriter {
 
     currentThrowTarget: string;
 
+    temporaryIdentifierPool: string[] = [];
+
     getIdentifierReference(name: string): string {
         var isAmbient = this.ambientIdentifierNames.indexOf(name) !== -1;
         return `${isAmbient ? '$ambient' : '$.local'}.${name}`;
     }
 
     reserveTemporaryIdentifier(name: string): string {
-        for (var i = 0, isNameAvailable = false; !isNameAvailable; ++i) {
-            var fullName = name + (i || '');
-            isNameAvailable = this.temporaryIdentifiersInUse.indexOf(fullName) === -1;
-        }
-        this.temporaryIdentifiersInUse.push(fullName);
-        return '$.temp.' + fullName;
+        if (this.temporaryIdentifierPool.length > 0) return this.temporaryIdentifierPool.pop();
+        var tempId = `$.temp.$${++this.temporaryIdentifierCounter}`;
+        this.temporaryIdentifiersInUse.push(tempId);
+        return tempId;
     }
 
     releaseTemporaryIdentifier(name: string): void {
         var i = this.temporaryIdentifiersInUse.indexOf(name);
         this.temporaryIdentifiersInUse.splice(i, 1);
-        this.emitText(`${name} = null;`);
+        this.temporaryIdentifierPool.unshift(name);
+    }
+
+    isTemporaryIdentifier(name: string) {
+        return name.indexOf('$.temp') === 0;
     }
 
     newLabel(): string {
@@ -186,8 +190,6 @@ class Rewriter {
                 $.temp = $.temp || {};
                 $.error = $.error || { handler: '@fail' };
                 $.finalizers = $.finalizers || { pending: [] };
-                $.incoming = $.incoming || { type: 'yield' };
-                $.outgoing = $.outgoing || { type: 'return' };
                 $ambient = slowRoutineBody.ambient || (slowRoutineBody.ambient = (function () {
                     ${this.constDecls.map(decl => `var ${decl.id['name']} = ${escodegen.generate(decl.init)};`).join('\n')}
                     var $ambient = Object.create(global);
@@ -201,12 +203,10 @@ class Rewriter {
                             case '@start':
                                 ${fromFragment || ''}
                             case '@done':
-                                $.outgoing.type = 'return';
-                                $.outgoing.value = $.result;
+                                $.outgoing = { type: 'return', value: $.result };
                                 return;
                             case '@fail':
-                                $.outgoing.type = 'throw';
-                                $.outgoing.value = $.error.value;
+                                $.outgoing = { type: 'throw', value: $.error.value };
                                 return;
                             case '@finalize':
                                 $.pos = $.finalizers.pending.pop() || $.finalizers.afterward;
@@ -224,7 +224,7 @@ class Rewriter {
         `;
         var ast = esprima.parse(source);
         var funcExpr = <ESTree.FunctionExpression> ast.body[0]['expression'];
-        var whileStmt = <ESTree.WhileStatement> funcExpr.body['body'][8];
+        var whileStmt = <ESTree.WhileStatement> funcExpr.body['body'][6];
         var tryStmt = <ESTree.TryStatement> whileStmt.body['body'][0];
         var switchStmt = <ESTree.SwitchStatement> tryStmt.block['body'][0];
         if (fromFragment) {
@@ -241,6 +241,8 @@ class Rewriter {
     private constDecls: ESTree.VariableDeclarator[] = [];
 
     private ambientIdentifierNames: string[];
+
+    private temporaryIdentifierCounter = 0;
 
     private temporaryIdentifiersInUse: string[] = [];
 
@@ -532,13 +534,11 @@ function rewriteExpression(expr: ESTree.Expression, $tgt: string, emitter: Rewri
             var yieldLabel = emitter.newLabel();
             var throwLabel = emitter.newLabel();
             var returnLabel = emitter.newLabel();
-            emitter.emitText(`$.outgoing.type = 'yield';`);
-            if (expr.argument) {
-                emitter.emitExpr(expr.argument, '$.outgoing.value');
-            }
-            else {
-                emitter.emitText(`$.outgoing.value = void 0;`);
-            }
+            emitter.emitText(`$.outgoing = { type: 'yield' };`);
+            var arg = expr.argument || { type: 'UnaryExpression', operator: 'void', prefix: true, argument: { type: 'literal', value: 0 } };
+            emitter.emitExpr(arg, '$.outgoing.value');
+            emitter.temporaryIdentifierPool.forEach(id => emitter.emitText(`delete ${id};`));
+            if (emitter.isTemporaryIdentifier($tgt)) emitter.emitText(`delete ${$tgt};`);
             emitter.emitText(`$.pos = '${resumeLabel}';`);
             emitter.emitText('return;');
             emitter.emitCase(resumeLabel);
@@ -547,7 +547,7 @@ function rewriteExpression(expr: ESTree.Expression, $tgt: string, emitter: Rewri
             emitter.emitCase(throwLabel);
             emitter.emitText(`throw $.incoming.value;`);
             emitter.emitCase(returnLabel);
-            emitter.emitText(`$.outgoing.value = $.incoming.value;`);
+            emitter.emitText(`$.result = $.incoming.value;`);
             emitter.emitJump(JumpTarget.Return);
             emitter.emitCase(yieldLabel);
             emitter.emitText(`${$tgt} = $.incoming.value;`);
