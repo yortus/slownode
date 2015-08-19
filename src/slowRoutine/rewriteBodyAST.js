@@ -6,7 +6,6 @@ var match = require('./match');
 var traverse = require('./traverse');
 // TODO: this module needs more inline documentation to make it clearer what each bit does, to support long-term maintenance.
 // TODO: source maps?
-// TODO: serialization: preserve difference between 'null' and 'undefined'. This doesn't belong here - move to serialization code...
 /** Returns an equivalent AST in a form suitable for serialization/deserialization. */
 function rewriteBodyAST(funcExpr) {
     // Validate arguments.
