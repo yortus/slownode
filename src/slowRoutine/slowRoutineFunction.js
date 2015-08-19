@@ -4,6 +4,7 @@ var escodegen = require('escodegen');
 var match = require('./match');
 var traverse = require('./traverse');
 var rewriteBodyAST = require('./rewriteBodyAST');
+var SlowRoutine = require('./slowRoutine');
 //---------------------------------------------
 // TODO: doc all this in README...
 // Rules for SlowRoutine bodies:
@@ -23,7 +24,7 @@ var rewriteBodyAST = require('./rewriteBodyAST');
 // NB: no need to check for syntactic validity, since the function must be syntactically valid to have been passed in here.
 // NB: either a normal function or generator function can be passed in - it makes no difference (doc why to do this (hint: yield keyword available in gens))
 //---------------------------------------------
-/** Creates an instance of SlowRoutineFunction. */
+/** Creates a SlowRoutineFunction instance. May be called with or without 'new'. */
 function SlowRoutineFunction(bodyFunction, options) {
     // Validate arguments.
     assert(typeof bodyFunction === 'function');
@@ -263,22 +264,9 @@ function ensureAmbientIdentifiersAreNotMutated(funcExpr) {
 }
 /** Constructs a SlowRoutineFunction instance tailored to the given body code and parameter names. */
 function makeSlowRoutineFunction(bodyFunc, paramNames) {
-    // This is the generic constructor function. It closes over bodyFunc and ambientFactory.
+    // This is the generic constructor function. It closes over bodyFunc.
     function SlowRoutineFunction() {
-        var inst = {
-            _body: bodyFunc,
-            _state: { local: { arguments: Array.prototype.slice.call(arguments) } }
-        };
-        ['next', 'throw', 'return'].forEach(function (method) {
-            inst[method] = function (value) {
-                inst._state.incoming = { type: method === 'next' ? 'yield' : method, value: value };
-                inst._body(inst._state);
-                if (inst._state.outgoing.type === 'throw')
-                    throw inst._state.outgoing.value;
-                return { done: inst._state.outgoing.type === 'return', value: inst._state.outgoing.value };
-            };
-        });
-        return inst;
+        return SlowRoutine(bodyFunc, { local: { arguments: Array.prototype.slice.call(arguments) } });
     }
     // Customise the generic constructor function with the specified parameter names and a _body property.
     var originalSource = SlowRoutineFunction.toString();

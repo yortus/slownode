@@ -7,6 +7,7 @@ import escodegen = require('escodegen');
 import match = require('./match');
 import traverse = require('./traverse');
 import rewriteBodyAST = require('./rewriteBodyAST');
+import SlowRoutine = require('./slowRoutine');
 export = SlowRoutineFunction;
 
 
@@ -31,7 +32,7 @@ export = SlowRoutineFunction;
 //---------------------------------------------
 
 
-/** Creates an instance of SlowRoutineFunction. */
+/** Creates a SlowRoutineFunction instance. May be called with or without 'new'. */
 function SlowRoutineFunction(bodyFunction: Function, options?: Types.SlowRoutineOptions) {
 
     // Validate arguments.
@@ -286,23 +287,11 @@ function ensureAmbientIdentifiersAreNotMutated(funcExpr: ESTree.FunctionExpressi
 
 
 /** Constructs a SlowRoutineFunction instance tailored to the given body code and parameter names. */
-function makeSlowRoutineFunction(bodyFunc: Function, paramNames: string[]): Types.SlowRoutineFunction {
+function makeSlowRoutineFunction(bodyFunc: (state) => void, paramNames: string[]): Types.SlowRoutineFunction {
 
-    // This is the generic constructor function. It closes over bodyFunc and ambientFactory.
+    // This is the generic constructor function. It closes over bodyFunc.
     function SlowRoutineFunction() {
-        var inst: Types.SlowRoutine = <any> {
-            _body: bodyFunc,
-            _state: { local: { arguments: Array.prototype.slice.call(arguments) } }
-        };
-        ['next', 'throw', 'return'].forEach(method => {
-            inst[method] = (value?: any) => {
-                inst._state.incoming = { type: method === 'next' ? 'yield' : method, value };
-                inst._body(inst._state);
-                if (inst._state.outgoing.type === 'throw') throw inst._state.outgoing.value;
-                return { done: inst._state.outgoing.type === 'return', value: inst._state.outgoing.value };
-            };
-        });
-        return inst;
+        return SlowRoutine(bodyFunc, { local: { arguments: Array.prototype.slice.call(arguments) } });
     }
 
     // Customise the generic constructor function with the specified parameter names and a _body property.

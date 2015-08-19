@@ -3,7 +3,8 @@ import path = require('path');
 import Types = require('slownode');
 import databaseLocation = require('./databaseLocation');
 import SlowRoutineFunction = require('./slowRoutine/slowRoutineFunction');
-import async = require('./slowAsyncFunction/async');
+import async = require('./slowAsyncFunction/slowAsyncFunction');
+import rehydrate = require('./slowAsyncFunction/rehydrate');
 export = api;
 
 
@@ -20,6 +21,10 @@ if (!fs.existsSync(databaseLocation)) {
 // Connect to the database
 var db = require('./knexConnection');
 
+
+// TODO: temp testing... rehydrate any running async functions...
+// TODO: we can't wait for completion here, just get it started... implications? Eg sqlite serialisation needed?
+rehydrate();
 
 
 // TODO: temp testing... Build the API for export...

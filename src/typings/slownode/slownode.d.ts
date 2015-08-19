@@ -26,7 +26,7 @@ declare module "slownode" {
         return(value?: any): { done: boolean; value: any; };
         _body: (state) => void;
         _state: any;
-        _srid: number;
+        _srid?: number; // TODO: needed? probably for serialization...
     }
 
 

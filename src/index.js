@@ -2,7 +2,8 @@ var fs = require('fs');
 var path = require('path');
 var databaseLocation = require('./databaseLocation');
 var SlowRoutineFunction = require('./slowRoutine/slowRoutineFunction');
-var async = require('./slowAsyncFunction/async');
+var async = require('./slowAsyncFunction/slowAsyncFunction');
+var rehydrate = require('./slowAsyncFunction/rehydrate');
 // Resume the current epoch (if DB exists) or start a new epoch (if no DB).
 // NB: Module initialisation must be synchronous, so we use only sync methods here.
 if (!fs.existsSync(databaseLocation)) {
@@ -12,6 +13,9 @@ if (!fs.existsSync(databaseLocation)) {
 }
 // Connect to the database
 var db = require('./knexConnection');
+// TODO: temp testing... rehydrate any running async functions...
+// TODO: we can't wait for completion here, just get it started... implications? Eg sqlite serialisation needed?
+rehydrate();
 // TODO: temp testing... Build the API for export...
 var api = {};
 api.SlowRoutineFunction = SlowRoutineFunction;

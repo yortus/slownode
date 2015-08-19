@@ -26,7 +26,7 @@ describe('SlowRoutineFunction', function () {
     };
     var realRunner = function (fn, args) {
         var result = [];
-        var slowfunc = new slow.SlowRoutineFunction(fn, { yieldIdentifier: '__yield', constIdentifier: '__const' });
+        var slowfunc = slow.SlowRoutineFunction(fn, { yieldIdentifier: '__yield', constIdentifier: '__const' });
         var sloro = slowfunc.apply(null, args);
         while (true) {
             try {
@@ -59,17 +59,22 @@ describe('SlowRoutineFunction', function () {
 describe('The async(...) function', function () {
     // TODO: temp testing... 10mins
     this.timeout(600000);
+    // TODO: temp testing... make CTRL+C force node.js to exit immediately
+    process.on('SIGINT', function () {
+        console.log('KILLED BY SIGINT (CTRL+C)');
+        process.exit();
+    });
     var fn = slow.async(function (delay, count) {
         var Promise = __const(require('bluebird'));
         for (var i = 0; i < count; ++i) {
-            console.log('waiting...');
+            console.log("waiting..." + i);
             await(Promise.delay(delay));
         }
         return 'done';
     });
     it('works', async.cps(function () {
         try {
-            var result = await(fn(150, 6));
+            var result = await(fn(500, 30));
             console.log(result);
         }
         catch (ex) {
