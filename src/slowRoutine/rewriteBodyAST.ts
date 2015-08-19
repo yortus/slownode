@@ -1,7 +1,9 @@
 ﻿import assert = require('assert');
 import _ = require('lodash');
 import esprima = require('esprima');
+import escodegen = require('escodegen');
 import match = require('./match');
+import traverse = require('./traverse');
 export = rewriteBodyAST;
 
 
@@ -11,14 +13,14 @@ export = rewriteBodyAST;
 
 
 /** Returns an equivalent AST in a form suitable for serialization/deserialization. */
-function rewriteBodyAST(funcExpr: ESTree.FunctionExpression, ambientIdentifierNames: string[]): ESTree.FunctionExpression {
+function rewriteBodyAST(funcExpr: ESTree.FunctionExpression): ESTree.FunctionExpression {
 
     // Validate arguments.
     assert(funcExpr.params.every(p => p.type === 'Identifier'));
     assert(funcExpr.body.type === 'BlockStatement');
 
     // Construct a Rewriter instance to handle the rewrite operation.
-    var rewriter = new Rewriter(<any> funcExpr.body, <any> funcExpr.params, ambientIdentifierNames);
+    var rewriter = new Rewriter(<any> funcExpr.body, <any> funcExpr.params);
 
     // Extract and return the rewritten AST.
     var newFuncExpr = <ESTree.FunctionExpression> rewriter.generateAST();
@@ -62,12 +64,32 @@ interface State {
 class Rewriter {
 
     // TODO: doc all members...
-    constructor(body: ESTree.BlockStatement, params: ESTree.Identifier[], private ambientIdentifierNames: string[]) {
+    constructor(body: ESTree.BlockStatement, params: ESTree.Identifier[]) {
 
         // Initialise state.
         this.emitCase(this.newLabel());
         this.pushJumpTarget(JumpTarget.Throw, '@fail');
         this.pushJumpTarget(JumpTarget.Return, '@done');
+
+        // Remove all const declarations from the AST. These will be emitted as ambients.
+        traverse(body, node => {
+            match(node, {
+                VariableDeclaration: (stmt) => {
+                    if (stmt.kind !== 'const') return;
+                    this.constDecls = this.constDecls.concat(stmt.declarations);
+                    Object.keys(stmt).forEach(key => delete stmt[key]);
+                    stmt.type = 'EmptyStatement';
+                },
+                Otherwise: (node) => { /* pass-through */ }
+            });
+        });
+
+        // Make a list of all the ambient identifier names.
+        this.ambientIdentifierNames = [].concat(
+            'require',
+            Object.getOwnPropertyNames(global),
+            this.constDecls.map(decl => decl.id['name'])
+        );
 
         // Emit code to initially assign formal parameters from $.arguments.
         for (var i = 0; i < params.length; ++i) {
@@ -158,7 +180,7 @@ class Rewriter {
 
     generateAST(fromFragment?: string): ESTree.FunctionExpression | ESTree.Statement {
         var source = `
-            (function slowRoutineBody($, $ambient) {
+            (function slowRoutineBody($) {
                 $.pos = $.pos || '@start';
                 $.local = $.local || {};
                 $.temp = $.temp || {};
@@ -166,6 +188,13 @@ class Rewriter {
                 $.finalizers = $.finalizers || { pending: [] };
                 $.incoming = $.incoming || { type: 'yield' };
                 $.outgoing = $.outgoing || { type: 'return' };
+                $ambient = slowRoutineBody.ambient || (slowRoutineBody.ambient = (function () {
+                    ${this.constDecls.map(decl => `var ${decl.id['name']} = ${escodegen.generate(decl.init)};`).join('\n')}
+                    var $ambient = Object.create(global);
+                    $ambient.require = require.main.require;
+                    ${this.constDecls.map(decl => `$ambient.${decl.id['name']} = ${decl.id['name']};`).join('\n')}
+                    return $ambient;
+                })());
                 while (true) {
                     try {
                         switch ($.pos) {
@@ -195,7 +224,7 @@ class Rewriter {
         `;
         var ast = esprima.parse(source);
         var funcExpr = <ESTree.FunctionExpression> ast.body[0]['expression'];
-        var whileStmt = <ESTree.WhileStatement> funcExpr.body['body'][7];
+        var whileStmt = <ESTree.WhileStatement> funcExpr.body['body'][8];
         var tryStmt = <ESTree.TryStatement> whileStmt.body['body'][0];
         var switchStmt = <ESTree.SwitchStatement> tryStmt.block['body'][0];
         if (fromFragment) {
@@ -208,6 +237,10 @@ class Rewriter {
             return funcExpr;
         }
     }
+
+    private constDecls: ESTree.VariableDeclarator[] = [];
+
+    private ambientIdentifierNames: string[];
 
     private temporaryIdentifiersInUse: string[] = [];
 

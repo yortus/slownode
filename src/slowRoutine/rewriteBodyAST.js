@@ -1,17 +1,19 @@
 var assert = require('assert');
 var _ = require('lodash');
 var esprima = require('esprima');
+var escodegen = require('escodegen');
 var match = require('./match');
+var traverse = require('./traverse');
 // TODO: this module needs more inline documentation to make it clearer what each bit does, to support long-term maintenance.
 // TODO: source maps?
 // TODO: serialization: preserve difference between 'null' and 'undefined'. This doesn't belong here - move to serialization code...
 /** Returns an equivalent AST in a form suitable for serialization/deserialization. */
-function rewriteBodyAST(funcExpr, ambientIdentifierNames) {
+function rewriteBodyAST(funcExpr) {
     // Validate arguments.
     assert(funcExpr.params.every(function (p) { return p.type === 'Identifier'; }));
     assert(funcExpr.body.type === 'BlockStatement');
     // Construct a Rewriter instance to handle the rewrite operation.
-    var rewriter = new Rewriter(funcExpr.body, funcExpr.params, ambientIdentifierNames);
+    var rewriter = new Rewriter(funcExpr.body, funcExpr.params);
     // Extract and return the rewritten AST.
     var newFuncExpr = rewriter.generateAST();
     return newFuncExpr;
@@ -19,8 +21,9 @@ function rewriteBodyAST(funcExpr, ambientIdentifierNames) {
 /** Provides methods and state for rewriting an AST into a form suitable for serialization/deserialization. */
 var Rewriter = (function () {
     // TODO: doc all members...
-    function Rewriter(body, params, ambientIdentifierNames) {
-        this.ambientIdentifierNames = ambientIdentifierNames;
+    function Rewriter(body, params) {
+        var _this = this;
+        this.constDecls = [];
         this.temporaryIdentifiersInUse = [];
         this.nextLabel = 0;
         this.switchCases = [];
@@ -29,6 +32,21 @@ var Rewriter = (function () {
         this.emitCase(this.newLabel());
         this.pushJumpTarget(JumpTarget.Throw, '@fail');
         this.pushJumpTarget(JumpTarget.Return, '@done');
+        // Remove all const declarations from the AST. These will be emitted as ambients.
+        traverse(body, function (node) {
+            match(node, {
+                VariableDeclaration: function (stmt) {
+                    if (stmt.kind !== 'const')
+                        return;
+                    _this.constDecls = _this.constDecls.concat(stmt.declarations);
+                    Object.keys(stmt).forEach(function (key) { return delete stmt[key]; });
+                    stmt.type = 'EmptyStatement';
+                },
+                Otherwise: function (node) { }
+            });
+        });
+        // Make a list of all the ambient identifier names.
+        this.ambientIdentifierNames = [].concat('require', Object.getOwnPropertyNames(global), this.constDecls.map(function (decl) { return decl.id['name']; }));
         // Emit code to initially assign formal parameters from $.arguments.
         for (var i = 0; i < params.length; ++i) {
             var $paramName = this.getIdentifierReference(params[i].name);
@@ -104,10 +122,10 @@ var Rewriter = (function () {
         }
     };
     Rewriter.prototype.generateAST = function (fromFragment) {
-        var source = "\n            (function slowRoutineBody($, $ambient) {\n                $.pos = $.pos || '@start';\n                $.local = $.local || {};\n                $.temp = $.temp || {};\n                $.error = $.error || { handler: '@fail' };\n                $.finalizers = $.finalizers || { pending: [] };\n                $.incoming = $.incoming || { type: 'yield' };\n                $.outgoing = $.outgoing || { type: 'return' };\n                while (true) {\n                    try {\n                        switch ($.pos) {\n                            case '@start':\n                                " + (fromFragment || '') + "\n                            case '@done':\n                                $.outgoing.type = 'return';\n                                $.outgoing.value = $.result;\n                                return;\n                            case '@fail':\n                                $.outgoing.type = 'throw';\n                                $.outgoing.value = $.error.value;\n                                return;\n                            case '@finalize':\n                                $.pos = $.finalizers.pending.pop() || $.finalizers.afterward;\n                                continue;\n                        }\n                    }\n                    catch (ex) {\n                        $.error.occurred = true;\n                        $.error.value = ex;\n                        $.pos = $.error.handler;\n                        continue;\n                    }\n                }\n            })\n        ";
+        var source = "\n            (function slowRoutineBody($) {\n                $.pos = $.pos || '@start';\n                $.local = $.local || {};\n                $.temp = $.temp || {};\n                $.error = $.error || { handler: '@fail' };\n                $.finalizers = $.finalizers || { pending: [] };\n                $.incoming = $.incoming || { type: 'yield' };\n                $.outgoing = $.outgoing || { type: 'return' };\n                $ambient = slowRoutineBody.ambient || (slowRoutineBody.ambient = (function () {\n                    " + this.constDecls.map(function (decl) { return ("var " + decl.id['name'] + " = " + escodegen.generate(decl.init) + ";"); }).join('\n') + "\n                    var $ambient = Object.create(global);\n                    $ambient.require = require.main.require;\n                    " + this.constDecls.map(function (decl) { return ("$ambient." + decl.id['name'] + " = " + decl.id['name'] + ";"); }).join('\n') + "\n                    return $ambient;\n                })());\n                while (true) {\n                    try {\n                        switch ($.pos) {\n                            case '@start':\n                                " + (fromFragment || '') + "\n                            case '@done':\n                                $.outgoing.type = 'return';\n                                $.outgoing.value = $.result;\n                                return;\n                            case '@fail':\n                                $.outgoing.type = 'throw';\n                                $.outgoing.value = $.error.value;\n                                return;\n                            case '@finalize':\n                                $.pos = $.finalizers.pending.pop() || $.finalizers.afterward;\n                                continue;\n                        }\n                    }\n                    catch (ex) {\n                        $.error.occurred = true;\n                        $.error.value = ex;\n                        $.pos = $.error.handler;\n                        continue;\n                    }\n                }\n            })\n        ";
         var ast = esprima.parse(source);
         var funcExpr = ast.body[0]['expression'];
-        var whileStmt = funcExpr.body['body'][7];
+        var whileStmt = funcExpr.body['body'][8];
         var tryStmt = whileStmt.body['body'][0];
         var switchStmt = tryStmt.block['body'][0];
         if (fromFragment) {

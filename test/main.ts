@@ -79,7 +79,7 @@ describe('The async(...) function', () => {
         for (var i = 0; i < count; ++i) {
             console.log('waiting...');
             await (Promise.delay(delay));
-            if (i > 4) throw new Error('herp derp');
+            //if (i > 4) throw new Error('herp derp');
         }
         return 'done';
     });

@@ -19,8 +19,7 @@ declare module "slownode" {
         next(value?: any): { done: boolean; value: any; };
         throw(value?: any): { done: boolean; value: any; };
         return(value?: any): { done: boolean; value: any; };
-        _ambientFactory: () => { [name: string]: any; };
-        _body: ($, $ambient) => void;
+        _body: (state) => void;
         _state: any;
     }
 

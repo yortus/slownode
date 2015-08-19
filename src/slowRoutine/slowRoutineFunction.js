@@ -40,26 +40,20 @@ var SlowRoutineFunction = (function (bodyFunction, options) {
     // Convert variable declarations whose 'init' is a direct call to options.constIdentifier to equivalent const declarations.
     if (options.constIdentifier)
         replaceConstIdentifierCallsWithConstDeclarations(funcExpr, options.constIdentifier);
-    // Remove all const declarations from the function body.
-    var constDecls = extractConstDeclarators(funcExpr);
-    // Compile information about all 'ambient' variables.
-    // This include all properties of the global object, plus all const declarations from the body function.
-    var ambientNames = [].concat('require', Object.getOwnPropertyNames(global), constDecls.map(function (decl) { return decl.id['name']; }));
-    var ambientFactory = makeAmbientFactoryFunction(constDecls);
     // Validate the AST.
-    ensureOnlySupportedConstructsInBody(funcExpr, ambientNames);
+    ensureOnlySupportedConstructsInBody(funcExpr);
     ensureIdentifierNamesAreValid(funcExpr);
-    ensureAllIdentifierReferencesAreKnownLocalsOrAmbients(funcExpr, ambientNames);
-    ensureAmbientIdentifiersAreNotMutated(funcExpr, ambientNames);
+    ensureAllIdentifierReferencesAreKnownLocalsOrAmbients(funcExpr);
+    ensureAmbientIdentifiersAreNotMutated(funcExpr);
     // Rewrite the AST in a form suitable for serialization/deserialization.
-    var bodyAST = rewriteBodyAST(funcExpr, ambientNames);
+    var bodyAST = rewriteBodyAST(funcExpr);
     // Transform modified AST --> source code --> function.
     var bodySource = '(' + escodegen.generate(bodyAST) + ')';
     var bodyFunc = eval(bodySource);
     // Generate and return a SlowRoutineFunction instance (ie a callable that returns a SlowRoutine).
     assert(funcExpr.params.every(function (p) { return p.type === 'Identifier'; }));
     var paramNames = funcExpr.params.map(function (p) { return p['name']; });
-    var result = makeSlowRoutineFunction(bodyFunc, paramNames, ambientFactory);
+    var result = makeSlowRoutineFunction(bodyFunc, paramNames);
     return result;
 });
 /** In the given AST, converts direct calls to `yieldIdentifier` to equivalent yield expressions */
@@ -117,28 +111,44 @@ function replaceConstIdentifierCallsWithConstDeclarations(funcExpr, constIdentif
         return true;
     }
 }
-/** Removes all const declarations from the given AST, and return an array of all the removed declarators. */
-function extractConstDeclarators(funcExpr) {
-    var result = [];
+/** Returns all global and local identifiers broken down into categories. Duplicates are not removed. */
+function findAllIdentifiers(funcExpr) {
+    var globalIds = ['require'].concat(Object.getOwnPropertyNames(global));
+    var varIds = funcExpr.params.map(function (p) { return p['name']; });
+    var letIds = [];
+    var constIds = [];
+    var catchIds = [];
     traverse(funcExpr.body, function (node) {
         match(node, {
             VariableDeclaration: function (stmt) {
-                if (stmt.kind !== 'const')
-                    return;
-                result = result.concat(stmt.declarations);
-                Object.keys(stmt).forEach(function (key) { return delete stmt[key]; });
-                stmt.type = 'EmptyStatement';
+                var ids = stmt.declarations.map(function (decl) { return decl.id['name']; });
+                switch (stmt.kind) {
+                    case 'var':
+                        varIds = varIds.concat(ids);
+                        break;
+                    case 'let':
+                        letIds = letIds.concat(ids);
+                        break;
+                    case 'const':
+                        constIds = constIds.concat(ids);
+                        break;
+                }
+            },
+            TryStatement: function (stmt) {
+                if (stmt.handler) {
+                    catchIds.push(stmt.handler.param['name']);
+                }
             },
             Otherwise: function (node) { }
         });
     });
-    return result;
-}
-/** Returns a function that returns the $ambient object, based on the given declarators and on the global object. */
-function makeAmbientFactoryFunction(constDecls) {
-    var bodySource = "\n        " + constDecls.map(function (decl) { return ("var " + decl.id['name'] + " = " + escodegen.generate(decl.init) + ";"); }).join('\n') + "\n        var $ambient = Object.create(global);\n        $ambient.require = require.main.require;\n        " + constDecls.map(function (decl) { return ("$ambient." + decl.id['name'] + " = " + decl.id['name'] + ";"); }).join('\n') + "\n        return $ambient;\n    ";
-    var factoryFunc = eval('(function () {\n' + bodySource + '\n})');
-    return factoryFunc;
+    return {
+        global: globalIds,
+        var: varIds,
+        let: letIds,
+        const: constIds,
+        catch: catchIds
+    };
 }
 /**
  * Traverses the AST, throwing an error if any unsupported constructs are encountered.
@@ -146,7 +156,7 @@ function makeAmbientFactoryFunction(constDecls) {
  * (1) they violate the assumptions on which SlowRoutines depend, in particular the single-scoped-body assumption.
  * (2) they have not been implemented yet (destructuring, for..of, and some other ES6+ constructs).
  */
-function ensureOnlySupportedConstructsInBody(funcExpr, ambientIds) {
+function ensureOnlySupportedConstructsInBody(funcExpr) {
     var whitelistedNodeTypes = [
         'EmptyStatement', 'BlockStatement', 'ExpressionStatement', 'IfStatement', 'SwitchStatement',
         'WhileStatement', 'DoWhileStatement', 'ForStatement', 'ForInStatement', 'TryStatement',
@@ -156,15 +166,12 @@ function ensureOnlySupportedConstructsInBody(funcExpr, ambientIds) {
         'NewExpression', 'MemberExpression', 'ArrayExpression', 'ObjectExpression', 'Identifier',
         'TemplateLiteral', 'RegexLiteral', 'Literal'
     ];
-    // Rule out non-whitelisted node types, and block-scoped variable declarations.
+    // Rule out non-whitelisted node types.
     traverse(funcExpr.body, function (node) {
         var whitelisted = whitelistedNodeTypes.indexOf(node.type) !== -1;
-        whitelisted = whitelisted && (node.type !== 'VariableDeclaration' || node['kind'] === 'var');
         if (whitelisted)
             return;
         switch (node.type) {
-            case 'VariableDeclaration':
-                throw new Error("SlowRoutine: block-scoped variable declarations are not allowed within the body function");
             case 'FunctionDeclaration':
             case 'FunctionExpression':
             case 'ArrowFunctionExpression':
@@ -173,20 +180,15 @@ function ensureOnlySupportedConstructsInBody(funcExpr, ambientIds) {
                 throw new Error("SlowRoutine: construct '" + node.type + "' is not allowed within the body function");
         }
     });
+    // Rule out block-scoped declarations (ie just 'let' declarations; 'const' declarations will be treated as ambients.
+    var ids = findAllIdentifiers(funcExpr);
+    if (ids.let.length > 0)
+        throw new Error("SlowRoutine: block scoped variables are not allowed within the body function ('" + ids.let.join("', '") + "')");
     // Rule out catch block exception identifiers that shadow or are shadowed by any other identifier.
-    var localIds = funcExpr.params.map(function (p) { return p['name']; });
-    var catchIds = [];
-    traverse(funcExpr.body, function (node) {
-        match(node, {
-            VariableDeclaration: function (stmt) { localIds = localIds.concat(node['declarations'].map(function (decl) { return decl.id.name; })); },
-            TryStatement: function (stmt) { if (stmt.handler)
-                catchIds.push(stmt.handler.param['name']); },
-            Otherwise: function (node) { }
-        });
-    });
-    catchIds.forEach(function (name, i) {
-        var otherCatchIds = [].concat(catchIds.slice(0, i), catchIds.slice(i + 1));
-        if (ambientIds.indexOf(name) === -1 && localIds.indexOf(name) === -1 && otherCatchIds.indexOf(name) === -1)
+    var nonCatchIds = [].concat(ids.var, ids.const, ids.global);
+    ids.catch.forEach(function (name, i) {
+        var otherCatchIds = [].concat(ids.catch.slice(0, i), ids.catch.slice(i + 1));
+        if (nonCatchIds.indexOf(name) === -1 && otherCatchIds.indexOf(name) === -1)
             return;
         throw new Error("SlowRoutine: exception identifier '" + name + "' shadows or is shadowed by another local or ambient identifier");
     });
@@ -205,17 +207,10 @@ function ensureIdentifierNamesAreValid(funcExpr) {
     });
 }
 /** Traverses the AST, throwing an error if an unqualified identifier name is neither a local nor an ambient variable name. */
-function ensureAllIdentifierReferencesAreKnownLocalsOrAmbients(funcExpr, ambientIds) {
+function ensureAllIdentifierReferencesAreKnownLocalsOrAmbients(funcExpr) {
     // Collate all known identifiers, including ambients, locals, and catch block exception identifiers.
-    var knownIds = ambientIds.concat(funcExpr.params.map(function (p) { return p['name']; }));
-    traverse(funcExpr.body, function (node) {
-        match(node, {
-            VariableDeclaration: function (stmt) { knownIds = knownIds.concat(node['declarations'].map(function (decl) { return decl.id.name; })); },
-            TryStatement: function (stmt) { if (stmt.handler)
-                knownIds.push(stmt.handler.param['name']); },
-            Otherwise: function (node) { }
-        });
-    });
+    var ids = findAllIdentifiers(funcExpr);
+    var knownIds = [].concat(ids.global, ids.var, ids.const, ids.catch);
     // Ensure all identifier references are to known ids.
     traverse(funcExpr.body, function (node) {
         return match(node, {
@@ -239,8 +234,11 @@ function ensureAllIdentifierReferencesAreKnownLocalsOrAmbients(funcExpr, ambient
     });
 }
 /** Traverses the AST, throwing an error if any construct mutates an ambient variable. */
-function ensureAmbientIdentifiersAreNotMutated(funcExpr, ambientIds) {
-    // Ensure all identifier references are to known ids.
+function ensureAmbientIdentifiersAreNotMutated(funcExpr) {
+    // Collate all ambient identifiers, including globals and local consts.
+    var ids = findAllIdentifiers(funcExpr);
+    var ambientIds = [].concat(ids.global, ids.const);
+    // Ensure all references to ambient identifiers are non-mutating (at least not obviously so; this is not definitive).
     traverse(funcExpr.body, function (node) {
         return match(node, {
             AssignmentExpression: function (expr) {
@@ -264,19 +262,17 @@ function ensureAmbientIdentifiersAreNotMutated(funcExpr, ambientIds) {
     });
 }
 /** Constructs a SlowRoutineFunction instance tailored to the given body code and parameter names. */
-function makeSlowRoutineFunction(bodyFunc, paramNames, ambientFactory) {
+function makeSlowRoutineFunction(bodyFunc, paramNames) {
     // This is the generic constructor function. It closes over bodyFunc and ambientFactory.
     function SlowRoutineFunction() {
-        var $ambient = ambientFactory();
         var inst = {
-            _ambientFactory: ambientFactory,
             _body: bodyFunc,
             _state: { local: { arguments: Array.prototype.slice.call(arguments) } }
         };
         ['next', 'throw', 'return'].forEach(function (method) {
             inst[method] = function (value) {
                 inst._state.incoming = { type: method === 'next' ? 'yield' : method, value: value };
-                inst._body(inst._state, $ambient);
+                inst._body(inst._state);
                 if (inst._state.outgoing.type === 'throw')
                     throw inst._state.outgoing.value;
                 return { done: inst._state.outgoing.type === 'return', value: inst._state.outgoing.value };
