@@ -1,4 +1,5 @@
 node_modules/
-slownode.db
+*.js.map
 *.log
 *.sln
+slownode.db
