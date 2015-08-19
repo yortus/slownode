@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "prepublish": "npm run build && require-self",
-    "test": "mocha test/*.js"
+    "test": "node ./debug.js"
   },
   "repository": {
     "type": "git",

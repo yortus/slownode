@@ -1,7 +1,7 @@
 var async = require('asyncawait/async');
 var await = require('asyncawait/await');
-var chai = require("chai");
 var slow = require('slownode');
+var chai = require("chai");
 chai.use(require('chai-as-promised'));
 var expect = chai.expect;
 describe('epoch', function () {
@@ -57,6 +57,8 @@ describe('SlowRoutineFunction', function () {
     }));
 });
 describe('The async(...) function', function () {
+    // TODO: temp testing... 10mins
+    this.timeout(600000);
     var fn = slow.async(function (delay, count) {
         var Promise = __const(require('bluebird'));
         for (var i = 0; i < count; ++i) {

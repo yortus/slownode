@@ -24,7 +24,7 @@ var rewriteBodyAST = require('./rewriteBodyAST');
 // NB: either a normal function or generator function can be passed in - it makes no difference (doc why to do this (hint: yield keyword available in gens))
 //---------------------------------------------
 /** Creates an instance of SlowRoutineFunction. */
-var SlowRoutineFunction = (function (bodyFunction, options) {
+function SlowRoutineFunction(bodyFunction, options) {
     // Validate arguments.
     assert(typeof bodyFunction === 'function');
     options = options || { yieldIdentifier: null, constIdentifier: null };
@@ -55,7 +55,7 @@ var SlowRoutineFunction = (function (bodyFunction, options) {
     var paramNames = funcExpr.params.map(function (p) { return p['name']; });
     var result = makeSlowRoutineFunction(bodyFunc, paramNames);
     return result;
-});
+}
 /** In the given AST, converts direct calls to `yieldIdentifier` to equivalent yield expressions */
 function replaceYieldIdentifierCallsWithYieldExpressions(funcExpr, yieldIdentifier) {
     traverse(funcExpr.body, function (node) {
@@ -280,10 +280,12 @@ function makeSlowRoutineFunction(bodyFunc, paramNames) {
         });
         return inst;
     }
-    // Customise the generic constructor function to have the same parameters/arity as the supplied bodyFunc.
+    // Customise the generic constructor function with the specified parameter names and a _body property.
     var originalSource = SlowRoutineFunction.toString();
     var sourceWithParamNames = originalSource.replace('SlowRoutineFunction()', "SlowRoutineFunction(" + paramNames.join(', ') + ")");
     var constructorFunction = eval('(' + sourceWithParamNames + ')');
+    // Add the _body property to the constructor function.
+    constructorFunction._body = bodyFunc;
     // Return the customised constructor function.
     return constructorFunction;
 }

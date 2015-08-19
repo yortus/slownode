@@ -5,14 +5,19 @@
 
 declare module "slownode" {
 
-    interface SlowRoutineFunction {
-        new(bodyFunction: Function, options?: SlowRoutineOptions): (...args) => SlowRoutine;
-        (bodyFunction: Function, options?: SlowRoutineOptions): (...args) => SlowRoutine;
-    }
+    export var SlowRoutineFunction: {
+        new(bodyFunction: Function, options?: SlowRoutineOptions): SlowRoutineFunction;
+        (bodyFunction: Function, options?: SlowRoutineOptions): SlowRoutineFunction;
+    };
 
     interface SlowRoutineOptions {
         yieldIdentifier?: string;
         constIdentifier?: string;
+    }
+
+    interface SlowRoutineFunction {
+        (...args: any[]): SlowRoutine;
+        _body: Function;
     }
 
     interface SlowRoutine {
@@ -21,9 +26,9 @@ declare module "slownode" {
         return(value?: any): { done: boolean; value: any; };
         _body: (state) => void;
         _state: any;
+        _srid: number;
     }
 
-    export var SlowRoutineFunction: SlowRoutineFunction;
 
 
 

@@ -24,5 +24,5 @@ var db = require('./knexConnection');
 
 // TODO: temp testing... Build the API for export...
 var api: typeof Types = <any> {};
-api.SlowRoutineFunction = SlowRoutineFunction;
+api.SlowRoutineFunction = <any> SlowRoutineFunction;
 api.async = async;

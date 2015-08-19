@@ -32,7 +32,7 @@ export = SlowRoutineFunction;
 
 
 /** Creates an instance of SlowRoutineFunction. */
-var SlowRoutineFunction: Types.SlowRoutineFunction = <any> ((bodyFunction: Function, options?: Types.SlowRoutineOptions) => {
+function SlowRoutineFunction(bodyFunction: Function, options?: Types.SlowRoutineOptions) {
 
     // Validate arguments.
     assert(typeof bodyFunction === 'function');
@@ -69,7 +69,7 @@ var SlowRoutineFunction: Types.SlowRoutineFunction = <any> ((bodyFunction: Funct
     var paramNames = funcExpr.params.map(p => <string> p['name']);
     var result = makeSlowRoutineFunction(bodyFunc, paramNames);
     return result;
-});
+}
 
 
 /** In the given AST, converts direct calls to `yieldIdentifier` to equivalent yield expressions */
@@ -305,10 +305,13 @@ function makeSlowRoutineFunction(bodyFunc: Function, paramNames: string[]): Type
         return inst;
     }
 
-    // Customise the generic constructor function to have the same parameters/arity as the supplied bodyFunc.
+    // Customise the generic constructor function with the specified parameter names and a _body property.
     var originalSource = SlowRoutineFunction.toString();
     var sourceWithParamNames = originalSource.replace('SlowRoutineFunction()', `SlowRoutineFunction(${paramNames.join(', ')})`);
     var constructorFunction = eval('(' + sourceWithParamNames + ')');
+
+    // Add the _body property to the constructor function.
+    constructorFunction._body = bodyFunc;
 
     // Return the customised constructor function.
     return constructorFunction;

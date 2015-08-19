@@ -1,8 +1,8 @@
 import async = require('asyncawait/async');
 import await = require('asyncawait/await');
 import Promise = require("bluebird");
-import chai = require("chai");
 import slow = require('slownode');
+import chai = require("chai");
 chai.use(require('chai-as-promised'));
 var expect = chai.expect;
 
@@ -10,7 +10,6 @@ var expect = chai.expect;
 describe('epoch', () => {
 
     it('starts when the slownode module is required', async.cps(() => {
-
         // TODO: ...
         slow.SlowRoutineFunction;
     }));
@@ -70,7 +69,10 @@ describe('SlowRoutineFunction', () => {
 });
 
 
-describe('The async(...) function', () => {
+describe('The async(...) function', function () {
+
+// TODO: temp testing... 10mins
+    this.timeout(600000);
 
     var fn = slow.async((delay: number, count: number) => {
 
