@@ -16,7 +16,7 @@ function deserialize(json) {
     }
 }
 /**
- * Recursively converts the given value into an object that can be safely converted to JSON.
+ * TODO: Recursively converts the given json-safe value back to a normal value.
  * Throws an error if any part of the value cannot be converted.
  */
 function unwrapJSONSafeObject(value) {

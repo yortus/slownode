@@ -31,7 +31,7 @@ function rewriteBodyAST(funcExpr: ESTree.FunctionExpression): ESTree.FunctionExp
 /**
  * This is the shape of the '$' state variable used throughout the rewritten AST's body.
  * This interface is not directly used but is here for documentation purposes.
-*/
+ */
 interface State {
 
     // TODO: doc all members...
