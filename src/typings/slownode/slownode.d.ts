@@ -29,8 +29,8 @@ declare module "slownode" {
         _srid?: number; // TODO: needed? probably for serialization...
     }
 
-
-
+    
+    
 
 
 
@@ -43,6 +43,20 @@ declare module "slownode" {
         <TReturn, T0, T1, T2>(fn: (a: T0, b: T1, c: T2) => TReturn): { __sfid: string; (a: T0, b: T1, c: T2): Promise<TReturn>; }
         <TReturn, T0, T1, T2, T3>(fn: (a: T0, b: T1, c: T2, d: T3) => TReturn): { __sfid: string; (a: T0, b: T1, c: T2, d: T3): Promise<TReturn>; }
         <TReturn>(fn: (...args) => TReturn): { __sfid: string; (...args): Promise<TReturn>; }
+    }
+    
+    interface SlowPromise {
+        then(fn: SlowAsyncFunction): SlowPromise;
+        _id: number;
+        _functionId: number;
+        _state: SlowPromiseState;
+        _value: any;
+    }
+    
+    const enum SlowPromiseState {
+        Pending,
+        Resolved,
+        Rejected
     }
 }
 

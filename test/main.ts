@@ -86,7 +86,6 @@ describe('The async(...) function', function () {
     var fn = slow.async((delay: number, count: number) => {
 
         const Promise = __const(require('bluebird'));
-
         for (var i = 0; i < count; ++i) {
             console.log(`waiting...${i}`);
             await (Promise.delay(delay));
