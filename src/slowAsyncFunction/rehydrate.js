@@ -7,14 +7,11 @@ var SlowRoutine = require('../slowRoutine/slowRoutine');
 var runToCompletion = require('./runToCompletion');
 // TODO: doc...
 var rehydrate = async(function () {
-    var asyncFunctionActivations;
-    asyncFunctionActivations = await(db.table('AsyncFunctionActivation').select());
-    asyncFunctionActivations.forEach(function (activation) {
+    var activations = await(getActivationsWithSource());
+    activations.forEach(function (activation) {
+        assert(activation.source.length > 0);
         // Load the corresponding function.
-        var functionSources;
-        functionSources = await(db.table('Function').select('source').where('id', activation.functionId));
-        assert(functionSources.length === 1);
-        var bodyFunc = eval('(' + functionSources[0].source + ')');
+        var bodyFunc = eval('(' + activation.source + ')');
         // Deserialize the `state` and `awaiting` values.
         var state = deserialize(activation.state);
         var awaiting = deserialize(activation.awaiting);
@@ -26,5 +23,10 @@ var rehydrate = async(function () {
         runToCompletion(sloro, awaiting);
     });
 });
+function getActivationsWithSource() {
+    return db('AsyncFunctionActivation')
+        .select()
+        .leftJoin('Function', 'AsyncFunctionActivation.functionId', 'Function.id');
+}
 module.exports = rehydrate;
 //# sourceMappingURL=rehydrate.js.map

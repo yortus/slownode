@@ -11,16 +11,14 @@ export = rehydrate;
 // TODO: doc...
 var rehydrate = async(() => {
 
-    var asyncFunctionActivations: { id: number, functionId: number, state: string, awaiting: string }[];
-    asyncFunctionActivations = await(db.table('AsyncFunctionActivation').select());
+    var activations: Activation[] = await(getActivationsWithSource());
 
-    asyncFunctionActivations.forEach(activation => {
-
+    activations.forEach(activation => {
+        
+        assert(activation.source.length > 0);
+        
         // Load the corresponding function.
-        var functionSources: { source: string; }[];
-        functionSources = await(db.table('Function').select('source').where('id', activation.functionId));
-        assert(functionSources.length === 1);
-        var bodyFunc = eval('(' + functionSources[0].source + ')');
+        var bodyFunc = eval('(' + activation.source + ')');
 
         // Deserialize the `state` and `awaiting` values.
         var state = deserialize(activation.state);
@@ -35,3 +33,19 @@ var rehydrate = async(() => {
         runToCompletion(sloro, awaiting);
     });
 });
+
+function getActivationsWithSource() {
+    return db('AsyncFunctionActivation')
+        .select()
+        .leftJoin('Function', 'AsyncFunctionActivation.functionId', 'Function.id');
+}
+
+interface Activation {
+    id: number;
+    functionId: number;
+    state: string;
+    awaiting: string;
+    source: string;
+    hash: string;
+    originalSource: string;
+}
