@@ -1,9 +1,11 @@
+var Types = require("slownode");
 var slowAsyncFunction = require("../slowAsyncFunction/slowAsyncFunction");
 var SlowPromise = (function () {
     function SlowPromise(resolver) {
         var _this = this;
-        this.id = 0;
-        this.functionId = 0;
+        this._id = 0;
+        this._functionId = 0;
+        this._state = 0 /* Pending */;
         this.then = function (fn) {
             return _this;
         };
@@ -12,8 +14,6 @@ var SlowPromise = (function () {
     return SlowPromise;
 })();
 function createResolve(slowPromise) {
-    return slowAsyncFunction(function (value) {
-    });
 }
 function createReject(slowPromise) {
     return null;
