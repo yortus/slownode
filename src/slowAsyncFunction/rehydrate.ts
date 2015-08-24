@@ -11,11 +11,11 @@ export = rehydrate;
 // TODO: doc...
 var rehydrate = async(() => {
 
-    var activations: Activation[] = await(getActivationsWithSource());
+    // Loop over all currently running async functions as recorded in DB.
+    await(getAsyncFunctionActivationsWithSource()).forEach(activation => {
 
-    activations.forEach(activation => {
-        
-        assert(activation.source.length > 0);
+        // Should never happen.
+        assert(!!activation.source);
         
         // Load the corresponding function.
         var bodyFunc = eval('(' + activation.source + ')');
@@ -34,13 +34,17 @@ var rehydrate = async(() => {
     });
 });
 
-function getActivationsWithSource() {
+
+// TODO: doc...
+function getAsyncFunctionActivationsWithSource(): Promise<AsyncFunctionActivationWithSource[]> {
     return db('AsyncFunctionActivation')
         .select()
         .leftJoin('Function', 'AsyncFunctionActivation.functionId', 'Function.id');
 }
 
-interface Activation {
+
+// TODO: this is a mashup of two DB table schemas - put in .d.ts and use TS intersection types when available
+interface AsyncFunctionActivationWithSource {
     id: number;
     functionId: number;
     state: string;

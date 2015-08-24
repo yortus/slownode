@@ -7,9 +7,10 @@ var SlowRoutine = require('../slowRoutine/slowRoutine');
 var runToCompletion = require('./runToCompletion');
 // TODO: doc...
 var rehydrate = async(function () {
-    var activations = await(getActivationsWithSource());
-    activations.forEach(function (activation) {
-        assert(activation.source.length > 0);
+    // Loop over all currently running async functions as recorded in DB.
+    await(getAsyncFunctionActivationsWithSource()).forEach(function (activation) {
+        // Should never happen.
+        assert(!!activation.source);
         // Load the corresponding function.
         var bodyFunc = eval('(' + activation.source + ')');
         // Deserialize the `state` and `awaiting` values.
@@ -23,7 +24,8 @@ var rehydrate = async(function () {
         runToCompletion(sloro, awaiting);
     });
 });
-function getActivationsWithSource() {
+// TODO: doc...
+function getAsyncFunctionActivationsWithSource() {
     return db('AsyncFunctionActivation')
         .select()
         .leftJoin('Function', 'AsyncFunctionActivation.functionId', 'Function.id');
