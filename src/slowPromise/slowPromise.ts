@@ -20,16 +20,14 @@ SlowPromise.defer = (spid?: number) => {
     var promise: Types.SlowPromise<any> = {
         then: null,
         catch: null,
-        _spid: null,
-        _state: null,
-        _value: null
+        _slow: null
     };
 
     var resolve;
 
     var reject;
 
-    return <Types.SlowPromiseResolver<any>> { promise, resolve, reject };
+    return { promise, resolve, reject };
 };
 
 

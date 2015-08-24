@@ -7,9 +7,7 @@ SlowPromise.defer = function (spid) {
     var promise = {
         then: null,
         catch: null,
-        _spid: null,
-        _state: null,
-        _value: null
+        _slow: null
     };
     var resolve;
     var reject;

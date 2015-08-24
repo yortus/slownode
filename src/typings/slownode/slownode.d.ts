@@ -7,6 +7,15 @@ declare module "slownode" {
 
 
 
+    // ==================== SlowValue ====================
+
+    interface SlowValue {
+        type: string;
+        id: number|string;
+    }
+
+
+
     // ==================== SlowRoutine ====================
 
     export var SlowRoutineFunction: {
@@ -21,7 +30,7 @@ declare module "slownode" {
 
     interface SlowRoutineFunction {
         (...args: any[]): SlowRoutine;
-        _body: Function;
+        _body: Function; // TODO: need this both here AND SlowRoutine? Maybe this one should go in SlowAsyncFunction instead. Nothing needs to use this.
     }
 
     interface SlowRoutine {
@@ -50,7 +59,8 @@ declare module "slownode" {
     function async<TReturn>(fn: (...args: any[]) => TReturn): SlowAsyncFunctionVariadic<TReturn>;
 
     interface SlowAsyncFunction {
-        _sfid: number;
+        _slow: SlowValue;
+        // TODO: move _body from SlowRoutineFunction into _slow here
     }
 
     interface SlowAsyncFunctionNullary<TReturn> extends SlowAsyncFunction {
@@ -92,26 +102,35 @@ declare module "slownode" {
 
         resolve<R>(value?: R | SlowThenable<R>): SlowPromise<R>;
         reject(error: any): SlowPromise<any>;
-        defer: (spid?: number) => SlowPromiseResolver<T>;
+        defer: (spid?: number) => {
+            promise: SlowPromise<T>;
+            resolve: SlowPromiseResolveFunction<T>;
+            reject: SlowPromiseRejectFunction;
+        }
         // TODO: all, race... (see https://github.com/borisyankov/DefinitelyTyped/blob/master/es6-promise/es6-promise.d.ts)
-    }
-
-    interface SlowPromiseResolver<T> {
-        promise: SlowPromise<T>;
-        resolve: SlowAsyncFunctionUnary<T, void>;
-        reject: SlowAsyncFunctionUnary<any, void>;
     }
 
     interface SlowPromise<T> extends SlowThenable<T> {
         catch<U>(onRejected?: (error: any) => U | SlowThenable<U>): SlowPromise<U>;
-        _spid: number;
-        _state: SlowPromiseState;
-        _value: any;
+        _slow: SlowValue & {
+            state: SlowPromiseState;
+            value: any;
+        }
     }
 
     interface SlowThenable<T> {
         then<U>(onFulfilled?: (value: T) => U | SlowThenable<U>, onRejected?: (error: any) => U | SlowThenable<U>): SlowThenable<U>;
         then<U>(onFulfilled?: (value: T) => U | SlowThenable<U>, onRejected?: (error: any) => void): SlowThenable<U>;
+    }
+
+    interface SlowPromiseResolveFunction<T> {
+        (value?: T | SlowThenable<T>): void;
+        _slow: SlowValue;
+    }
+
+    interface SlowPromiseRejectFunction {
+        (error?: any): void;
+        _slow: SlowValue;
     }
 
     // NB: Subsumes promise 'fate' and promise 'state'. See https://github.com/promises-aplus/constructor-spec/issues/18    
