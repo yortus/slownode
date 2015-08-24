@@ -2,7 +2,7 @@ var fs = require('fs');
 var path = require('path');
 var databaseLocation = require('./databaseLocation');
 var SlowRoutineFunction = require('./slowRoutine/slowRoutineFunction');
-var async = require('./slowAsyncFunction/slowAsyncFunction');
+var asyncPseudoKeyword = require('./slowAsyncFunction/asyncPseudoKeyword');
 var rehydrate = require('./slowAsyncFunction/rehydrate');
 // ======================================================================================
 // =                                                                                    =
@@ -30,6 +30,6 @@ rehydrate();
 // TODO: temp testing... Build the API for export...
 var api = {};
 api.SlowRoutineFunction = SlowRoutineFunction;
-api.async = async;
+api.async = asyncPseudoKeyword;
 module.exports = api;
 //# sourceMappingURL=index.js.map

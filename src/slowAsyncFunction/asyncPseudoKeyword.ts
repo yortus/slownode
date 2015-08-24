@@ -1,5 +1,6 @@
 ﻿import assert = require('assert');
 import crypto = require('crypto');
+import _ = require('lodash');
 import async = require('asyncawait/async');
 import await = require('asyncawait/await');
 import Promise = require('bluebird');
@@ -8,11 +9,18 @@ import db = require('../knexConnection');
 import SlowRoutineFunction = require('../slowRoutine/slowRoutineFunction');
 import runToCompletion = require('./runToCompletion');
 import serialize = require('../serialization/serialize');
-export = slowAsyncFunction;
+export = asyncPseudoKeyword;
+
+
+// TODO: return something that really has a prototype of type SlowAsyncFunction?
+//       - ie so the following makes sense at runtime: ... if (fn instanceof SlowAsyncFunction) {...}
 
 
 // TODO: doc...
-var slowAsyncFunction: Types.SlowAsyncFunction = <any> ((bodyFunc: Function) => {
+var asyncPseudoKeyword: typeof Types.async = <any> ((bodyFunc: Function) => {
+
+    // Validate arguments.
+    assert(typeof bodyFunc === 'function');
 
     // Create a SlowRoutineFunction instance for the given body function.
     var sloroFunc = SlowRoutineFunction(bodyFunc, { yieldIdentifier: 'await', constIdentifier: '__const' });
@@ -23,6 +31,9 @@ var slowAsyncFunction: Types.SlowAsyncFunction = <any> ((bodyFunc: Function) => 
 
     // Create a Promise-returning async function that runs an instance of the given SlowRoutineFunction to completion.
     var result = async((...args) => {
+
+        // TODO: Create a new SlowPromise to represent the eventual result of the operation...
+
 
         // Create a new SlowRoutine object using the given arguments.
         var sloro: Types.SlowRoutine = sloroFunc.apply(sloroFunc, args);

@@ -1,3 +1,4 @@
+var assert = require('assert');
 var crypto = require('crypto');
 var async = require('asyncawait/async');
 var await = require('asyncawait/await');
@@ -5,8 +6,12 @@ var db = require('../knexConnection');
 var SlowRoutineFunction = require('../slowRoutine/slowRoutineFunction');
 var runToCompletion = require('./runToCompletion');
 var serialize = require('../serialization/serialize');
+// TODO: return something that really has a prototype of type SlowAsyncFunction?
+//       - ie so the following makes sense at runtime: ... if (fn instanceof SlowAsyncFunction) {...}
 // TODO: doc...
-var slowAsyncFunction = (function (bodyFunc) {
+var asyncPseudoKeyword = (function (bodyFunc) {
+    // Validate arguments.
+    assert(typeof bodyFunc === 'function');
     // Create a SlowRoutineFunction instance for the given body function.
     var sloroFunc = SlowRoutineFunction(bodyFunc, { yieldIdentifier: 'await', constIdentifier: '__const' });
     // Initiate retreival of the function's id from the database.
@@ -14,6 +19,7 @@ var slowAsyncFunction = (function (bodyFunc) {
     var promiseOfFunctionId = getPersistentFunctionId(sloroFunc, bodyFunc);
     // Create a Promise-returning async function that runs an instance of the given SlowRoutineFunction to completion.
     var result = async(function () {
+        // TODO: Create a new SlowPromise to represent the eventual result of the operation...
         var args = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i - 0] = arguments[_i];
@@ -46,5 +52,5 @@ var getPersistentFunctionId = async(function (sloroFunc, originalFunc) {
     var insertedIds = await(db.table('Function').insert({ hash: hash, source: source, originalSource: originalSource }));
     return insertedIds[0];
 });
-module.exports = slowAsyncFunction;
-//# sourceMappingURL=slowAsyncFunction.js.map
+module.exports = asyncPseudoKeyword;
+//# sourceMappingURL=asyncPseudoKeyword.js.map

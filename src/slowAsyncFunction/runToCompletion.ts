@@ -12,7 +12,7 @@ export = runToCompletion;
  * Runs the given SlowRoutine instance to completion. First, the `awaiting` value is
  * awaited, and then the SlowRoutine is resumed with the eventual value. Subsequent
  * values yielded by the SlowRoutine are awaited, and the SlowRoutine is resumed with
- * their eventual value each time. This process continues until the SlowRoutine either
+ * their eventual values each time. This process continues until the SlowRoutine either
  * returns or throws. If it throws, this function throws the error. If it returns,
  * this function returns its result.
  */

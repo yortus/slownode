@@ -1,10 +1,12 @@
 var assert = require('assert');
+var _ = require('lodash');
 var esprima = require('esprima');
 var escodegen = require('escodegen');
 var match = require('./match');
 var traverse = require('./traverse');
 var rewriteBodyAST = require('./rewriteBodyAST');
 var SlowRoutine = require('./slowRoutine');
+//TODO: rename this and SlowRoutine. The 'Slow' implies DB persistence but this low-level util just rewrites a coro body, it doesn't persist anything.
 //---------------------------------------------
 // TODO: doc all this in README...
 // Rules for SlowRoutine bodies:
@@ -28,7 +30,7 @@ var SlowRoutine = require('./slowRoutine');
 function SlowRoutineFunction(bodyFunction, options) {
     // Validate arguments.
     assert(typeof bodyFunction === 'function');
-    options = options || { yieldIdentifier: null, constIdentifier: null };
+    options = _.defaults({}, options, { yieldIdentifier: null, constIdentifier: null });
     // Transform original function --> source code --> AST.
     var originalFunction = bodyFunction;
     var originalSource = '(' + originalFunction.toString() + ')';

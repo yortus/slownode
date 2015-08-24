@@ -5,6 +5,10 @@
 
 declare module "slownode" {
 
+
+
+    // ==================== SlowRoutine ====================
+
     export var SlowRoutineFunction: {
         new(bodyFunction: Function, options?: SlowRoutineOptions): SlowRoutineFunction;
         (bodyFunction: Function, options?: SlowRoutineOptions): SlowRoutineFunction;
@@ -29,34 +33,72 @@ declare module "slownode" {
         _srid?: number; // TODO: needed? probably for serialization...
     }
 
-    
-    
 
 
+    // ==================== SlowAsyncFunction ====================
 
-    // TODO: temp testing...
-    var async: SlowAsyncFunction;
+    function async<TReturn>(fn: () => TReturn): SlowAsyncFunctionNullary<TReturn>;
+
+    function async<T1, TReturn>(fn: (_1: T1) => TReturn): SlowAsyncFunctionUnary<T1, TReturn>;
+
+    function async<T1, T2, TReturn>(fn: (_1: T1, _2: T2) => TReturn): SlowAsyncFunctionBinary<T1, T2, TReturn>;
+
+    function async<T1, T2, T3, TReturn>(fn: (_1: T1, _2: T2, _3: T3) => TReturn): SlowAsyncFunctionTernary<T1, T2, T3, TReturn>;
+
+    function async<T1, T2, T3, T4, TReturn>(fn: (_1: T1, _2: T2, _3: T3, _4: T4) => TReturn): SlowAsyncFunctionQuaternary<T1, T2, T3, T4, TReturn>;
+
+    function async<TReturn>(fn: (...args: any[]) => TReturn): SlowAsyncFunctionVariadic<TReturn>;
+
     interface SlowAsyncFunction {
-        <TReturn>(fn: () => TReturn): { __sfid: string; (): Promise<TReturn>; }
-        <TReturn, T0>(fn: (a: T0) => TReturn): { __sfid: string; (a: T0): Promise<TReturn>; }
-        <TReturn, T0, T1>(fn: (a: T0, b: T1) => TReturn): { __sfid: string; (a: T0, b: T1): Promise<TReturn>; }
-        <TReturn, T0, T1, T2>(fn: (a: T0, b: T1, c: T2) => TReturn): { __sfid: string; (a: T0, b: T1, c: T2): Promise<TReturn>; }
-        <TReturn, T0, T1, T2, T3>(fn: (a: T0, b: T1, c: T2, d: T3) => TReturn): { __sfid: string; (a: T0, b: T1, c: T2, d: T3): Promise<TReturn>; }
-        <TReturn>(fn: (...args) => TReturn): { __sfid: string; (...args): Promise<TReturn>; }
+        _sfid: number;
     }
-    
+
+    interface SlowAsyncFunctionNullary<TReturn> extends SlowAsyncFunction {
+        (): Promise<TReturn>;
+    }
+
+    interface SlowAsyncFunctionUnary<T1, TReturn> extends SlowAsyncFunction {
+        (_1: T1): Promise<TReturn>;
+    }
+
+    interface SlowAsyncFunctionBinary<T1, T2, TReturn> extends SlowAsyncFunction {
+        (_1: T1, _2: T2): Promise<TReturn>;
+    }
+
+    interface SlowAsyncFunctionTernary<T1, T2, T3, TReturn> extends SlowAsyncFunction {
+        (_1: T1, _2: T2, _3: T3): Promise<TReturn>;
+    }
+
+    interface SlowAsyncFunctionQuaternary<T1, T2, T3, T4, TReturn> extends SlowAsyncFunction {
+        (_1: T1, _2: T2, _3: T3, _4: T4): Promise<TReturn>;
+    }
+
+    interface SlowAsyncFunctionVariadic<TReturn> extends SlowAsyncFunction {
+        (...args: any[]): Promise<any>;
+    }
+
+
+
+    // ==================== SlowPromise ====================
+
+    interface SlowPromiseStatic {
+        // TODO: doc... resolver is passed two arguments, resolve and reject, which are both SlowAsyncFunctions
+        new(resolver: SlowAsyncFunctionBinary<SlowAsyncFunctionUnary<any, void>, SlowAsyncFunctionUnary<any, void>, void>);
+    }
+
     interface SlowPromise {
         then(fn: SlowAsyncFunction): SlowPromise;
-        _id: number;
-        _functionId: number;
+        _spid: number;
         _state: SlowPromiseState;
         _value: any;
     }
-    
+
+    // NB: Subsumes promise 'fate' and promise 'state'. See https://github.com/promises-aplus/constructor-spec/issues/18    
     const enum SlowPromiseState {
-        Pending,
-        Resolved,
-        Rejected
+        FateUnresolved = 0,
+        FateResolvedStatePending = 1,  // TODO: how can we ever get into this state??? Review this...
+        FateResolvedStateResolved = 2,
+        FateResolvedStateRejected = 3
     }
 }
 
@@ -65,7 +107,11 @@ declare module "slownode" {
 declare var await: {
     <T>(arg: Promise<T>): T;
 };
+
 declare var __const: <T>(init: T) => T;
+
+
+
 
 
 declare module "slownode-prev" {
