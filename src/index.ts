@@ -8,15 +8,24 @@ import rehydrate = require('./slowAsyncFunction/rehydrate');
 export = api;
 
 
-// Resume the current epoch (if DB exists) or start a new epoch (if no DB).
-// NB: Module initialisation must be synchronous, so we use only sync methods here.
+// ======================================================================================
+// =                                                                                    =
+// =  NB: Module initialization must be synchronous, so we use only sync methods here.  =
+// =                                                                                    =
+// ======================================================================================
 
-try {
-    fs.statSync(databaseLocation);
-} catch (ex) {
+
+// Check if the database already exists. Use fs.stat since fs.exists is deprecated.
+var dbExists = true;
+try { fs.statSync(databaseLocation); } catch (ex) { dbExists = false; }
+
+
+// Resume the current epoch (if DB exists) or start a new epoch (if no DB).
+if (!dbExists) {
     var templateLocation = path.join(__dirname, '../empty.db');
     fs.writeFileSync(databaseLocation, fs.readFileSync(templateLocation));
 }
+
 
 // Connect to the database
 var db = require('./knexConnection');

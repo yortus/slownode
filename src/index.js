@@ -4,12 +4,21 @@ var databaseLocation = require('./databaseLocation');
 var SlowRoutineFunction = require('./slowRoutine/slowRoutineFunction');
 var async = require('./slowAsyncFunction/slowAsyncFunction');
 var rehydrate = require('./slowAsyncFunction/rehydrate');
-// Resume the current epoch (if DB exists) or start a new epoch (if no DB).
-// NB: Module initialisation must be synchronous, so we use only sync methods here.
+// ======================================================================================
+// =                                                                                    =
+// =  NB: Module initialization must be synchronous, so we use only sync methods here.  =
+// =                                                                                    =
+// ======================================================================================
+// Check if the database already exists. Use fs.stat since fs.exists is deprecated.
+var dbExists = true;
 try {
     fs.statSync(databaseLocation);
 }
 catch (ex) {
+    dbExists = false;
+}
+// Resume the current epoch (if DB exists) or start a new epoch (if no DB).
+if (!dbExists) {
     var templateLocation = path.join(__dirname, '../empty.db');
     fs.writeFileSync(databaseLocation, fs.readFileSync(templateLocation));
 }
