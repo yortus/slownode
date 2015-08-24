@@ -1,38 +1,53 @@
 import Types = require('slownode');
+import async = require("asyncawait/async");
+import await = require("asyncawait/await");
 import databaseOperations = require('./databaseOperations');
+import defer = require('./defer');
 export = SlowPromise;
 
 
-/** Creates a SlowPromise instance. May be called with or without 'new'. */
-function SlowPromise(idOrResolver?: number | Function) {
-    if (arguments.length === 0) {
-    }
-    else if (typeof idOrResolver === 'number') {
+var SlowPromise: Types.SlowPromiseStatic<any> = <any> ((resolver: any) => {
+    var result: Types.SlowPromiseStatic<any> = <any> {};
 
-    }
-    else if (typeof idOrResolver === 'function') {
+    // TODO: temp testing...
 
-    }
-    else {
-        // TODO: throw...
-    }
+    return result;
+});
 
 
-    // TODO: ...
-    //var result: Types.SlowPromise = {
-    //    then: makeThenMethod(),
-    //    _spid: spid,
-    //    _state: state,
-    //    _value: value
-    //};
-    //return result;
-}
+SlowPromise.defer = (spid?: number) => {
+
+    var promise: Types.SlowPromise<any> = {
+        then: null,
+        catch: null,
+        _spid: null,
+        _state: null,
+        _value: null
+    };
+
+    var resolve;
+
+    var reject;
+
+    return <Types.SlowPromiseResolver<any>> { promise, resolve, reject };
+};
+
+
+
+
+
+
+
+
+
+
+
 
 
 /** Helper function for creating SlowPromise's `then` method body. */
 function makeThenMethod() {
     return (x: any) => {
-        return <Types.SlowPromise> null;
+        return <Types.SlowPromise<any>> null;
 
     };
 }

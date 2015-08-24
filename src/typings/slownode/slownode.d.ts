@@ -81,16 +81,37 @@ declare module "slownode" {
 
     // ==================== SlowPromise ====================
 
-    interface SlowPromiseStatic {
-        // TODO: doc... resolver is passed two arguments, resolve and reject, which are both SlowAsyncFunctions
-        new(resolver: SlowAsyncFunctionBinary<SlowAsyncFunctionUnary<any, void>, SlowAsyncFunctionUnary<any, void>, void>);
+    interface SlowPromiseStatic<T> {
+
+        new(resolver: (resolve: (value?: T | SlowThenable<T>) => void, reject: (error?: any) => void) => void): SlowPromise<T>;
+        (resolver: (resolve: (value?: T | SlowThenable<T>) => void, reject: (error?: any) => void) => void): SlowPromise<T>;
+
+        // TODO: was... still needed?
+        //new(resolver: SlowAsyncFunctionBinary<SlowAsyncFunctionUnary<T, void>, SlowAsyncFunctionUnary<any, void>, void>): SlowPromise<T>;
+        //(resolver: SlowAsyncFunctionBinary<SlowAsyncFunctionUnary<T, void>, SlowAsyncFunctionUnary<any, void>, void>): SlowPromise<T>;
+
+        resolve<R>(value?: R | SlowThenable<R>): SlowPromise<R>;
+        reject(error: any): SlowPromise<any>;
+        defer: (spid?: number) => SlowPromiseResolver<T>;
+        // TODO: all, race... (see https://github.com/borisyankov/DefinitelyTyped/blob/master/es6-promise/es6-promise.d.ts)
     }
 
-    interface SlowPromise {
-        then(fn: SlowAsyncFunction): SlowPromise;
+    interface SlowPromiseResolver<T> {
+        promise: SlowPromise<T>;
+        resolve: SlowAsyncFunctionUnary<T, void>;
+        reject: SlowAsyncFunctionUnary<any, void>;
+    }
+
+    interface SlowPromise<T> extends SlowThenable<T> {
+        catch<U>(onRejected?: (error: any) => U | SlowThenable<U>): SlowPromise<U>;
         _spid: number;
         _state: SlowPromiseState;
         _value: any;
+    }
+
+    interface SlowThenable<T> {
+        then<U>(onFulfilled?: (value: T) => U | SlowThenable<U>, onRejected?: (error: any) => U | SlowThenable<U>): SlowThenable<U>;
+        then<U>(onFulfilled?: (value: T) => U | SlowThenable<U>, onRejected?: (error: any) => void): SlowThenable<U>;
     }
 
     // NB: Subsumes promise 'fate' and promise 'state'. See https://github.com/promises-aplus/constructor-spec/issues/18    

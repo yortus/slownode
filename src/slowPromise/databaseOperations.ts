@@ -4,6 +4,7 @@ import async = require("asyncawait/async");
 import await = require("asyncawait/await");
 import db = require("../knexConnection");
 import serialize = require('../serialization/serialize');
+import deserialize = require('../serialization/deserialize');
 
 
 // See https://github.com/promises-aplus/promises-spec
@@ -51,4 +52,15 @@ export var reject = async((spid: number, reason: any) => {
     // Resolve the SlowPromise in the database.
     var serializedReason = serialize(reason);
     await(db.table('Promise').update({ state: Types.SlowPromiseState.FateResolvedStateResolved, value: serializedReason }).where('id', spid));
+});
+
+
+
+/** Finds the SlowPromise with the given ID in the database, and returns its details. */
+export var fetchOne = async((spid: number) => {
+    var rows: { state: Types.SlowPromiseState, value: any }[];
+    rows = await(db.table('Promise').select('state', 'value').where('id', spid));
+    assert(rows.length === 1);
+    rows[0].value = deserialize(rows[0].value);
+    return rows[0];
 });

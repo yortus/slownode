@@ -1,22 +1,20 @@
-/** Creates a SlowPromise instance. May be called with or without 'new'. */
-function SlowPromise(idOrResolver) {
-    if (arguments.length === 0) {
-    }
-    else if (typeof idOrResolver === 'number') {
-    }
-    else if (typeof idOrResolver === 'function') {
-    }
-    else {
-    }
-    // TODO: ...
-    //var result: Types.SlowPromise = {
-    //    then: makeThenMethod(),
-    //    _spid: spid,
-    //    _state: state,
-    //    _value: value
-    //};
-    //return result;
-}
+var SlowPromise = (function (resolver) {
+    var result = {};
+    // TODO: temp testing...
+    return result;
+});
+SlowPromise.defer = function (spid) {
+    var promise = {
+        then: null,
+        catch: null,
+        _spid: null,
+        _state: null,
+        _value: null
+    };
+    var resolve;
+    var reject;
+    return { promise: promise, resolve: resolve, reject: reject };
+};
 /** Helper function for creating SlowPromise's `then` method body. */
 function makeThenMethod() {
     return function (x) {

@@ -8,6 +8,12 @@ import rehydrate = require('./slowAsyncFunction/rehydrate');
 export = api;
 
 
+// TODO: set up a global handler (using bluebird API or node API?) to catch unhandled async
+//       errors that arise from withing this module (make a SlowError type?).
+//       eg, SlowPromise constructor is synchronous, but internally it must access DB so it
+//       may throw an async error which the caller has no way of catching.
+
+
 // ======================================================================================
 // =                                                                                    =
 // =  NB: Module initialization must be synchronous, so we use only sync methods here.  =
