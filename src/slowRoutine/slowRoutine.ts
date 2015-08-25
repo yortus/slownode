@@ -9,8 +9,7 @@ function SlowRoutine(bodyFunc: (state) => void, state: any) {
         next: makeResumeMethod('yield', bodyFunc, state),
         throw: makeResumeMethod('throw', bodyFunc, state),
         return: makeResumeMethod('return', bodyFunc, state),
-        _body: bodyFunc,
-        _state: state
+        state: state
     };
     return result;
 }

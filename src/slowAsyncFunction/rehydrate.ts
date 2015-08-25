@@ -26,11 +26,10 @@ var rehydrate = async(() => {
 
         // Instantiate a SlowRoutine from the persisted state.
         var sloro = SlowRoutine(bodyFunc, state);
-        sloro._srid = activation.id;
 
         // Resume running the SlowRoutine to completion. It effectively picks up where it last left off.
         // NB: Don't wait for completion here, just get it running....
-        runToCompletion(sloro, awaiting);
+        runToCompletion(activation.id, sloro, awaiting);
     });
 });
 
@@ -39,14 +38,14 @@ var rehydrate = async(() => {
 function getAsyncFunctionActivationsWithSource(): Promise<AsyncFunctionActivationWithSource[]> {
     return db('AsyncFunctionActivation')
         .select()
-        .leftJoin('Function', 'AsyncFunctionActivation.functionId', 'Function.id');
+        .leftJoin('AsyncFunction', 'AsyncFunctionActivation.asyncFunctionId', 'AsyncFunction.id');
 }
 
 
 // TODO: this is a mashup of two DB table schemas - put in .d.ts and use TS intersection types when available
 interface AsyncFunctionActivationWithSource {
     id: number;
-    functionId: number;
+    asyncFunctionId: number;
     state: string;
     awaiting: string;
     source: string;

@@ -12,7 +12,7 @@ var serialize = require('../serialization/serialize');
  * returns or throws. If it throws, this function throws the error. If it returns,
  * this function returns its result.
  */
-var runToCompletion = async(function (sloro, awaiting) {
+var runToCompletion = async(function (afaId, sloro, awaiting) {
     try {
         // Validate arguments.
         if (arguments.length <= 1)
@@ -41,14 +41,14 @@ var runToCompletion = async(function (sloro, awaiting) {
             // Before looping again, Persist the current state of the SlowRoutine and that of the value to be awaited.
             // If the process is restarted before the awaited value is resolved/rejected, then the SlowRoutine will
             // be able to continue from this persisted state.
-            var savedState = serialize(sloro._state);
+            var savedState = serialize(sloro.state);
             var savedAwaiting = serialize(yielded.value);
-            await(db.table('AsyncFunctionActivation').update({ state: savedState, awaiting: savedAwaiting }).where('id', sloro._srid));
+            await(db.table('AsyncFunctionActivation').update({ state: savedState, awaiting: savedAwaiting }).where('id', afaId));
         }
     }
     finally {
         // The SlowRoutine has terminated. Remove its state from the database.
-        await(db.table('AsyncFunctionActivation').delete().where('id', sloro._srid));
+        await(db.table('AsyncFunctionActivation').delete().where('id', afaId));
     }
 });
 module.exports = runToCompletion;

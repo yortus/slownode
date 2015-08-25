@@ -39,11 +39,11 @@ var asyncPseudoKeyword: typeof Types.async = <any> ((bodyFunc: Function) => {
         var sloro: Types.SlowRoutine = sloroFunc.apply(sloroFunc, args);
 
         // Persist the SlowRoutine's initial state to the database, and link it to its database id.
-        var functionId = await(promiseOfFunctionId); // TODO: what if this throws?
-        sloro._srid = await(db.table('AsyncFunctionActivation').insert({ functionId, state: serialize(sloro._state), awaiting: null }))[0];
+        var asyncFunctionId = await(promiseOfFunctionId); // TODO: what if this throws?
+        var activationId = await(db.table('AsyncFunctionActivation').insert({ asyncFunctionId, state: serialize(sloro.state), awaiting: null }))[0];
 
         // Run the SlowRoutine instance to completion. If it throws, we throw. If it returns, we return.
-        await(runToCompletion(sloro));
+        await(runToCompletion(activationId, sloro));
     });
 
     // Return the async function.
@@ -57,16 +57,16 @@ var asyncPseudoKeyword: typeof Types.async = <any> ((bodyFunc: Function) => {
 // TODO: minify source before storing?
 var getPersistentFunctionId = async((sloroFunc: Types.SlowRoutineFunction, originalFunc: Function) => {
 
-    // Compute the hash of the SlowRoutineFunction's _body function source code.
-    var hash: string = crypto.createHash('sha256').update(sloroFunc._body.toString()).digest('base64').slice(0, 64);
+    // Compute the hash of the SlowRoutineFunction's `body` function source code.
+    var hash: string = crypto.createHash('sha256').update(sloroFunc.body.toString()).digest('base64').slice(0, 64);
 
     // Check if the function is already persisted. If so, return its id.
-    var functionIds: {id: number}[] = await (db.table('Function').select('id').where('hash', hash));
+    var functionIds: {id: number}[] = await (db.table('AsyncFunction').select('id').where('hash', hash));
     if (functionIds.length > 0) return functionIds[0].id;
 
     // Add the function information to the database and return the INSERTed id.
-    var source = sloroFunc._body.toString();
+    var source = sloroFunc.body.toString();
     var originalSource = originalFunc.toString();
-    var insertedIds: number[] = await(db.table('Function').insert({ hash, source, originalSource }));
+    var insertedIds: number[] = await(db.table('AsyncFunction').insert({ hash, source, originalSource }));
     return insertedIds[0];
 });

@@ -10,13 +10,20 @@ declare module "slownode" {
     // ==================== SlowValue ====================
 
     interface SlowValue {
+
+        /** Slow object type. One of: 'SlowAsyncFunction', 'SlowPromise', 'SlowPromiseResolveFunction', 'SlowPromiseRejectFunction' */
         type: string;
-        id: number|string;
+
+        /** Slow object persistent identifier. This is shared between the in-memory and the database representation of the slow object. */
+        id: string;
+
+        /** If true, the in-memory and database states of this slow object are synchronised. If false, the database state not (yet) up-to-date. */
+        ready: boolean;
     }
 
 
 
-    // ==================== SlowRoutine ====================
+    // ==================== SlowRoutineFunction and SlowRoutine ====================
 
     export var SlowRoutineFunction: {
         new(bodyFunction: Function, options?: SlowRoutineOptions): SlowRoutineFunction;
@@ -30,21 +37,19 @@ declare module "slownode" {
 
     interface SlowRoutineFunction {
         (...args: any[]): SlowRoutine;
-        _body: Function; // TODO: need this both here AND SlowRoutine? Maybe this one should go in SlowAsyncFunction instead. Nothing needs to use this.
+        body: Function;
     }
 
     interface SlowRoutine {
         next(value?: any): { done: boolean; value: any; };
         throw(value?: any): { done: boolean; value: any; };
         return(value?: any): { done: boolean; value: any; };
-        _body: (state) => void;
-        _state: any;
-        _srid?: number; // TODO: needed? probably for serialization...
+        state: any;
     }
 
 
 
-    // ==================== SlowAsyncFunction ====================
+    // ==================== async() and SlowAsyncFunction ====================
 
     function async<TReturn>(fn: () => TReturn): SlowAsyncFunctionNullary<TReturn>;
 
@@ -60,7 +65,6 @@ declare module "slownode" {
 
     interface SlowAsyncFunction {
         _slow: SlowValue;
-        // TODO: move _body from SlowRoutineFunction into _slow here
     }
 
     interface SlowAsyncFunctionNullary<TReturn> extends SlowAsyncFunction {
@@ -135,10 +139,18 @@ declare module "slownode" {
 
     // NB: Subsumes promise 'fate' and promise 'state'. See https://github.com/promises-aplus/constructor-spec/issues/18    
     const enum SlowPromiseState {
-        FateUnresolved = 0,
-        FateResolvedStatePending = 1,  // TODO: how can we ever get into this state??? Review this...
-        FateResolvedStateResolved = 2,
-        FateResolvedStateRejected = 3
+
+        /** Fate: unresolved */
+        Unresolved = 0,
+
+        /** Fate: resolved, State: pending */
+        Pending = 1,  // TODO: how can we ever get into this state from Unresolved??? Review this...
+
+        /** Fate: resolved, State: fulfilled */
+        Fulfilled = 2,
+
+        /** Fate: resolved, State: rejected */
+        Rejected = 3
     }
 }
 

@@ -18,17 +18,16 @@ var rehydrate = async(function () {
         var awaiting = deserialize(activation.awaiting);
         // Instantiate a SlowRoutine from the persisted state.
         var sloro = SlowRoutine(bodyFunc, state);
-        sloro._srid = activation.id;
         // Resume running the SlowRoutine to completion. It effectively picks up where it last left off.
         // NB: Don't wait for completion here, just get it running....
-        runToCompletion(sloro, awaiting);
+        runToCompletion(activation.id, sloro, awaiting);
     });
 });
 // TODO: doc...
 function getAsyncFunctionActivationsWithSource() {
     return db('AsyncFunctionActivation')
         .select()
-        .leftJoin('Function', 'AsyncFunctionActivation.functionId', 'Function.id');
+        .leftJoin('AsyncFunction', 'AsyncFunctionActivation.asyncFunctionId', 'AsyncFunction.id');
 }
 module.exports = rehydrate;
 //# sourceMappingURL=rehydrate.js.map

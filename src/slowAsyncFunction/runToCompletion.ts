@@ -16,7 +16,7 @@ export = runToCompletion;
  * returns or throws. If it throws, this function throws the error. If it returns,
  * this function returns its result.
  */
-var runToCompletion: RunToCompletion = async(function (sloro: Types.SlowRoutine, awaiting?: Promise<any>) {
+var runToCompletion: RunToCompletion = async(function (afaId: number, sloro: Types.SlowRoutine, awaiting?: Promise<any>) {
     try {
 
         // Validate arguments.
@@ -50,18 +50,18 @@ var runToCompletion: RunToCompletion = async(function (sloro: Types.SlowRoutine,
             // Before looping again, Persist the current state of the SlowRoutine and that of the value to be awaited.
             // If the process is restarted before the awaited value is resolved/rejected, then the SlowRoutine will
             // be able to continue from this persisted state.
-            var savedState = serialize(sloro._state);
+            var savedState = serialize(sloro.state);
             var savedAwaiting = serialize(yielded.value);
-            await(db.table('AsyncFunctionActivation').update({ state: savedState, awaiting: savedAwaiting }).where('id', sloro._srid));
+            await(db.table('AsyncFunctionActivation').update({ state: savedState, awaiting: savedAwaiting }).where('id', afaId));
         }
     }
     finally {
 
         // The SlowRoutine has terminated. Remove its state from the database.
-        await(db.table('AsyncFunctionActivation').delete().where('id', sloro._srid));
+        await(db.table('AsyncFunctionActivation').delete().where('id', afaId));
     }
 });
 
 
 // Helper type to pick up optionality of second parameter.
-type RunToCompletion = (sloro: Types.SlowRoutine, awaiting?: Promise<any>) => Promise<any>;
+type RunToCompletion = (asyncFunctionActivationId: number, slowRoutine: Types.SlowRoutine, awaiting?: Promise<any>) => Promise<any>;

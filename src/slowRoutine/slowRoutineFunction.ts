@@ -297,13 +297,13 @@ function makeSlowRoutineFunction(bodyFunc: (state) => void, paramNames: string[]
         return SlowRoutine(bodyFunc, { local: { arguments: Array.prototype.slice.call(arguments) } });
     }
 
-    // Customise the generic constructor function with the specified parameter names and a _body property.
+    // Customise the generic constructor function with the specified parameter names and a `body` property.
     var originalSource = SlowRoutineFunction.toString();
     var sourceWithParamNames = originalSource.replace('SlowRoutineFunction()', `SlowRoutineFunction(${paramNames.join(', ')})`);
     var constructorFunction = eval('(' + sourceWithParamNames + ')');
 
-    // Add the _body property to the constructor function.
-    constructorFunction._body = bodyFunc;
+    // Add the `body` property to the constructor function.
+    constructorFunction.body = bodyFunc;
 
     // Return the customised constructor function.
     return constructorFunction;

@@ -13,7 +13,7 @@ import deserialize = require('../serialization/deserialize');
 
 /** Adds a new SlowPromise record to the database and returns a promise of its ID. */
 export var create = async(() => {
-    var insertedIds: number[] = await(db.table('Promise').insert({ state: Types.SlowPromiseState.FateUnresolved }));
+    var insertedIds: number[] = await(db.table('Promise').insert({ state: Types.SlowPromiseState.Unresolved }));
     assert(insertedIds.length === 1);
     return insertedIds[0];
 });
@@ -29,11 +29,11 @@ export var resolve = async((spid: number, value: any) => {
     // Look up the SlowPromise and return early if its fate is already resolved.
     var rows: { state: Types.SlowPromiseState }[] = await(db.table('Promise').select('state').where('id', spid));
     assert(rows.length === 1);
-    if (rows[0].state !== Types.SlowPromiseState.FateUnresolved) return;
+    if (rows[0].state !== Types.SlowPromiseState.Unresolved) return;
 
     // Resolve the SlowPromise in the database.
     var serializedValue = serialize(value);
-    await(db.table('Promise').update({ state: Types.SlowPromiseState.FateResolvedStateResolved, value: serializedValue }).where('id', spid));
+    await(db.table('Promise').update({ state: Types.SlowPromiseState.Fulfilled, value: serializedValue }).where('id', spid));
 });
 
 
@@ -47,11 +47,11 @@ export var reject = async((spid: number, reason: any) => {
     // Look up the SlowPromise and return early if its fate is already resolved.
     var rows: { state: Types.SlowPromiseState }[] = await(db.table('Promise').select('state').where('id', spid));
     assert(rows.length === 1);
-    if (rows[0].state !== Types.SlowPromiseState.FateUnresolved) return;
+    if (rows[0].state !== Types.SlowPromiseState.Unresolved) return;
 
     // Resolve the SlowPromise in the database.
     var serializedReason = serialize(reason);
-    await(db.table('Promise').update({ state: Types.SlowPromiseState.FateResolvedStateResolved, value: serializedReason }).where('id', spid));
+    await(db.table('Promise').update({ state: Types.SlowPromiseState.Fulfilled, value: serializedReason }).where('id', spid));
 });
 
 
