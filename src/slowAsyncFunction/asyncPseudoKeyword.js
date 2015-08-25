@@ -2,10 +2,9 @@ var assert = require('assert');
 var crypto = require('crypto');
 var async = require('asyncawait/async');
 var await = require('asyncawait/await');
-var db = require('../knexConnection');
 var SlowRoutineFunction = require('../slowRoutine/slowRoutineFunction');
 var runToCompletion = require('./runToCompletion');
-var serialize = require('../serialization/serialize');
+var storage = require('../storage/storage');
 // TODO: return something that really has a prototype of type SlowAsyncFunction?
 //       - ie so the following makes sense at runtime: ... if (fn instanceof SlowAsyncFunction) {...}
 // TODO: doc...
@@ -28,7 +27,7 @@ var asyncPseudoKeyword = (function (bodyFunc) {
         var sloro = sloroFunc.apply(sloroFunc, args);
         // Persist the SlowRoutine's initial state to the database, and link it to its database id.
         var asyncFunctionId = await(promiseOfFunctionId); // TODO: what if this throws?
-        var activationId = await(db.table('AsyncFunctionActivation').insert({ asyncFunctionId: asyncFunctionId, state: serialize(sloro.state), awaiting: null }))[0];
+        var activationId = storage.add('AsyncFunctionActivation', { asyncFunctionId: asyncFunctionId, state: sloro.state, awaiting: null });
         // Run the SlowRoutine instance to completion. If it throws, we throw. If it returns, we return.
         await(runToCompletion(activationId, sloro));
     });
@@ -42,15 +41,14 @@ var asyncPseudoKeyword = (function (bodyFunc) {
 var getPersistentFunctionId = async(function (sloroFunc, originalFunc) {
     // Compute the hash of the SlowRoutineFunction's `body` function source code.
     var hash = crypto.createHash('sha256').update(sloroFunc.body.toString()).digest('base64').slice(0, 64);
-    // Check if the function is already persisted. If so, return its id.
-    var functionIds = await(db.table('AsyncFunction').select('id').where('hash', hash));
-    if (functionIds.length > 0)
-        return functionIds[0].id;
-    // Add the function information to the database and return the INSERTed id.
-    var source = sloroFunc.body.toString();
-    var originalSource = originalFunc.toString();
-    var insertedIds = await(db.table('AsyncFunction').insert({ hash: hash, source: source, originalSource: originalSource }));
-    return insertedIds[0];
+    // Check if the function is already persisted. If not, persist it now.
+    if (!storage.get('AsyncFunction', hash)) {
+        var source = sloroFunc.body.toString();
+        var originalSource = originalFunc.toString();
+        storage.add('AsyncFunction', { source: source, originalSource: originalSource }, hash);
+    }
+    // Return the function's persistent ID, which is just its hash.
+    return hash;
 });
 module.exports = asyncPseudoKeyword;
 //# sourceMappingURL=asyncPseudoKeyword.js.map

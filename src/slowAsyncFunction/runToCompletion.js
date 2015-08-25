@@ -2,8 +2,7 @@ var assert = require('assert');
 var async = require('asyncawait/async');
 var await = require('asyncawait/await');
 var Promise = require('bluebird');
-var db = require('../knexConnection');
-var serialize = require('../serialization/serialize');
+var storage = require('../storage/storage');
 /**
  * Runs the given SlowRoutine instance to completion. First, the `awaiting` value is
  * awaited, and then the SlowRoutine is resumed with the eventual value. Subsequent
@@ -41,14 +40,12 @@ var runToCompletion = async(function (afaId, sloro, awaiting) {
             // Before looping again, Persist the current state of the SlowRoutine and that of the value to be awaited.
             // If the process is restarted before the awaited value is resolved/rejected, then the SlowRoutine will
             // be able to continue from this persisted state.
-            var savedState = serialize(sloro.state);
-            var savedAwaiting = serialize(yielded.value);
-            await(db.table('AsyncFunctionActivation').update({ state: savedState, awaiting: savedAwaiting }).where('id', afaId));
+            storage.set('AsyncFunctionActivation', afaId, { state: sloro.state, awaiting: yielded.value });
         }
     }
     finally {
         // The SlowRoutine has terminated. Remove its state from the database.
-        await(db.table('AsyncFunctionActivation').delete().where('id', afaId));
+        storage.del('AsyncFunctionActivation', afaId);
     }
 });
 module.exports = runToCompletion;

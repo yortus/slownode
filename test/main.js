@@ -2,15 +2,12 @@ var async = require('asyncawait/async');
 var await = require('asyncawait/await');
 var slow = require('slownode');
 var chai = require("chai");
-var databaseLocation = require("../src/databaseLocation");
-var fs = require("fs");
 chai.use(require('chai-as-promised'));
 var expect = chai.expect;
 describe('epoch', function () {
     it('starts when the slownode module is required', async.cps(function () {
         // TODO: ...
         slow.SlowRoutineFunction;
-        expect(fs.statSync(databaseLocation)).to.exist;
     }));
 });
 describe('SlowRoutineFunction', function () {

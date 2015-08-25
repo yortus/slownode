@@ -56,6 +56,7 @@
     "typescript": "next"
   },
   "slownode": {
+    "storage":  "sqliteInFiber",
     "database": "slownode.db"
   }
 }

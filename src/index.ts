@@ -1,9 +1,7 @@
-﻿import fs = require('fs');
-import path = require('path');
-import Types = require('slownode');
-import databaseLocation = require('./databaseLocation');
+﻿import Types = require('slownode');
 import SlowRoutineFunction = require('./slowRoutine/slowRoutineFunction');
 import asyncPseudoKeyword = require('./slowAsyncFunction/asyncPseudoKeyword');
+import storage = require('./storage/storage');
 import rehydrate = require('./slowAsyncFunction/rehydrate');
 export = api;
 
@@ -21,20 +19,8 @@ export = api;
 // ======================================================================================
 
 
-// Check if the database already exists. Use fs.stat since fs.exists is deprecated.
-var dbExists = true;
-try { fs.statSync(databaseLocation); } catch (ex) { dbExists = false; }
-
-
-// Resume the current epoch (if DB exists) or start a new epoch (if no DB).
-if (!dbExists) {
-    var templateLocation = path.join(__dirname, '../empty.db');
-    fs.writeFileSync(databaseLocation, fs.readFileSync(templateLocation));
-}
-
-
-// Connect to the database
-var db = require('./knexConnection');
+// TODO: doc...
+storage.init();
 
 
 // TODO: temp testing... rehydrate any running async functions...

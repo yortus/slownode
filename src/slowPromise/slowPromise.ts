@@ -1,7 +1,7 @@
 import Types = require('slownode');
 import async = require("asyncawait/async");
 import await = require("asyncawait/await");
-import databaseOperations = require('./databaseOperations');
+//import databaseOperations = require('./databaseOperations');
 import defer = require('./defer');
 export = SlowPromise;
 

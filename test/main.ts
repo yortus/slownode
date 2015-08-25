@@ -3,7 +3,6 @@ import await = require('asyncawait/await');
 import Promise = require("bluebird");
 import slow = require('slownode');
 import chai = require("chai");
-import databaseLocation = require("../src/databaseLocation");
 import fs = require("fs");
 chai.use(require('chai-as-promised'));
 var expect = chai.expect;
@@ -14,7 +13,6 @@ describe('epoch', () => {
     it('starts when the slownode module is required', async.cps(() => {
         // TODO: ...
         slow.SlowRoutineFunction;
-        expect(fs.statSync(databaseLocation)).to.exist;
     }));
 });
 
