@@ -1,5 +1,6 @@
 var SlowRoutineFunction = require('./slowRoutine/slowRoutineFunction');
 var asyncPseudoKeyword = require('./slowAsyncFunction/asyncPseudoKeyword');
+var SlowPromise = require('./slowPromise/slowPromise');
 var storage = require('./storage/storage');
 var rehydrate = require('./slowAsyncFunction/rehydrate');
 // TODO: set up a global handler (using bluebird API or node API?) to catch unhandled async
@@ -18,7 +19,8 @@ storage.init();
 rehydrate();
 // TODO: temp testing... Build the API for export...
 var api = {};
-api.SlowRoutineFunction = SlowRoutineFunction;
 api.async = asyncPseudoKeyword;
+api.Promise = SlowPromise;
+api.SlowRoutineFunction = SlowRoutineFunction;
 module.exports = api;
 //# sourceMappingURL=index.js.map

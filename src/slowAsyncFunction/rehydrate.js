@@ -20,12 +20,12 @@ var rehydrate = async(function () {
 });
 // TODO: doc...
 function getAsyncFunctionActivationsWithSource() {
-    var rawActivations = storage.find('AsyncFunctionActivation');
+    var rawActivations = storage.find('SlowAsyncFunctionActivation');
     var activations = rawActivations.map(function (raw) { return ({
         id: raw.id,
         state: raw.value.state,
         awaiting: raw.value.awaiting,
-        source: storage.get('AsyncFunction', raw.value.asyncFunctionId)
+        source: storage.get('SlowAsyncFunction', raw.value.asyncFunctionId)
     }); });
     return activations;
 }

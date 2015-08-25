@@ -62,36 +62,34 @@ declare module "slownode" {
 
     // ==================== SlowPromise ====================
 
-    interface SlowPromiseStatic<T> {
+    var Promise: SlowPromiseStatic;
 
-        new(resolver: (resolve: (value?: T | SlowThenable<T>) => void, reject: (error?: any) => void) => void): SlowPromise<T>;
-        (resolver: (resolve: (value?: T | SlowThenable<T>) => void, reject: (error?: any) => void) => void): SlowPromise<T>;
+    interface SlowPromiseStatic {
 
-        // TODO: was... still needed?
-        //new(resolver: SlowAsyncFunctionBinary<SlowAsyncFunctionUnary<T, void>, SlowAsyncFunctionUnary<any, void>, void>): SlowPromise<T>;
-        //(resolver: SlowAsyncFunctionBinary<SlowAsyncFunctionUnary<T, void>, SlowAsyncFunctionUnary<any, void>, void>): SlowPromise<T>;
+        // TODO: review types specified here:
+        new<T>(resolver: (resolve: (value?: T | SlowThenable<T>) => void, reject: (error?: any) => void) => void): SlowPromise<T>;
+        <T>(resolver: (resolve: (value?: T | SlowThenable<T>) => void, reject: (error?: any) => void) => void): SlowPromise<T>;
 
-        resolve<R>(value?: R | SlowThenable<R>): SlowPromise<R>;
+        defer<T>(spid?: number): SlowPromiseResolver<T>;
+        resolve<T>(value?: T | SlowThenable<T>): SlowPromise<T>;
         reject(error: any): SlowPromise<any>;
-        defer: (spid?: number) => {
-            promise: SlowPromise<T>;
-            resolve: SlowPromiseResolveFunction<T>;
-            reject: SlowPromiseRejectFunction;
-        }
         // TODO: all, race... (see https://github.com/borisyankov/DefinitelyTyped/blob/master/es6-promise/es6-promise.d.ts)
     }
 
     interface SlowPromise<T> extends SlowThenable<T> {
         catch<U>(onRejected?: (error: any) => U | SlowThenable<U>): SlowPromise<U>;
-        _slow: SlowInfo & {
-            state: SlowPromiseState;
-            value: any;
-        }
+        _slow: SlowInfo;
     }
 
     interface SlowThenable<T> {
         then<U>(onFulfilled?: (value: T) => U | SlowThenable<U>, onRejected?: (error: any) => U | SlowThenable<U>): SlowThenable<U>;
         then<U>(onFulfilled?: (value: T) => U | SlowThenable<U>, onRejected?: (error: any) => void): SlowThenable<U>;
+    }
+
+    interface SlowPromiseResolver<T> {
+        promise: SlowPromise<T>;
+        resolve: SlowPromiseResolveFunction<T>;
+        reject: SlowPromiseRejectFunction;
     }
 
     interface SlowPromiseResolveFunction<T> {

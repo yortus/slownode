@@ -32,12 +32,12 @@ var rehydrate = async(() => {
 // TODO: doc...
 function getAsyncFunctionActivationsWithSource() {
 
-    var rawActivations = storage.find('AsyncFunctionActivation');
+    var rawActivations = storage.find('SlowAsyncFunctionActivation');
     var activations = rawActivations.map(raw => ({
         id: <number> raw.id,
         state: raw.value.state,
         awaiting: raw.value.awaiting,
-        source: <string> storage.get('AsyncFunction', raw.value.asyncFunctionId)
+        source: <string> storage.get('SlowAsyncFunction', raw.value.asyncFunctionId)
     }));
     return activations;
 }

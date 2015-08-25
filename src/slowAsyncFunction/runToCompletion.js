@@ -40,12 +40,12 @@ var runToCompletion = async(function (afaId, sloro, awaiting) {
             // Before looping again, Persist the current state of the SlowRoutine and that of the value to be awaited.
             // If the process is restarted before the awaited value is resolved/rejected, then the SlowRoutine will
             // be able to continue from this persisted state.
-            storage.set('AsyncFunctionActivation', afaId, { state: sloro.state, awaiting: yielded.value });
+            storage.set('SlowAsyncFunctionActivation', afaId, { state: sloro.state, awaiting: yielded.value });
         }
     }
     finally {
         // The SlowRoutine has terminated. Remove its state from the database.
-        storage.del('AsyncFunctionActivation', afaId);
+        storage.del('SlowAsyncFunctionActivation', afaId);
     }
 });
 module.exports = runToCompletion;

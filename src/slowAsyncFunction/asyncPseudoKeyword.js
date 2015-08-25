@@ -26,18 +26,18 @@ var asyncPseudoKeyword = (function (bodyFunc) {
         // Create a new SlowRoutine object using the given arguments.
         var sloro = sloroFunc.apply(sloroFunc, args);
         // Persist the SlowRoutine's initial state to the database, and link it to its database id.
-        var activationId = storage.add('AsyncFunctionActivation', { asyncFunctionId: asyncFunctionId, state: sloro.state, awaiting: null });
+        var activationId = storage.add('SlowAsyncFunctionActivation', { asyncFunctionId: asyncFunctionId, state: sloro.state, awaiting: null });
         // Run the SlowRoutine instance to completion. If it throws, we throw. If it returns, we return.
         await(runToCompletion(activationId, sloro));
     });
     // Add metadata to the SlowAsyncFunction instance.
     asyncFunction._slow = {
-        type: 'AsyncFunction',
+        type: 'SlowAsyncFunction',
         id: asyncFunctionId
     };
     // Ensure the AsyncFunction definition has been persisted to storage.
-    if (!storage.get('AsyncFunction', asyncFunctionId)) {
-        storage.add('AsyncFunction', { source: source, originalSource: bodyFunc.toString() }, asyncFunctionId);
+    if (!storage.get('SlowAsyncFunction', asyncFunctionId)) {
+        storage.add('SlowAsyncFunction', { source: source, originalSource: bodyFunc.toString() }, asyncFunctionId);
     }
     // Return the AsyncFunction instance.
     return asyncFunction;

@@ -37,7 +37,7 @@ var asyncPseudoKeyword: typeof Types.async = <any> ((bodyFunc: Function) => {
         var sloro: Types.SlowRoutine = sloroFunc.apply(sloroFunc, args);
 
         // Persist the SlowRoutine's initial state to the database, and link it to its database id.
-        var activationId = <number> storage.add('AsyncFunctionActivation', { asyncFunctionId, state: sloro.state, awaiting: null });
+        var activationId = <number> storage.add('SlowAsyncFunctionActivation', { asyncFunctionId, state: sloro.state, awaiting: null });
 
         // Run the SlowRoutine instance to completion. If it throws, we throw. If it returns, we return.
         await(runToCompletion(activationId, sloro));
@@ -45,13 +45,13 @@ var asyncPseudoKeyword: typeof Types.async = <any> ((bodyFunc: Function) => {
 
     // Add metadata to the SlowAsyncFunction instance.
     asyncFunction._slow = {
-        type: 'AsyncFunction',
+        type: 'SlowAsyncFunction',
         id: asyncFunctionId
     };
 
     // Ensure the AsyncFunction definition has been persisted to storage.
-    if (!storage.get('AsyncFunction', asyncFunctionId)) {
-        storage.add('AsyncFunction', { source, originalSource: bodyFunc.toString() }, asyncFunctionId);
+    if (!storage.get('SlowAsyncFunction', asyncFunctionId)) {
+        storage.add('SlowAsyncFunction', { source, originalSource: bodyFunc.toString() }, asyncFunctionId);
     }
 
     // Return the AsyncFunction instance.

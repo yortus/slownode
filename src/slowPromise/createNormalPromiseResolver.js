@@ -1,17 +1,16 @@
-﻿import Promise = require('bluebird');
-export = defer;
-
-
+var Promise = require('bluebird');
 /** Equivalent to Promise.defer() from bluebird 1.x. Added here because Promise.defer() is deprecated as of bluebird 2.x */
-function defer() {
+function createNormalPromiseResolver() {
     var resolve, reject;
     var promise = new Promise(function () {
         resolve = arguments[0];
         reject = arguments[1];
     });
-    return <Promise.Resolver<any>> {
+    return {
         resolve: resolve,
         reject: reject,
         promise: promise
     };
 }
+module.exports = createNormalPromiseResolver;
+//# sourceMappingURL=createNormalPromiseResolver.js.map
