@@ -26,11 +26,10 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
   <ItemGroup>
     <Content Include=".gitignore" />
-    <Content Include="empty.db" />
+    <Content Include="src\storage\sqliteInFiber\emptyTemplate.db" />
     <Content Include="package.json" />
     <Content Include="README.md" />
     <Content Include="tsconfig.json" />
-    <Content Include="tsd.json" />
     <Compile Include="debug.js" />
     <TypeScriptCompile Include="src\mainInfo.ts" />
     <TypeScriptCompile Include="src\storage\api.ts" />

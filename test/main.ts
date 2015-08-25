@@ -72,8 +72,10 @@ describe('SlowRoutineFunction', () => {
 
 describe('The async(...) function', function () {
 
+
     // TODO: temp testing... 10mins
     this.timeout(600000);
+
 
     // TODO: temp testing... make CTRL+C force node.js to exit immediately
     process.on('SIGINT', () => {
@@ -81,19 +83,19 @@ describe('The async(...) function', function () {
         process.exit();
     });
 
-    var fn = slow.async((delay: number, count: number) => {
-
-        const Promise = __const(require('bluebird'));
-        for (var i = 0; i < count; ++i) {
-            console.log(`waiting...${i}`);
-            await (Promise.delay(delay));
-            //if (i > 4) throw new Error('herp derp');
-        }
-        return 'done';
-    });
-
 
     it('works', async.cps(() => {
+
+        var fn = slow.async((delay: number, count: number) => {
+            const Promise = __const(require('bluebird'));
+            for (var i = 0; i < count; ++i) {
+                console.log(`waiting...${i}`);
+                await (Promise.delay(delay));
+                //if (i > 4) throw new Error('herp derp');
+            }
+            return 'done';
+        });
+
         try {
             var result = await(fn(500, 5));
             console.log(result);

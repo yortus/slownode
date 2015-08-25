@@ -5,48 +5,16 @@
 
 declare module "slownode" {
 
-
-
     // ==================== SlowValue ====================
 
-    interface SlowValue {
+    interface SlowInfo {
 
         /** Slow object type. One of: 'SlowAsyncFunction', 'SlowPromise', 'SlowPromiseResolveFunction', 'SlowPromiseRejectFunction' */
         type: string;
 
-        /** Slow object persistent identifier. This is shared between the in-memory and the database representation of the slow object. */
-        id: string;
-
-        /** If true, the in-memory and database states of this slow object are synchronised. If false, the database state not (yet) up-to-date. */
-        ready: boolean;
+        /** Slow object persistent identifier. This is shared between the in-memory and in-storage representations of the slow object. */
+        id: string|number;
     }
-
-
-
-    // ==================== SlowRoutineFunction and SlowRoutine ====================
-
-    export var SlowRoutineFunction: {
-        new(bodyFunction: Function, options?: SlowRoutineOptions): SlowRoutineFunction;
-        (bodyFunction: Function, options?: SlowRoutineOptions): SlowRoutineFunction;
-    };
-
-    interface SlowRoutineOptions {
-        yieldIdentifier?: string;
-        constIdentifier?: string;
-    }
-
-    interface SlowRoutineFunction {
-        (...args: any[]): SlowRoutine;
-        body: Function;
-    }
-
-    interface SlowRoutine {
-        next(value?: any): { done: boolean; value: any; };
-        throw(value?: any): { done: boolean; value: any; };
-        return(value?: any): { done: boolean; value: any; };
-        state: any;
-    }
-
 
 
     // ==================== async() and SlowAsyncFunction ====================
@@ -64,7 +32,7 @@ declare module "slownode" {
     function async<TReturn>(fn: (...args: any[]) => TReturn): SlowAsyncFunctionVariadic<TReturn>;
 
     interface SlowAsyncFunction {
-        _slow: SlowValue;
+        _slow: SlowInfo;
     }
 
     interface SlowAsyncFunctionNullary<TReturn> extends SlowAsyncFunction {
@@ -92,7 +60,6 @@ declare module "slownode" {
     }
 
 
-
     // ==================== SlowPromise ====================
 
     interface SlowPromiseStatic<T> {
@@ -116,7 +83,7 @@ declare module "slownode" {
 
     interface SlowPromise<T> extends SlowThenable<T> {
         catch<U>(onRejected?: (error: any) => U | SlowThenable<U>): SlowPromise<U>;
-        _slow: SlowValue & {
+        _slow: SlowInfo & {
             state: SlowPromiseState;
             value: any;
         }
@@ -129,12 +96,12 @@ declare module "slownode" {
 
     interface SlowPromiseResolveFunction<T> {
         (value?: T | SlowThenable<T>): void;
-        _slow: SlowValue;
+        _slow: SlowInfo;
     }
 
     interface SlowPromiseRejectFunction {
         (error?: any): void;
-        _slow: SlowValue;
+        _slow: SlowInfo;
     }
 
     // NB: Subsumes promise 'fate' and promise 'state'. See https://github.com/promises-aplus/constructor-spec/issues/18    
@@ -151,6 +118,31 @@ declare module "slownode" {
 
         /** Fate: resolved, State: rejected */
         Rejected = 3
+    }
+
+
+    // ==================== SlowRoutineFunction and SlowRoutine ====================
+
+    export var SlowRoutineFunction: {
+        new(bodyFunction: Function, options?: SlowRoutineOptions): SlowRoutineFunction;
+        (bodyFunction: Function, options?: SlowRoutineOptions): SlowRoutineFunction;
+    };
+
+    interface SlowRoutineOptions {
+        yieldIdentifier?: string;
+        constIdentifier?: string;
+    }
+
+    interface SlowRoutineFunction {
+        (...args: any[]): SlowRoutine;
+        body: Function;
+    }
+
+    interface SlowRoutine {
+        next(value?: any): { done: boolean; value: any; };
+        throw(value?: any): { done: boolean; value: any; };
+        return(value?: any): { done: boolean; value: any; };
+        state: any;
     }
 }
 

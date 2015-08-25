@@ -64,15 +64,15 @@ describe('The async(...) function', function () {
         console.log('KILLED BY SIGINT (CTRL+C)');
         process.exit();
     });
-    var fn = slow.async(function (delay, count) {
-        var Promise = __const(require('bluebird'));
-        for (var i = 0; i < count; ++i) {
-            console.log("waiting..." + i);
-            await(Promise.delay(delay));
-        }
-        return 'done';
-    });
     it('works', async.cps(function () {
+        var fn = slow.async(function (delay, count) {
+            var Promise = __const(require('bluebird'));
+            for (var i = 0; i < count; ++i) {
+                console.log("waiting..." + i);
+                await(Promise.delay(delay));
+            }
+            return 'done';
+        });
         try {
             var result = await(fn(500, 5));
             console.log(result);

@@ -21,7 +21,7 @@ function init() {
     }
     // Resume the current epoch (if DB exists) or start a new epoch (if no DB).
     if (!dbExists) {
-        var templateLocation = path.join(__dirname, '../empty.db');
+        var templateLocation = path.join(__dirname, 'emptyTemplate.db');
         fs.writeFileSync(databaseLocation, fs.readFileSync(templateLocation));
     }
     // Connect to the database
