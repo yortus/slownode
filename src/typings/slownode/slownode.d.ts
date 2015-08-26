@@ -85,10 +85,10 @@ declare module "slownode" {
 
 
         // TODO: temp testing...
-        persistent;
+        _slow: SlowInfo;
+        _saved;
         _fulfil;
         _reject;
-        _slow: SlowInfo;
     }
 
     interface SlowThenable<T> {
