@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "prepublish": "npm run build && require-self",
-    "test": "node ./debug.js"
+    "test": "node ./debug.js && promises-aplus-tests test/fixtures/promisesAPlusTestsAdapter"
   },
   "repository": {
     "type": "git",
@@ -52,11 +52,12 @@
     "chai-as-promised": "^5.1.0",
     "ls-logger": "^0.1.3",
     "mocha": "^2.2.5",
+    "promises-aplus-tests": "^2.1.1",
     "require-self": "^0.1.0",
     "typescript": "next"
   },
   "slownode": {
-    "storage":  "sqliteInFiber",
+    "storage": "sqliteInFiber",
     "database": "slownode.db"
   }
 }

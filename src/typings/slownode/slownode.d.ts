@@ -70,13 +70,15 @@ declare module "slownode" {
         new<T>(resolver: (resolve: (value?: T | SlowThenable<T>) => void, reject: (error?: any) => void) => void): SlowPromise<T>;
         <T>(resolver: (resolve: (value?: T | SlowThenable<T>) => void, reject: (error?: any) => void) => void): SlowPromise<T>;
 
-        defer<T>(spid?: number): SlowPromiseResolver<T>;
-        resolve<T>(value?: T | SlowThenable<T>): SlowPromise<T>;
-        reject(error: any): SlowPromise<any>;
+        resolved<T>(value?: T | SlowThenable<T>): SlowPromise<T>;
+        rejected(error: any): SlowPromise<any>;
+        deferred<T>(spid?: number): SlowPromiseDeferred<T>;
         // TODO: all, race... (see https://github.com/borisyankov/DefinitelyTyped/blob/master/es6-promise/es6-promise.d.ts)
     }
 
     interface SlowPromise<T> extends SlowThenable<T> {
+        then<U>(onFulfilled?: (value: T) => U | SlowThenable<U>, onRejected?: (error: any) => U | SlowThenable<U>): SlowPromise<U>;
+        then<U>(onFulfilled?: (value: T) => U | SlowThenable<U>, onRejected?: (error: any) => void): SlowPromise<U>;
         catch<U>(onRejected?: (error: any) => U | SlowThenable<U>): SlowPromise<U>;
         _slow: SlowInfo;
     }
@@ -86,7 +88,7 @@ declare module "slownode" {
         then<U>(onFulfilled?: (value: T) => U | SlowThenable<U>, onRejected?: (error: any) => void): SlowThenable<U>;
     }
 
-    interface SlowPromiseResolver<T> {
+    interface SlowPromiseDeferred<T> {
         promise: SlowPromise<T>;
         resolve: SlowPromiseResolveFunction<T>;
         reject: SlowPromiseRejectFunction;

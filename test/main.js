@@ -1,7 +1,3 @@
-var async = require('asyncawait/async');
-var await = require('asyncawait/await');
-var Promise = require("bluebird");
-var slow = require('slownode');
 var chai = require("chai");
 chai.use(require('chai-as-promised'));
 var expect = chai.expect;
@@ -82,18 +78,4 @@ var expect = chai.expect;
 //        }
 //    }));
 //});
-describe('SlowPromise', function () {
-    it('works', async.cps(function () {
-        var r1 = slow.Promise.defer();
-        var p1 = r1.promise;
-        p1.then(function (value) { return console.log('RESOLVED: ' + value); }, function (error) { return console.log('REJECTED: ' + error); });
-        console.log('AAA');
-        await(Promise.delay(100));
-        console.log('BBB');
-        r1.resolve(53);
-        console.log('CCC');
-        await(Promise.delay(100));
-        console.log('DDD');
-    }));
-});
 //# sourceMappingURL=main.js.map

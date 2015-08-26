@@ -50,6 +50,11 @@ function toJSONSafeObject(value: any) {
         return { $type: 'Promise', value: 'blah' };
     }
 
+    // TODO: temp testing... just for SlowPromise testing then remove!!!
+    else {
+        return { $type: 'unknown' };
+    }
+
     // If we get to here, the value is not recognised. Throw an error.
     throw new Error(`toJSONSafeObject: value cannot be serialized: ${value}`);
 }

@@ -1,12 +1,13 @@
 var Types = require('slownode');
 var _ = require('lodash');
+var async = require("asyncawait/async");
 var storage = require('../storage/storage');
 var SlowPromise = (function (resolver) {
     var result = {};
     // TODO: temp testing...
     return result;
 });
-SlowPromise.defer = function () {
+SlowPromise.deferred = function () {
     // Create the parts needed for a new SlowPromise instance, and persist them to storage.
     var persistent = {
         state: 0 /* Unresolved */,
@@ -28,7 +29,7 @@ SlowPromise.defer = function () {
         var _a;
     };
     var then = function (onFulfilled, onRejected) {
-        var resolver2 = SlowPromise.defer();
+        var resolver2 = SlowPromise.deferred();
         persistent.handlers.push({ onFulfilled: onFulfilled, onRejected: onRejected, resolver2: resolver2 });
         storage.set('SlowPromise', promiseId, persistent);
         var isSettled = persistent.state === 2 /* Fulfilled */ || persistent.state === 3 /* Rejected */;
@@ -45,8 +46,8 @@ SlowPromise.defer = function () {
             id: promiseId
         }
     };
-    // TODO: ...
-    var processAllHandlers = function () {
+    // TODO: temp testing - remove async() - but needed to work with sqliteInFiber adapter...
+    var processAllHandlers = async(function () {
         // Dequeue each onResolved/onRejected handler in order.
         while (persistent.handlers.length > 0) {
             var handler = persistent.handlers.shift();
@@ -85,7 +86,7 @@ SlowPromise.defer = function () {
                 }
             }
         }
-    };
+    });
     // Create a resolve function for the SlowPromise.
     var resolveFunction = (function (x) {
         if (persistent.state !== 0 /* Unresolved */)

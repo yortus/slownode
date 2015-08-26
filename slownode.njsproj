@@ -65,8 +65,10 @@
     <TypeScriptCompile Include="src\typings\estree\estree.d.ts" />
     <TypeScriptCompile Include="src\typings\lodash\lodash.d.ts" />
     <Content Include="test\fixtures\slowfuncs\1.ts" />
+    <TypeScriptCompile Include="test\fixtures\promisesAPlusTestsAdapter.ts" />
     <TypeScriptCompile Include="test\fixtures\slowfuncs\3.ts" />
     <TypeScriptCompile Include="test\fixtures\slowfuncs\2.ts" />
+    <TypeScriptCompile Include="test\slowPromise.ts" />
     <TypeScriptCompile Include="test\main.ts" />
     <TypeScriptCompile Include="src-prev\eventEmitter\index.ts" />
     <TypeScriptCompile Include="src-prev\eventLoop\exec.ts" />

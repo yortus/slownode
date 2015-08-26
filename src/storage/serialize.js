@@ -35,6 +35,9 @@ function toJSONSafeObject(value) {
     else if (value && typeof value.then === 'function') {
         return { $type: 'Promise', value: 'blah' };
     }
+    else {
+        return { $type: 'unknown' };
+    }
     // If we get to here, the value is not recognised. Throw an error.
     throw new Error("toJSONSafeObject: value cannot be serialized: " + value);
 }

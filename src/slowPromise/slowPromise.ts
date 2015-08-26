@@ -16,7 +16,7 @@ var SlowPromise: Types.SlowPromiseStatic = <any> ((resolver: any) => {
 });
 
 
-SlowPromise.defer = (/*TODO: reinstate   was... spid?: number*/) => {
+SlowPromise.deferred = (/*TODO: reinstate   was... spid?: number*/) => {
 
     // Create the parts needed for a new SlowPromise instance, and persist them to storage.
     var persistent = {
@@ -25,7 +25,7 @@ SlowPromise.defer = (/*TODO: reinstate   was... spid?: number*/) => {
         handlers: <Array<{
             onFulfilled: (value) => any,
             onRejected: (reason) => any,
-            resolver2: Types.SlowPromiseResolver<any>
+            resolver2: Types.SlowPromiseDeferred<any>
         }>> []
     };
     var promiseId = storage.add('SlowPromise', persistent);
@@ -43,7 +43,7 @@ SlowPromise.defer = (/*TODO: reinstate   was... spid?: number*/) => {
         setTimeout(processAllHandlers, 0);
     }
     var then = (onFulfilled?: (value) => any, onRejected?: (error) => any) => {
-        var resolver2 = SlowPromise.defer();
+        var resolver2 = SlowPromise.deferred();
         persistent.handlers.push({ onFulfilled, onRejected, resolver2 });
         storage.set('SlowPromise', promiseId, persistent);
         var isSettled = persistent.state === Types.SlowPromiseState.Fulfilled || persistent.state === Types.SlowPromiseState.Rejected;
@@ -63,8 +63,8 @@ SlowPromise.defer = (/*TODO: reinstate   was... spid?: number*/) => {
     };
 
 
-    // TODO: ...
-    var processAllHandlers = () => {
+    // TODO: temp testing - remove async() - but needed to work with sqliteInFiber adapter...
+    var processAllHandlers = async(() => {
 
         // Dequeue each onResolved/onRejected handler in order.
         while (persistent.handlers.length > 0) {
@@ -107,7 +107,7 @@ SlowPromise.defer = (/*TODO: reinstate   was... spid?: number*/) => {
                 }
             }
         }
-    };
+    });
 
 
     // Create a resolve function for the SlowPromise.
