@@ -8,16 +8,15 @@ export = slowPromiseConstructorFunction;
 
 
 
-// TODO: temp testing... node-weak/gc experiments. See ../index.ts for more info
-var weak = require('weak');
-function notifyGC(p: SlowPromise) {
-    var table = p._slow.type;
-    var key = p._slow.id;
-    weak(p, function () {
-        console.log(`======== deleting: ${table}-${key}.json ========`);
-        storage.del(table, key);
-    });
-}
+//// TODO: temp testing... node-weak/gc experiments. See ../index.ts for more info
+//var weak = require('weak');
+//function notifyGC(p: SlowPromise) {
+//    var record = p._slow;
+//    weak(p, function () {
+//        console.log(`======== deleting: ${record.type}-${record.id}.json ========`);
+//        storage.remove(record);
+//    });
+//}
 
 
 
@@ -36,7 +35,7 @@ class SlowPromise {
         assert(_.isFunction(resolver) || resolver == DEFER);
 
         // Finish basic construction.
-        this._slow.id = storage.add('SlowPromise', this._saved);
+        this._slow.id = storage.insert(this._slow);
 
         // If this is an internal call from makeDeferred(), return the promise now.
         if (resolver === DEFER) return this;
@@ -78,10 +77,9 @@ class SlowPromise {
 	 */
     then(onFulfilled?: (value) => any, onRejected?: (error) => any) {
         var deferred2 = SlowPromise.deferred();
-        this._saved.handlers.push({ onFulfilled, onRejected, deferred2 });
-        storage.set('SlowPromise', this._slow.id, this._saved);
-        var isSettled = this._saved.state === Types.SlowPromiseState.Fulfilled || this._saved.state === Types.SlowPromiseState.Rejected;
-        if (isSettled) setTimeout(() => processAllHandlers(this), 0);
+        this._slow.handlers.push({ onFulfilled, onRejected, deferred2 });
+        storage.update(this._slow);
+        if (this._slow.state !== Types.SlowPromiseState.Pending) setTimeout(() => processAllHandlers(this), 0);
         return deferred2.promise;
     }
 
@@ -97,10 +95,7 @@ class SlowPromise {
     // -------------- Private implementation details from here down --------------
     _slow = {
         type: 'SlowPromise',
-        id: null
-    };
-
-    _saved = {
+        id: null,
         isFateResolved: false,
         state: Types.SlowPromiseState.Pending,
         settledValue: void 0,
@@ -112,16 +107,16 @@ class SlowPromise {
     };
 
     _fulfil(value: any) {
-        if (this._saved.state !== Types.SlowPromiseState.Pending) return;
-        [this._saved.state, this._saved.settledValue] = [Types.SlowPromiseState.Fulfilled, value];
-        storage.set('SlowPromise', this._slow.id, this._saved);
+        if (this._slow.state !== Types.SlowPromiseState.Pending) return;
+        [this._slow.state, this._slow.settledValue] = [Types.SlowPromiseState.Fulfilled, value];
+        storage.update(this._slow);
         setTimeout(() => processAllHandlers(this), 0);
     }
 
     _reject(reason: any) {
-        if (this._saved.state !== Types.SlowPromiseState.Pending) return;
-        [this._saved.state, this._saved.settledValue] = [Types.SlowPromiseState.Rejected, reason];
-        storage.set('SlowPromise', this._slow.id, this._saved);
+        if (this._slow.state !== Types.SlowPromiseState.Pending) return;
+        [this._slow.state, this._slow.settledValue] = [Types.SlowPromiseState.Rejected, reason];
+        storage.update(this._slow);
         setTimeout(() => processAllHandlers(this), 0);
     }
 }
@@ -133,21 +128,23 @@ function makeDeferred() {
     // Get a new promise instance using the internal constructor.
     var promise = new SlowPromise(DEFER);
 
-    // TODO: temp testing...
-    notifyGC(promise);
+    //// TODO: temp testing...
+    //notifyGC(promise);
 
     // Make the resolve function. It must be serializble.
     var resolve: Types.SlowPromiseResolveFunction<any> = <any> ((value?: any) => {
-        if (promise._saved.isFateResolved) return;
-        promise._saved.isFateResolved = true;
+        if (promise._slow.isFateResolved) return;
+        promise._slow.isFateResolved = true;
+        storage.update(promise._slow);
         standardResolutionProcedure(promise, value);
     });
     resolve._slow = { type: 'SlowPromiseResolveFunction', id: promise._slow.id };
 
     // Make the reject function. It must be serializble.
     var reject: Types.SlowPromiseRejectFunction = <any> ((reason?: any) => {
-        if (promise._saved.isFateResolved) return;
-        promise._saved.isFateResolved = true;
+        if (promise._slow.isFateResolved) return;
+        promise._slow.isFateResolved = true;
+        storage.update(promise._slow);
         promise._reject(reason);
     });
     reject._slow = { type: 'SlowPromiseRejectFunction', id: promise._slow.id };
@@ -169,15 +166,15 @@ var slowPromiseConstructorFunction = <Types.SlowPromiseStatic> <any> SlowPromise
 function processAllHandlers(p: SlowPromise) {
 
     // Dequeue each onResolved/onRejected handler in order.
-    while (p._saved.handlers.length > 0) {
-        var handler = p._saved.handlers.shift();
-        storage.set('SlowPromise', p._slow.id, p._saved);
+    while (p._slow.handlers.length > 0) {
+        var handler = p._slow.handlers.shift();
+        storage.update(p._slow);
 
         // Fulfilled case.
-        if (p._saved.state === Types.SlowPromiseState.Fulfilled) {
+        if (p._slow.state === Types.SlowPromiseState.Fulfilled) {
             if (_.isFunction(handler.onFulfilled)) {
                 try {
-                    var ret = handler.onFulfilled.apply(void 0, [p._saved.settledValue]);
+                    var ret = handler.onFulfilled.apply(void 0, [p._slow.settledValue]);
                     standardResolutionProcedure(handler.deferred2.promise, ret);
                 }
                 catch (ex) {
@@ -185,15 +182,15 @@ function processAllHandlers(p: SlowPromise) {
                 }
             }
             else {
-                handler.deferred2.resolve(p._saved.settledValue);
+                handler.deferred2.resolve(p._slow.settledValue);
             }
         }
 
         // Rejected case.
-        else if (p._saved.state === Types.SlowPromiseState.Rejected) {
+        else if (p._slow.state === Types.SlowPromiseState.Rejected) {
             if (_.isFunction(handler.onRejected)) {
                 try {
-                    var ret = handler.onRejected.apply(void 0, [p._saved.settledValue]);
+                    var ret = handler.onRejected.apply(void 0, [p._slow.settledValue]);
                     standardResolutionProcedure(handler.deferred2.promise, ret);
                 }
                 catch (ex) {
@@ -201,7 +198,7 @@ function processAllHandlers(p: SlowPromise) {
                 }
             }
             else {
-                handler.deferred2.reject(p._saved.settledValue);
+                handler.deferred2.reject(p._slow.settledValue);
             }
         }
     }

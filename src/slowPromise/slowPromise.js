@@ -2,16 +2,15 @@ var assert = require('assert');
 var _ = require('lodash');
 var Types = require('slownode');
 var storage = require('../storage/storage');
-// TODO: temp testing... node-weak/gc experiments. See ../index.ts for more info
-var weak = require('weak');
-function notifyGC(p) {
-    var table = p._slow.type;
-    var key = p._slow.id;
-    weak(p, function () {
-        console.log("======== deleting: " + table + "-" + key + ".json ========");
-        storage.del(table, key);
-    });
-}
+//// TODO: temp testing... node-weak/gc experiments. See ../index.ts for more info
+//var weak = require('weak');
+//function notifyGC(p: SlowPromise) {
+//    var record = p._slow;
+//    weak(p, function () {
+//        console.log(`======== deleting: ${record.type}-${record.id}.json ========`);
+//        storage.remove(record);
+//    });
+//}
 /** Sentinal value used for internal promise constructor calls. */
 var DEFER = {};
 var SlowPromise = (function () {
@@ -20,9 +19,7 @@ var SlowPromise = (function () {
         // -------------- Private implementation details from here down --------------
         this._slow = {
             type: 'SlowPromise',
-            id: null
-        };
-        this._saved = {
+            id: null,
             isFateResolved: false,
             state: 0 /* Pending */,
             settledValue: void 0,
@@ -31,7 +28,7 @@ var SlowPromise = (function () {
         // Validate arguments.
         assert(_.isFunction(resolver) || resolver == DEFER);
         // Finish basic construction.
-        this._slow.id = storage.add('SlowPromise', this._saved);
+        this._slow.id = storage.insert(this._slow);
         // If this is an internal call from makeDeferred(), return the promise now.
         if (resolver === DEFER)
             return this;
@@ -74,10 +71,9 @@ var SlowPromise = (function () {
     SlowPromise.prototype.then = function (onFulfilled, onRejected) {
         var _this = this;
         var deferred2 = SlowPromise.deferred();
-        this._saved.handlers.push({ onFulfilled: onFulfilled, onRejected: onRejected, deferred2: deferred2 });
-        storage.set('SlowPromise', this._slow.id, this._saved);
-        var isSettled = this._saved.state === 1 /* Fulfilled */ || this._saved.state === 2 /* Rejected */;
-        if (isSettled)
+        this._slow.handlers.push({ onFulfilled: onFulfilled, onRejected: onRejected, deferred2: deferred2 });
+        storage.update(this._slow);
+        if (this._slow.state !== 0 /* Pending */)
             setTimeout(function () { return processAllHandlers(_this); }, 0);
         return deferred2.promise;
     };
@@ -91,19 +87,19 @@ var SlowPromise = (function () {
     };
     SlowPromise.prototype._fulfil = function (value) {
         var _this = this;
-        if (this._saved.state !== 0 /* Pending */)
+        if (this._slow.state !== 0 /* Pending */)
             return;
-        _a = [1 /* Fulfilled */, value], this._saved.state = _a[0], this._saved.settledValue = _a[1];
-        storage.set('SlowPromise', this._slow.id, this._saved);
+        _a = [1 /* Fulfilled */, value], this._slow.state = _a[0], this._slow.settledValue = _a[1];
+        storage.update(this._slow);
         setTimeout(function () { return processAllHandlers(_this); }, 0);
         var _a;
     };
     SlowPromise.prototype._reject = function (reason) {
         var _this = this;
-        if (this._saved.state !== 0 /* Pending */)
+        if (this._slow.state !== 0 /* Pending */)
             return;
-        _a = [2 /* Rejected */, reason], this._saved.state = _a[0], this._saved.settledValue = _a[1];
-        storage.set('SlowPromise', this._slow.id, this._saved);
+        _a = [2 /* Rejected */, reason], this._slow.state = _a[0], this._slow.settledValue = _a[1];
+        storage.update(this._slow);
         setTimeout(function () { return processAllHandlers(_this); }, 0);
         var _a;
     };
@@ -113,21 +109,23 @@ var SlowPromise = (function () {
 function makeDeferred() {
     // Get a new promise instance using the internal constructor.
     var promise = new SlowPromise(DEFER);
-    // TODO: temp testing...
-    notifyGC(promise);
+    //// TODO: temp testing...
+    //notifyGC(promise);
     // Make the resolve function. It must be serializble.
     var resolve = (function (value) {
-        if (promise._saved.isFateResolved)
+        if (promise._slow.isFateResolved)
             return;
-        promise._saved.isFateResolved = true;
+        promise._slow.isFateResolved = true;
+        storage.update(promise._slow);
         standardResolutionProcedure(promise, value);
     });
     resolve._slow = { type: 'SlowPromiseResolveFunction', id: promise._slow.id };
     // Make the reject function. It must be serializble.
     var reject = (function (reason) {
-        if (promise._saved.isFateResolved)
+        if (promise._slow.isFateResolved)
             return;
-        promise._saved.isFateResolved = true;
+        promise._slow.isFateResolved = true;
+        storage.update(promise._slow);
         promise._reject(reason);
     });
     reject._slow = { type: 'SlowPromiseRejectFunction', id: promise._slow.id };
@@ -143,14 +141,14 @@ var slowPromiseConstructorFunction = SlowPromise;
  */
 function processAllHandlers(p) {
     // Dequeue each onResolved/onRejected handler in order.
-    while (p._saved.handlers.length > 0) {
-        var handler = p._saved.handlers.shift();
-        storage.set('SlowPromise', p._slow.id, p._saved);
+    while (p._slow.handlers.length > 0) {
+        var handler = p._slow.handlers.shift();
+        storage.update(p._slow);
         // Fulfilled case.
-        if (p._saved.state === 1 /* Fulfilled */) {
+        if (p._slow.state === 1 /* Fulfilled */) {
             if (_.isFunction(handler.onFulfilled)) {
                 try {
-                    var ret = handler.onFulfilled.apply(void 0, [p._saved.settledValue]);
+                    var ret = handler.onFulfilled.apply(void 0, [p._slow.settledValue]);
                     standardResolutionProcedure(handler.deferred2.promise, ret);
                 }
                 catch (ex) {
@@ -158,13 +156,13 @@ function processAllHandlers(p) {
                 }
             }
             else {
-                handler.deferred2.resolve(p._saved.settledValue);
+                handler.deferred2.resolve(p._slow.settledValue);
             }
         }
-        else if (p._saved.state === 2 /* Rejected */) {
+        else if (p._slow.state === 2 /* Rejected */) {
             if (_.isFunction(handler.onRejected)) {
                 try {
-                    var ret = handler.onRejected.apply(void 0, [p._saved.settledValue]);
+                    var ret = handler.onRejected.apply(void 0, [p._slow.settledValue]);
                     standardResolutionProcedure(handler.deferred2.promise, ret);
                 }
                 catch (ex) {
@@ -172,7 +170,7 @@ function processAllHandlers(p) {
                 }
             }
             else {
-                handler.deferred2.reject(p._saved.settledValue);
+                handler.deferred2.reject(p._slow.settledValue);
             }
         }
     }

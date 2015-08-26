@@ -3,13 +3,12 @@ var path = require('path');
 var await = require('asyncawait/await');
 var Knex = require('knex');
 var databaseLocation = require('./databaseLocation');
-var serialize = require('../serialize');
 var deserialize = require('../deserialize');
 // TODO: all DB ops below assume there is a containing Fiber! Doc how to use this properly...
 // TODO: errors are not caught... What to do?
 // TODO: doc... lazy inited inside init()
 var db;
-var api = { init: init, add: add, get: get, set: set, del: del, find: find };
+var api = { init: init, insert: insert, upsert: upsert, update: update, remove: remove, find: find };
 function init() {
     // Check if the database already exists. Use fs.stat since fs.exists is deprecated.
     var dbExists = true;
@@ -32,29 +31,48 @@ function init() {
         }
     });
 }
-function add(table, value, key) {
-    var inserting = { value: serialize(value) };
-    if (key)
-        inserting.id = key;
-    var insertedIds = await(db.table(table).insert(inserting));
-    key = key || insertedIds[0];
-    return key;
+function insert(record) {
+    // TODO: ...
+    throw 'Not implemented';
+    return null;
 }
-function get(table, key) {
-    var rows = await(db.table(table).select('value').where('id', key));
-    return rows.length === 0 ? void 0 : deserialize(rows[0].value);
+function upsert(record) {
+    // TODO: ...
+    throw 'Not implemented';
+    return null;
 }
-function set(table, key, value) {
-    var serializedValue = serialize(value);
-    await(db.table(table).update({ value: serializedValue }).where('id', key));
+function update(record) {
+    // TODO: ...
+    throw 'Not implemented';
+    return null;
 }
-function del(table, key) {
-    await(db.table(table).delete().where('id', key));
+function remove(record) {
+    // TODO: ...
+    throw 'Not implemented';
+    return null;
 }
+//function add(table: string, value: any, key?: Key): Key {
+//    var inserting: any = { value: serialize(value) };
+//    if (key) inserting.id = key;
+//    var insertedIds = await(db.table(table).insert(inserting));
+//    key = key || insertedIds[0];
+//    return key;
+//}
+//function set(table: string, key: Key, value: any): void {
+//    var serializedValue = serialize(value);
+//    await(db.table(table).update({ value: serializedValue }).where('id', key));
+//}
+//function del(table: string, key: Key) {
+//    await(db.table(table).delete().where('id', key));
+//}
 // TODO: add `where` param (eg for event loop searching for what it can schedule)
-function find(table) {
-    var rows = await(db.table(table).select('id', 'value'));
-    var results = rows.map(function (row) { return ({ id: row.id, value: deserialize(row.value) }); });
+// TODO: cache this one - it could be slow. Should only use at startup time (and event loop??)
+function find(record) {
+    var query = db.table(record.type).select('value');
+    if (record.id)
+        query = query.where('id', record.id);
+    var rows = await(query);
+    var results = rows.map(function (row) { return deserialize(row.value); });
     return results;
 }
 module.exports = api;

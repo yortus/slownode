@@ -1,21 +1,31 @@
 ﻿export = API;
 
 
-type Key = string|number;
+namespace API {
+
+    export type Key = string|number;
+
+    export interface Record {
+        type: string;
+        id?: string|number;
+        [other: string]: any;
+    }
+}
 
 
 interface API {
 
     init(): void;
 
-    add(tableName: string, value: any, key?: Key): Key;
+    insert(record: API.Record): API.Key;
 
-    get(tableName: string, key: Key): any;
+    upsert(record: API.Record): API.Key;
 
-    set(tableName: string, key: Key, value: any): void;
+    update(record: API.Record): void;
 
-    del(tableName: string, key: Key): void;
+    remove(record: API.Record): void;
 
     // TODO: add `where` param (eg for event loop searching for what it can schedule)
-    find(tableName: string): { id: Key, value: any }[];
+    // TODO: this can be memoized. Should only use at startup time (and event loop??)
+    find(record: API.Record): API.Record[];
 }

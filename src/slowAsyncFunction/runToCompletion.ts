@@ -8,57 +8,50 @@ export = runToCompletion;
 
 
 /**
- * Runs the given SlowRoutine instance to completion. First, the `awaiting` value is
- * awaited, and then the SlowRoutine is resumed with the eventual value. Subsequent
- * values yielded by the SlowRoutine are awaited, and the SlowRoutine is resumed with
- * their eventual values each time. This process continues until the SlowRoutine either
- * returns or throws. If it throws, this function throws the error. If it returns,
- * this function returns its result.
+ * Runs the given SlowAsyncFunctionActivation instance to completion. First, the `awaiting`
+ * value is awaited, and then the SlowAsyncFunctionActivation is resumed with the eventual
+ * value. Subsequent values yielded by the SlowAsyncFunctionActivation are awaited, and the
+ * SlowAsyncFunctionActivation is resumed with their eventual values each time. This process
+ * continues until the SlowAsyncFunctionActivation either returns or throws. If it throws,
+ * this function rejects with the error. If it returns, this function resolves to its result.
  */
-var runToCompletion: RunToCompletion = async(function (adId: string, afaId: number, sloro: Types.SlowRoutine, awaiting?: Promise<any>) {
+var runToCompletion = async(function (safa: Types.SlowAsyncFunctionActivation) {
     try {
 
-        // Validate arguments.
-        if (arguments.length <= 1) awaiting = Promise.resolve(void 0);
-
-        // Proceed in a loop until the SlowRoutine either returns or throws.
+        // Proceed in a loop until the SlowAsyncFunctionActivation either returns or throws.
         var value = null, error = null;
         while (true) {
 
             // Wait for the awaited value to be resolved or rejected.
             try {
-                error = null, value = await(awaiting);
+                error = null, value = await(safa._slow.awaiting);
             }
             catch (ex) {
                 error = ex;
             }
 
-            // Resume the SlowRoutine with the resolved/rejected value.
-            // NB: If the SlowRoutine throws, this function will throw here.
-            var yielded = error ? sloro.throw(error) : sloro.next(value);
+            // Resume the SlowAsyncFunctionActivation with the resolved/rejected value.
+            // NB: If the SlowAsyncFunctionActivation throws, this function will throw here.
+            var yielded = error ? safa.throw(error) : safa.next(value);
 
-            // If the SlowRoutine returned, then return its result.
+            // If the SlowAsyncFunctionActivation returned, then return its result.
             if (yielded.done) return yielded.value;
 
-            // The SlowRoutine yielded. Ensure the yielded value is awaitable.
+            // The SlowAsyncFunctionActivation yielded. Ensure the yielded value is awaitable.
             // TODO: what should be allowed here? Implement checks...
             // TODO: what should be done if the value is NOT awaitable? How to handle failure? Just throw?
-            awaiting = yielded.value;
-            assert(awaiting && typeof awaiting.then === 'function', 'await: expected argument to be a Promise');
+            assert(yielded.value && typeof yielded.value.then === 'function', 'await: expected argument to be a Promise');
+            safa._slow.awaiting = yielded.value;
 
-            // Before looping again, Persist the current state of the SlowRoutine and that of the value to be awaited.
-            // If the process is restarted before the awaited value is resolved/rejected, then the SlowRoutine will
+            // Before looping again, Persist the current state of the SlowAsyncFunctionActivation and that of the value to be awaited.
+            // If the process is restarted before the awaited value is resolved/rejected, then the SlowAsyncFunctionActivation will
             // be able to continue from this persisted state.
-            storage.set('SlowAsyncFunctionActivation', afaId, { asyncFunctionId: adId, state: sloro.state, awaiting: yielded.value });
+            storage.update(safa._slow);
         }
     }
     finally {
 
         // The SlowRoutine has terminated. Remove its state from the database.
-        storage.del('SlowAsyncFunctionActivation', afaId);
+        storage.remove(safa._slow);
     }
 });
-
-
-// Helper type to pick up optionality of second parameter.
-type RunToCompletion = (asyncFunctionId: string, asyncFunctionActivationId: number, slowRoutine: Types.SlowRoutine, awaiting?: Promise<any>) => Promise<any>;

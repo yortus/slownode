@@ -32,7 +32,10 @@ declare module "slownode" {
     function async<TReturn>(fn: (...args: any[]) => TReturn): SlowAsyncFunctionVariadic<TReturn>;
 
     interface SlowAsyncFunction {
-        _slow: SlowInfo;
+        _slow: SlowInfo & {
+            source: string;
+            originalSource: string;
+        };
     }
 
     interface SlowAsyncFunctionNullary<TReturn> extends SlowAsyncFunction {
@@ -57,6 +60,14 @@ declare module "slownode" {
 
     interface SlowAsyncFunctionVariadic<TReturn> extends SlowAsyncFunction {
         (...args: any[]): Promise<any>;
+    }
+
+    interface SlowAsyncFunctionActivation extends SlowRoutine {
+        _slow: SlowInfo & {
+            asyncFunctionId: string|number,
+            state: any,
+            awaiting: any
+        };
     }
 
 
@@ -85,8 +96,12 @@ declare module "slownode" {
 
 
         // TODO: temp testing...
-        _slow: SlowInfo;
-        _saved;
+        _slow: SlowInfo & {
+            isFateResolved: boolean;
+            state: SlowPromiseState;
+            settledValue: any;
+            handlers: any[];
+        };
         _fulfil;
         _reject;
     }
