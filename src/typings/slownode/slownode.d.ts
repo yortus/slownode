@@ -89,7 +89,6 @@ declare module "slownode" {
         _saved;
         _fulfil;
         _reject;
-        _isFateResolved;
     }
 
     interface SlowThenable<T> {

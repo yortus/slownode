@@ -7,64 +7,29 @@ chai.use(require('chai-as-promised'));
 var expect = chai.expect;
 
 
+// NB: For full Promise A+ testing use:
+// npm run test-promises-aplus
+
+
 describe('SlowPromise', function () {
 
+    //// Set timeout to 10mins for interactive debugging of tests.
+    //this.timeout(600000);
 
-
-
-    // TODO: temp testing... 10mins
-    this.timeout(600000);
-
-
-    it('works', async.cps(() => {
-
-        var r1 = slow.Promise.deferred();
-        var p1 = r1.promise;
-
-
-        // Should output:
-        // 111
-        // RESOLVED: 53
-        // 222
-        // 333
-        // REJECTED: EEE!
-        p1
-        .then(value => {
-            console.log('111');
-            return Promise.delay(500).then(() => {
-                console.log('@@@');
-                return value;
-            });
-        })
-        .then(value => {
-            console.log('RESOLVED: ' + value);
-        })
-        .then(value => {
-            console.log('222');
-            return Promise.delay(500).then(value => value);
-        })
-        .then(value => {
-            console.log('333');
-            throw new Error('EEE!');
-        })
-        .then(value => {
-            console.log('444');
-            return Promise.delay(500).then(value => value);
-        })
-        .catch(error => {
-            console.log('REJECTED: ' + error);
+    it('works 2', async.cps(() => {
+        var p = new slow.Promise((resolve, reject) => {
+            setTimeout(() => resolve('foo'), 1000);        
         });
-                
 
         console.log('AAA');
-        await(Promise.delay(500));
+        p.then(value => {
+            console.log(value);
+            throw new Error('BAR');
+        })
+        .catch(error => {
+            console.log(error);
+        });
         console.log('BBB');
-        r1.resolve(53);
-        console.log('CCC');
-        await(Promise.delay(500));
-        console.log('DDD');
-
-
 
     }));
 });

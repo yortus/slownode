@@ -72,7 +72,7 @@ var expect = chai.expect;
 //describe('The async(...) function', function () {
 
 
-//    // TODO: temp testing... 10mins
+//    // Set timeout to 10mins for interactive debugging of tests.
 //    this.timeout(600000);
 
 

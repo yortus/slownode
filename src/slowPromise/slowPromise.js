@@ -1,45 +1,65 @@
+var assert = require('assert');
 var _ = require('lodash');
 var Types = require('slownode');
 var storage = require('../storage/storage');
-// TODO: doc... sentinel value...
+/** Sentinal value used for internal promise constructor calls. */
 var DEFER = {};
 var SlowPromise = (function () {
-    function SlowPromise() {
-        // TODO: private impl stuff...
+    /** Constructs a SlowPromise instance. May be called with or without new. */
+    function SlowPromise(resolver) {
+        // -------------- Private implementation details from here down --------------
+        this._slow = {
+            type: 'SlowPromise',
+            id: null
+        };
         this._saved = {
             state: 0 /* Pending */,
             settledValue: void 0,
             handlers: []
         };
-        this._slow = {
-            type: 'SlowPromise',
-            id: null
-        };
-        this._isFateResolved = false;
-        //assert(arguments.length === 1);
+        // Validate arguments.
+        assert(_.isFunction(resolver) || resolver == DEFER);
+        // Finish basic construction.
         this._slow.id = storage.add('SlowPromise', this._saved);
-        // TODO: ...
-        //if (resolver === DEFER) {
-        //}
-        //else {
-        //}
+        // If this is an internal call from makeDeferred(), return the promise now.
+        if (resolver === DEFER)
+            return this;
+        // Otherwise, construct a deferred promise, then call the given resolver with the resolve and reject functions.
+        var deferred = makeDeferred();
+        try {
+            resolver(deferred.resolve, deferred.reject);
+        }
+        catch (ex) {
+            deferred.reject(ex);
+        }
+        return deferred.promise;
     }
-    // TODO: doc...
+    /** Returns a new SlowPromise instance that is already resolved with the given value. */
     SlowPromise.resolved = function (value) {
         var deferred = SlowPromise.deferred();
         deferred.resolve(value);
         return deferred.promise;
     };
-    // TODO: doc...
+    /** Returns a new SlowPromise instance that is already rejected with the given reason. */
     SlowPromise.rejected = function (reason) {
         var deferred = SlowPromise.deferred();
         deferred.reject(reason);
         return deferred.promise;
     };
-    // TODO: doc...
+    /** Returns an object containing a new SlowPromise instance, along with a resolve function and a reject function to control its fate. */
     SlowPromise.deferred = function () {
-        return promiseFactory();
+        return makeDeferred();
     };
+    /**
+     * onFulfilled is called when/if "promise" resolves. onRejected is called when/if "promise" rejects.
+     * Both are optional, if either/both are omitted the next onFulfilled/onRejected in the chain is called.
+     * Both callbacks have a single parameter , the fulfillment value or rejection reason.
+     * "then" returns a new promise equivalent to the value you return from onFulfilled/onRejected after being passed through Promise.resolve.
+     * If an error is thrown in the callback, the returned promise rejects with that error.
+     *
+     * @param onFulfilled called when/if "promise" resolves
+     * @param onRejected called when/if "promise" rejects
+     */
     SlowPromise.prototype.then = function (onFulfilled, onRejected) {
         var _this = this;
         var deferred2 = SlowPromise.deferred();
@@ -50,14 +70,18 @@ var SlowPromise = (function () {
             setTimeout(function () { return processAllHandlers(_this); }, 0);
         return deferred2.promise;
     };
+    /**
+     * Sugar for promise.then(undefined, onRejected)
+     *
+     * @param onRejected called when/if "promise" rejects
+     */
     SlowPromise.prototype.catch = function (onRejected) {
         return this.then(void 0, onRejected);
     };
     SlowPromise.prototype._fulfil = function (value) {
         var _this = this;
-        if (this._saved.state === 1 /* Fulfilled */ || this._saved.state === 2 /* Rejected */)
+        if (this._saved.state !== 0 /* Pending */)
             return;
-        //assert(this._saved.state === Types.SlowPromiseState.Unresolved || this._saved.state === Types.SlowPromiseState.Pending);
         _a = [1 /* Fulfilled */, value], this._saved.state = _a[0], this._saved.settledValue = _a[1];
         storage.set('SlowPromise', this._slow.id, this._saved);
         setTimeout(function () { return processAllHandlers(_this); }, 0);
@@ -65,9 +89,8 @@ var SlowPromise = (function () {
     };
     SlowPromise.prototype._reject = function (reason) {
         var _this = this;
-        if (this._saved.state === 1 /* Fulfilled */ || this._saved.state === 2 /* Rejected */)
+        if (this._saved.state !== 0 /* Pending */)
             return;
-        //assert(this._saved.state === Types.SlowPromiseState.Unresolved || this._saved.state === Types.SlowPromiseState.Pending);
         _a = [2 /* Rejected */, reason], this._saved.state = _a[0], this._saved.settledValue = _a[1];
         storage.set('SlowPromise', this._slow.id, this._saved);
         setTimeout(function () { return processAllHandlers(_this); }, 0);
@@ -75,44 +98,37 @@ var SlowPromise = (function () {
     };
     return SlowPromise;
 })();
-// TODO: doc...
-function promiseFactory() {
-    var promise = new SlowPromise();
-    var resolve = createResolveFunction(promise);
-    var reject = createRejectFunction(promise);
+/** Returns an object containing a new SlowPromise instance, along with a resolve function and a reject function to control its fate. */
+function makeDeferred() {
+    // Get a new promise instance using the internal constructor.
+    var promise = new SlowPromise(DEFER);
+    var isFateResolved = false;
+    // Make the resolve function. It must be serializble.
+    var resolve = (function (value) {
+        if (isFateResolved)
+            return;
+        isFateResolved = true;
+        standardResolutionProcedure(promise, value);
+    });
+    resolve._slow = { type: 'SlowPromiseResolveFunction', id: promise._slow.id };
+    // Make the reject function. It must be serializble.
+    var reject = (function (reason) {
+        if (isFateResolved)
+            return;
+        isFateResolved = true;
+        promise._reject(reason);
+    });
+    reject._slow = { type: 'SlowPromiseRejectFunction', id: promise._slow.id };
+    // All done.
     return { promise: promise, resolve: resolve, reject: reject };
 }
-// TODO: doc...
-function createResolveFunction(p) {
-    var result = (function (value) {
-        if (p._isFateResolved)
-            return;
-        p._isFateResolved = true;
-        standardResolutionProcedure(p, value);
-    });
-    result._slow = {
-        type: 'SlowPromiseResolveFunction',
-        id: p._slow.id
-    };
-    return result;
-}
-// TODO: doc...
-function createRejectFunction(p) {
-    var result = (function (reason) {
-        if (p._isFateResolved)
-            return;
-        p._isFateResolved = true;
-        p._reject(reason);
-    });
-    result._slow = {
-        type: 'SlowPromiseRejectFunction',
-        id: p._slow.id
-    };
-    return result;
-}
-// TODO: ...
-var ctor = SlowPromise;
-// TODO: temp testing...
+/** The SlowPromise constructor function cast to the full SlowPromise generic type defined in the .d.ts. */
+var slowPromiseConstructorFunction = SlowPromise;
+/**
+ * Dequeues and processes all enqueued onFulfilled/onRejected handlers.
+ * The SlowPromise implementation calls this when `p` is settled, and
+ * on each `then` call made after `p` is settled.
+ */
 function processAllHandlers(p) {
     // Dequeue each onResolved/onRejected handler in order.
     while (p._saved.handlers.length > 0) {
@@ -149,7 +165,10 @@ function processAllHandlers(p) {
         }
     }
 }
-// TODO: This is a transliteration of [[Resolve]](promise, x) pseudocode at https://github.com/promises-aplus/promises-spec
+/**
+ * This is a transliteration of the [[Resolve]](promise, x) pseudocode in the Promises A+ Spec.
+ * See: https://github.com/promises-aplus/promises-spec
+ */
 function standardResolutionProcedure(p, x) {
     if (x === p) {
         p._reject(new TypeError("slownode: cannot resolve promise with itself"));
@@ -165,7 +184,6 @@ function standardResolutionProcedure(p, x) {
         if (_.isFunction(then)) {
             var ignoreFurtherCalls = false;
             try {
-                //TODO: and set promise.persistent.state = Types.SlowPromiseState.Pending
                 then.apply(x, [
                     function resolvePromise(y) {
                         if (ignoreFurtherCalls)
@@ -195,5 +213,5 @@ function standardResolutionProcedure(p, x) {
         p._fulfil(x);
     }
 }
-module.exports = ctor;
+module.exports = slowPromiseConstructorFunction;
 //# sourceMappingURL=slowPromise.js.map
