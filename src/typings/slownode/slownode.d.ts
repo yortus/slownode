@@ -89,6 +89,7 @@ declare module "slownode" {
         _saved;
         _fulfil;
         _reject;
+        _isFateResolved;
     }
 
     interface SlowThenable<T> {
@@ -112,20 +113,10 @@ declare module "slownode" {
         _slow: SlowInfo;
     }
 
-    // NB: Subsumes promise 'fate' and promise 'state'. See https://github.com/promises-aplus/constructor-spec/issues/18    
     const enum SlowPromiseState {
-
-        /** Fate: unresolved */
-        Unresolved = 0,
-
-        /** Fate: resolved, State: pending */
-        Pending = 1,
-
-        /** Fate: resolved, State: fulfilled */
-        Fulfilled = 2,
-
-        /** Fate: resolved, State: rejected */
-        Rejected = 3
+        Pending,
+        Fulfilled,
+        Rejected
     }
 
 

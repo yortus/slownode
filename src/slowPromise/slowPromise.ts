@@ -43,12 +43,12 @@ class SlowPromise {
     }
 
     then(onFulfilled?: (value) => any, onRejected?: (error) => any) {
-        var resolver2 = SlowPromise.deferred();
-        this._saved.handlers.push({ onFulfilled, onRejected, resolver2 });
+        var deferred2 = SlowPromise.deferred();
+        this._saved.handlers.push({ onFulfilled, onRejected, deferred2 });
         storage.set('SlowPromise', this._slow.id, this._saved);
         var isSettled = this._saved.state === Types.SlowPromiseState.Fulfilled || this._saved.state === Types.SlowPromiseState.Rejected;
         if (isSettled) setTimeout(() => processAllHandlers(this), 0);
-        return resolver2.promise;
+        return deferred2.promise;
     }
 
     catch(onRejected?: (error) => any) {
@@ -57,12 +57,12 @@ class SlowPromise {
 
     // TODO: private impl stuff...
     _saved = {
-        state: Types.SlowPromiseState.Unresolved,
+        state: Types.SlowPromiseState.Pending,
         settledValue: void 0,
         handlers: <Array<{
             onFulfilled: (value) => any,
             onRejected: (reason) => any,
-            resolver2: Types.SlowPromiseDeferred<any>
+            deferred2: Types.SlowPromiseDeferred<any>
         }>> []
     };
 
@@ -86,6 +86,8 @@ class SlowPromise {
         storage.set('SlowPromise', this._slow.id, this._saved);
         setTimeout(() => processAllHandlers(this), 0);
     }
+
+    _isFateResolved = false;
 }
 
 
@@ -101,7 +103,8 @@ function promiseFactory() {
 // TODO: doc...
 function createResolveFunction(p: SlowPromise) {
     var result: Types.SlowPromiseResolveFunction<any> = <any> ((value?: any) => {
-        if (p._saved.state !== Types.SlowPromiseState.Unresolved) return;
+        if (p._isFateResolved) return;
+        p._isFateResolved = true;
         standardResolutionProcedure(p, value);
     });
     result._slow = {
@@ -115,7 +118,8 @@ function createResolveFunction(p: SlowPromise) {
 // TODO: doc...
 function createRejectFunction(p: SlowPromise) {
     var result: Types.SlowPromiseRejectFunction = <any> ((reason?: any) => {
-        if (p._saved.state !== Types.SlowPromiseState.Unresolved) return;
+        if (p._isFateResolved) return;
+        p._isFateResolved = true;
         p._reject(reason);
     });
     result._slow = {
@@ -152,14 +156,14 @@ function processAllHandlers(p: SlowPromise) {
             if (_.isFunction(handler.onFulfilled)) {
                 try {
                     var ret = handler.onFulfilled.apply(void 0, [p._saved.settledValue]);
-                    standardResolutionProcedure(handler.resolver2.promise, ret);
+                    standardResolutionProcedure(handler.deferred2.promise, ret);
                 }
                 catch (ex) {
-                    handler.resolver2.reject(ex);
+                    handler.deferred2.reject(ex);
                 }
             }
             else {
-                handler.resolver2.resolve(p._saved.settledValue);
+                handler.deferred2.resolve(p._saved.settledValue);
             }
         }
 
@@ -168,14 +172,14 @@ function processAllHandlers(p: SlowPromise) {
             if (_.isFunction(handler.onRejected)) {
                 try {
                     var ret = handler.onRejected.apply(void 0, [p._saved.settledValue]);
-                    standardResolutionProcedure(handler.resolver2.promise, ret);
+                    standardResolutionProcedure(handler.deferred2.promise, ret);
                 }
                 catch (ex) {
-                    handler.resolver2.reject(ex);
+                    handler.deferred2.reject(ex);
                 }
             }
             else {
-                handler.resolver2.reject(p._saved.settledValue);
+                handler.deferred2.reject(p._saved.settledValue);
             }
         }
     }
@@ -200,12 +204,6 @@ function processAllHandlers(p: SlowPromise) {
 
 
 
-// TODO: doc...
-//function isTrustedPromise(p: SlowPromise) {
-
-//    // TODO: must check for a *trusted* promise. This impl is imperfect in that regard... Review...
-//    return p && p._slow && p._slow.type === 'SlowPromise';
-//}
 
 
 // TODO: This is a transliteration of [[Resolve]](promise, x) pseudocode at https://github.com/promises-aplus/promises-spec
@@ -213,11 +211,6 @@ function standardResolutionProcedure(p: SlowPromise, x: any) {
     if (x === p) {
         p._reject(new TypeError(`slownode: cannot resolve promise with itself`));
     }
-    //else if (isTrustedPromise(x)) {
-    //    // TODO: implement: (2)(i) If x is pending, promise must remain pending until x is fulfilled or rejected.
-    //    //TODO: and set promise.persistent.state = Types.SlowPromiseState.Pending
-    //    x.then(fulfil, reject);
-    //}
     else if (_.isObject(x) || _.isFunction(x)) {
         try {
             var then = x.then;

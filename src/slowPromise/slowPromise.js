@@ -7,7 +7,7 @@ var SlowPromise = (function () {
     function SlowPromise() {
         // TODO: private impl stuff...
         this._saved = {
-            state: 0 /* Unresolved */,
+            state: 0 /* Pending */,
             settledValue: void 0,
             handlers: []
         };
@@ -15,6 +15,7 @@ var SlowPromise = (function () {
             type: 'SlowPromise',
             id: null
         };
+        this._isFateResolved = false;
         //assert(arguments.length === 1);
         this._slow.id = storage.add('SlowPromise', this._saved);
         // TODO: ...
@@ -41,33 +42,33 @@ var SlowPromise = (function () {
     };
     SlowPromise.prototype.then = function (onFulfilled, onRejected) {
         var _this = this;
-        var resolver2 = SlowPromise.deferred();
-        this._saved.handlers.push({ onFulfilled: onFulfilled, onRejected: onRejected, resolver2: resolver2 });
+        var deferred2 = SlowPromise.deferred();
+        this._saved.handlers.push({ onFulfilled: onFulfilled, onRejected: onRejected, deferred2: deferred2 });
         storage.set('SlowPromise', this._slow.id, this._saved);
-        var isSettled = this._saved.state === 2 /* Fulfilled */ || this._saved.state === 3 /* Rejected */;
+        var isSettled = this._saved.state === 1 /* Fulfilled */ || this._saved.state === 2 /* Rejected */;
         if (isSettled)
             setTimeout(function () { return processAllHandlers(_this); }, 0);
-        return resolver2.promise;
+        return deferred2.promise;
     };
     SlowPromise.prototype.catch = function (onRejected) {
         return this.then(void 0, onRejected);
     };
     SlowPromise.prototype._fulfil = function (value) {
         var _this = this;
-        if (this._saved.state === 2 /* Fulfilled */ || this._saved.state === 3 /* Rejected */)
+        if (this._saved.state === 1 /* Fulfilled */ || this._saved.state === 2 /* Rejected */)
             return;
         //assert(this._saved.state === Types.SlowPromiseState.Unresolved || this._saved.state === Types.SlowPromiseState.Pending);
-        _a = [2 /* Fulfilled */, value], this._saved.state = _a[0], this._saved.settledValue = _a[1];
+        _a = [1 /* Fulfilled */, value], this._saved.state = _a[0], this._saved.settledValue = _a[1];
         storage.set('SlowPromise', this._slow.id, this._saved);
         setTimeout(function () { return processAllHandlers(_this); }, 0);
         var _a;
     };
     SlowPromise.prototype._reject = function (reason) {
         var _this = this;
-        if (this._saved.state === 2 /* Fulfilled */ || this._saved.state === 3 /* Rejected */)
+        if (this._saved.state === 1 /* Fulfilled */ || this._saved.state === 2 /* Rejected */)
             return;
         //assert(this._saved.state === Types.SlowPromiseState.Unresolved || this._saved.state === Types.SlowPromiseState.Pending);
-        _a = [3 /* Rejected */, reason], this._saved.state = _a[0], this._saved.settledValue = _a[1];
+        _a = [2 /* Rejected */, reason], this._saved.state = _a[0], this._saved.settledValue = _a[1];
         storage.set('SlowPromise', this._slow.id, this._saved);
         setTimeout(function () { return processAllHandlers(_this); }, 0);
         var _a;
@@ -84,8 +85,9 @@ function promiseFactory() {
 // TODO: doc...
 function createResolveFunction(p) {
     var result = (function (value) {
-        if (p._saved.state !== 0 /* Unresolved */)
+        if (p._isFateResolved)
             return;
+        p._isFateResolved = true;
         standardResolutionProcedure(p, value);
     });
     result._slow = {
@@ -97,8 +99,9 @@ function createResolveFunction(p) {
 // TODO: doc...
 function createRejectFunction(p) {
     var result = (function (reason) {
-        if (p._saved.state !== 0 /* Unresolved */)
+        if (p._isFateResolved)
             return;
+        p._isFateResolved = true;
         p._reject(reason);
     });
     result._slow = {
@@ -116,41 +119,36 @@ function processAllHandlers(p) {
         var handler = p._saved.handlers.shift();
         storage.set('SlowPromise', p._slow.id, p._saved);
         // Fulfilled case.
-        if (p._saved.state === 2 /* Fulfilled */) {
+        if (p._saved.state === 1 /* Fulfilled */) {
             if (_.isFunction(handler.onFulfilled)) {
                 try {
                     var ret = handler.onFulfilled.apply(void 0, [p._saved.settledValue]);
-                    standardResolutionProcedure(handler.resolver2.promise, ret);
+                    standardResolutionProcedure(handler.deferred2.promise, ret);
                 }
                 catch (ex) {
-                    handler.resolver2.reject(ex);
+                    handler.deferred2.reject(ex);
                 }
             }
             else {
-                handler.resolver2.resolve(p._saved.settledValue);
+                handler.deferred2.resolve(p._saved.settledValue);
             }
         }
-        else if (p._saved.state === 3 /* Rejected */) {
+        else if (p._saved.state === 2 /* Rejected */) {
             if (_.isFunction(handler.onRejected)) {
                 try {
                     var ret = handler.onRejected.apply(void 0, [p._saved.settledValue]);
-                    standardResolutionProcedure(handler.resolver2.promise, ret);
+                    standardResolutionProcedure(handler.deferred2.promise, ret);
                 }
                 catch (ex) {
-                    handler.resolver2.reject(ex);
+                    handler.deferred2.reject(ex);
                 }
             }
             else {
-                handler.resolver2.reject(p._saved.settledValue);
+                handler.deferred2.reject(p._saved.settledValue);
             }
         }
     }
 }
-// TODO: doc...
-//function isTrustedPromise(p: SlowPromise) {
-//    // TODO: must check for a *trusted* promise. This impl is imperfect in that regard... Review...
-//    return p && p._slow && p._slow.type === 'SlowPromise';
-//}
 // TODO: This is a transliteration of [[Resolve]](promise, x) pseudocode at https://github.com/promises-aplus/promises-spec
 function standardResolutionProcedure(p, x) {
     if (x === p) {
