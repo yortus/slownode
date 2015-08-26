@@ -16,9 +16,9 @@ describe('SlowPromise', function () {
     //// Set timeout to 10mins for interactive debugging of tests.
     //this.timeout(600000);
 
-    it('works 2', async.cps(() => {
+    it('works 2', (done) => {
         var p = new slow.Promise((resolve, reject) => {
-            setTimeout(() => resolve('foo'), 1000);        
+            setTimeout(() => resolve('foo'), 500);        
         });
 
         console.log('AAA');
@@ -28,8 +28,9 @@ describe('SlowPromise', function () {
         })
         .catch(error => {
             console.log(error);
+            done();
         });
         console.log('BBB');
 
-    }));
+    });
 });

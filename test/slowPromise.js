@@ -1,4 +1,3 @@
-var async = require('asyncawait/async');
 var slow = require('slownode');
 var chai = require("chai");
 chai.use(require('chai-as-promised'));
@@ -8,9 +7,9 @@ var expect = chai.expect;
 describe('SlowPromise', function () {
     //// Set timeout to 10mins for interactive debugging of tests.
     //this.timeout(600000);
-    it('works 2', async.cps(function () {
+    it('works 2', function (done) {
         var p = new slow.Promise(function (resolve, reject) {
-            setTimeout(function () { return resolve('foo'); }, 1000);
+            setTimeout(function () { return resolve('foo'); }, 500);
         });
         console.log('AAA');
         p.then(function (value) {
@@ -19,8 +18,9 @@ describe('SlowPromise', function () {
         })
             .catch(function (error) {
             console.log(error);
+            done();
         });
         console.log('BBB');
-    }));
+    });
 });
 //# sourceMappingURL=slowPromise.js.map
