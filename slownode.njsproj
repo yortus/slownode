@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{9d9eb3d2-039f-403c-b42b-bb2e1365bec5}</ProjectGuid>
     <ProjectHome />
-    <ProjectView>ProjectFiles</ProjectView>
+    <ProjectView>ShowAllFiles</ProjectView>
     <StartupFile>debug.js</StartupFile>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -33,6 +33,8 @@
     <Compile Include="debug.js" />
     <TypeScriptCompile Include="src\mainInfo.ts" />
     <TypeScriptCompile Include="src\storage\api.ts" />
+    <TypeScriptCompile Include="src\storage\fileSystem\storageLocation.ts" />
+    <TypeScriptCompile Include="src\storage\fileSystem\index.ts" />
     <TypeScriptCompile Include="src\storage\sqliteInFiber\databaseLocation.ts" />
     <TypeScriptCompile Include="src\index.ts" />
     <TypeScriptCompile Include="src-prev\settings.ts" />
@@ -125,6 +127,7 @@
     <Folder Include="src\slowPromise\" />
     <Folder Include="src\slowRoutine\" />
     <Folder Include="src\slowAsyncFunction\" />
+    <Folder Include="src\storage\fileSystem\" />
     <Folder Include="src\storage\sqliteInFiber\" />
     <Folder Include="src\typings\" />
     <Folder Include="src\typings\bluebird\" />
@@ -223,9 +226,6 @@
     </VisualStudio>
   </ProjectExtensions>
   <Target Name="PrepareForBuild" />
-  <Target Name="Build">
-    <Message Text="npm run build..." Importance="high" />
-    <Exec Command="npm run build" />
-  </Target>
+  <Target Name="Build" />
   <Target Name="AfterBuild" />
 </Project>

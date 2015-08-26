@@ -14,7 +14,7 @@ var rehydrate = async(() => {
     getAsyncFunctionActivationsWithSource().forEach(activation => {
 
         // Should never happen.
-        assert(!!activation.source);
+        assert(typeof activation.source === 'string');
         
         // Load the corresponding function.
         var bodyFunc = eval('(' + activation.source + ')');
@@ -24,7 +24,7 @@ var rehydrate = async(() => {
 
         // Resume running the SlowRoutine to completion. It effectively picks up where it last left off.
         // NB: Don't wait for completion here, just get it running....
-        runToCompletion(activation.id, sloro, activation.awaiting);
+        runToCompletion(activation.asyncFunctionId, activation.id, sloro, activation.awaiting);
     });
 });
 
@@ -37,7 +37,8 @@ function getAsyncFunctionActivationsWithSource() {
         id: <number> raw.id,
         state: raw.value.state,
         awaiting: raw.value.awaiting,
-        source: <string> storage.get('SlowAsyncFunction', raw.value.asyncFunctionId)
+        asyncFunctionId: raw.value.asyncFunctionId,
+        source: <string> (storage.get('SlowAsyncFunction', raw.value.asyncFunctionId) || {}).source
     }));
     return activations;
 }
