@@ -2,135 +2,138 @@ var assert = require('assert');
 var _ = require('lodash');
 var Types = require('slownode');
 var storage = require('../storage/storage');
-var SlowPromise = (function (resolver) {
-    var deferred = SlowPromise.deferred();
-    try {
+var SlowPromise = (function () {
+    function SlowPromise() {
+        // TODO: private impl stuff...
+        this.persistent = {
+            state: 0 /* Unresolved */,
+            settledValue: void 0,
+            handlers: []
+        };
+        this._slow = {
+            type: 'SlowPromise',
+            id: null
+        };
+        // TODO: ...
+        this._slow.id = storage.add('SlowPromise', this.persistent);
     }
-    catch (ex) {
-    }
-    var result = {};
-    // TODO: temp testing...
-    return result;
-});
-// TODO: temp testing... OK?
-SlowPromise.resolved = function (value) {
-    var deferred = SlowPromise.deferred();
-    deferred.resolve(value);
-    return deferred.promise;
-};
-// TODO: temp testing... OK?
-SlowPromise.rejected = function (reason) {
-    var deferred = SlowPromise.deferred();
-    deferred.reject(reason);
-    return deferred.promise;
-};
-// TODO: doc...
-SlowPromise.deferred = function () {
-    // Create the parts needed for a new SlowPromise instance, and persist them to storage.
-    var persistent = {
-        state: 0 /* Unresolved */,
-        settledValue: void 0,
-        handlers: []
+    // TODO: doc...
+    SlowPromise.resolved = function (value) {
+        var deferred = SlowPromise.deferred();
+        deferred.resolve(value);
+        return deferred.promise;
     };
-    var promiseId = storage.add('SlowPromise', persistent);
-    // TODO: ...
-    var fulfil = function (value) {
-        assert(persistent.state === 0 /* Unresolved */ || persistent.state === 1 /* Pending */);
-        _a = [2 /* Fulfilled */, value], persistent.state = _a[0], persistent.settledValue = _a[1];
-        storage.set('SlowPromise', promiseId, persistent);
-        setTimeout(processAllHandlers, 0);
-        var _a;
+    // TODO: doc...
+    SlowPromise.rejected = function (reason) {
+        var deferred = SlowPromise.deferred();
+        deferred.reject(reason);
+        return deferred.promise;
     };
-    var reject = function (reason) {
-        assert(persistent.state === 0 /* Unresolved */ || persistent.state === 1 /* Pending */);
-        _a = [3 /* Rejected */, reason], persistent.state = _a[0], persistent.settledValue = _a[1];
-        storage.set('SlowPromise', promiseId, persistent);
-        setTimeout(processAllHandlers, 0);
-        var _a;
+    // TODO: doc...
+    SlowPromise.deferred = function () {
+        return deferredImpl();
     };
-    // TODO: ...
-    var then = function (onFulfilled, onRejected) {
+    SlowPromise.prototype.then = function (onFulfilled, onRejected) {
+        var _this = this;
         var resolver2 = SlowPromise.deferred();
-        persistent.handlers.push({ onFulfilled: onFulfilled, onRejected: onRejected, resolver2: resolver2 });
-        storage.set('SlowPromise', promiseId, persistent);
-        var isSettled = persistent.state === 2 /* Fulfilled */ || persistent.state === 3 /* Rejected */;
+        this.persistent.handlers.push({ onFulfilled: onFulfilled, onRejected: onRejected, resolver2: resolver2 });
+        storage.set('SlowPromise', this._slow.id, this.persistent);
+        var isSettled = this.persistent.state === 2 /* Fulfilled */ || this.persistent.state === 3 /* Rejected */;
         if (isSettled)
-            setTimeout(processAllHandlers, 0);
+            setTimeout(function () { return processAllHandlers(_this); }, 0);
         return resolver2.promise;
     };
+    SlowPromise.prototype.catch = function (onRejected) {
+        return this.then(void 0, onRejected);
+    };
+    SlowPromise.prototype._fulfil = function (value) {
+        var _this = this;
+        assert(this.persistent.state === 0 /* Unresolved */ || this.persistent.state === 1 /* Pending */);
+        _a = [2 /* Fulfilled */, value], this.persistent.state = _a[0], this.persistent.settledValue = _a[1];
+        storage.set('SlowPromise', this._slow.id, this.persistent);
+        setTimeout(function () { return processAllHandlers(_this); }, 0);
+        var _a;
+    };
+    SlowPromise.prototype._reject = function (reason) {
+        var _this = this;
+        assert(this.persistent.state === 0 /* Unresolved */ || this.persistent.state === 1 /* Pending */);
+        _a = [3 /* Rejected */, reason], this.persistent.state = _a[0], this.persistent.settledValue = _a[1];
+        storage.set('SlowPromise', this._slow.id, this.persistent);
+        setTimeout(function () { return processAllHandlers(_this); }, 0);
+        var _a;
+    };
+    return SlowPromise;
+})();
+// TODO: ...
+var ctor = SlowPromise;
+// TODO: doc...
+function deferredImpl() {
     // TODO: ...
-    var promise = {
-        then: then,
-        catch: function (onRejected) { return then(void 0, onRejected); },
-        _slow: {
-            type: 'Promise',
-            id: promiseId
-        }
-    };
-    // TODO: temp testing - remove async() - but needed to work with sqliteInFiber adapter...
-    var processAllHandlers = function () {
-        // Dequeue each onResolved/onRejected handler in order.
-        while (persistent.handlers.length > 0) {
-            var handler = persistent.handlers.shift();
-            storage.set('SlowPromise', promiseId, persistent);
-            // Fulfilled case.
-            if (persistent.state === 2 /* Fulfilled */) {
-                if (_.isFunction(handler.onFulfilled)) {
-                    try {
-                        var ret = handler.onFulfilled.apply(void 0, [persistent.settledValue]);
-                        standardResolutionProcedure(handler.resolver2.promise, ret, handler.resolver2.resolve, handler.resolver2.reject);
-                    }
-                    catch (ex) {
-                        handler.resolver2.reject(ex);
-                    }
-                }
-                else {
-                    handler.resolver2.resolve(persistent.settledValue);
-                }
-            }
-            else if (persistent.state === 3 /* Rejected */) {
-                if (_.isFunction(handler.onRejected)) {
-                    try {
-                        var ret = handler.onRejected.apply(void 0, [persistent.settledValue]);
-                        standardResolutionProcedure(handler.resolver2.promise, ret, handler.resolver2.resolve, handler.resolver2.reject);
-                    }
-                    catch (ex) {
-                        handler.resolver2.reject(ex);
-                    }
-                }
-                else {
-                    handler.resolver2.reject(persistent.settledValue);
-                }
-            }
-        }
-    };
+    var p = new SlowPromise();
     // Create a resolve function for the SlowPromise.
     var resolveFunction = (function (x) {
-        if (persistent.state !== 0 /* Unresolved */)
+        if (p.persistent.state !== 0 /* Unresolved */)
             return;
-        standardResolutionProcedure(promise, x, fulfil, reject);
+        standardResolutionProcedure(p, x, function (v) { return p._fulfil(v); }, function (r) { return p._reject(r); });
     });
     resolveFunction._slow = {
         type: 'SlowPromiseResolveFunction',
-        id: promiseId
+        id: p._slow.id
     };
     // Create a reject function for the SlowPromise.
     var rejectFunction = (function (error) {
-        if (persistent.state !== 0 /* Unresolved */)
+        if (p.persistent.state !== 0 /* Unresolved */)
             return;
-        reject(error);
+        p._reject(error);
     });
     rejectFunction._slow = {
         type: 'SlowPromiseRejectFunction',
-        id: promiseId
+        id: p._slow.id
     };
     // TODO: ...
-    return { promise: promise, resolve: resolveFunction, reject: rejectFunction };
-};
+    return { promise: p, resolve: resolveFunction, reject: rejectFunction };
+}
+// TODO: temp testing...
+function processAllHandlers(p) {
+    // Dequeue each onResolved/onRejected handler in order.
+    while (p.persistent.handlers.length > 0) {
+        var handler = p.persistent.handlers.shift();
+        storage.set('SlowPromise', p._slow.id, p.persistent);
+        // Fulfilled case.
+        if (p.persistent.state === 2 /* Fulfilled */) {
+            if (_.isFunction(handler.onFulfilled)) {
+                try {
+                    var ret = handler.onFulfilled.apply(void 0, [p.persistent.settledValue]);
+                    standardResolutionProcedure(handler.resolver2.promise, ret, handler.resolver2.resolve, handler.resolver2.reject);
+                }
+                catch (ex) {
+                    handler.resolver2.reject(ex);
+                }
+            }
+            else {
+                handler.resolver2.resolve(p.persistent.settledValue);
+            }
+        }
+        else if (p.persistent.state === 3 /* Rejected */) {
+            if (_.isFunction(handler.onRejected)) {
+                try {
+                    var ret = handler.onRejected.apply(void 0, [p.persistent.settledValue]);
+                    standardResolutionProcedure(handler.resolver2.promise, ret, handler.resolver2.resolve, handler.resolver2.reject);
+                }
+                catch (ex) {
+                    handler.resolver2.reject(ex);
+                }
+            }
+            else {
+                handler.resolver2.reject(p.persistent.settledValue);
+            }
+        }
+    }
+}
 // TODO: doc...
 function isTrustedPromise(p) {
     // TODO: must check for a *trusted* promise. This impl is imperfect in that regard... Review...
-    return p && p._slow && p._slow.type === 'Promise';
+    return p && p._slow && p._slow.type === 'SlowPromise';
 }
 // TODO: This is a transliteration of [[Resolve]](promise, x) pseudocode at https://github.com/promises-aplus/promises-spec
 function standardResolutionProcedure(promise, x, fulfil, reject) {
@@ -183,5 +186,5 @@ function standardResolutionProcedure(promise, x, fulfil, reject) {
         fulfil(x);
     }
 }
-module.exports = SlowPromise;
+module.exports = ctor;
 //# sourceMappingURL=slowPromise.js.map

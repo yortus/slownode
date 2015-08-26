@@ -3,47 +3,51 @@ import _ = require('lodash');
 import Types = require('slownode');
 import storage = require('../storage/storage');
 import createNormalPromiseResolver = require('./createNormalPromiseResolver');
-export = SlowPromise;
+export = ctor;
 
 
-var SlowPromise: Types.SlowPromiseStatic = <any> ((resolver: any) => {
-    var deferred = SlowPromise.deferred();
-    try {
-        //resolver(
+class SlowPromise {
+
+
+    constructor() {
+        // TODO: ...
+        this._slow.id = storage.add('SlowPromise', this.persistent);
     }
-    catch (ex) {
+
+    // TODO: doc...
+    static resolved(value: any) {
+        var deferred = SlowPromise.deferred();
+        deferred.resolve(value);
+        return deferred.promise;
     }
 
+    // TODO: doc...
+    static rejected(reason: any) {
+        var deferred = SlowPromise.deferred();
+        deferred.reject(reason);
+        return deferred.promise;
+    }
 
-    var result: Types.SlowPromiseStatic = <any> {};
+    // TODO: doc...
+    static deferred() {
+        return deferredImpl();
+    }
 
-    // TODO: temp testing...
+    then(onFulfilled?: (value) => any, onRejected?: (error) => any) {
+        var resolver2 = SlowPromise.deferred();
+        this.persistent.handlers.push({ onFulfilled, onRejected, resolver2 });
+        storage.set('SlowPromise', this._slow.id, this.persistent);
+        var isSettled = this.persistent.state === Types.SlowPromiseState.Fulfilled || this.persistent.state === Types.SlowPromiseState.Rejected;
+        if (isSettled) setTimeout(() => processAllHandlers(this), 0);
+        return resolver2.promise;
+    }
 
-    return result;
-});
+    catch(onRejected?: (error) => any) {
+        return this.then(void 0, onRejected);
+    }
 
-
-// TODO: temp testing... OK?
-SlowPromise.resolved = (value: any) => {
-    var deferred = SlowPromise.deferred();
-    deferred.resolve(value);
-    return deferred.promise;
-};
-
-
-// TODO: temp testing... OK?
-SlowPromise.rejected = (reason: any) => {
-    var deferred = SlowPromise.deferred();
-    deferred.reject(reason);
-    return deferred.promise;
-};
-
-
-// TODO: doc...
-SlowPromise.deferred = (/*TODO: reinstate   was... spid?: number*/) => {
-
-    // Create the parts needed for a new SlowPromise instance, and persist them to storage.
-    var persistent = {
+    // TODO: private impl stuff...
+    persistent = {
         state: Types.SlowPromiseState.Unresolved,
         settledValue: void 0,
         handlers: <Array<{
@@ -52,130 +56,146 @@ SlowPromise.deferred = (/*TODO: reinstate   was... spid?: number*/) => {
             resolver2: Types.SlowPromiseDeferred<any>
         }>> []
     };
-    var promiseId = storage.add('SlowPromise', persistent);
 
+    _slow = {
+        type: 'SlowPromise',
+        id: null
+    };
 
-    // TODO: ...
-    var fulfil = (value: any) => {
-        assert(persistent.state === Types.SlowPromiseState.Unresolved || persistent.state === Types.SlowPromiseState.Pending);
-        [persistent.state, persistent.settledValue] = [Types.SlowPromiseState.Fulfilled, value];
-        storage.set('SlowPromise', promiseId, persistent);
-        setTimeout(processAllHandlers, 0);
-    }
-    var reject = (reason: any) => {
-        assert(persistent.state === Types.SlowPromiseState.Unresolved || persistent.state === Types.SlowPromiseState.Pending);
-        [persistent.state, persistent.settledValue] = [Types.SlowPromiseState.Rejected, reason];
-        storage.set('SlowPromise', promiseId, persistent);
-        setTimeout(processAllHandlers, 0);
+    _fulfil(value: any) {
+        assert(this.persistent.state === Types.SlowPromiseState.Unresolved || this.persistent.state === Types.SlowPromiseState.Pending);
+        [this.persistent.state, this.persistent.settledValue] = [Types.SlowPromiseState.Fulfilled, value];
+        storage.set('SlowPromise', this._slow.id, this.persistent);
+        setTimeout(() => processAllHandlers(this), 0);
     }
 
+    _reject(reason: any) {
+        assert(this.persistent.state === Types.SlowPromiseState.Unresolved || this.persistent.state === Types.SlowPromiseState.Pending);
+        [this.persistent.state, this.persistent.settledValue] = [Types.SlowPromiseState.Rejected, reason];
+        storage.set('SlowPromise', this._slow.id, this.persistent);
+        setTimeout(() => processAllHandlers(this), 0);
+    }
 
 
+}
 
 
+// TODO: ...
+var ctor = <Types.SlowPromiseStatic> <any> SlowPromise;
+
+
+// TODO: doc...
+function deferredImpl(): Types.SlowPromiseDeferred<any> {
 
     // TODO: ...
-    var then = (onFulfilled?: (value) => any, onRejected?: (error) => any) => {
-        var resolver2 = SlowPromise.deferred();
-        persistent.handlers.push({ onFulfilled, onRejected, resolver2 });
-        storage.set('SlowPromise', promiseId, persistent);
-        var isSettled = persistent.state === Types.SlowPromiseState.Fulfilled || persistent.state === Types.SlowPromiseState.Rejected;
-        if (isSettled) setTimeout(processAllHandlers, 0);
-        return resolver2.promise;
-    };
-
-
-    // TODO: ...
-    var promise: Types.SlowPromise<any> = {
-        then: then,
-        catch: (onRejected?: (error) => any) => then(void 0, onRejected),
-        _slow: {
-            type: 'Promise',
-            id: promiseId
-        }
-    };
-
-
-    // TODO: temp testing - remove async() - but needed to work with sqliteInFiber adapter...
-    var processAllHandlers = () => {
-
-        // Dequeue each onResolved/onRejected handler in order.
-        while (persistent.handlers.length > 0) {
-            var handler = persistent.handlers.shift();
-            storage.set('SlowPromise', promiseId, persistent);
-
-            // Fulfilled case.
-            if (persistent.state === Types.SlowPromiseState.Fulfilled) {
-                if (_.isFunction(handler.onFulfilled)) {
-                    try {
-                        var ret = handler.onFulfilled.apply(void 0, [persistent.settledValue]);
-                        standardResolutionProcedure(handler.resolver2.promise, ret, handler.resolver2.resolve, handler.resolver2.reject);
-                    }
-                    catch (ex) {
-                        handler.resolver2.reject(ex);
-                    }
-                }
-                else {
-                    handler.resolver2.resolve(persistent.settledValue);
-                }
-            }
-
-            // Rejected case.
-            else if (persistent.state === Types.SlowPromiseState.Rejected) {
-                if (_.isFunction(handler.onRejected)) {
-                    try {
-                        var ret = handler.onRejected.apply(void 0, [persistent.settledValue]);
-                        standardResolutionProcedure(handler.resolver2.promise, ret, handler.resolver2.resolve, handler.resolver2.reject);
-                    }
-                    catch (ex) {
-                        handler.resolver2.reject(ex);
-                    }
-                }
-                else {
-                    handler.resolver2.reject(persistent.settledValue);
-                }
-            }
-        }
-    };
+    var p = new SlowPromise();
 
 
     // Create a resolve function for the SlowPromise.
     var resolveFunction: Types.SlowPromiseResolveFunction<any> = <any> ((x?: any) => {
-        if (persistent.state !== Types.SlowPromiseState.Unresolved) return;
-        standardResolutionProcedure(promise, x, fulfil, reject);
+        if (p.persistent.state !== Types.SlowPromiseState.Unresolved) return;
+        standardResolutionProcedure(p, x, v => p._fulfil(v), r => p._reject(r));
     });
     resolveFunction._slow = {
         type: 'SlowPromiseResolveFunction',
-        id: promiseId
+        id: p._slow.id
     };
 
 
     // Create a reject function for the SlowPromise.
     var rejectFunction: Types.SlowPromiseRejectFunction = <any> ((error?: any) => {
-        if (persistent.state !== Types.SlowPromiseState.Unresolved) return;
-        reject(error);
+        if (p.persistent.state !== Types.SlowPromiseState.Unresolved) return;
+        p._reject(error);
     });
     rejectFunction._slow = {
         type: 'SlowPromiseRejectFunction',
-        id: promiseId
+        id: p._slow.id
     };
 
 
     // TODO: ...
-    return { promise, resolve: resolveFunction, reject: rejectFunction };
-};
+    return { promise: p, resolve: resolveFunction, reject: rejectFunction };
+}
+
+
+
+
+
+
+
+
+
+// TODO: temp testing...
+function processAllHandlers(p: SlowPromise) {
+
+    // Dequeue each onResolved/onRejected handler in order.
+    while (p.persistent.handlers.length > 0) {
+        var handler = p.persistent.handlers.shift();
+        storage.set('SlowPromise', p._slow.id, p.persistent);
+
+        // Fulfilled case.
+        if (p.persistent.state === Types.SlowPromiseState.Fulfilled) {
+            if (_.isFunction(handler.onFulfilled)) {
+                try {
+                    var ret = handler.onFulfilled.apply(void 0, [p.persistent.settledValue]);
+                    standardResolutionProcedure(handler.resolver2.promise, ret, handler.resolver2.resolve, handler.resolver2.reject);
+                }
+                catch (ex) {
+                    handler.resolver2.reject(ex);
+                }
+            }
+            else {
+                handler.resolver2.resolve(p.persistent.settledValue);
+            }
+        }
+
+        // Rejected case.
+        else if (p.persistent.state === Types.SlowPromiseState.Rejected) {
+            if (_.isFunction(handler.onRejected)) {
+                try {
+                    var ret = handler.onRejected.apply(void 0, [p.persistent.settledValue]);
+                    standardResolutionProcedure(handler.resolver2.promise, ret, handler.resolver2.resolve, handler.resolver2.reject);
+                }
+                catch (ex) {
+                    handler.resolver2.reject(ex);
+                }
+            }
+            else {
+                handler.resolver2.reject(p.persistent.settledValue);
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // TODO: doc...
-function isTrustedPromise(p) {
+function isTrustedPromise(p: SlowPromise) {
 
     // TODO: must check for a *trusted* promise. This impl is imperfect in that regard... Review...
-    return p && p._slow && p._slow.type === 'Promise';
+    return p && p._slow && p._slow.type === 'SlowPromise';
 }
 
 
 // TODO: This is a transliteration of [[Resolve]](promise, x) pseudocode at https://github.com/promises-aplus/promises-spec
-function standardResolutionProcedure(promise: Types.SlowPromise<any>, x: any, fulfil: (value) => void, reject: (error) => void) {
+function standardResolutionProcedure(promise: SlowPromise, x: any, fulfil: (value) => void, reject: (error) => void) {
     if (x === promise) {
         reject(new TypeError(`slownode: cannot resolve promise with itself`));
     }
