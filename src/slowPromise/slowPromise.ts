@@ -1,5 +1,6 @@
-import Types = require('slownode');
+import assert = require('assert');
 import _ = require('lodash');
+import Types = require('slownode');
 import storage = require('../storage/storage');
 import createNormalPromiseResolver = require('./createNormalPromiseResolver');
 export = SlowPromise;
@@ -56,15 +57,24 @@ SlowPromise.deferred = (/*TODO: reinstate   was... spid?: number*/) => {
 
     // TODO: ...
     var fulfil = (value: any) => {
+        assert(persistent.state === Types.SlowPromiseState.Unresolved || persistent.state === Types.SlowPromiseState.Pending);
         [persistent.state, persistent.settledValue] = [Types.SlowPromiseState.Fulfilled, value];
         storage.set('SlowPromise', promiseId, persistent);
         setTimeout(processAllHandlers, 0);
     }
     var reject = (reason: any) => {
+        assert(persistent.state === Types.SlowPromiseState.Unresolved || persistent.state === Types.SlowPromiseState.Pending);
         [persistent.state, persistent.settledValue] = [Types.SlowPromiseState.Rejected, reason];
         storage.set('SlowPromise', promiseId, persistent);
         setTimeout(processAllHandlers, 0);
     }
+
+
+
+
+
+
+    // TODO: ...
     var then = (onFulfilled?: (value) => any, onRejected?: (error) => any) => {
         var resolver2 = SlowPromise.deferred();
         persistent.handlers.push({ onFulfilled, onRejected, resolver2 });

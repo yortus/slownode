@@ -1,1 +1,0 @@
-{"state":0,"settledValue":{"$type":"undefined"},"handlers":[{"onFulfilled":{"$type":"undefined"},"onRejected":{"$type":"unknown"},"deferred2":{"promise":{"then":{"$type":"unknown"},"catch":{"$type":"unknown"},"_slow":{"type":"Promise","id":"633dec5ecde9940143deeedb1a273958b45a048d"}},"resolve":{"$type":"unknown"},"reject":{"$type":"unknown"},"transition":{"$type":"unknown"}}}]}

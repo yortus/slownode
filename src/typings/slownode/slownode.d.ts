@@ -92,7 +92,6 @@ declare module "slownode" {
         promise: SlowPromise<T>;
         resolve: SlowPromiseResolveFunction<T>;
         reject: SlowPromiseRejectFunction;
-        //transition: (state: SlowPromiseState, value?: any) => void;
     }
 
     interface SlowPromiseResolveFunction<T> {

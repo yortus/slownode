@@ -1,5 +1,6 @@
-var Types = require('slownode');
+var assert = require('assert');
 var _ = require('lodash');
+var Types = require('slownode');
 var storage = require('../storage/storage');
 var SlowPromise = (function (resolver) {
     var deferred = SlowPromise.deferred();
@@ -34,17 +35,20 @@ SlowPromise.deferred = function () {
     var promiseId = storage.add('SlowPromise', persistent);
     // TODO: ...
     var fulfil = function (value) {
+        assert(persistent.state === 0 /* Unresolved */ || persistent.state === 1 /* Pending */);
         _a = [2 /* Fulfilled */, value], persistent.state = _a[0], persistent.settledValue = _a[1];
         storage.set('SlowPromise', promiseId, persistent);
         setTimeout(processAllHandlers, 0);
         var _a;
     };
     var reject = function (reason) {
+        assert(persistent.state === 0 /* Unresolved */ || persistent.state === 1 /* Pending */);
         _a = [3 /* Rejected */, reason], persistent.state = _a[0], persistent.settledValue = _a[1];
         storage.set('SlowPromise', promiseId, persistent);
         setTimeout(processAllHandlers, 0);
         var _a;
     };
+    // TODO: ...
     var then = function (onFulfilled, onRejected) {
         var resolver2 = SlowPromise.deferred();
         persistent.handlers.push({ onFulfilled: onFulfilled, onRejected: onRejected, resolver2: resolver2 });
