@@ -1,4 +1,3 @@
-var assert = require('assert');
 var _ = require('lodash');
 var Types = require('slownode');
 var storage = require('../storage/storage');
@@ -55,7 +54,9 @@ var SlowPromise = (function () {
     };
     SlowPromise.prototype._fulfil = function (value) {
         var _this = this;
-        assert(this._saved.state === 0 /* Unresolved */ || this._saved.state === 1 /* Pending */);
+        if (this._saved.state === 2 /* Fulfilled */ || this._saved.state === 3 /* Rejected */)
+            return;
+        //assert(this._saved.state === Types.SlowPromiseState.Unresolved || this._saved.state === Types.SlowPromiseState.Pending);
         _a = [2 /* Fulfilled */, value], this._saved.state = _a[0], this._saved.settledValue = _a[1];
         storage.set('SlowPromise', this._slow.id, this._saved);
         setTimeout(function () { return processAllHandlers(_this); }, 0);
@@ -63,7 +64,9 @@ var SlowPromise = (function () {
     };
     SlowPromise.prototype._reject = function (reason) {
         var _this = this;
-        assert(this._saved.state === 0 /* Unresolved */ || this._saved.state === 1 /* Pending */);
+        if (this._saved.state === 2 /* Fulfilled */ || this._saved.state === 3 /* Rejected */)
+            return;
+        //assert(this._saved.state === Types.SlowPromiseState.Unresolved || this._saved.state === Types.SlowPromiseState.Pending);
         _a = [3 /* Rejected */, reason], this._saved.state = _a[0], this._saved.settledValue = _a[1];
         storage.set('SlowPromise', this._slow.id, this._saved);
         setTimeout(function () { return processAllHandlers(_this); }, 0);
@@ -83,7 +86,7 @@ function createResolveFunction(p) {
     var result = (function (value) {
         if (p._saved.state !== 0 /* Unresolved */)
             return;
-        standardResolutionProcedure(p, value, function (v) { return p._fulfil(v); }, function (r) { return p._reject(r); });
+        standardResolutionProcedure(p, value);
     });
     result._slow = {
         type: 'SlowPromiseResolveFunction',
@@ -117,7 +120,7 @@ function processAllHandlers(p) {
             if (_.isFunction(handler.onFulfilled)) {
                 try {
                     var ret = handler.onFulfilled.apply(void 0, [p._saved.settledValue]);
-                    standardResolutionProcedure(handler.resolver2.promise, ret, handler.resolver2.resolve, handler.resolver2.reject);
+                    standardResolutionProcedure(handler.resolver2.promise, ret);
                 }
                 catch (ex) {
                     handler.resolver2.reject(ex);
@@ -131,7 +134,7 @@ function processAllHandlers(p) {
             if (_.isFunction(handler.onRejected)) {
                 try {
                     var ret = handler.onRejected.apply(void 0, [p._saved.settledValue]);
-                    standardResolutionProcedure(handler.resolver2.promise, ret, handler.resolver2.resolve, handler.resolver2.reject);
+                    standardResolutionProcedure(handler.resolver2.promise, ret);
                 }
                 catch (ex) {
                     handler.resolver2.reject(ex);
@@ -149,16 +152,16 @@ function processAllHandlers(p) {
 //    return p && p._slow && p._slow.type === 'SlowPromise';
 //}
 // TODO: This is a transliteration of [[Resolve]](promise, x) pseudocode at https://github.com/promises-aplus/promises-spec
-function standardResolutionProcedure(p, x, fulfil, reject) {
+function standardResolutionProcedure(p, x) {
     if (x === p) {
-        reject(new TypeError("slownode: cannot resolve promise with itself"));
+        p._reject(new TypeError("slownode: cannot resolve promise with itself"));
     }
     else if (_.isObject(x) || _.isFunction(x)) {
         try {
             var then = x.then;
         }
         catch (ex) {
-            reject(ex);
+            p._reject(ex);
             return;
         }
         if (_.isFunction(then)) {
@@ -170,28 +173,28 @@ function standardResolutionProcedure(p, x, fulfil, reject) {
                         if (ignoreFurtherCalls)
                             return;
                         ignoreFurtherCalls = true;
-                        standardResolutionProcedure(p, y, fulfil, reject);
+                        standardResolutionProcedure(p, y);
                     },
                     function rejectPromise(r) {
                         if (ignoreFurtherCalls)
                             return;
                         ignoreFurtherCalls = true;
-                        reject(r);
+                        p._reject(r);
                     },
                 ]);
             }
             catch (ex) {
                 if (ignoreFurtherCalls)
                     return;
-                reject(ex);
+                p._reject(ex);
             }
         }
         else {
-            fulfil(x);
+            p._fulfil(x);
         }
     }
     else {
-        fulfil(x);
+        p._fulfil(x);
     }
 }
 module.exports = ctor;

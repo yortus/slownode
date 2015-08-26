@@ -72,14 +72,16 @@ class SlowPromise {
     };
 
     _fulfil(value: any) {
-        assert(this._saved.state === Types.SlowPromiseState.Unresolved || this._saved.state === Types.SlowPromiseState.Pending);
+        if (this._saved.state === Types.SlowPromiseState.Fulfilled || this._saved.state === Types.SlowPromiseState.Rejected) return;
+        //assert(this._saved.state === Types.SlowPromiseState.Unresolved || this._saved.state === Types.SlowPromiseState.Pending);
         [this._saved.state, this._saved.settledValue] = [Types.SlowPromiseState.Fulfilled, value];
         storage.set('SlowPromise', this._slow.id, this._saved);
         setTimeout(() => processAllHandlers(this), 0);
     }
 
     _reject(reason: any) {
-        assert(this._saved.state === Types.SlowPromiseState.Unresolved || this._saved.state === Types.SlowPromiseState.Pending);
+        if (this._saved.state === Types.SlowPromiseState.Fulfilled || this._saved.state === Types.SlowPromiseState.Rejected) return;
+        //assert(this._saved.state === Types.SlowPromiseState.Unresolved || this._saved.state === Types.SlowPromiseState.Pending);
         [this._saved.state, this._saved.settledValue] = [Types.SlowPromiseState.Rejected, reason];
         storage.set('SlowPromise', this._slow.id, this._saved);
         setTimeout(() => processAllHandlers(this), 0);
@@ -100,7 +102,7 @@ function promiseFactory() {
 function createResolveFunction(p: SlowPromise) {
     var result: Types.SlowPromiseResolveFunction<any> = <any> ((value?: any) => {
         if (p._saved.state !== Types.SlowPromiseState.Unresolved) return;
-        standardResolutionProcedure(p, value, v => p._fulfil(v), r => p._reject(r));
+        standardResolutionProcedure(p, value);
     });
     result._slow = {
         type: 'SlowPromiseResolveFunction',
@@ -150,7 +152,7 @@ function processAllHandlers(p: SlowPromise) {
             if (_.isFunction(handler.onFulfilled)) {
                 try {
                     var ret = handler.onFulfilled.apply(void 0, [p._saved.settledValue]);
-                    standardResolutionProcedure(handler.resolver2.promise, ret, handler.resolver2.resolve, handler.resolver2.reject);
+                    standardResolutionProcedure(handler.resolver2.promise, ret);
                 }
                 catch (ex) {
                     handler.resolver2.reject(ex);
@@ -166,7 +168,7 @@ function processAllHandlers(p: SlowPromise) {
             if (_.isFunction(handler.onRejected)) {
                 try {
                     var ret = handler.onRejected.apply(void 0, [p._saved.settledValue]);
-                    standardResolutionProcedure(handler.resolver2.promise, ret, handler.resolver2.resolve, handler.resolver2.reject);
+                    standardResolutionProcedure(handler.resolver2.promise, ret);
                 }
                 catch (ex) {
                     handler.resolver2.reject(ex);
@@ -207,9 +209,9 @@ function processAllHandlers(p: SlowPromise) {
 
 
 // TODO: This is a transliteration of [[Resolve]](promise, x) pseudocode at https://github.com/promises-aplus/promises-spec
-function standardResolutionProcedure(p: SlowPromise, x: any, fulfil: (value) => void, reject: (error) => void) {
+function standardResolutionProcedure(p: SlowPromise, x: any) {
     if (x === p) {
-        reject(new TypeError(`slownode: cannot resolve promise with itself`));
+        p._reject(new TypeError(`slownode: cannot resolve promise with itself`));
     }
     //else if (isTrustedPromise(x)) {
     //    // TODO: implement: (2)(i) If x is pending, promise must remain pending until x is fulfilled or rejected.
@@ -221,7 +223,7 @@ function standardResolutionProcedure(p: SlowPromise, x: any, fulfil: (value) => 
             var then = x.then;
         }
         catch (ex) {
-            reject(ex);
+            p._reject(ex);
             return;
         }
         if (_.isFunction(then)) {
@@ -232,25 +234,25 @@ function standardResolutionProcedure(p: SlowPromise, x: any, fulfil: (value) => 
                     function resolvePromise(y) {
                         if (ignoreFurtherCalls) return;
                         ignoreFurtherCalls = true;
-                        standardResolutionProcedure(p, y, fulfil, reject);
+                        standardResolutionProcedure(p, y);
                     },
                     function rejectPromise(r) {
                         if (ignoreFurtherCalls) return;
                         ignoreFurtherCalls = true;
-                        reject(r);
+                        p._reject(r);
                     },
                 ]);
             }
             catch (ex) {
                 if (ignoreFurtherCalls) return;
-                reject(ex);
+                p._reject(ex);
             }
         }
         else {
-            fulfil(x);
+            p._fulfil(x);
         }
     }
     else {
-        fulfil(x);
+        p._fulfil(x);
     }
 }
