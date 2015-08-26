@@ -5,6 +5,24 @@ import storage = require('../storage/storage');
 export = slowPromiseConstructorFunction;
 
 
+
+
+
+// TODO: temp testing... node-weak/gc experiments. See ../index.ts for more info
+var weak = require('weak');
+function notifyGC(p: SlowPromise) {
+    var table = p._slow.type;
+    var key = p._slow.id;
+    weak(p, function () {
+        console.log(`======== deleting: ${table}-${key}.json ========`);
+        storage.del(table, key);
+    });
+}
+
+
+
+
+
 /** Sentinal value used for internal promise constructor calls. */
 const DEFER = {};
 
@@ -114,6 +132,9 @@ function makeDeferred() {
 
     // Get a new promise instance using the internal constructor.
     var promise = new SlowPromise(DEFER);
+
+    // TODO: temp testing...
+    notifyGC(promise);
 
     // Make the resolve function. It must be serializble.
     var resolve: Types.SlowPromiseResolveFunction<any> = <any> ((value?: any) => {

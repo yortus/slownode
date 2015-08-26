@@ -7,6 +7,34 @@ import rehydrate = require('./slowAsyncFunction/rehydrate');
 export = api;
 
 
+
+
+
+//// TODO: Experiment with node-weak and global.gc to work out when to delete persistent slow objects. Works OK!
+//// NB: must run node with the --expose-gc flag for this to work... eg node --expose-gc ./debug
+//var weak = require('weak');
+//scheduleGC();
+//process.on('exit', () => {
+//    console.log('Exiting!!!');
+//    if (global.gc) global.gc();
+//});
+//function scheduleGC() {
+//    setTimeout(() => {
+//        if (global.gc) {
+//            console.log('================================================================   GC   ================================================================');
+//            global.gc();
+//            scheduleGC();
+//        }
+//        else {
+//            console.log('<<<<<<<<<<<<<<<<<<<<<<<<<<<<< NO GC! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
+//        }
+//    }, 100);
+//}
+
+
+
+
+
 // TODO: set up a global handler (using bluebird API or node API?) to catch unhandled async
 //       errors that arise from withing this module (make a SlowError type?).
 //       eg, SlowPromise constructor is synchronous, but internally it must access DB so it
