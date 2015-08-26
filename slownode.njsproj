@@ -51,8 +51,6 @@
     <TypeScriptCompile Include="src\slowAsyncFunction\runToCompletion.ts" />
     <TypeScriptCompile Include="src\slowAsyncFunction\asyncPseudoKeyword.ts" />
     <TypeScriptCompile Include="src\slowAsyncFunction\rehydrate.ts" />
-    <TypeScriptCompile Include="src\slowPromise\databaseOperations.ts" />
-    <TypeScriptCompile Include="src\slowPromise\createNormalPromiseResolver.ts" />
     <TypeScriptCompile Include="src\slowPromise\slowPromise.ts" />
     <TypeScriptCompile Include="src\slowRoutine\rewriteBodyAST.ts" />
     <TypeScriptCompile Include="src\slowRoutine\match.ts" />

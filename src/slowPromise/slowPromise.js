@@ -13,6 +13,7 @@ var SlowPromise = (function () {
             id: null
         };
         this._saved = {
+            isFateResolved: false,
             state: 0 /* Pending */,
             settledValue: void 0,
             handlers: []
@@ -102,20 +103,19 @@ var SlowPromise = (function () {
 function makeDeferred() {
     // Get a new promise instance using the internal constructor.
     var promise = new SlowPromise(DEFER);
-    var isFateResolved = false;
     // Make the resolve function. It must be serializble.
     var resolve = (function (value) {
-        if (isFateResolved)
+        if (promise._saved.isFateResolved)
             return;
-        isFateResolved = true;
+        promise._saved.isFateResolved = true;
         standardResolutionProcedure(promise, value);
     });
     resolve._slow = { type: 'SlowPromiseResolveFunction', id: promise._slow.id };
     // Make the reject function. It must be serializble.
     var reject = (function (reason) {
-        if (isFateResolved)
+        if (promise._saved.isFateResolved)
             return;
-        isFateResolved = true;
+        promise._saved.isFateResolved = true;
         promise._reject(reason);
     });
     reject._slow = { type: 'SlowPromiseRejectFunction', id: promise._slow.id };

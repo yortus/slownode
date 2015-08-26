@@ -2,7 +2,6 @@ import assert = require('assert');
 import _ = require('lodash');
 import Types = require('slownode');
 import storage = require('../storage/storage');
-import createNormalPromiseResolver = require('./createNormalPromiseResolver');
 export = slowPromiseConstructorFunction;
 
 
@@ -84,6 +83,7 @@ class SlowPromise {
     };
 
     _saved = {
+        isFateResolved: false,
         state: Types.SlowPromiseState.Pending,
         settledValue: void 0,
         handlers: <Array<{
@@ -114,20 +114,19 @@ function makeDeferred() {
 
     // Get a new promise instance using the internal constructor.
     var promise = new SlowPromise(DEFER);
-    var isFateResolved = false;
 
     // Make the resolve function. It must be serializble.
     var resolve: Types.SlowPromiseResolveFunction<any> = <any> ((value?: any) => {
-        if (isFateResolved) return;
-        isFateResolved = true;
+        if (promise._saved.isFateResolved) return;
+        promise._saved.isFateResolved = true;
         standardResolutionProcedure(promise, value);
     });
     resolve._slow = { type: 'SlowPromiseResolveFunction', id: promise._slow.id };
 
     // Make the reject function. It must be serializble.
     var reject: Types.SlowPromiseRejectFunction = <any> ((reason?: any) => {
-        if (isFateResolved) return;
-        isFateResolved = true;
+        if (promise._saved.isFateResolved) return;
+        promise._saved.isFateResolved = true;
         promise._reject(reason);
     });
     reject._slow = { type: 'SlowPromiseRejectFunction', id: promise._slow.id };
