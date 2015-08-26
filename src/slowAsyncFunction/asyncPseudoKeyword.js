@@ -1,8 +1,6 @@
 var assert = require('assert');
 var crypto = require('crypto');
-var async = require('asyncawait/async');
-var await = require('asyncawait/await');
-var Promise = require('bluebird');
+var SlowPromise = require('../slowPromise/slowPromise');
 var SlowRoutineFunction = require('../slowRoutine/slowRoutineFunction');
 var runToCompletion = require('./runToCompletion');
 var storage = require('../storage/storage');
@@ -22,12 +20,13 @@ var asyncPseudoKeyword = (function (bodyFunc) {
     var asyncFunctionId = crypto.createHash('sha1').update(source).digest('hex').slice(0, 40);
     // Create the callable part of the SlowAsyncFunction object. When called, this function creates a new
     // SlowAsyncFunctionActivation object from the given SlowRoutineFunction, and runs it to completion.
-    var asyncFunction = async(function () {
-        // TODO: Create a new SlowPromise to represent the eventual result of the operation...
+    var asyncFunction = (function () {
         var args = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i - 0] = arguments[_i];
         }
+        // TODO: Create a new SlowPromise to represent the eventual result of the operation...
+        var deferred = SlowPromise.deferred();
         // Create a new SlowAsyncFunctionActivation object using the given arguments.
         // TODO: subclass SlowRoutine so we have an runtime-identifiable prototype?
         var safa = sloroFunc.apply(sloroFunc, args);
@@ -37,12 +36,15 @@ var asyncPseudoKeyword = (function (bodyFunc) {
             id: null,
             asyncFunctionId: asyncFunctionId,
             state: safa.state,
-            awaiting: Promise.resolve()
+            awaiting: Promise.resolve(),
+            resolve: deferred.resolve,
+            reject: deferred.reject
         };
         // Persist the SlowAsyncFunctionActivation's initial state to the database.
         safa._slow.id = storage.insert(safa._slow);
-        // Run the SlowAsyncFunctionActivation instance to completion. If it throws, we throw. If it returns, we return.
-        await(runToCompletion(safa));
+        // Run the SlowAsyncFunctionActivation instance to completion, and return the promise of completion.
+        runToCompletion(safa);
+        return deferred.promise;
     });
     // Add slow state to the SlowAsyncFunction instance.
     asyncFunction._slow = {

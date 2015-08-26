@@ -2,6 +2,7 @@
 import async = require('asyncawait/async');
 import await = require('asyncawait/await');
 import Types = require('slownode');
+import SlowPromise = require('../slowPromise/slowPromise');
 import SlowRoutine = require('../slowRoutine/slowRoutine');
 import runToCompletion = require('./runToCompletion');
 import storage = require('../storage/storage');
@@ -22,12 +23,14 @@ var rehydrate = async(() => {
 
         // Create a SlowAsyncFunctionActivation instance from the persisted state.
         var safa = <Types.SlowAsyncFunctionActivation> SlowRoutine(bodyFunc, activation.state);
-        safa._slow = {
+        safa._slow = { // TODO: simplify below assignments - they are all straight copies except type and source
             type: 'SlowAsyncFunctionActivation',
             id: activation.id,
             asyncFunctionId: activation.asyncFunctionId,
             state: activation.state,
-            awaiting: activation.awaiting
+            awaiting: activation.awaiting,
+            resolve: activation.resolve,
+            reject: activation.reject
         };
 
         // Resume running the SlowAsyncFunctionActivation to completion. It effectively picks up where it last left off.
@@ -42,9 +45,11 @@ function getSlowAsyncFunctionActivations() {
     var records = storage.find({ type: 'SlowAsyncFunctionActivation' });
     var results = records.map(raw => ({
         id: <number> raw.id,
+        asyncFunctionId: raw['asyncFunctionId'],
         state: raw['state'],
         awaiting: raw['awaiting'],
-        asyncFunctionId: raw['asyncFunctionId'],
+        resolve: raw['resolve'],
+        reject: raw['reject'],
         source: <string> (storage.find({ type: 'SlowAsyncFunction', id: raw['asyncFunctionId'] })[0] || {})['source']
     }));
     return results;

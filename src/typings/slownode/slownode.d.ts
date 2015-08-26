@@ -66,7 +66,9 @@ declare module "slownode" {
         _slow: SlowInfo & {
             asyncFunctionId: string|number,
             state: any,
-            awaiting: any
+            awaiting: any,
+            resolve: SlowPromiseResolveFunction<any>,
+            reject: SlowPromiseRejectFunction
         };
     }
 

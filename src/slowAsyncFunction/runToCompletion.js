@@ -2,6 +2,7 @@ var assert = require('assert');
 var async = require('asyncawait/async');
 var await = require('asyncawait/await');
 var storage = require('../storage/storage');
+//TODO: remove async/await from in here...
 /**
  * Runs the given SlowAsyncFunctionActivation instance to completion. First, the `awaiting`
  * value is awaited, and then the SlowAsyncFunctionActivation is resumed with the eventual
@@ -27,7 +28,7 @@ var runToCompletion = async(function (safa) {
             var yielded = error ? safa.throw(error) : safa.next(value);
             // If the SlowAsyncFunctionActivation returned, then return its result.
             if (yielded.done)
-                return yielded.value;
+                break;
             // The SlowAsyncFunctionActivation yielded. Ensure the yielded value is awaitable.
             // TODO: what should be allowed here? Implement checks...
             // TODO: what should be done if the value is NOT awaitable? How to handle failure? Just throw?
@@ -38,9 +39,15 @@ var runToCompletion = async(function (safa) {
             // be able to continue from this persisted state.
             storage.update(safa._slow);
         }
+        // Completed!
+        safa._slow.resolve(yielded.value);
+    }
+    catch (ex) {
+        // Error!
+        safa._slow.reject(ex);
     }
     finally {
-        // The SlowRoutine has terminated. Remove its state from the database.
+        // The SlowRoutine has terminated (ie either returned or threw). Remove its state from the database.
         storage.remove(safa._slow);
     }
 });

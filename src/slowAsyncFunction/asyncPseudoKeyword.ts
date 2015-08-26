@@ -1,10 +1,8 @@
 ﻿import assert = require('assert');
 import crypto = require('crypto');
 import _ = require('lodash');
-import async = require('asyncawait/async');
-import await = require('asyncawait/await');
-import Promise = require('bluebird');
 import Types = require('slownode');
+import SlowPromise = require('../slowPromise/slowPromise');
 import SlowRoutineFunction = require('../slowRoutine/slowRoutineFunction');
 import runToCompletion = require('./runToCompletion');
 import storage = require('../storage/storage');
@@ -32,9 +30,10 @@ var asyncPseudoKeyword: typeof Types.async = <any> ((bodyFunc: Function) => {
 
     // Create the callable part of the SlowAsyncFunction object. When called, this function creates a new
     // SlowAsyncFunctionActivation object from the given SlowRoutineFunction, and runs it to completion.
-    var asyncFunction: Types.SlowAsyncFunction = <any> async((...args) => {
+    var asyncFunction: Types.SlowAsyncFunction = <any> ((...args) => {
 
         // TODO: Create a new SlowPromise to represent the eventual result of the operation...
+        var deferred = SlowPromise.deferred();
 
         // Create a new SlowAsyncFunctionActivation object using the given arguments.
         // TODO: subclass SlowRoutine so we have an runtime-identifiable prototype?
@@ -46,14 +45,17 @@ var asyncPseudoKeyword: typeof Types.async = <any> ((bodyFunc: Function) => {
             id: null,
             asyncFunctionId,
             state: safa.state,
-            awaiting: Promise.resolve()
+            awaiting: Promise.resolve(),
+            resolve: deferred.resolve,
+            reject: deferred.reject
         };
 
         // Persist the SlowAsyncFunctionActivation's initial state to the database.
         safa._slow.id = storage.insert(safa._slow);
 
-        // Run the SlowAsyncFunctionActivation instance to completion. If it throws, we throw. If it returns, we return.
-        await(runToCompletion(safa));
+        // Run the SlowAsyncFunctionActivation instance to completion, and return the promise of completion.
+        runToCompletion(safa);
+        return deferred.promise;
     });
 
     // Add slow state to the SlowAsyncFunction instance.
