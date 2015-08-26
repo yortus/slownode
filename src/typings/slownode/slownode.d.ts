@@ -92,6 +92,7 @@ declare module "slownode" {
         promise: SlowPromise<T>;
         resolve: SlowPromiseResolveFunction<T>;
         reject: SlowPromiseRejectFunction;
+        //transition: (state: SlowPromiseState, value?: any) => void;
     }
 
     interface SlowPromiseResolveFunction<T> {
@@ -111,7 +112,7 @@ declare module "slownode" {
         Unresolved = 0,
 
         /** Fate: resolved, State: pending */
-        Pending = 1,  // TODO: how can we ever get into this state from Unresolved??? Review this...
+        Pending = 1,
 
         /** Fate: resolved, State: fulfilled */
         Fulfilled = 2,

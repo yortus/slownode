@@ -8,7 +8,7 @@
     "build": "tsc",
     "prepublish": "npm run build && require-self",
     "test": "node ./debug.js",
-    "test2": "node ./debug.js && promises-aplus-tests test/fixtures/promisesAPlusTestsAdapter"
+    "promtest": "promises-aplus-tests test/fixtures/promisesAPlusTestsAdapter"
   },
   "repository": {
     "type": "git",

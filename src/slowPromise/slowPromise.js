@@ -1,12 +1,29 @@
 var Types = require('slownode');
 var _ = require('lodash');
-var async = require("asyncawait/async");
 var storage = require('../storage/storage');
 var SlowPromise = (function (resolver) {
+    var deferred = SlowPromise.deferred();
+    try {
+    }
+    catch (ex) {
+    }
     var result = {};
     // TODO: temp testing...
     return result;
 });
+// TODO: temp testing... OK?
+SlowPromise.resolved = function (value) {
+    var deferred = SlowPromise.deferred();
+    deferred.resolve(value);
+    return deferred.promise;
+};
+// TODO: temp testing... OK?
+SlowPromise.rejected = function (reason) {
+    var deferred = SlowPromise.deferred();
+    deferred.reject(reason);
+    return deferred.promise;
+};
+// TODO: doc...
 SlowPromise.deferred = function () {
     // Create the parts needed for a new SlowPromise instance, and persist them to storage.
     var persistent = {
@@ -47,7 +64,7 @@ SlowPromise.deferred = function () {
         }
     };
     // TODO: temp testing - remove async() - but needed to work with sqliteInFiber adapter...
-    var processAllHandlers = async(function () {
+    var processAllHandlers = function () {
         // Dequeue each onResolved/onRejected handler in order.
         while (persistent.handlers.length > 0) {
             var handler = persistent.handlers.shift();
@@ -57,9 +74,7 @@ SlowPromise.deferred = function () {
                 if (_.isFunction(handler.onFulfilled)) {
                     try {
                         var ret = handler.onFulfilled.apply(void 0, [persistent.settledValue]);
-                        if (ret !== void 0) {
-                            standardResolutionProcedure(handler.resolver2.promise, ret, handler.resolver2.resolve, handler.resolver2.reject);
-                        }
+                        standardResolutionProcedure(handler.resolver2.promise, ret, handler.resolver2.resolve, handler.resolver2.reject);
                     }
                     catch (ex) {
                         handler.resolver2.reject(ex);
@@ -73,9 +88,7 @@ SlowPromise.deferred = function () {
                 if (_.isFunction(handler.onRejected)) {
                     try {
                         var ret = handler.onRejected.apply(void 0, [persistent.settledValue]);
-                        if (ret !== void 0) {
-                            standardResolutionProcedure(handler.resolver2.promise, ret, handler.resolver2.resolve, handler.resolver2.reject);
-                        }
+                        standardResolutionProcedure(handler.resolver2.promise, ret, handler.resolver2.resolve, handler.resolver2.reject);
                     }
                     catch (ex) {
                         handler.resolver2.reject(ex);
@@ -86,7 +99,7 @@ SlowPromise.deferred = function () {
                 }
             }
         }
-    });
+    };
     // Create a resolve function for the SlowPromise.
     var resolveFunction = (function (x) {
         if (persistent.state !== 0 /* Unresolved */)
@@ -113,7 +126,7 @@ SlowPromise.deferred = function () {
 // TODO: doc...
 function isTrustedPromise(p) {
     // TODO: must check for a *trusted* promise. This impl is imperfect in that regard... Review...
-    return p && _.isFunction(p.then) && p._slow && p._slow.type === 'Promise';
+    return p && p._slow && p._slow.type === 'Promise';
 }
 // TODO: This is a transliteration of [[Resolve]](promise, x) pseudocode at https://github.com/promises-aplus/promises-spec
 function standardResolutionProcedure(promise, x, fulfil, reject) {
@@ -122,6 +135,7 @@ function standardResolutionProcedure(promise, x, fulfil, reject) {
     }
     else if (isTrustedPromise(x)) {
         // TODO: implement: (2)(i) If x is pending, promise must remain pending until x is fulfilled or rejected.
+        //TODO: and set promise.persistent.state = Types.SlowPromiseState.Pending
         x.then(fulfil, reject);
     }
     else if (_.isObject(x) || _.isFunction(x)) {
@@ -135,6 +149,7 @@ function standardResolutionProcedure(promise, x, fulfil, reject) {
         if (_.isFunction(then)) {
             var ignoreFurtherCalls = false;
             try {
+                //TODO: and set promise.persistent.state = Types.SlowPromiseState.Pending
                 then.apply(x, [
                     function resolvePromise(y) {
                         if (ignoreFurtherCalls)

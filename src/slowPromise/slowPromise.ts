@@ -1,13 +1,19 @@
 import Types = require('slownode');
 import _ = require('lodash');
-import async = require("asyncawait/async");
-import await = require("asyncawait/await");
 import storage = require('../storage/storage');
 import createNormalPromiseResolver = require('./createNormalPromiseResolver');
 export = SlowPromise;
 
 
 var SlowPromise: Types.SlowPromiseStatic = <any> ((resolver: any) => {
+    var deferred = SlowPromise.deferred();
+    try {
+        //resolver(
+    }
+    catch (ex) {
+    }
+
+
     var result: Types.SlowPromiseStatic = <any> {};
 
     // TODO: temp testing...
@@ -16,6 +22,23 @@ var SlowPromise: Types.SlowPromiseStatic = <any> ((resolver: any) => {
 });
 
 
+// TODO: temp testing... OK?
+SlowPromise.resolved = (value: any) => {
+    var deferred = SlowPromise.deferred();
+    deferred.resolve(value);
+    return deferred.promise;
+};
+
+
+// TODO: temp testing... OK?
+SlowPromise.rejected = (reason: any) => {
+    var deferred = SlowPromise.deferred();
+    deferred.reject(reason);
+    return deferred.promise;
+};
+
+
+// TODO: doc...
 SlowPromise.deferred = (/*TODO: reinstate   was... spid?: number*/) => {
 
     // Create the parts needed for a new SlowPromise instance, and persist them to storage.
@@ -64,7 +87,7 @@ SlowPromise.deferred = (/*TODO: reinstate   was... spid?: number*/) => {
 
 
     // TODO: temp testing - remove async() - but needed to work with sqliteInFiber adapter...
-    var processAllHandlers = async(() => {
+    var processAllHandlers = () => {
 
         // Dequeue each onResolved/onRejected handler in order.
         while (persistent.handlers.length > 0) {
@@ -76,9 +99,7 @@ SlowPromise.deferred = (/*TODO: reinstate   was... spid?: number*/) => {
                 if (_.isFunction(handler.onFulfilled)) {
                     try {
                         var ret = handler.onFulfilled.apply(void 0, [persistent.settledValue]);
-                        if (ret !== void 0) {
-                            standardResolutionProcedure(handler.resolver2.promise, ret, handler.resolver2.resolve, handler.resolver2.reject);
-                        }
+                        standardResolutionProcedure(handler.resolver2.promise, ret, handler.resolver2.resolve, handler.resolver2.reject);
                     }
                     catch (ex) {
                         handler.resolver2.reject(ex);
@@ -94,9 +115,7 @@ SlowPromise.deferred = (/*TODO: reinstate   was... spid?: number*/) => {
                 if (_.isFunction(handler.onRejected)) {
                     try {
                         var ret = handler.onRejected.apply(void 0, [persistent.settledValue]);
-                        if (ret !== void 0) {
-                            standardResolutionProcedure(handler.resolver2.promise, ret, handler.resolver2.resolve, handler.resolver2.reject);
-                        }
+                        standardResolutionProcedure(handler.resolver2.promise, ret, handler.resolver2.resolve, handler.resolver2.reject);
                     }
                     catch (ex) {
                         handler.resolver2.reject(ex);
@@ -107,7 +126,7 @@ SlowPromise.deferred = (/*TODO: reinstate   was... spid?: number*/) => {
                 }
             }
         }
-    });
+    };
 
 
     // Create a resolve function for the SlowPromise.
@@ -141,7 +160,7 @@ SlowPromise.deferred = (/*TODO: reinstate   was... spid?: number*/) => {
 function isTrustedPromise(p) {
 
     // TODO: must check for a *trusted* promise. This impl is imperfect in that regard... Review...
-    return p && _.isFunction(p.then) && p._slow && p._slow.type === 'Promise';
+    return p && p._slow && p._slow.type === 'Promise';
 }
 
 
@@ -152,6 +171,7 @@ function standardResolutionProcedure(promise: Types.SlowPromise<any>, x: any, fu
     }
     else if (isTrustedPromise(x)) {
         // TODO: implement: (2)(i) If x is pending, promise must remain pending until x is fulfilled or rejected.
+        //TODO: and set promise.persistent.state = Types.SlowPromiseState.Pending
         x.then(fulfil, reject);
     }
     else if (_.isObject(x) || _.isFunction(x)) {
@@ -165,6 +185,7 @@ function standardResolutionProcedure(promise: Types.SlowPromise<any>, x: any, fu
         if (_.isFunction(then)) {
             var ignoreFurtherCalls = false;
             try {
+        //TODO: and set promise.persistent.state = Types.SlowPromiseState.Pending
                 then.apply(x, [
                     function resolvePromise(y) {
                         if (ignoreFurtherCalls) return;
