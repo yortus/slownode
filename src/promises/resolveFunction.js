@@ -23,4 +23,11 @@ function create(promise) {
     return resolve;
 }
 exports.create = create;
+// TODO: register rehydrator
+storage.registerSlowType({
+    type: 'SlowPromiseResolveFunction',
+    rehydrate: function (obj) {
+        return create(obj.promise);
+    }
+});
 //# sourceMappingURL=resolveFunction.js.map

@@ -9,7 +9,12 @@ var deserialize = require('./deserialize');
 // TODO: doc... this works due to exclusive process requirement.
 // TODO: but how to ensure no clashes with client-supplied ids? doc client-supplied id restrictions in API...
 var idCounter = 0;
-var api = { init: init, upsert: upsert, remove: remove };
+var api = { registerSlowType: function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i - 0] = arguments[_i];
+        }
+    }, init: init, upsert: upsert, remove: remove };
 // TODO: temp testing...
 var logFileDescriptor;
 var cache = {};

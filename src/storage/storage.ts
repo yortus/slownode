@@ -21,7 +21,7 @@ export = api;
 var idCounter = 0;
 
 
-var api: API = { init, upsert, remove };
+var api: API = { registerSlowType: (...args) => {}, init, upsert, remove };
 
 
 // TODO: temp testing...

@@ -17,7 +17,11 @@ interface API {
 
 
     // TODO: temp testing...
-    //registerRehydrator(type: string, rehydrate: (jsonSafeObject: any) => API.SlowObject): void;
+    registerSlowType(registration: {
+        type: string;
+        //dehydrate: (jsonSafeObject: any) => API.SlowObject;
+        rehydrate: (jsonSafeObject: any) => API.SlowObject;
+    });
 
 
     init(): void;

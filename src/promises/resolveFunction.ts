@@ -32,3 +32,12 @@ export function create(promise: types.SlowPromise) {
     // Return the resolve function.
     return resolve;
 }
+
+
+// TODO: register rehydrator
+storage.registerSlowType({
+    type: 'SlowPromiseResolveFunction',
+    rehydrate: obj => {
+        return create(obj.promise);
+    }
+});
