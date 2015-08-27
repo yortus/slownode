@@ -64,10 +64,10 @@ declare module "slownode" {
     interface SlowAsyncFunctionActivation extends SlowRoutine {
         _slow: SlowInfo & {
             asyncFunctionId: string|number,
-            state: any,
-            awaiting: any,
-            resolve: SlowPromiseResolveFunction<any>,
-            reject: SlowPromiseRejectFunction
+            state: any, // TODO: may include Slow object refs
+            awaiting: any, // TODO: may be a slow object ref / may include slow object refs
+            resolve: SlowPromiseResolveFunction<any>, // TODO: is a slow object
+            reject: SlowPromiseRejectFunction // TODO: is a slow object
         };
     }
 
@@ -100,8 +100,8 @@ declare module "slownode" {
         _slow: SlowInfo & {
             isFateResolved: boolean;
             state: SlowPromiseState;
-            settledValue: any;
-            handlers: any[];
+            settledValue: any; // TODO: may include Slow object refs
+            handlers: any[]; // TODO: may include SlowAsyncFunction refs
         };
         _fulfil;
         _reject;
