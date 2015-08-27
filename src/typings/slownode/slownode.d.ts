@@ -12,7 +12,7 @@ declare module "slownode" {
         type: string;
 
         /** Slow object persistent identifier. This is shared between the in-memory and in-storage representations of the slow object. */
-        id: string|number;
+        id?: string|number;
     }
 
 
@@ -63,7 +63,7 @@ declare module "slownode" {
 
     interface SlowAsyncFunctionActivation extends SlowRoutine {
         _slow: SlowInfo & {
-            asyncFunctionId: string|number,
+            asyncFunction: SlowAsyncFunction,
             state: any, // TODO: may include Slow object refs
             awaiting: any, // TODO: may be a slow object ref / may include slow object refs
             resolve: SlowPromiseResolveFunction<any>, // TODO: is a slow object
@@ -128,12 +128,16 @@ declare module "slownode" {
 
     interface SlowPromiseResolveFunction<T> {
         (value?: T | SlowThenable<T>): void;
-        _slow: SlowInfo;
+        _slow: SlowInfo & {
+            promise: SlowPromise<any>;
+        };
     }
 
     interface SlowPromiseRejectFunction {
         (error?: any): void;
-        _slow: SlowInfo;
+        _slow: SlowInfo & {
+            promise: SlowPromise<any>;
+        };
     }
 
     const enum SlowPromiseState {

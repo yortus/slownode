@@ -19,7 +19,6 @@ var SlowPromise = (function () {
         // -------------- Private implementation details from here down --------------
         this._slow = {
             type: 'SlowPromise',
-            id: null,
             isFateResolved: false,
             state: 0 /* Pending */,
             settledValue: void 0,
@@ -118,7 +117,7 @@ function makeDeferred() {
     var promise = new SlowPromise(DEFER);
     //// TODO: temp testing...
     //notifyGC(promise);
-    // Make the resolve function. It must be serializble.
+    // Make the resolve function and persist it.
     var resolve = (function (value) {
         if (promise._slow.isFateResolved)
             return;
@@ -126,8 +125,9 @@ function makeDeferred() {
         storage.upsert(promise);
         standardResolutionProcedure(promise, value);
     });
-    resolve._slow = { type: 'SlowPromiseResolveFunction', id: promise._slow.id };
-    // Make the reject function. It must be serializble.
+    resolve._slow = { type: 'SlowPromiseResolveFunction', promise: promise };
+    storage.upsert(resolve);
+    // Make the reject function and persist it.
     var reject = (function (reason) {
         if (promise._slow.isFateResolved)
             return;
@@ -135,7 +135,8 @@ function makeDeferred() {
         storage.upsert(promise);
         promise._reject(reason);
     });
-    reject._slow = { type: 'SlowPromiseRejectFunction', id: promise._slow.id };
+    reject._slow = { type: 'SlowPromiseRejectFunction', promise: promise };
+    storage.upsert(reject);
     // All done.
     return { promise: promise, resolve: resolve, reject: reject };
 }

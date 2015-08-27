@@ -16,7 +16,7 @@ var rehydrate = async(function () {
         safa._slow = {
             type: 'SlowAsyncFunctionActivation',
             id: activation.id,
-            asyncFunctionId: activation.asyncFunctionId,
+            asyncFunction: activation.asyncFunction,
             state: activation.state,
             awaiting: activation.awaiting,
             resolve: activation.resolve,
@@ -32,7 +32,7 @@ function getSlowAsyncFunctionActivations() {
     var records = storage.find('SlowAsyncFunctionActivation');
     var results = records.map(function (raw) { return ({
         id: raw.id,
-        asyncFunctionId: raw['asyncFunctionId'],
+        asyncFunction: raw['asyncFunctionId'],
         state: raw['state'],
         awaiting: raw['awaiting'],
         resolve: raw['resolve'],

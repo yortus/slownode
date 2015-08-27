@@ -106,7 +106,6 @@ class SlowPromise {
     // -------------- Private implementation details from here down --------------
     _slow = {
         type: 'SlowPromise',
-        id: <string|number> null,
         isFateResolved: false,
         state: Types.SlowPromiseState.Pending,
         settledValue: void 0,
@@ -142,23 +141,25 @@ function makeDeferred() {
     //// TODO: temp testing...
     //notifyGC(promise);
 
-    // Make the resolve function. It must be serializble.
+    // Make the resolve function and persist it.
     var resolve: Types.SlowPromiseResolveFunction<any> = <any> ((value?: any) => {
         if (promise._slow.isFateResolved) return;
         promise._slow.isFateResolved = true;
         storage.upsert(promise);
         standardResolutionProcedure(promise, value);
     });
-    resolve._slow = { type: 'SlowPromiseResolveFunction', id: promise._slow.id };
+    resolve._slow = { type: 'SlowPromiseResolveFunction', promise };
+    storage.upsert(resolve);
 
-    // Make the reject function. It must be serializble.
+    // Make the reject function and persist it.
     var reject: Types.SlowPromiseRejectFunction = <any> ((reason?: any) => {
         if (promise._slow.isFateResolved) return;
         promise._slow.isFateResolved = true;
         storage.upsert(promise);
         promise._reject(reason);
     });
-    reject._slow = { type: 'SlowPromiseRejectFunction', id: promise._slow.id };
+    reject._slow = { type: 'SlowPromiseRejectFunction', promise };
+    storage.upsert(reject);
 
     // All done.
     return { promise, resolve, reject };
