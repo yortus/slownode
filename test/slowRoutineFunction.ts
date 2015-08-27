@@ -7,15 +7,6 @@ chai.use(require('chai-as-promised'));
 var expect = chai.expect;
 
 
-describe('epoch', () => {
-
-    it('starts when the slownode module is required', async.cps(() => {
-        // TODO: ...
-        slow.SlowRoutineFunction;
-    }));
-});
-
-
 describe('SlowRoutineFunction', () => {
 
     var mockRunner = (fn, args) => {
@@ -64,43 +55,6 @@ describe('SlowRoutineFunction', () => {
 
             var modifiedResult = realRunner(original.func, original.args);
             expect(modifiedResult).to.deep.equal(original.result);
-        }
-    }));
-});
-
-
-describe('The async(...) function', function () {
-
-
-    // Set timeout to 10mins for interactive debugging of tests.
-    this.timeout(600000);
-
-
-    // TODO: temp testing... make CTRL+C force node.js to exit immediately
-    process.on('SIGINT', () => {
-        console.log('KILLED BY SIGINT (CTRL+C)');
-        process.exit();
-    });
-
-
-    it('works', async.cps(() => {
-
-        var fn = slow.async((delay: number, count: number) => {
-            const Promise = __const(require('bluebird'));
-            for (var i = 0; i < count; ++i) {
-                console.log(`waiting...${i}`);
-                await (Promise.delay(delay));
-                //if (i > 4) throw new Error('herp derp');
-            }
-            return 'done';
-        });
-
-        try {
-            var result = await(fn(500, 5));
-            console.log(result);
-        }
-        catch (ex) {
-            console.log('ERROR: ' + ex.message);
         }
     }));
 });

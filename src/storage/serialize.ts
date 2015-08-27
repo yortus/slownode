@@ -47,21 +47,18 @@ function toJSONSafeObject(value: any, treatSlowObjectsAsRefs = false) {
 
     // TODO: Map a slow object...
     else if (_.isObject(value) && _.has(value, '_slow')) {
-
         if (treatSlowObjectsAsRefs) {
-            // TODO: ...
-            return null;
-            throw 'Not implemented';
-
+            return {
+                $type: 'SlowObjectReference',
+                value: _.pick(value._slow, ['type', 'id'])
+            };
         }
         else {
-
-            // TODO: ...
-            return null;
-            throw 'Not implemented';
-
+            return {
+                $type: 'SlowObjectDefinition',
+                value: _.mapValues(value._slow, propValue => toJSONSafeObject(propValue, true))
+            };
         }
-
     }
 
     // TODO: temp testing... remove this...

@@ -35,14 +35,16 @@ function toJSONSafeObject(value, treatSlowObjectsAsRefs) {
     }
     else if (_.isObject(value) && _.has(value, '_slow')) {
         if (treatSlowObjectsAsRefs) {
-            // TODO: ...
-            return null;
-            throw 'Not implemented';
+            return {
+                $type: 'SlowObjectReference',
+                value: _.pick(value._slow, ['type', 'id'])
+            };
         }
         else {
-            // TODO: ...
-            return null;
-            throw 'Not implemented';
+            return {
+                $type: 'SlowObjectDefinition',
+                value: _.mapValues(value._slow, function (propValue) { return toJSONSafeObject(propValue, true); })
+            };
         }
     }
     else {

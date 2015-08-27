@@ -57,8 +57,9 @@
     <Content Include="test\fixtures\slowfuncs\1.ts" />
     <TypeScriptCompile Include="test\fixtures\slowfuncs\3.ts" />
     <TypeScriptCompile Include="test\fixtures\slowfuncs\2.ts" />
+    <TypeScriptCompile Include="test\slowRoutineFunction.ts" />
     <TypeScriptCompile Include="test\slowPromise.ts" />
-    <TypeScriptCompile Include="test\main.ts" />
+    <TypeScriptCompile Include="test\slowAsyncFunction.ts" />
     <TypeScriptCompile Include="src\typings\bluebird\bluebird.d.ts" />
     <TypeScriptCompile Include="src\typings\chai\chai.d.ts" />
     <TypeScriptCompile Include="src\typings\mocha\mocha.d.ts" />
