@@ -1,16 +1,18 @@
+var assert = require('assert');
 var fs = require('fs');
-var path = require('path');
 var storageLocation = require('./storageLocation');
 var serialize = require('./serialize');
+var deserialize = require('./deserialize');
 // TODO: doc... single process/thread exclusive by design...
-// TODO: use proper unique keys when generating keys (GUID? int counter?)
 // TODO: errors are not caught... What to do?
 // TODO: NB from linux manpage: Calling fsync() does not necessarily ensure that the entry in the directory containing the file has also reached disk. For that an explicit fsync() on a file descriptor for the directory is also needed.
 // TODO: doc... this works due to exclusive process requirement.
+// TODO: but how to ensure no clashes with client-supplied ids? doc client-supplied id restrictions in API...
 var idCounter = 0;
-var api = { init: init, upsert: upsert, remove: remove, find: find };
+var api = { init: init, upsert: upsert, remove: remove };
 // TODO: temp testing...
 var logFileDescriptor;
+var cache = {};
 function init() {
     // Check if the logFile already exists. Use fs.stat since fs.exists is deprecated.
     var fileExists = true;
@@ -21,6 +23,8 @@ function init() {
         fileExists = false;
     }
     if (fileExists) {
+        // TODO: replay log file, then truncate it
+        replayLog();
         fs.unlinkSync(storageLocation);
     }
     // Resume the current epoch (if file exists) or start a new epoch (if no file).
@@ -33,34 +37,60 @@ function init() {
     //else {
     //    logFileDescriptor = fs.openSync(storageLocation, 'ax');
     //}
-    fs.writeSync(logFileDescriptor, "'BEGIN'", null, 'utf8');
+    fs.writeSync(logFileDescriptor, "\"BEGIN\"", null, 'utf8');
     fs.fsyncSync(logFileDescriptor);
 }
 function upsert(slowObj) {
     var slow = slowObj._slow;
     slow.id = slow.id || "#" + ++idCounter;
     var serializedValue = serialize(slowObj);
-    var filename = path.join(storageLocation, slow.id + "-" + slow.type + ".json");
+    cache[(slow.id + "-" + slow.type)] = slowObj;
     // TODO: testing... NB node.d.ts is missing a typing here...
-    fs.writeSync(logFileDescriptor, ",\n\n\n'UPSERT',\n" + serializedValue, null, 'utf8');
+    fs.writeSync(logFileDescriptor, ",\n\n\n\"UPSERT\",\n" + serializedValue, null, 'utf8');
     fs.fsyncSync(logFileDescriptor);
 }
 function remove(slowObj) {
     var slow = slowObj._slow;
-    var filename = path.join(storageLocation, slow.id + "-" + slow.type + ".json");
+    delete cache[(slow.id + "-" + slow.type)];
     // TODO: testing...
-    fs.writeSync(logFileDescriptor, ",\n\n\n'DELETE " + slow.type + " " + slow.id + "'", null, 'utf8');
+    fs.writeSync(logFileDescriptor, ",\n\n\n\"REMOVE\",\n\"" + slow.id + "-" + slow.type + "\"", null, 'utf8');
     fs.fsyncSync(logFileDescriptor);
 }
-// TODO: add `where` param (eg for event loop searching for what it can schedule)
-// TODO: cache this one - it could be slow. Should only use at startup time (and event loop??)
-function find(type, id) {
-    //var filenames = fs.readdirSync(storageLocation);
-    //var filenamePrefix = `${id || ''}-${type}`;
-    //filenames = filenames.filter(filename => filename.indexOf(filenamePrefix) === 0);
-    return [];
-    //TODO: fix!... was... var results = filenames.map(filename => deserialize(fs.readFileSync(path.join(storageLocation, filename), { encoding: 'utf8', flag: 'r' })));
-    //return results;
+//// TODO: add `where` param (eg for event loop searching for what it can schedule)
+//// TODO: cache this one - it could be slow. Should only use at startup time (and event loop??)
+//function find(type: string, id?: string|number): any[] {
+//    //var filenames = fs.readdirSync(storageLocation);
+//    //var filenamePrefix = `${id || ''}-${type}`;
+//    //filenames = filenames.filter(filename => filename.indexOf(filenamePrefix) === 0);
+//    return [];
+//    //TODO: fix!... was... var results = filenames.map(filename => deserialize(fs.readFileSync(path.join(storageLocation, filename), { encoding: 'utf8', flag: 'r' })));
+//    //return results;
+//}
+function replayLog() {
+    var json = '[' + fs.readFileSync(storageLocation, 'utf8') + ']';
+    var logEntries = JSON.parse(json);
+    var pos = 1;
+    while (pos < logEntries.length) {
+        var command = logEntries[pos++];
+        var details = logEntries[pos++];
+        switch (command) {
+            case 'UPSERT':
+                assert(details.$type === 'SlowDef');
+                var slow = details.value;
+                var key = slow.id + "-" + slow.type;
+                // TODO: deserialize!!!!!!!!
+                // TODO: remove this extra round-trip to&from JSON. Expose unwrapJSONSafeObject() directly?
+                var value = deserialize(JSON.stringify(details));
+                cache[key] = value;
+                break;
+            case 'REMOVE':
+                key = details;
+                delete cache[key];
+                break;
+            default:
+                throw new Error("Unrecognised log entry command '" + command + "'");
+        }
+    }
 }
 module.exports = api;
 //# sourceMappingURL=storage.js.map

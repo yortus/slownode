@@ -36,20 +36,33 @@ function unwrapJSONSafeObject(value: any) {
         return value.map(unwrapJSONSafeObject);
     }
 
-    // Map a plain object to an equivalent object whose property values have been unwrapped.
+    // Map a plain (and non-special) object to an equivalent object whose property values have been unwrapped.
     else if (_.isPlainObject(value) && !('$type' in value)) {
         return _.mapValues(value, unwrapJSONSafeObject);
     }
 
-    // Undefined
+    // Map the sentinel value for `undefined` back to `undefined`.
     else if (value && value.$type === 'undefined') {
         return void 0;
     }
 
-    // TODO: temp testing...
-    else if (value && value.$type === 'Promise') {
-        return Promise.resolve(void 0);
-        // TODO: was... return Promise.reject(new Error(`Can't serialize/deserialize promises yet!`));
+    // TODO: map a slow object reference...
+    else if (value && value.$type === 'SlowRef') {
+        // TODO: ...
+        return null;
+        throw 'Not implemented';
+    }
+
+    // TODO: map a slow object definition...
+    else if (value && value.$type === 'SlowDef') {
+        // TODO: ...
+        return null;
+        throw 'Not implemented';
+
+        var slow: { type; id; } = _.mapValues(value.value, unwrapJSONSafeObject);
+
+        //rehydrate
+
     }
 
     // If we get to here, the value is not recognised. Throw an error.

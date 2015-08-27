@@ -1,5 +1,4 @@
 var _ = require('lodash');
-var Promise = require('bluebird');
 /**
  * Serializes the given value to a string suitable for text-based storage and transport.
  * Throws an error if the value cannot be serialized.
@@ -33,8 +32,16 @@ function unwrapJSONSafeObject(value) {
     else if (value && value.$type === 'undefined') {
         return void 0;
     }
-    else if (value && value.$type === 'Promise') {
-        return Promise.resolve(void 0);
+    else if (value && value.$type === 'SlowRef') {
+        // TODO: ...
+        return null;
+        throw 'Not implemented';
+    }
+    else if (value && value.$type === 'SlowDef') {
+        // TODO: ...
+        return null;
+        throw 'Not implemented';
+        var slow = _.mapValues(value.value, unwrapJSONSafeObject);
     }
     // If we get to here, the value is not recognised. Throw an error.
     throw new Error("unwrapJSONSafeObject: value cannot be deserialized: " + value);

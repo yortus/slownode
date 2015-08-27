@@ -2,7 +2,6 @@ var SlowRoutineFunction = require('./slowRoutine/slowRoutineFunction');
 var asyncPseudoKeyword = require('./slowAsyncFunction/asyncPseudoKeyword');
 var SlowPromise = require('./slowPromise');
 var storage = require('./storage/storage');
-var rehydrate = require('./slowAsyncFunction/rehydrate');
 //// TODO: Experiment with node-weak and global.gc to work out when to delete persistent slow objects. Works OK!
 //// NB: must run node with the --expose-gc flag for this to work... eg node --expose-gc ./debug
 //var weak = require('weak');
@@ -33,10 +32,11 @@ var rehydrate = require('./slowAsyncFunction/rehydrate');
 // =                                                                                    =
 // ======================================================================================
 // TODO: doc...
+// This will rehydrate everything...
 storage.init();
 // TODO: temp testing... rehydrate any running async functions...
 // TODO: we can't wait for completion here, just get it started... implications? Eg sqlite serialisation needed?
-rehydrate();
+//rehydrate();
 // TODO: temp testing... Build the API for export...
 var api = {};
 api.async = asyncPseudoKeyword;

@@ -49,13 +49,13 @@ function toJSONSafeObject(value: any, treatSlowObjectsAsRefs = false) {
     else if (_.isObject(value) && _.has(value, '_slow')) {
         if (treatSlowObjectsAsRefs) {
             return {
-                $type: 'SlowObjectReference',
+                $type: 'SlowRef',
                 value: _.pick(value._slow, ['type', 'id'])
             };
         }
         else {
             return {
-                $type: 'SlowObjectDefinition',
+                $type: 'SlowDef',
                 value: _.mapValues(value._slow, propValue => toJSONSafeObject(propValue, true))
             };
         }

@@ -3,7 +3,7 @@ import SlowRoutineFunction = require('./slowRoutine/slowRoutineFunction');
 import asyncPseudoKeyword = require('./slowAsyncFunction/asyncPseudoKeyword');
 import SlowPromise = require('./slowPromise');
 import storage = require('./storage/storage');
-import rehydrate = require('./slowAsyncFunction/rehydrate');
+//import rehydrate = require('./slowAsyncFunction/rehydrate');
 export = api;
 
 
@@ -49,12 +49,13 @@ export = api;
 
 
 // TODO: doc...
+// This will rehydrate everything...
 storage.init();
 
 
 // TODO: temp testing... rehydrate any running async functions...
 // TODO: we can't wait for completion here, just get it started... implications? Eg sqlite serialisation needed?
-rehydrate();
+//rehydrate();
 
 
 // TODO: temp testing... Build the API for export...

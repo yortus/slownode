@@ -1,4 +1,5 @@
-﻿import fs = require('fs');
+﻿import assert = require('assert');
+import fs = require('fs');
 import path = require('path');
 import crypto = require('crypto');
 import storageLocation = require('./storageLocation');
@@ -9,7 +10,6 @@ export = api;
 
 
 // TODO: doc... single process/thread exclusive by design...
-// TODO: use proper unique keys when generating keys (GUID? int counter?)
 // TODO: errors are not caught... What to do?
 
 
@@ -17,14 +17,16 @@ export = api;
 
 
 // TODO: doc... this works due to exclusive process requirement.
+// TODO: but how to ensure no clashes with client-supplied ids? doc client-supplied id restrictions in API...
 var idCounter = 0;
 
 
-var api: API = { init, upsert, remove, find };
+var api: API = { init, upsert, remove };
 
 
 // TODO: temp testing...
 var logFileDescriptor;
+var cache = {};
 
 
 function init() {
@@ -35,6 +37,10 @@ function init() {
 
 
     if (fileExists) {
+
+        // TODO: replay log file, then truncate it
+        replayLog();
+
         fs.unlinkSync(storageLocation);
     }
 
@@ -50,7 +56,7 @@ function init() {
     //else {
     //    logFileDescriptor = fs.openSync(storageLocation, 'ax');
     //}
-    (<any>fs.writeSync)(logFileDescriptor, `'BEGIN'`, null, 'utf8');
+    (<any>fs.writeSync)(logFileDescriptor, `"BEGIN"`, null, 'utf8');
     fs.fsyncSync(logFileDescriptor);
 
 }
@@ -60,33 +66,67 @@ function upsert(slowObj: API.SlowObject) {
     var slow = slowObj._slow;
     slow.id = slow.id || `#${++idCounter}`;
     var serializedValue = serialize(slowObj);
-    var filename = path.join(storageLocation, `${slow.id}-${slow.type}.json`);
+    cache[`${slow.id}-${slow.type}`] = slowObj;
 
 
     // TODO: testing... NB node.d.ts is missing a typing here...
-    (<any>fs.writeSync)(logFileDescriptor, `,\n\n\n'UPSERT',\n${serializedValue}`, null, 'utf8');
+    (<any>fs.writeSync)(logFileDescriptor, `,\n\n\n"UPSERT",\n${serializedValue}`, null, 'utf8');
     fs.fsyncSync(logFileDescriptor);
 }
 
 
 function remove(slowObj: API.SlowObject) {
     var slow = slowObj._slow;
-    var filename = path.join(storageLocation, `${slow.id}-${slow.type}.json`);
+    delete cache[`${slow.id}-${slow.type}`];
 
 
     // TODO: testing...
-    (<any>fs.writeSync)(logFileDescriptor, `,\n\n\n'DELETE ${slow.type} ${slow.id}'`, null, 'utf8');
+    (<any>fs.writeSync)(logFileDescriptor, `,\n\n\n"REMOVE",\n"${slow.id}-${slow.type}"`, null, 'utf8');
     fs.fsyncSync(logFileDescriptor);
 }
 
 
-// TODO: add `where` param (eg for event loop searching for what it can schedule)
-// TODO: cache this one - it could be slow. Should only use at startup time (and event loop??)
-function find(type: string, id?: string|number): any[] {
-    //var filenames = fs.readdirSync(storageLocation);
-    //var filenamePrefix = `${id || ''}-${type}`;
-    //filenames = filenames.filter(filename => filename.indexOf(filenamePrefix) === 0);
-    return [];
-    //TODO: fix!... was... var results = filenames.map(filename => deserialize(fs.readFileSync(path.join(storageLocation, filename), { encoding: 'utf8', flag: 'r' })));
-    //return results;
+//// TODO: add `where` param (eg for event loop searching for what it can schedule)
+//// TODO: cache this one - it could be slow. Should only use at startup time (and event loop??)
+//function find(type: string, id?: string|number): any[] {
+//    //var filenames = fs.readdirSync(storageLocation);
+//    //var filenamePrefix = `${id || ''}-${type}`;
+//    //filenames = filenames.filter(filename => filename.indexOf(filenamePrefix) === 0);
+//    return [];
+//    //TODO: fix!... was... var results = filenames.map(filename => deserialize(fs.readFileSync(path.join(storageLocation, filename), { encoding: 'utf8', flag: 'r' })));
+//    //return results;
+//}
+
+
+function replayLog() {
+
+    var json = '[' + fs.readFileSync(storageLocation, 'utf8') + ']';
+    var logEntries: any[] = JSON.parse(json);
+    var pos = 1;
+
+    while (pos < logEntries.length) {
+        var command: string = logEntries[pos++];
+        var details: any = logEntries[pos++];
+        switch (command) {
+
+            case 'UPSERT':
+                assert(details.$type === 'SlowDef');
+                var slow = details.value;
+                var key: any = `${slow.id}-${slow.type}`;
+
+                // TODO: deserialize!!!!!!!!
+                // TODO: remove this extra round-trip to&from JSON. Expose unwrapJSONSafeObject() directly?
+                var value = deserialize(JSON.stringify(details));
+                cache[key] = value;
+                break;
+
+            case 'REMOVE':
+                key = details;
+                delete cache[key];
+                break;
+
+            default:
+                throw new Error(`Unrecognised log entry command '${command}'`);
+        }
+    }
 }
