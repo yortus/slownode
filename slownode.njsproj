@@ -31,13 +31,10 @@
     <Content Include="tsconfig.json" />
     <Compile Include="scripts\runPromisesAPlusTestSuite.js" />
     <Compile Include="scripts\runSlownodeTestSuite.js" />
-    <TypeScriptCompile Include="src\asyncFunctions\types.d.ts" />
-    <TypeScriptCompile Include="src\coroutines\types.d.ts" />
     <TypeScriptCompile Include="src\mainInfo.ts" />
     <TypeScriptCompile Include="src\promises\resolveFunction.ts" />
     <TypeScriptCompile Include="src\promises\rejectFunction.ts" />
     <TypeScriptCompile Include="src\promises\standardResolutionProcedure.ts" />
-    <TypeScriptCompile Include="src\promises\types.d.ts" />
     <TypeScriptCompile Include="src\storage\api.ts" />
     <TypeScriptCompile Include="src\storage\storageLocation.ts" />
     <TypeScriptCompile Include="src\index.ts" />
@@ -53,6 +50,7 @@
     <TypeScriptCompile Include="src\coroutines\slowRoutine.ts" />
     <TypeScriptCompile Include="src\coroutines\slowRoutineFunction.ts" />
     <TypeScriptCompile Include="src\coroutines\traverse.ts" />
+    <TypeScriptCompile Include="src\types.d.ts" />
     <TypeScriptCompile Include="src\typings\asyncawait\asyncawait.d.ts" />
     <TypeScriptCompile Include="src\typings\chai-as-promised\chai-as-promised.d.ts" />
     <TypeScriptCompile Include="src\typings\escodegen\escodegen.d.ts" />
