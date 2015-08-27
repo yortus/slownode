@@ -58,6 +58,13 @@ var SlowPromise = (function () {
     SlowPromise.deferred = function () {
         return makeDeferred();
     };
+    // TODO: temp testing....
+    SlowPromise.delay = function (ms) {
+        return new SlowPromise(function (resolve) {
+            // TODO: use SLOW event loop!!
+            setTimeout(function () { return resolve(); }, ms);
+        });
+    };
     /**
      * onFulfilled is called when/if "promise" resolves. onRejected is called when/if "promise" rejects.
      * Both are optional, if either/both are omitted the next onFulfilled/onRejected in the chain is called.

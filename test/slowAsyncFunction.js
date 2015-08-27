@@ -15,15 +15,15 @@ describe('The async(...) function', function () {
     this.timeout(600000);
     it('works', async.cps(function () {
         var fn = slow.async(function (delay, count) {
-            var Promise = __const(require('bluebird'));
+            var SlowPromise = __const(require('slownode').SlowPromise);
             for (var i = 0; i < count; ++i) {
                 console.log("waiting..." + i);
-                await(Promise.delay(delay));
+                await(SlowPromise.delay(delay));
             }
             return 'done';
         });
         try {
-            var result = await(fn(500, 5));
+            var result = await(fn(500, 10));
             console.log(result);
         }
         catch (ex) {

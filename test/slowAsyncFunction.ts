@@ -25,17 +25,17 @@ describe('The async(...) function', function () {
     it('works', async.cps(() => {
 
         var fn = slow.async((delay: number, count: number) => {
-            const Promise = __const(require('bluebird'));
+            const SlowPromise: typeof slow.Promise = __const(require('slownode').SlowPromise);
             for (var i = 0; i < count; ++i) {
                 console.log(`waiting...${i}`);
-                await (Promise.delay(delay));
+                await (SlowPromise.delay(delay));
                 //if (i > 4) throw new Error('herp derp');
             }
             return 'done';
         });
 
         try {
-            var result = await(fn(500, 5));
+            var result = await(fn(500, 10));
             console.log(result);
         }
         catch (ex) {

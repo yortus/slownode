@@ -23,13 +23,13 @@ export = SlowPromise;
 
 
 /** Sentinal value used for internal promise constructor calls. */
-const DEFER = {};
+const DEFER: any = {};
 
 
 class SlowPromise {
 
     /** Constructs a SlowPromise instance. May be called with or without new. */
-    constructor(resolver) {
+    constructor(resolver: (resolve: (value?: any) => void, reject: (reason?: any) => void) => void) {
 
         // Validate arguments.
         assert(_.isFunction(resolver) || resolver == DEFER);
@@ -64,6 +64,17 @@ class SlowPromise {
     static deferred() {
         return makeDeferred();
     }
+
+
+    // TODO: temp testing....
+    static delay(ms: number) {
+        return new SlowPromise(resolve => {
+            // TODO: use SLOW event loop!!
+            setTimeout(() => resolve(), ms);
+        });
+
+    }
+
 
 	/**
 	 * onFulfilled is called when/if "promise" resolves. onRejected is called when/if "promise" rejects.

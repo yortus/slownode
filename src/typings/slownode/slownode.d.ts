@@ -78,6 +78,10 @@ declare module "slownode" {
     var Promise: {
         new<T>(resolver: (resolve: (value?: T | SlowThenable<T>) => void, reject: (error?: any) => void) => void): SlowPromise<T>
         <T>(resolver: (resolve: (value?: T | SlowThenable<T>) => void, reject: (error?: any) => void) => void): SlowPromise<T>
+        resolved<T>(value?: T | SlowThenable<T>): SlowPromise<T>;
+        rejected(error: any): SlowPromise<any>;
+        deferred<T>(): SlowPromiseDeferred<T>;
+        delay(ms: number): SlowPromise<void>;
     }
 
 
@@ -90,6 +94,7 @@ declare module "slownode" {
         static resolved<T>(value?: T | SlowThenable<T>): SlowPromise<T>;
         static rejected(error: any): SlowPromise<any>;
         static deferred<T>(): SlowPromiseDeferred<T>;
+        static delay(ms: number): SlowPromise<void>;
         // TODO: all, race... (see https://github.com/borisyankov/DefinitelyTyped/blob/master/es6-promise/es6-promise.d.ts)
         // TODO: rehydration...
 
