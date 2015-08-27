@@ -2,80 +2,34 @@
 /// <reference path="../node/node.d.ts" />
 
 
+// TODO: add jsdoc comments in here...
+
+
 declare module "slownode" {
 
-    // ==================== SlowValue ====================
-
-    interface SlowInfo {
-
-        /** Slow object type. One of: 'SlowAsyncFunction', 'SlowPromise', 'SlowPromiseResolveFunction', 'SlowPromiseRejectFunction' */
-        type: string;
-
-        /** Slow object persistent identifier. This is shared between the in-memory and in-storage representations of the slow object. */
-        id?: string|number;
-    }
 
 
     // ==================== async() and SlowAsyncFunction ====================
 
-    function async<TReturn>(fn: () => TReturn): SlowAsyncFunctionNullary<TReturn>;
+    export function async<TReturn>(fn: () => TReturn): SlowAsyncFunctionNullary<TReturn>;
+    export function async<T1, TReturn>(fn: (_1: T1) => TReturn): SlowAsyncFunctionUnary<T1, TReturn>;
+    export function async<T1, T2, TReturn>(fn: (_1: T1, _2: T2) => TReturn): SlowAsyncFunctionBinary<T1, T2, TReturn>;
+    export function async<T1, T2, T3, TReturn>(fn: (_1: T1, _2: T2, _3: T3) => TReturn): SlowAsyncFunctionTernary<T1, T2, T3, TReturn>;
+    export function async<T1, T2, T3, T4, TReturn>(fn: (_1: T1, _2: T2, _3: T3, _4: T4) => TReturn): SlowAsyncFunctionQuaternary<T1, T2, T3, T4, TReturn>;
+    export function async<TReturn>(fn: (...args: any[]) => TReturn): SlowAsyncFunctionVariadic<TReturn>;
+    type SlowAsyncFunctionNullary<TReturn> = () => Promise<TReturn>;
+    type SlowAsyncFunctionUnary<T1, TReturn> = (_1: T1) => Promise<TReturn>;
+    type SlowAsyncFunctionBinary<T1, T2, TReturn> = (_1: T1, _2: T2) => Promise<TReturn>;
+    type SlowAsyncFunctionTernary<T1, T2, T3, TReturn> = (_1: T1, _2: T2, _3: T3) => Promise<TReturn>;
+    type SlowAsyncFunctionQuaternary<T1, T2, T3, T4, TReturn> = (_1: T1, _2: T2, _3: T3, _4: T4) => Promise<TReturn>;
+    type SlowAsyncFunctionVariadic<TReturn> = (...args: any[]) => Promise<any>;
 
-    function async<T1, TReturn>(fn: (_1: T1) => TReturn): SlowAsyncFunctionUnary<T1, TReturn>;
-
-    function async<T1, T2, TReturn>(fn: (_1: T1, _2: T2) => TReturn): SlowAsyncFunctionBinary<T1, T2, TReturn>;
-
-    function async<T1, T2, T3, TReturn>(fn: (_1: T1, _2: T2, _3: T3) => TReturn): SlowAsyncFunctionTernary<T1, T2, T3, TReturn>;
-
-    function async<T1, T2, T3, T4, TReturn>(fn: (_1: T1, _2: T2, _3: T3, _4: T4) => TReturn): SlowAsyncFunctionQuaternary<T1, T2, T3, T4, TReturn>;
-
-    function async<TReturn>(fn: (...args: any[]) => TReturn): SlowAsyncFunctionVariadic<TReturn>;
-
-    interface SlowAsyncFunction {
-        _slow: SlowInfo & {
-            source: string;
-            originalSource: string;
-        };
-    }
-
-    interface SlowAsyncFunctionNullary<TReturn> extends SlowAsyncFunction {
-        (): Promise<TReturn>;
-    }
-
-    interface SlowAsyncFunctionUnary<T1, TReturn> extends SlowAsyncFunction {
-        (_1: T1): Promise<TReturn>;
-    }
-
-    interface SlowAsyncFunctionBinary<T1, T2, TReturn> extends SlowAsyncFunction {
-        (_1: T1, _2: T2): Promise<TReturn>;
-    }
-
-    interface SlowAsyncFunctionTernary<T1, T2, T3, TReturn> extends SlowAsyncFunction {
-        (_1: T1, _2: T2, _3: T3): Promise<TReturn>;
-    }
-
-    interface SlowAsyncFunctionQuaternary<T1, T2, T3, T4, TReturn> extends SlowAsyncFunction {
-        (_1: T1, _2: T2, _3: T3, _4: T4): Promise<TReturn>;
-    }
-
-    interface SlowAsyncFunctionVariadic<TReturn> extends SlowAsyncFunction {
-        (...args: any[]): Promise<any>;
-    }
-
-    interface SlowAsyncFunctionActivation extends SlowRoutine {
-        _slow: SlowInfo & {
-            asyncFunction: SlowAsyncFunction,
-            state: any, // TODO: may include Slow object refs
-            awaiting: any, // TODO: may be a slow object ref / may include slow object refs
-            resolve: SlowPromise.ResolveFunction<any>, // TODO: is a slow object
-            reject: SlowPromise.RejectFunction // TODO: is a slow object
-        };
-    }
 
 
     // ==================== SlowPromise ====================
 
     // TODO: This is just an alias of the SlowPromise constructor to support slow.Promise(...) usage...
-    var Promise: {
+    export var Promise: {
         new<T>(resolver: (resolve: (value?: T | SlowThenable<T>) => void, reject: (error?: any) => void) => void): SlowPromise<T>
         <T>(resolver: (resolve: (value?: T | SlowThenable<T>) => void, reject: (error?: any) => void) => void): SlowPromise<T>
         resolved<T>(value?: T | SlowThenable<T>): SlowPromise<T>;
@@ -84,8 +38,7 @@ declare module "slownode" {
         delay(ms: number): SlowPromise<void>;
     }
 
-
-    class SlowPromise<T> {
+    export class SlowPromise<T> {
 
         // TODO: review types specified here:
         constructor(resolver: (resolve: (value?: T | SlowThenable<T>) => void, reject: (error?: any) => void) => void);
@@ -108,7 +61,7 @@ declare module "slownode" {
         then<U>(onFulfilled?: (value: T) => U | SlowThenable<U>, onRejected?: (error: any) => void): SlowThenable<U>;
     }
 
-    namespace SlowPromise {
+    export namespace SlowPromise {
 
         interface Deferred<T> {
             promise: SlowPromise<T>;
@@ -123,31 +76,6 @@ declare module "slownode" {
         interface RejectFunction {
             (error?: any): void;
         }
-    }
-
-    // ==================== SlowRoutineFunction and SlowRoutine ====================
-    // TODO: all this can go in a private api
-
-    export var SlowRoutineFunction: {
-        new(bodyFunction: Function, options?: SlowRoutineOptions): SlowRoutineFunction;
-        (bodyFunction: Function, options?: SlowRoutineOptions): SlowRoutineFunction;
-    };
-
-    interface SlowRoutineOptions {
-        yieldIdentifier?: string;
-        constIdentifier?: string;
-    }
-
-    interface SlowRoutineFunction {
-        (...args: any[]): SlowRoutine;
-        body: Function;
-    }
-
-    interface SlowRoutine {
-        next(value?: any): { done: boolean; value: any; };
-        throw(value?: any): { done: boolean; value: any; };
-        return(value?: any): { done: boolean; value: any; };
-        state: any;
     }
 }
 

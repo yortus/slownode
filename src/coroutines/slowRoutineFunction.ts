@@ -1,7 +1,7 @@
 ﻿import assert = require('assert');
 import _ = require('lodash');
 import Promise = require('bluebird');
-import Types = require('slownode');
+import types = require('types');
 import esprima = require('esprima');
 import escodegen = require('escodegen');
 import match = require('./match');
@@ -36,7 +36,7 @@ export = SlowRoutineFunction;
 
 
 /** Creates a SlowRoutineFunction instance. May be called with or without 'new'. */
-function SlowRoutineFunction(bodyFunction: Function, options?: Types.SlowRoutineOptions) {
+function SlowRoutineFunction(bodyFunction: Function, options?: types.SlowRoutineOptions) {
 
     // Validate arguments.
     assert(typeof bodyFunction === 'function');
@@ -290,7 +290,7 @@ function ensureAmbientIdentifiersAreNotMutated(funcExpr: ESTree.FunctionExpressi
 
 
 /** Constructs a SlowRoutineFunction instance tailored to the given body code and parameter names. */
-function makeSlowRoutineFunction(bodyFunc: (state) => void, paramNames: string[]): Types.SlowRoutineFunction {
+function makeSlowRoutineFunction(bodyFunc: (state) => void, paramNames: string[]): types.SlowRoutineFunction {
 
     // This is the generic constructor function. It closes over bodyFunc.
     function SlowRoutineFunction() {

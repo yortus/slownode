@@ -1,7 +1,7 @@
 ﻿import assert = require('assert');
 import crypto = require('crypto');
 import _ = require('lodash');
-import Types = require('slownode');
+import types = require('types');
 import SlowPromise = require('../promises/slowPromise');
 import SlowRoutineFunction = require('../coroutines/slowRoutineFunction');
 import runToCompletion = require('./runToCompletion');
@@ -18,7 +18,7 @@ export = asyncPseudoKeyword;
 
 
 // TODO: doc...
-var asyncPseudoKeyword: typeof Types.async = <any> ((bodyFunc: Function) => {
+var asyncPseudoKeyword: types.Async = <any> ((bodyFunc: Function) => {
 
     // Validate arguments.
     assert(typeof bodyFunc === 'function');
@@ -32,14 +32,14 @@ var asyncPseudoKeyword: typeof Types.async = <any> ((bodyFunc: Function) => {
 
     // Create the callable part of the SlowAsyncFunction object. When called, this function creates a new
     // SlowAsyncFunctionActivation object from the given SlowRoutineFunction, and runs it to completion.
-    var asyncFunction: Types.SlowAsyncFunction = <any> ((...args) => {
+    var asyncFunction: types.SlowAsyncFunction = <any> ((...args) => {
 
         // TODO: Create a new SlowPromise to represent the eventual result of the operation...
         var deferred = SlowPromise.deferred();
 
         // Create a new SlowAsyncFunctionActivation object using the given arguments.
         // TODO: subclass SlowRoutine so we have an runtime-identifiable prototype?
-        var safa: Types.SlowAsyncFunctionActivation = sloroFunc.apply(sloroFunc, args);
+        var safa: types.SlowAsyncFunctionActivation = sloroFunc.apply(sloroFunc, args);
 
         // Add slow state to the SlowAsyncFunctionActivation instance.
         safa._slow = {

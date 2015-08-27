@@ -1,5 +1,4 @@
-﻿import Types = require('slownode');
-import SlowRoutineFunction = require('./coroutines/slowRoutineFunction');
+﻿import API = require('slownode');
 import asyncPseudoKeyword = require('./asyncFunctions/asyncPseudoKeyword');
 import SlowPromise = require('./promises/slowPromise');
 import storage = require('./storage/storage');
@@ -59,8 +58,7 @@ storage.init();
 
 
 // TODO: temp testing... Build the API for export...
-var api: typeof Types = <any> {};
+var api: typeof API = <any> {};
 api.async = asyncPseudoKeyword;
 api.Promise = <any> SlowPromise;
 api.SlowPromise = SlowPromise;
-api.SlowRoutineFunction = <any> SlowRoutineFunction;

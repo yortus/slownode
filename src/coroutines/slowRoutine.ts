@@ -1,11 +1,11 @@
-﻿import Types = require('slownode');
+﻿import types = require('types');
 export = SlowRoutine;
 
 
 /** Creates a SlowRoutine instance. May be called with or without 'new'. */
 function SlowRoutine(bodyFunc: (state) => void, state: any) {
 
-    var result: Types.SlowRoutine = {
+    var result: types.SlowRoutine = {
         next: makeResumeMethod('yield', bodyFunc, state),
         throw: makeResumeMethod('throw', bodyFunc, state),
         return: makeResumeMethod('return', bodyFunc, state),

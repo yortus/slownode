@@ -1,5 +1,5 @@
 ﻿import assert = require('assert');
-import Types = require('slownode');
+import types = require('types');
 import storage = require('../storage/storage');
 export = runToCompletion;
 
@@ -12,7 +12,7 @@ export = runToCompletion;
  * continues until the SlowAsyncFunctionActivation either returns or throws. If it throws,
  * this function rejects with the error. If it returns, this function resolves to its result.
  */
-function runToCompletion(safa: Types.SlowAsyncFunctionActivation) {
+function runToCompletion(safa: types.SlowAsyncFunctionActivation) {
 
     // Kick off the recursive worker function.
     safa._slow.awaiting.then(value => step(safa, null, value), error => step(safa, error));
@@ -20,7 +20,7 @@ function runToCompletion(safa: Types.SlowAsyncFunctionActivation) {
 
 
 /** Helper function to resume the underlying SlowRoutine, then handle its return/throw/yield. */
-function step(safa: Types.SlowAsyncFunctionActivation, error?: any, next?: any) {
+function step(safa: types.SlowAsyncFunctionActivation, error?: any, next?: any) {
 
     // Resume the underlying SlowRoutine, either throwing into it or calling next(), depending on args.
     try {
@@ -43,7 +43,7 @@ function step(safa: Types.SlowAsyncFunctionActivation, error?: any, next?: any) 
 
     // The SlowRoutine yielded. Ensure the yielded value is awaitable, await it,
     // then call step() recursively with the eventual result or error.
-    var awaiting: Types.SlowPromise<any> = safa._slow.awaiting = yielded.value;
+    var awaiting: types.SlowPromise = safa._slow.awaiting = yielded.value;
     assert(awaiting && typeof awaiting.then === 'function', 'await: expected argument to be a Promise');
     storage.upsert(safa);
     awaiting.then(value => step(safa, null, value), error => step(safa, error));

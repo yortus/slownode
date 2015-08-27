@@ -1,4 +1,3 @@
-var SlowRoutineFunction = require('./coroutines/slowRoutineFunction');
 var asyncPseudoKeyword = require('./asyncFunctions/asyncPseudoKeyword');
 var SlowPromise = require('./promises/slowPromise');
 var storage = require('./storage/storage');
@@ -42,6 +41,5 @@ var api = {};
 api.async = asyncPseudoKeyword;
 api.Promise = SlowPromise;
 api.SlowPromise = SlowPromise;
-api.SlowRoutineFunction = SlowRoutineFunction;
 module.exports = api;
 //# sourceMappingURL=index.js.map
