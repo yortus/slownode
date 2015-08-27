@@ -24,11 +24,11 @@ function upsert(record) {
     var serializedValue = serialize(record);
     record.id = record.id || newKey();
     var filename = path.join(storageLocation, record.type + "-" + record.id + ".json");
-    fs.writeFileSync(filename, serializedValue, { encoding: 'utf8', flag: 'w' });
+    // TODO: temp testing was... fs.writeFileSync(filename, serializedValue, { encoding: 'utf8', flag: 'w' });
 }
 function remove(record) {
     var filename = path.join(storageLocation, record.type + "-" + record.id + ".json");
-    fs.unlinkSync(filename);
+    // TODO: temp testing was... fs.unlinkSync(filename);
 }
 // TODO: add `where` param (eg for event loop searching for what it can schedule)
 // TODO: cache this one - it could be slow. Should only use at startup time (and event loop??)

@@ -23,7 +23,7 @@ function serialize(value: any) {
  * Recursively converts the given value into an object that can be safely converted to JSON.
  * Throws an error if any part of the value cannot be converted.
  */
-function toJSONSafeObject(value: any) {
+function toJSONSafeObject(value: any, treatSlowObjectsAsRefs = false) {
 
     // Some primitives are already safe. Return them unchanged.
     if (_.isString(value) || _.isNumber(value) || _.isBoolean(value) || _.isNull(value)) {
@@ -32,28 +32,43 @@ function toJSONSafeObject(value: any) {
 
     // Map an array of values to an array of safe values.
     else if (_.isArray(value)) {
-        return value.map(toJSONSafeObject);
+        return value.map(elem => toJSONSafeObject(elem, treatSlowObjectsAsRefs));
     }
 
-    // Map a plain object to a new object whose property values are safe values.
-    else if (_.isPlainObject(value)) {
-        return _.mapValues(value, toJSONSafeObject);
+    // Map a plain (and non-slow) object to a new object whose property values are safe values.
+    else if (_.isPlainObject(value) && !_.has(value, '_slow')) {
+        return _.mapValues(value, propValue => toJSONSafeObject(propValue, treatSlowObjectsAsRefs));
     }
 
-    // Undefined
+    // Map `undefined` to a sentinel object that will be deserialized back to `undefined`
     else if (_.isUndefined(value)) {
         return { $type: 'undefined' };
     }
 
-    // TODO: temp testing...
-    else if (value && typeof value.then === 'function') {
-        return { $type: 'Promise', value: 'blah' };
+    // TODO: Map a slow object...
+    else if (_.isObject(value) && _.has(value, '_slow')) {
+
+        if (treatSlowObjectsAsRefs) {
+            // TODO: ...
+            return null;
+            throw 'Not implemented';
+
+        }
+        else {
+
+            // TODO: ...
+            return null;
+            throw 'Not implemented';
+
+        }
+
     }
 
-    // TODO: temp testing... just for SlowPromise testing then remove!!!
+    // TODO: temp testing... remove this...
     else {
-        return { $type: 'unknown' };
+        return { $type: 'ERROR - UNKNOWN?!' };
     }
+
 
     // If we get to here, the value is not recognised. Throw an error.
     throw new Error(`toJSONSafeObject: value cannot be serialized: ${value}`);

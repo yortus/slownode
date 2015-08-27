@@ -31,13 +31,13 @@ function upsert(record: API.Record) {
     var serializedValue = serialize(record);
     record.id = record.id || newKey();
     var filename = path.join(storageLocation, `${record.type}-${record.id}.json`);
-    fs.writeFileSync(filename, serializedValue, { encoding: 'utf8', flag: 'w' });
+    // TODO: temp testing was... fs.writeFileSync(filename, serializedValue, { encoding: 'utf8', flag: 'w' });
 }
 
 
 function remove(record: API.Record) {
     var filename = path.join(storageLocation, `${record.type}-${record.id}.json`);
-    fs.unlinkSync(filename);
+    // TODO: temp testing was... fs.unlinkSync(filename);
 }
 
 
