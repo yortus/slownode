@@ -1,4 +1,3 @@
-/// <reference path="../knex/knex.d.ts" />
 /// <reference path="../bluebird/bluebird.d.ts" />
 /// <reference path="../node/node.d.ts" />
 
@@ -173,6 +172,7 @@ declare var __const: <T>(init: T) => T;
 
 
 
+// TODO: assimilate...
 declare module "slownode-prev" {
 
     export var ready: Promise<void>;
@@ -198,7 +198,6 @@ declare module "slownode-prev" {
     }
 
 
-    import Knex = require("knex");
 
     export function start(config: SlowConfig): Promise<void>;
     export function stop(): Promise<void>;

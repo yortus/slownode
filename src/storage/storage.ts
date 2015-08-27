@@ -4,7 +4,7 @@ export = implementation;
 
 
 // List the available storage adapter names.
-var adapterNames = ['fileSystem', 'sqliteInFiber'];
+var adapterNames = ['fileSystem'];
 
 
 // Determine the adapter to use based on what's in the main package.json file. Fail early if no valid adapter can be determined.

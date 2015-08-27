@@ -26,7 +26,6 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
   <ItemGroup>
     <Content Include=".gitignore" />
-    <Content Include="src\storage\sqliteInFiber\emptyTemplate.db" />
     <Content Include="package.json" />
     <Content Include="README.md" />
     <Content Include="tsconfig.json" />
@@ -35,16 +34,7 @@
     <TypeScriptCompile Include="src\storage\api.ts" />
     <TypeScriptCompile Include="src\storage\fileSystem\storageLocation.ts" />
     <TypeScriptCompile Include="src\storage\fileSystem\index.ts" />
-    <TypeScriptCompile Include="src\storage\sqliteInFiber\databaseLocation.ts" />
     <TypeScriptCompile Include="src\index.ts" />
-    <TypeScriptCompile Include="src-prev\settings.ts" />
-    <TypeScriptCompile Include="src-prev\dryrun.ts" />
-    <TypeScriptCompile Include="src-prev\errors.ts" />
-    <TypeScriptCompile Include="src-prev\index.ts" />
-    <TypeScriptCompile Include="src-prev\ready.ts" />
-    <TypeScriptCompile Include="src-prev\start.ts" />
-    <TypeScriptCompile Include="src-prev\stop.ts" />
-    <TypeScriptCompile Include="src\storage\sqliteInFiber\index.ts" />
     <TypeScriptCompile Include="src\storage\storage.ts" />
     <TypeScriptCompile Include="src\storage\deserialize.ts" />
     <TypeScriptCompile Include="src\storage\serialize.ts" />
@@ -59,7 +49,6 @@
     <TypeScriptCompile Include="src\slowRoutine\traverse.ts" />
     <TypeScriptCompile Include="src\typings\asyncawait\asyncawait.d.ts" />
     <TypeScriptCompile Include="src\typings\chai-as-promised\chai-as-promised.d.ts" />
-    <TypeScriptCompile Include="src-prev\validateConfig.ts" />
     <TypeScriptCompile Include="src\typings\escodegen\escodegen.d.ts" />
     <TypeScriptCompile Include="src\typings\esprima\esprima.d.ts" />
     <TypeScriptCompile Include="src\typings\estree\estree.d.ts" />
@@ -69,70 +58,26 @@
     <TypeScriptCompile Include="test\fixtures\slowfuncs\2.ts" />
     <TypeScriptCompile Include="test\slowPromise.ts" />
     <TypeScriptCompile Include="test\main.ts" />
-    <TypeScriptCompile Include="src-prev\eventEmitter\index.ts" />
-    <TypeScriptCompile Include="src-prev\eventLoop\exec.ts" />
-    <TypeScriptCompile Include="src-prev\eventLoop\index.ts" />
-    <TypeScriptCompile Include="src-prev\slowFunction\callback.ts" />
-    <TypeScriptCompile Include="src-prev\slowFunction\cps.ts" />
-    <TypeScriptCompile Include="src-prev\slowFunction\declare.ts" />
-    <TypeScriptCompile Include="src-prev\slowFunction\deserialise.ts" />
-    <TypeScriptCompile Include="src-prev\slowFunction\serialise.ts" />
-    <TypeScriptCompile Include="src-prev\slowFunction\setImmediate.ts" />
-    <TypeScriptCompile Include="src-prev\slowFunction\setInterval.ts" />
-    <TypeScriptCompile Include="src-prev\slowFunction\setTimeout.ts" />
-    <TypeScriptCompile Include="src-prev\slowPromise\index.ts" />
-    <TypeScriptCompile Include="src-prev\store\create.ts" />
-    <TypeScriptCompile Include="src-prev\store\connect.ts" />
-    <TypeScriptCompile Include="src-prev\store\index.ts" />
-    <TypeScriptCompile Include="src-prev\store\eventLoop\add.ts" />
-    <TypeScriptCompile Include="src-prev\store\eventLoop\next.ts" />
-    <TypeScriptCompile Include="src-prev\store\eventLoop\remove.ts" />
-    <TypeScriptCompile Include="src-prev\store\listener\add.ts" />
-    <TypeScriptCompile Include="src-prev\store\listener\get.ts" />
-    <TypeScriptCompile Include="src-prev\store\listener\remove.ts" />
-    <TypeScriptCompile Include="src-prev\store\listener\removeAll.ts" />
-    <TypeScriptCompile Include="src-prev\store\promise\add.ts" />
-    <TypeScriptCompile Include="src-prev\store\promise\get.ts" />
-    <TypeScriptCompile Include="src-prev\store\promise\reject.ts" />
-    <TypeScriptCompile Include="src-prev\store\promise\resolve.ts" />
-    <TypeScriptCompile Include="src-prev\store\slowFunction\add.ts" />
-    <TypeScriptCompile Include="src-prev\store\slowFunction\addTimed.ts" />
-    <TypeScriptCompile Include="src-prev\store\slowFunction\get.ts" />
-    <TypeScriptCompile Include="src-prev\store\slowFunction\remove.ts" />
-    <TypeScriptCompile Include="src-prev\store\slowFunction\toStorable.ts" />
     <TypeScriptCompile Include="src\typings\bluebird\bluebird.d.ts" />
     <TypeScriptCompile Include="src\typings\chai\chai.d.ts" />
-    <TypeScriptCompile Include="src\typings\knex\knex.d.ts" />
     <TypeScriptCompile Include="src\typings\mocha\mocha.d.ts" />
     <TypeScriptCompile Include="src\typings\node\node.d.ts" />
     <TypeScriptCompile Include="src\typings\slownode\slownode.d.ts" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\" />
-    <Folder Include="src-prev\" />
-    <Folder Include="src-prev\eventEmitter\" />
-    <Folder Include="src-prev\eventLoop\" />
-    <Folder Include="src-prev\slowFunction\" />
-    <Folder Include="src-prev\slowPromise\" />
-    <Folder Include="src-prev\store\" />
-    <Folder Include="src-prev\store\eventLoop\" />
-    <Folder Include="src-prev\store\listener\" />
-    <Folder Include="src-prev\store\promise\" />
-    <Folder Include="src-prev\store\slowFunction\" />
     <Folder Include="src\epoch\" />
     <Folder Include="src\storage\" />
     <Folder Include="src\slowPromise\" />
     <Folder Include="src\slowRoutine\" />
     <Folder Include="src\slowAsyncFunction\" />
     <Folder Include="src\storage\fileSystem\" />
-    <Folder Include="src\storage\sqliteInFiber\" />
     <Folder Include="src\typings\" />
     <Folder Include="src\typings\bluebird\" />
     <Folder Include="src\typings\chai\" />
     <Folder Include="src\typings\escodegen\" />
     <Folder Include="src\typings\esprima\" />
     <Folder Include="src\typings\estree\" />
-    <Folder Include="src\typings\knex\" />
     <Folder Include="src\typings\mocha\" />
     <Folder Include="src\typings\asyncawait\" />
     <Folder Include="src\typings\chai-as-promised\" />
@@ -142,12 +87,6 @@
     <Folder Include="test" />
     <Folder Include="test\fixtures\" />
     <Folder Include="test\fixtures\slowfuncs\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="src-prev\dbpath.ts" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="src-prev\store\dbexists.ts" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <!--Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them.-->

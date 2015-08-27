@@ -1,5 +1,5 @@
 // List the available storage adapter names.
-var adapterNames = ['fileSystem', 'sqliteInFiber'];
+var adapterNames = ['fileSystem'];
 // Determine the adapter to use based on what's in the main package.json file. Fail early if no valid adapter can be determined.
 // TODO: temp testing... to get promises-aplus tests working from test script in package.json. Need a better way!!!
 var selectedAdapterName = 'fileSystem';
