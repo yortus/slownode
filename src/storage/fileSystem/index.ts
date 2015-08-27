@@ -8,6 +8,8 @@ import API = require('../api');
 export = api;
 
 
+// TODO: doc... single process/thread exclusive by design...
+// TODO: use proper unique keys when generating keys (GUID? int counter?)
 // TODO: errors are not caught... What to do?
 
 
@@ -27,32 +29,37 @@ function init() {
 }
 
 
-function upsert(record: API.Record) {
-    var serializedValue = serialize(record);
-    record.id = record.id || newKey();
-    var filename = path.join(storageLocation, `${record.type}-${record.id}.json`);
-    // TODO: temp testing was... fs.writeFileSync(filename, serializedValue, { encoding: 'utf8', flag: 'w' });
+function upsert(slowObj: API.SlowObject) {
+    var slow = slowObj._slow;
+    slow.id = slow.id || newKey();
+    var serializedValue = serialize(slowObj);
+    var filename = path.join(storageLocation, `${slow.type}-${slow.id}.json`);
+    // TODO: temp testing was...
+    fs.writeFileSync(filename, serializedValue, { encoding: 'utf8', flag: 'w' });
 }
 
 
-function remove(record: API.Record) {
-    var filename = path.join(storageLocation, `${record.type}-${record.id}.json`);
-    // TODO: temp testing was... fs.unlinkSync(filename);
+function remove(slowObj: API.SlowObject) {
+    var slow = slowObj._slow;
+    var filename = path.join(storageLocation, `${slow.type}-${slow.id}.json`);
+    // TODO: temp testing was...
+    fs.unlinkSync(filename);
 }
 
 
 // TODO: add `where` param (eg for event loop searching for what it can schedule)
 // TODO: cache this one - it could be slow. Should only use at startup time (and event loop??)
-function find(record: API.Record): API.Record[] {
+function find(type: string, id?: string|number): any[] {
     var filenames = fs.readdirSync(storageLocation);
-    var filenamePrefix = `${record.type}-${record.id || ''}`;
+    var filenamePrefix = `${type}-${id || ''}`;
     filenames = filenames.filter(filename => filename.indexOf(filenamePrefix) === 0);
-    var results = filenames.map(filename => deserialize(fs.readFileSync(path.join(storageLocation, filename), { encoding: 'utf8', flag: 'r' })));
-    return results;
+    return [];
+    //TODO: fix!... was... var results = filenames.map(filename => deserialize(fs.readFileSync(path.join(storageLocation, filename), { encoding: 'utf8', flag: 'r' })));
+    //return results;
 }
 
 
-function newKey(): API.Key {
+function newKey(): string|number {
     var id: string = crypto.createHash('sha1').update(crypto.randomBytes(256)).digest('hex').slice(0, 40);
     return id;
 }

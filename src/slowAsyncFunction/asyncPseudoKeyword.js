@@ -41,7 +41,7 @@ var asyncPseudoKeyword = (function (bodyFunc) {
             reject: deferred.reject
         };
         // Persist the SlowAsyncFunctionActivation's initial state to the database.
-        storage.upsert(safa._slow);
+        storage.upsert(safa);
         // Run the SlowAsyncFunctionActivation instance to completion, and return the promise of completion.
         runToCompletion(safa);
         return deferred.promise;
@@ -54,7 +54,7 @@ var asyncPseudoKeyword = (function (bodyFunc) {
         originalSource: bodyFunc.toString()
     };
     // Ensure the SlowAsyncFunction definition has been persisted to storage.
-    storage.upsert(asyncFunction._slow);
+    storage.upsert(asyncFunction);
     // Return the SlowAsyncFunction instance.
     return asyncFunction;
 });

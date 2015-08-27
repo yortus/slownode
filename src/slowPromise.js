@@ -28,7 +28,7 @@ var SlowPromise = (function () {
         // Validate arguments.
         assert(_.isFunction(resolver) || resolver == DEFER);
         // Persist to storage.
-        storage.upsert(this._slow);
+        storage.upsert(this);
         // If this is an internal call from makeDeferred(), return the promise now.
         if (resolver === DEFER)
             return this;
@@ -72,7 +72,7 @@ var SlowPromise = (function () {
         var _this = this;
         var deferred2 = SlowPromise.deferred();
         this._slow.handlers.push({ onFulfilled: onFulfilled, onRejected: onRejected, deferred2: deferred2 });
-        storage.upsert(this._slow);
+        storage.upsert(this);
         if (this._slow.state !== 0 /* Pending */)
             setTimeout(function () { return processAllHandlers(_this); }, 0);
         return deferred2.promise;
@@ -90,7 +90,7 @@ var SlowPromise = (function () {
         if (this._slow.state !== 0 /* Pending */)
             return;
         _a = [1 /* Fulfilled */, value], this._slow.state = _a[0], this._slow.settledValue = _a[1];
-        storage.upsert(this._slow);
+        storage.upsert(this);
         setTimeout(function () { return processAllHandlers(_this); }, 0);
         var _a;
     };
@@ -99,7 +99,7 @@ var SlowPromise = (function () {
         if (this._slow.state !== 0 /* Pending */)
             return;
         _a = [2 /* Rejected */, reason], this._slow.state = _a[0], this._slow.settledValue = _a[1];
-        storage.upsert(this._slow);
+        storage.upsert(this);
         setTimeout(function () { return processAllHandlers(_this); }, 0);
         var _a;
     };
@@ -116,7 +116,7 @@ function makeDeferred() {
         if (promise._slow.isFateResolved)
             return;
         promise._slow.isFateResolved = true;
-        storage.upsert(promise._slow);
+        storage.upsert(promise);
         standardResolutionProcedure(promise, value);
     });
     resolve._slow = { type: 'SlowPromiseResolveFunction', id: promise._slow.id };
@@ -125,7 +125,7 @@ function makeDeferred() {
         if (promise._slow.isFateResolved)
             return;
         promise._slow.isFateResolved = true;
-        storage.upsert(promise._slow);
+        storage.upsert(promise);
         promise._reject(reason);
     });
     reject._slow = { type: 'SlowPromiseRejectFunction', id: promise._slow.id };
@@ -141,7 +141,7 @@ function processAllHandlers(p) {
     // Dequeue each onResolved/onRejected handler in order.
     while (p._slow.handlers.length > 0) {
         var handler = p._slow.handlers.shift();
-        storage.upsert(p._slow);
+        storage.upsert(p);
         // Fulfilled case.
         if (p._slow.state === 1 /* Fulfilled */) {
             if (_.isFunction(handler.onFulfilled)) {

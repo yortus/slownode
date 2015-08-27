@@ -42,7 +42,7 @@ var rehydrate = async(() => {
 
 // TODO: doc...
 function getSlowAsyncFunctionActivations() {
-    var records = storage.find({ type: 'SlowAsyncFunctionActivation' });
+    var records = storage.find('SlowAsyncFunctionActivation');
     var results = records.map(raw => ({
         id: <number> raw.id,
         asyncFunctionId: raw['asyncFunctionId'],
@@ -50,7 +50,7 @@ function getSlowAsyncFunctionActivations() {
         awaiting: raw['awaiting'],
         resolve: raw['resolve'],
         reject: raw['reject'],
-        source: <string> (storage.find({ type: 'SlowAsyncFunction', id: raw['asyncFunctionId'] })[0] || {})['source']
+        source: <string> (storage.find('SlowAsyncFunction', raw['asyncFunctionId'])[0] || {})['source']
     }));
     return results;
 }

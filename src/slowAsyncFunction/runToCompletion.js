@@ -20,13 +20,13 @@ function step(safa, error, next) {
     }
     // The SlowRoutine threw. Finalize and reject the SlowAsyncFunctionActivation.
     catch (ex) {
-        storage.remove(safa._slow);
+        storage.remove(safa);
         safa._slow.reject(ex);
         return;
     }
     // The SlowRoutine returned. Finalize and resolve the SlowAsyncFunctionActivation.
     if (yielded.done) {
-        storage.remove(safa._slow);
+        storage.remove(safa);
         safa._slow.resolve(yielded.value);
         return;
     }
@@ -34,7 +34,7 @@ function step(safa, error, next) {
     // then call step() recursively with the eventual result or error.
     var awaiting = safa._slow.awaiting = yielded.value;
     assert(awaiting && typeof awaiting.then === 'function', 'await: expected argument to be a Promise');
-    storage.upsert(safa._slow);
+    storage.upsert(safa);
     awaiting.then(function (value) { return step(safa, null, value); }, function (error) { return step(safa, error); });
 }
 module.exports = runToCompletion;
