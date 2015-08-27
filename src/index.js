@@ -41,6 +41,7 @@ rehydrate();
 var api = {};
 api.async = asyncPseudoKeyword;
 api.Promise = SlowPromise;
+api.SlowPromise = SlowPromise;
 api.SlowRoutineFunction = SlowRoutineFunction;
 module.exports = api;
 //# sourceMappingURL=index.js.map

@@ -132,8 +132,6 @@ function makeDeferred() {
     // All done.
     return { promise: promise, resolve: resolve, reject: reject };
 }
-/** The SlowPromise constructor function cast to the full SlowPromise generic type defined in the .d.ts. */
-var slowPromiseConstructorFunction = SlowPromise;
 /**
  * Dequeues and processes all enqueued onFulfilled/onRejected handlers.
  * The SlowPromise implementation calls this when `p` is settled, and
@@ -223,5 +221,5 @@ function standardResolutionProcedure(p, x) {
         p._fulfil(x);
     }
 }
-module.exports = slowPromiseConstructorFunction;
+module.exports = SlowPromise;
 //# sourceMappingURL=slowPromise.js.map

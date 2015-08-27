@@ -2,7 +2,7 @@ import assert = require('assert');
 import _ = require('lodash');
 import Types = require('slownode');
 import storage = require('../storage/storage');
-export = slowPromiseConstructorFunction;
+export = SlowPromise;
 
 
 
@@ -152,10 +152,6 @@ function makeDeferred() {
     // All done.
     return { promise, resolve, reject };
 }
-
-
-/** The SlowPromise constructor function cast to the full SlowPromise generic type defined in the .d.ts. */
-var slowPromiseConstructorFunction = <Types.SlowPromiseStatic> <any> SlowPromise;
 
 
 /**

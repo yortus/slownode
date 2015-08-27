@@ -60,5 +60,6 @@ rehydrate();
 // TODO: temp testing... Build the API for export...
 var api: typeof Types = <any> {};
 api.async = asyncPseudoKeyword;
-api.Promise = SlowPromise;
+api.Promise = <any> SlowPromise;
+api.SlowPromise = SlowPromise;
 api.SlowRoutineFunction = <any> SlowRoutineFunction;

@@ -74,29 +74,32 @@ declare module "slownode" {
 
     // ==================== SlowPromise ====================
 
-    var Promise: SlowPromiseStatic;
-
-    interface SlowPromiseStatic {
-
-        // TODO: review types specified here:
-        new<T>(resolver: (resolve: (value?: T | SlowThenable<T>) => void, reject: (error?: any) => void) => void): SlowPromise<T>;
-        <T>(resolver: (resolve: (value?: T | SlowThenable<T>) => void, reject: (error?: any) => void) => void): SlowPromise<T>;
-
-        resolved<T>(value?: T | SlowThenable<T>): SlowPromise<T>;
-        rejected(error: any): SlowPromise<any>;
-        deferred<T>(): SlowPromiseDeferred<T>;
-        // TODO: all, race... (see https://github.com/borisyankov/DefinitelyTyped/blob/master/es6-promise/es6-promise.d.ts)
-        // TODO: rehydration...
+    // TODO: This is just an alias of the SlowPromise constructor to support slow.Promise(...) usage...
+    var Promise: {
+        new<T>(resolver: (resolve: (value?: T | SlowThenable<T>) => void, reject: (error?: any) => void) => void): SlowPromise<T>
+        <T>(resolver: (resolve: (value?: T | SlowThenable<T>) => void, reject: (error?: any) => void) => void): SlowPromise<T>
     }
 
-    interface SlowPromise<T> extends SlowThenable<T> {
+
+    class SlowPromise<T> {
+
+        // TODO: review types specified here:
+        constructor(resolver: (resolve: (value?: T | SlowThenable<T>) => void, reject: (error?: any) => void) => void);
+
+        // Static member functions
+        static resolved<T>(value?: T | SlowThenable<T>): SlowPromise<T>;
+        static rejected(error: any): SlowPromise<any>;
+        static deferred<T>(): SlowPromiseDeferred<T>;
+        // TODO: all, race... (see https://github.com/borisyankov/DefinitelyTyped/blob/master/es6-promise/es6-promise.d.ts)
+        // TODO: rehydration...
+
+        // Methods
         then<U>(onFulfilled?: (value: T) => U | SlowThenable<U>, onRejected?: (error: any) => U | SlowThenable<U>): SlowPromise<U>;
         then<U>(onFulfilled?: (value: T) => U | SlowThenable<U>, onRejected?: (error: any) => void): SlowPromise<U>;
         catch<U>(onRejected?: (error: any) => U | SlowThenable<U>): SlowPromise<U>;
 
-
-
-        // TODO: temp testing...
+        // Private implementation details
+        // TODO: can we get them out of this .d.ts?
         _slow: SlowInfo & {
             isFateResolved: boolean;
             state: SlowPromiseState;
