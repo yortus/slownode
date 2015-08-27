@@ -17,9 +17,9 @@ interface API {
 
     init(): void;
 
-    insert(record: API.Record): API.Key;
+    insert(record: API.Record): void;
 
-    upsert(record: API.Record): API.Key;
+    upsert(record: API.Record): void;
 
     update(record: API.Record): void;
 

@@ -34,8 +34,8 @@ class SlowPromise {
         // Validate arguments.
         assert(_.isFunction(resolver) || resolver == DEFER);
 
-        // Finish basic construction.
-        this._slow.id = storage.insert(this._slow);
+        // Persist to storage.
+        storage.insert(this._slow);
 
         // If this is an internal call from makeDeferred(), return the promise now.
         if (resolver === DEFER) return this;
@@ -95,7 +95,7 @@ class SlowPromise {
     // -------------- Private implementation details from here down --------------
     _slow = {
         type: 'SlowPromise',
-        id: null,
+        id: <string|number> null,
         isFateResolved: false,
         state: Types.SlowPromiseState.Pending,
         settledValue: void 0,

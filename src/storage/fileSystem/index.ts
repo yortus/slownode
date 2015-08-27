@@ -29,26 +29,23 @@ function init() {
 
 function insert(record: API.Record) {
     var serializedValue = serialize(record);
-    var key = record.id || newKey();
-    var filename = path.join(storageLocation, `${record.type}-${key}.json`);
+    record.id = record.id || newKey();
+    var filename = path.join(storageLocation, `${record.type}-${record.id}.json`);
     fs.writeFileSync(filename, serializedValue, { encoding: 'utf8', flag: 'wx' });
-    return key;
 }
 
 
 function upsert(record: API.Record) {
     var serializedValue = serialize(record);
-    var key = record.id || newKey();
-    var filename = path.join(storageLocation, `${record.type}-${key}.json`);
+    record.id = record.id || newKey();
+    var filename = path.join(storageLocation, `${record.type}-${record.id}.json`);
     fs.writeFileSync(filename, serializedValue, { encoding: 'utf8', flag: 'w' });
-    return key;
 }
 
 
 function update(record: API.Record) {
     var serializedValue = serialize(record);
-    var key = record.id;
-    var filename = path.join(storageLocation, `${record.type}-${key}.json`);
+    var filename = path.join(storageLocation, `${record.type}-${record.id}.json`);
     if (!fs.existsSync(filename)) throw new Error('update: record does not exist');
     fs.writeFileSync(filename, serializedValue, { encoding: 'utf8', flag: 'w' });
 }

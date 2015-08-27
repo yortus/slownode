@@ -27,8 +27,8 @@ var SlowPromise = (function () {
         };
         // Validate arguments.
         assert(_.isFunction(resolver) || resolver == DEFER);
-        // Finish basic construction.
-        this._slow.id = storage.insert(this._slow);
+        // Persist to storage.
+        storage.insert(this._slow);
         // If this is an internal call from makeDeferred(), return the promise now.
         if (resolver === DEFER)
             return this;
