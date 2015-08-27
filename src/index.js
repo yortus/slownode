@@ -1,6 +1,6 @@
 var SlowRoutineFunction = require('./slowRoutine/slowRoutineFunction');
 var asyncPseudoKeyword = require('./slowAsyncFunction/asyncPseudoKeyword');
-var SlowPromise = require('./slowPromise/slowPromise');
+var SlowPromise = require('./slowPromise');
 var storage = require('./storage/storage');
 var rehydrate = require('./slowAsyncFunction/rehydrate');
 //// TODO: Experiment with node-weak and global.gc to work out when to delete persistent slow objects. Works OK!

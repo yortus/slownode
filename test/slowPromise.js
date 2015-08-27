@@ -1,3 +1,4 @@
+//import Promise = require("bluebird");
 var slow = require('slownode');
 var chai = require("chai");
 chai.use(require('chai-as-promised'));

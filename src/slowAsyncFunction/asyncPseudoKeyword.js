@@ -1,6 +1,6 @@
 var assert = require('assert');
 var crypto = require('crypto');
-var SlowPromise = require('../slowPromise/slowPromise');
+var SlowPromise = require('../slowPromise');
 var SlowRoutineFunction = require('../slowRoutine/slowRoutineFunction');
 var runToCompletion = require('./runToCompletion');
 var storage = require('../storage/storage');
