@@ -45,6 +45,6 @@ function step(safa: Types.SlowAsyncFunctionActivation, error?: any, next?: any) 
     // then call step() recursively with the eventual result or error.
     var awaiting: Types.SlowPromise<any> = safa._slow.awaiting = yielded.value;
     assert(awaiting && typeof awaiting.then === 'function', 'await: expected argument to be a Promise');
-    storage.update(safa._slow);
+    storage.upsert(safa._slow);
     awaiting.then(value => step(safa, null, value), error => step(safa, error));
 }

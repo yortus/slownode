@@ -5,7 +5,7 @@ var storageLocation = require('./storageLocation');
 var serialize = require('../serialize');
 var deserialize = require('../deserialize');
 // TODO: errors are not caught... What to do?
-var api = { init: init, insert: insert, upsert: upsert, update: update, remove: remove, find: find };
+var api = { init: init, upsert: upsert, remove: remove, find: find };
 function init() {
     // Check if the directory already exists. Use fs.stat since fs.exists is deprecated.
     var dirExists = true;
@@ -20,23 +20,10 @@ function init() {
         fs.mkdirSync(storageLocation);
     }
 }
-function insert(record) {
-    var serializedValue = serialize(record);
-    record.id = record.id || newKey();
-    var filename = path.join(storageLocation, record.type + "-" + record.id + ".json");
-    fs.writeFileSync(filename, serializedValue, { encoding: 'utf8', flag: 'wx' });
-}
 function upsert(record) {
     var serializedValue = serialize(record);
     record.id = record.id || newKey();
     var filename = path.join(storageLocation, record.type + "-" + record.id + ".json");
-    fs.writeFileSync(filename, serializedValue, { encoding: 'utf8', flag: 'w' });
-}
-function update(record) {
-    var serializedValue = serialize(record);
-    var filename = path.join(storageLocation, record.type + "-" + record.id + ".json");
-    if (!fs.existsSync(filename))
-        throw new Error('update: record does not exist');
     fs.writeFileSync(filename, serializedValue, { encoding: 'utf8', flag: 'w' });
 }
 function remove(record) {

@@ -34,7 +34,7 @@ function step(safa, error, next) {
     // then call step() recursively with the eventual result or error.
     var awaiting = safa._slow.awaiting = yielded.value;
     assert(awaiting && typeof awaiting.then === 'function', 'await: expected argument to be a Promise');
-    storage.update(safa._slow);
+    storage.upsert(safa._slow);
     awaiting.then(function (value) { return step(safa, null, value); }, function (error) { return step(safa, error); });
 }
 module.exports = runToCompletion;

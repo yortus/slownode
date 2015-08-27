@@ -11,7 +11,7 @@ export = api;
 // TODO: errors are not caught... What to do?
 
 
-var api: API = { init, insert, upsert, update, remove, find };
+var api: API = { init, upsert, remove, find };
 
 
 function init() {
@@ -27,26 +27,10 @@ function init() {
 }
 
 
-function insert(record: API.Record) {
-    var serializedValue = serialize(record);
-    record.id = record.id || newKey();
-    var filename = path.join(storageLocation, `${record.type}-${record.id}.json`);
-    fs.writeFileSync(filename, serializedValue, { encoding: 'utf8', flag: 'wx' });
-}
-
-
 function upsert(record: API.Record) {
     var serializedValue = serialize(record);
     record.id = record.id || newKey();
     var filename = path.join(storageLocation, `${record.type}-${record.id}.json`);
-    fs.writeFileSync(filename, serializedValue, { encoding: 'utf8', flag: 'w' });
-}
-
-
-function update(record: API.Record) {
-    var serializedValue = serialize(record);
-    var filename = path.join(storageLocation, `${record.type}-${record.id}.json`);
-    if (!fs.existsSync(filename)) throw new Error('update: record does not exist');
     fs.writeFileSync(filename, serializedValue, { encoding: 'utf8', flag: 'w' });
 }
 
