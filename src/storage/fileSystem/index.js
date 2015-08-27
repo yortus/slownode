@@ -1,11 +1,12 @@
 var fs = require('fs');
 var path = require('path');
-var crypto = require('crypto');
 var storageLocation = require('./storageLocation');
 var serialize = require('../serialize');
 // TODO: doc... single process/thread exclusive by design...
 // TODO: use proper unique keys when generating keys (GUID? int counter?)
 // TODO: errors are not caught... What to do?
+// TODO: doc... this works due to exclusive process requirement.
+var idCounter = 0;
 var api = { init: init, upsert: upsert, remove: remove, find: find };
 function init() {
     // Check if the directory already exists. Use fs.stat since fs.exists is deprecated.
@@ -25,13 +26,13 @@ function upsert(slowObj) {
     var slow = slowObj._slow;
     slow.id = slow.id || newKey();
     var serializedValue = serialize(slowObj);
-    var filename = path.join(storageLocation, slow.type + "-" + slow.id + ".json");
+    var filename = path.join(storageLocation, slow.id + "-" + slow.type + ".json");
     // TODO: temp testing was...
     fs.writeFileSync(filename, serializedValue, { encoding: 'utf8', flag: 'w' });
 }
 function remove(slowObj) {
     var slow = slowObj._slow;
-    var filename = path.join(storageLocation, slow.type + "-" + slow.id + ".json");
+    var filename = path.join(storageLocation, slow.id + "-" + slow.type + ".json");
     // TODO: temp testing was...
     fs.unlinkSync(filename);
 }
@@ -39,15 +40,19 @@ function remove(slowObj) {
 // TODO: cache this one - it could be slow. Should only use at startup time (and event loop??)
 function find(type, id) {
     var filenames = fs.readdirSync(storageLocation);
-    var filenamePrefix = type + "-" + (id || '');
+    var filenamePrefix = (id || '') + "-" + type;
     filenames = filenames.filter(function (filename) { return filename.indexOf(filenamePrefix) === 0; });
     return [];
     //TODO: fix!... was... var results = filenames.map(filename => deserialize(fs.readFileSync(path.join(storageLocation, filename), { encoding: 'utf8', flag: 'r' })));
     //return results;
 }
 function newKey() {
-    var id = crypto.createHash('sha1').update(crypto.randomBytes(256)).digest('hex').slice(0, 40);
+    // TODO: was...
+    // TODO: will fail if too many objs
+    var id = ('0000000000' + (++idCounter)).slice(-10);
     return id;
+    //var id: string = crypto.createHash('sha1').update(crypto.randomBytes(256)).digest('hex').slice(0, 40);
+    //return id;
 }
 module.exports = api;
 //# sourceMappingURL=index.js.map
