@@ -1,6 +1,4 @@
 var assert = require('assert');
-var async = require('asyncawait/async');
-var await = require('asyncawait/await');
 var storage = require('../storage/storage');
 //TODO: remove async/await from in here...
 /**
@@ -11,45 +9,32 @@ var storage = require('../storage/storage');
  * continues until the SlowAsyncFunctionActivation either returns or throws. If it throws,
  * this function rejects with the error. If it returns, this function resolves to its result.
  */
-var runToCompletion = async(function (safa) {
+function runToCompletion(safa) {
+    // Proceed in a (recursive) loop until the SlowAsyncFunctionActivation either returns or throws.
+    safa._slow.awaiting.then(function (value) { return step(safa, null, value); }, function (error) { return step(safa, error); });
+}
+function step(safa, error, next) {
+    // Resume coro.
     try {
-        // Proceed in a loop until the SlowAsyncFunctionActivation either returns or throws.
-        var value = null, error = null;
-        while (true) {
-            // Wait for the awaited value to be resolved or rejected.
-            try {
-                error = null, value = await(safa._slow.awaiting);
-            }
-            catch (ex) {
-                error = ex;
-            }
-            // Resume the SlowAsyncFunctionActivation with the resolved/rejected value.
-            // NB: If the SlowAsyncFunctionActivation throws, this function will throw here.
-            var yielded = error ? safa.throw(error) : safa.next(value);
-            // If the SlowAsyncFunctionActivation returned, then return its result.
-            if (yielded.done)
-                break;
-            // The SlowAsyncFunctionActivation yielded. Ensure the yielded value is awaitable.
-            // TODO: what should be allowed here? Implement checks...
-            // TODO: what should be done if the value is NOT awaitable? How to handle failure? Just throw?
-            assert(yielded.value && typeof yielded.value.then === 'function', 'await: expected argument to be a Promise');
-            safa._slow.awaiting = yielded.value;
-            // Before looping again, Persist the current state of the SlowAsyncFunctionActivation and that of the value to be awaited.
-            // If the process is restarted before the awaited value is resolved/rejected, then the SlowAsyncFunctionActivation will
-            // be able to continue from this persisted state.
-            storage.update(safa._slow);
-        }
-        // Completed!
-        safa._slow.resolve(yielded.value);
+        var yielded = arguments.length === 1 ? safa.throw(error) : safa.next(next);
     }
+    // Coro threw.
     catch (ex) {
-        // Error!
-        safa._slow.reject(ex);
-    }
-    finally {
-        // The SlowRoutine has terminated (ie either returned or threw). Remove its state from the database.
         storage.remove(safa._slow);
+        safa._slow.reject(ex);
+        return;
     }
-});
+    // Coro returned.
+    if (yielded.done) {
+        storage.remove(safa._slow);
+        safa._slow.resolve(yielded.value);
+        return;
+    }
+    // Coro yielded.
+    var awaiting = safa._slow.awaiting = yielded.value;
+    assert(awaiting && typeof awaiting.then === 'function', 'await: expected argument to be a Promise');
+    storage.update(safa._slow);
+    awaiting.then(function (value) { return step(safa, null, value); }, function (error) { return step(safa, error); });
+}
 module.exports = runToCompletion;
 //# sourceMappingURL=runToCompletion.js.map
