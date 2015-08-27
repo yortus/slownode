@@ -33,8 +33,7 @@
     <Compile Include="scripts\runSlownodeTestSuite.js" />
     <TypeScriptCompile Include="src\mainInfo.ts" />
     <TypeScriptCompile Include="src\storage\api.ts" />
-    <TypeScriptCompile Include="src\storage\fileSystem\storageLocation.ts" />
-    <TypeScriptCompile Include="src\storage\fileSystem\index.ts" />
+    <TypeScriptCompile Include="src\storage\storageLocation.ts" />
     <TypeScriptCompile Include="src\index.ts" />
     <TypeScriptCompile Include="src\storage\storage.ts" />
     <TypeScriptCompile Include="src\storage\deserialize.ts" />
@@ -74,7 +73,6 @@
     <Folder Include="src\storage\" />
     <Folder Include="src\slowRoutine\" />
     <Folder Include="src\slowAsyncFunction\" />
-    <Folder Include="src\storage\fileSystem\" />
     <Folder Include="src\typings\" />
     <Folder Include="src\typings\bluebird\" />
     <Folder Include="src\typings\chai\" />
