@@ -1,7 +1,7 @@
 ﻿import Types = require('slownode');
-import SlowRoutineFunction = require('./slowRoutine/slowRoutineFunction');
-import asyncPseudoKeyword = require('./slowAsyncFunction/asyncPseudoKeyword');
-import SlowPromise = require('./slowPromise');
+import SlowRoutineFunction = require('./coroutines/slowRoutineFunction');
+import asyncPseudoKeyword = require('./asyncFunctions/asyncPseudoKeyword');
+import SlowPromise = require('./promises/slowPromise');
 import storage = require('./storage/storage');
 //import rehydrate = require('./slowAsyncFunction/rehydrate');
 export = api;

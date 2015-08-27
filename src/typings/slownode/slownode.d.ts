@@ -66,8 +66,8 @@ declare module "slownode" {
             asyncFunction: SlowAsyncFunction,
             state: any, // TODO: may include Slow object refs
             awaiting: any, // TODO: may be a slow object ref / may include slow object refs
-            resolve: SlowPromiseResolveFunction<any>, // TODO: is a slow object
-            reject: SlowPromiseRejectFunction // TODO: is a slow object
+            resolve: SlowPromise.ResolveFunction<any>, // TODO: is a slow object
+            reject: SlowPromise.RejectFunction // TODO: is a slow object
         };
     }
 
@@ -80,7 +80,7 @@ declare module "slownode" {
         <T>(resolver: (resolve: (value?: T | SlowThenable<T>) => void, reject: (error?: any) => void) => void): SlowPromise<T>
         resolved<T>(value?: T | SlowThenable<T>): SlowPromise<T>;
         rejected(error: any): SlowPromise<any>;
-        deferred<T>(): SlowPromiseDeferred<T>;
+        deferred<T>(): SlowPromise.Deferred<T>;
         delay(ms: number): SlowPromise<void>;
     }
 
@@ -93,26 +93,14 @@ declare module "slownode" {
         // Static member functions
         static resolved<T>(value?: T | SlowThenable<T>): SlowPromise<T>;
         static rejected(error: any): SlowPromise<any>;
-        static deferred<T>(): SlowPromiseDeferred<T>;
+        static deferred<T>(): SlowPromise.Deferred<T>;
         static delay(ms: number): SlowPromise<void>;
         // TODO: all, race... (see https://github.com/borisyankov/DefinitelyTyped/blob/master/es6-promise/es6-promise.d.ts)
-        // TODO: rehydration...
 
         // Methods
         then<U>(onFulfilled?: (value: T) => U | SlowThenable<U>, onRejected?: (error: any) => U | SlowThenable<U>): SlowPromise<U>;
         then<U>(onFulfilled?: (value: T) => U | SlowThenable<U>, onRejected?: (error: any) => void): SlowPromise<U>;
         catch<U>(onRejected?: (error: any) => U | SlowThenable<U>): SlowPromise<U>;
-
-        // Private implementation details
-        // TODO: can we get them out of this .d.ts?
-        _slow: SlowInfo & {
-            isFateResolved: boolean;
-            state: SlowPromiseState;
-            settledValue: any; // TODO: may include Slow object refs
-            handlers: any[]; // TODO: may include SlowAsyncFunction refs
-        };
-        _fulfil;
-        _reject;
     }
 
     interface SlowThenable<T> {
@@ -120,34 +108,25 @@ declare module "slownode" {
         then<U>(onFulfilled?: (value: T) => U | SlowThenable<U>, onRejected?: (error: any) => void): SlowThenable<U>;
     }
 
-    interface SlowPromiseDeferred<T> {
-        promise: SlowPromise<T>;
-        resolve: SlowPromiseResolveFunction<T>;
-        reject: SlowPromiseRejectFunction;
-    }
+    namespace SlowPromise {
 
-    interface SlowPromiseResolveFunction<T> {
-        (value?: T | SlowThenable<T>): void;
-        _slow: SlowInfo & {
-            promise: SlowPromise<any>;
-        };
-    }
+        interface Deferred<T> {
+            promise: SlowPromise<T>;
+            resolve: ResolveFunction<T>;
+            reject: RejectFunction;
+        }
 
-    interface SlowPromiseRejectFunction {
-        (error?: any): void;
-        _slow: SlowInfo & {
-            promise: SlowPromise<any>;
-        };
-    }
+        interface ResolveFunction<T> {
+            (value?: T | SlowThenable<T>): void;
+        }
 
-    const enum SlowPromiseState {
-        Pending,
-        Fulfilled,
-        Rejected
+        interface RejectFunction {
+            (error?: any): void;
+        }
     }
-
 
     // ==================== SlowRoutineFunction and SlowRoutine ====================
+    // TODO: all this can go in a private api
 
     export var SlowRoutineFunction: {
         new(bodyFunction: Function, options?: SlowRoutineOptions): SlowRoutineFunction;

@@ -1,18 +1,12 @@
 var assert = require('assert');
 var _ = require('lodash');
-var Types = require('slownode');
-var storage = require('./storage/storage');
-//// TODO: temp testing... node-weak/gc experiments. See ../index.ts for more info
-//var weak = require('weak');
-//function notifyGC(p: SlowPromise) {
-//    var record = p._slow;
-//    weak(p, function () {
-//        console.log(`======== deleting: ${record.type}-${record.id}.json ========`);
-//        storage.remove(record);
-//    });
-//}
+var resolveFunction = require('./resolveFunction');
+var rejectFunction = require('./rejectFunction');
+var standardResolutionProcedure = require('./standardResolutionProcedure');
+var storage = require('../storage/storage');
 /** Sentinal value used for internal promise constructor calls. */
 var DEFER = {};
+/** Promises A+ compliant Promise implementation with persistence. */
 var SlowPromise = (function () {
     /** Constructs a SlowPromise instance. May be called with or without new. */
     function SlowPromise(resolver) {
@@ -32,7 +26,7 @@ var SlowPromise = (function () {
         if (resolver === DEFER)
             return this;
         // Otherwise, construct a deferred promise, then call the given resolver with the resolve and reject functions.
-        var deferred = makeDeferred();
+        var deferred = SlowPromise.deferred();
         try {
             resolver(deferred.resolve, deferred.reject);
         }
@@ -55,7 +49,15 @@ var SlowPromise = (function () {
     };
     /** Returns an object containing a new SlowPromise instance, along with a resolve function and a reject function to control its fate. */
     SlowPromise.deferred = function () {
-        return makeDeferred();
+        // Get a new promise instance using the internal constructor.
+        var promise = new SlowPromise(DEFER);
+        //// TODO: temp testing... monitor when this instance gets GC'd.
+        //notifyGC(promise);
+        // Create the resolve and reject functions.
+        var resolve = resolveFunction.create(promise);
+        var reject = rejectFunction.create(promise);
+        // All done.
+        return { promise: promise, resolve: resolve, reject: reject };
     };
     // TODO: temp testing....
     SlowPromise.delay = function (ms) {
@@ -113,37 +115,11 @@ var SlowPromise = (function () {
 })();
 /** Returns an object containing a new SlowPromise instance, along with a resolve function and a reject function to control its fate. */
 function makeDeferred() {
-    // Get a new promise instance using the internal constructor.
-    var promise = new SlowPromise(DEFER);
-    //// TODO: temp testing...
-    //notifyGC(promise);
-    // Make the resolve function and persist it.
-    var resolve = (function (value) {
-        if (promise._slow.isFateResolved)
-            return;
-        promise._slow.isFateResolved = true;
-        storage.upsert(promise);
-        standardResolutionProcedure(promise, value);
-    });
-    resolve._slow = { type: 'SlowPromiseResolveFunction', promise: promise };
-    storage.upsert(resolve);
-    // Make the reject function and persist it.
-    var reject = (function (reason) {
-        if (promise._slow.isFateResolved)
-            return;
-        promise._slow.isFateResolved = true;
-        storage.upsert(promise);
-        promise._reject(reason);
-    });
-    reject._slow = { type: 'SlowPromiseRejectFunction', promise: promise };
-    storage.upsert(reject);
-    // All done.
-    return { promise: promise, resolve: resolve, reject: reject };
 }
 /**
  * Dequeues and processes all enqueued onFulfilled/onRejected handlers.
- * The SlowPromise implementation calls this when `p` is settled, and
- * on each `then` call made after `p` is settled.
+ * The SlowPromise implementation calls this when `p` becomes settled,
+ * and then on each `then` call made after `p` is settled.
  */
 function processAllHandlers(p) {
     // Dequeue each onResolved/onRejected handler in order.
@@ -179,54 +155,6 @@ function processAllHandlers(p) {
                 handler.deferred2.reject(p._slow.settledValue);
             }
         }
-    }
-}
-/**
- * This is a transliteration of the [[Resolve]](promise, x) pseudocode in the Promises A+ Spec.
- * See: https://github.com/promises-aplus/promises-spec
- */
-function standardResolutionProcedure(p, x) {
-    if (x === p) {
-        p._reject(new TypeError("slownode: cannot resolve promise with itself"));
-    }
-    else if (_.isObject(x) || _.isFunction(x)) {
-        try {
-            var then = x.then;
-        }
-        catch (ex) {
-            p._reject(ex);
-            return;
-        }
-        if (_.isFunction(then)) {
-            var ignoreFurtherCalls = false;
-            try {
-                then.apply(x, [
-                    function resolvePromise(y) {
-                        if (ignoreFurtherCalls)
-                            return;
-                        ignoreFurtherCalls = true;
-                        standardResolutionProcedure(p, y);
-                    },
-                    function rejectPromise(r) {
-                        if (ignoreFurtherCalls)
-                            return;
-                        ignoreFurtherCalls = true;
-                        p._reject(r);
-                    },
-                ]);
-            }
-            catch (ex) {
-                if (ignoreFurtherCalls)
-                    return;
-                p._reject(ex);
-            }
-        }
-        else {
-            p._fulfil(x);
-        }
-    }
-    else {
-        p._fulfil(x);
     }
 }
 module.exports = SlowPromise;
