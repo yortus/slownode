@@ -5,3 +5,4 @@ node_modules/
 *.sln
 slownode.db
 slowfiles/
+slowlog.txt

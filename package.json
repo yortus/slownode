@@ -1,6 +1,6 @@
 {
   "name": "slownode",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "slownode",
   "readmeFilename": "README.md",
   "main": "src/index",
@@ -44,6 +44,7 @@
     "escodegen": "^1.6.1",
     "esprima": "^2.5.0",
     "find-root": "^0.1.1",
+    "fs-ext-prebuilt": "^0.4.7",
     "lodash": "^3.10.1",
     "weak": "^1.0.0"
   },
@@ -57,7 +58,6 @@
   },
   "slownode": {
     "storage": "fileSystem",
-    "database": "slownode.db",
-    "location": "slowfiles"
+    "location": "slowlog.txt"
   }
 }

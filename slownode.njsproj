@@ -53,6 +53,7 @@
     <TypeScriptCompile Include="src\typings\escodegen\escodegen.d.ts" />
     <TypeScriptCompile Include="src\typings\esprima\esprima.d.ts" />
     <TypeScriptCompile Include="src\typings\estree\estree.d.ts" />
+    <TypeScriptCompile Include="src\typings\fs-ext\fs-ext.d.ts" />
     <TypeScriptCompile Include="src\typings\lodash\lodash.d.ts" />
     <Content Include="test\fixtures\slowfuncs\1.ts" />
     <TypeScriptCompile Include="test\fixtures\slowfuncs\3.ts" />
@@ -84,6 +85,7 @@
     <Folder Include="src\typings\asyncawait\" />
     <Folder Include="src\typings\chai-as-promised\" />
     <Folder Include="src\typings\lodash\" />
+    <Folder Include="src\typings\fs-ext\" />
     <Folder Include="src\typings\node\" />
     <Folder Include="src\typings\slownode\" />
     <Folder Include="test" />

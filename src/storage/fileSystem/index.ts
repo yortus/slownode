@@ -13,6 +13,10 @@ export = api;
 // TODO: errors are not caught... What to do?
 
 
+// TODO:
+// NB: Calling fsync() does not necessarily ensure that the entry in the directory containing the file has also reached disk. For that an explicit fsync() on a file descriptor for the directory is also needed.
+
+
 // TODO: doc... this works due to exclusive process requirement.
 var idCounter = 0;
 
@@ -20,56 +24,70 @@ var idCounter = 0;
 var api: API = { init, upsert, remove, find };
 
 
+// TODO: temp testing...
+var logFileDescriptor;
+
+
 function init() {
 
-    // Check if the directory already exists. Use fs.stat since fs.exists is deprecated.
-    var dirExists = true;
-    try { fs.statSync(storageLocation); } catch (ex) { dirExists = false; }
+    // Check if the logFile already exists. Use fs.stat since fs.exists is deprecated.
+    var fileExists = true;
+    try { fs.statSync(storageLocation); } catch (ex) { fileExists = false; }
 
-    // Resume the current epoch (if dir exists) or start a new epoch (if no dir).
-    if (!dirExists) {
-        fs.mkdirSync(storageLocation);
+
+    if (fileExists) {
+        fs.unlinkSync(storageLocation);
     }
+
+
+    // Resume the current epoch (if file exists) or start a new epoch (if no file).
+    // TODO: fix ...
+
+    logFileDescriptor = fs.openSync(storageLocation, 'a'); // TODO: ensure this file gets closed eventually!!!
+    //TODO: NEEDED!:   fs.flockSync(logFileDescriptor, 'ex'); // TODO: ensure exclusion. HANDLE EXCEPTIONS HERE! ALSO: THIS LOCK MUST BE EXPLICITLY REMOVED AFTER FINISHED!
+    //if (fileExists) {
+    //    logFileDescriptor = fs.openSync(storageLocation, 'ax');
+    //}
+    //else {
+    //    logFileDescriptor = fs.openSync(storageLocation, 'ax');
+    //}
+    (<any>fs.writeSync)(logFileDescriptor, `'BEGIN'`, null, 'utf8');
+    fs.fsyncSync(logFileDescriptor);
+
 }
 
 
 function upsert(slowObj: API.SlowObject) {
     var slow = slowObj._slow;
-    slow.id = slow.id || newKey();
+    slow.id = slow.id || `#${++idCounter}`;
     var serializedValue = serialize(slowObj);
     var filename = path.join(storageLocation, `${slow.id}-${slow.type}.json`);
-    // TODO: temp testing was...
-    fs.writeFileSync(filename, serializedValue, { encoding: 'utf8', flag: 'w' });
+
+
+    // TODO: testing... NB node.d.ts is missing a typing here...
+    (<any>fs.writeSync)(logFileDescriptor, `,\n\n\n'UPSERT',\n${serializedValue}`, null, 'utf8');
+    fs.fsyncSync(logFileDescriptor);
 }
 
 
 function remove(slowObj: API.SlowObject) {
     var slow = slowObj._slow;
     var filename = path.join(storageLocation, `${slow.id}-${slow.type}.json`);
-    // TODO: temp testing was...
-    fs.unlinkSync(filename);
+
+
+    // TODO: testing...
+    (<any>fs.writeSync)(logFileDescriptor, `,\n\n\n'DELETE ${slow.type} ${slow.id}'`, null, 'utf8');
+    fs.fsyncSync(logFileDescriptor);
 }
 
 
 // TODO: add `where` param (eg for event loop searching for what it can schedule)
 // TODO: cache this one - it could be slow. Should only use at startup time (and event loop??)
 function find(type: string, id?: string|number): any[] {
-    var filenames = fs.readdirSync(storageLocation);
-    var filenamePrefix = `${id || ''}-${type}`;
-    filenames = filenames.filter(filename => filename.indexOf(filenamePrefix) === 0);
+    //var filenames = fs.readdirSync(storageLocation);
+    //var filenamePrefix = `${id || ''}-${type}`;
+    //filenames = filenames.filter(filename => filename.indexOf(filenamePrefix) === 0);
     return [];
     //TODO: fix!... was... var results = filenames.map(filename => deserialize(fs.readFileSync(path.join(storageLocation, filename), { encoding: 'utf8', flag: 'r' })));
     //return results;
-}
-
-
-function newKey(): string|number {
-    // TODO: was...
-
-    // TODO: will fail if too many objs
-    var id = ('0000000000' + (++idCounter)).slice(-10);
-    return id;
-
-    //var id: string = crypto.createHash('sha1').update(crypto.randomBytes(256)).digest('hex').slice(0, 40);
-    //return id;
 }
