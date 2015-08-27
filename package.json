@@ -1,14 +1,14 @@
 {
   "name": "slownode",
-  "version": "0.2.0",
+  "version": "0.3.5",
   "description": "slownode",
   "readmeFilename": "README.md",
   "main": "src/index",
   "scripts": {
     "build": "tsc",
     "prepublish": "npm run build && require-self",
-    "test": "node ./debug.js",
-    "test-promises-aplus": "promises-aplus-tests src/slowPromise/slowPromise"
+    "test": "node ./scripts/runSlownodeTestSuite",
+    "test-promises-aplus": "node ./scripts/runPromisesAPlusTestSuite"
   },
   "repository": {
     "type": "git",
