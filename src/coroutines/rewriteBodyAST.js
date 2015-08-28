@@ -6,6 +6,7 @@ var match = require('./match');
 var traverse = require('./traverse');
 // TODO: this module needs more inline documentation to make it clearer what each bit does, to support long-term maintenance.
 // TODO: source maps?
+// TODO: note implicit use of "types".SlowRoutine.StateMachine.State type in here...
 /** Returns an equivalent AST in a form suitable for serialization/deserialization. */
 function rewriteBodyAST(funcExpr) {
     // Validate arguments.

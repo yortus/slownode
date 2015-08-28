@@ -16,8 +16,8 @@
         _slow: {
             type: string;
             id?: string|number;
-            source: string;
-            originalSource: string;
+            stateMachineSource: string;
+            originalSource: string; // TODO: not needed in operation, but preserve for future debugging/sourcemap needs?
         };
     }
 
@@ -99,7 +99,7 @@
 
         interface Function {
             (...args: any[]): SlowRoutine;
-            body: Function;
+            stateMachine: StateMachine;
         }
 
         export var Function: {
@@ -110,6 +110,29 @@
         interface Options {
             yieldIdentifier?: string;
             constIdentifier?: string;
+        }
+
+        type StateMachine = (state: StateMachine.State) => void;
+
+        namespace StateMachine {
+
+            interface State {
+                pos?: string;
+                local?: { [name: string]: any; };
+                temp?: { [name: string]: any; };
+                error?: {
+                    occurred?: boolean;
+                    value?: any;
+                    handler?: string;
+                };
+                finalizers?: {
+                    pending?: string[];
+                    afterward?: string;
+                };
+                result?: any;
+                incoming?: { type?: string; /* 'yield'|'throw'|'return' */ value?: any; };
+                outgoing?: { type?: string; /* 'yield'|'throw'|'return' */ value?: any; };
+            }
         }
     }
 

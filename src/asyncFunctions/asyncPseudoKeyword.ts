@@ -27,11 +27,11 @@ var asyncPseudoKeyword: types.Async = <any> ((bodyFunc: Function) => {
     // TODO: optimise! SlowRoutineFunction is VERY EXPENSIVE!!!
     //       - better: hash the original source instead of the sloroFunc source, and only make a new sloroFunc if the hash hasn't already been created.
     var sloroFunc = SlowRoutineFunction(bodyFunc, { yieldIdentifier: 'await', constIdentifier: '__const' });
-    var source = sloroFunc.body.toString();
+    var stateMachineSource = sloroFunc.stateMachine.toString();
 
 
     var originalSource = bodyFunc.toString();
-    var asyncFunction = makeSlowAsyncFunction(sloroFunc, source, originalSource);
+    var asyncFunction = makeSlowAsyncFunction(sloroFunc, stateMachineSource, originalSource);
 
 
     // Ensure the SlowAsyncFunction definition has been persisted to storage.
@@ -47,7 +47,7 @@ var asyncPseudoKeyword: types.Async = <any> ((bodyFunc: Function) => {
 
 
 // TODO: doc...
-function makeSlowAsyncFunction(sloroFunc, source, originalSource) {
+function makeSlowAsyncFunction(sloroFunc, stateMachineSource, originalSource) {
 
     // Compile the details of the AsyncFunction definition based on the given bodyFunc.
     // TODO: optimise! SlowRoutineFunction is VERY EXPENSIVE!!!
@@ -56,7 +56,7 @@ function makeSlowAsyncFunction(sloroFunc, source, originalSource) {
     //var originalSource = _.isString(original) ? original : ???;
     //var sloroFunc = SlowRoutineFunction(bodyFunc, { yieldIdentifier: 'await', constIdentifier: '__const' });
     //var source = sloroFunc.body.toString();
-    var asyncFunctionId: string = crypto.createHash('sha1').update(source).digest('hex').slice(0, 40);
+    var asyncFunctionId: string = crypto.createHash('sha1').update(stateMachineSource).digest('hex').slice(0, 40);
 
     // Create the callable part of the SlowAsyncFunction object. When called, this function creates a new
     // SlowAsyncFunctionActivation object from the given SlowRoutineFunction, and runs it to completion.
@@ -91,7 +91,7 @@ function makeSlowAsyncFunction(sloroFunc, source, originalSource) {
     asyncFunction._slow = {
         type: 'SlowAsyncFunction',
         id: asyncFunctionId,
-        source,
+        stateMachineSource,
         originalSource
     };
 

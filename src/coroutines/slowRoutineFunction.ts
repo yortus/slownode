@@ -36,7 +36,7 @@ export = SlowRoutineFunction;
 
 
 /** Creates a SlowRoutineFunction instance. May be called with or without 'new'. */
-function SlowRoutineFunction(bodyFunction: Function|string, options?: types.SlowRoutine.Options) {
+function SlowRoutineFunction(bodyFunction: Function, options?: types.SlowRoutine.Options) {
 
     // Validate arguments.
     assert(typeof bodyFunction === 'function');
@@ -62,16 +62,16 @@ function SlowRoutineFunction(bodyFunction: Function|string, options?: types.Slow
     ensureAmbientIdentifiersAreNotMutated(funcExpr);
 
     // Rewrite the AST in a form suitable for serialization/deserialization.
-    var bodyAST = rewriteBodyAST(funcExpr);
+    var stateMachineAST = rewriteBodyAST(funcExpr);
 
     // Transform modified AST --> source code --> function.
-    var bodySource = '(' + escodegen.generate(bodyAST) + ')';
-    var bodyFunc = eval(bodySource);
+    var stateMachineSource = '(' + escodegen.generate(stateMachineAST) + ')';
+    var stateMachine = eval(stateMachineSource);
 
     // Generate and return a SlowRoutineFunction instance (ie a callable that returns a SlowRoutine).
     assert(funcExpr.params.every(p => p.type === 'Identifier'));
     var paramNames = funcExpr.params.map(p => <string> p['name']);
-    var result = makeSlowRoutineFunction(bodyFunc, paramNames);
+    var result = makeSlowRoutineFunction(stateMachine, paramNames);
     return result;
 }
 
@@ -289,21 +289,21 @@ function ensureAmbientIdentifiersAreNotMutated(funcExpr: ESTree.FunctionExpressi
 }
 
 
-/** Constructs a SlowRoutineFunction instance tailored to the given body code and parameter names. */
-function makeSlowRoutineFunction(bodyFunc: (state) => void, paramNames: string[]): types.SlowRoutine.Function {
+/** Constructs a SlowRoutineFunction instance tailored to the given StateMachine function and parameter names. */
+function makeSlowRoutineFunction(stateMachine: types.SlowRoutine.StateMachine, paramNames: string[]): types.SlowRoutine.Function {
 
-    // This is the generic constructor function. It closes over bodyFunc.
+    // This is the generic constructor function. It closes over stateMachine.
     function SlowRoutineFunction() {
-        return SlowRoutine(bodyFunc, { local: { arguments: Array.prototype.slice.call(arguments) } });
+        return new SlowRoutine(stateMachine, { local: { arguments: Array.prototype.slice.call(arguments) } });
     }
 
-    // Customise the generic constructor function with the specified parameter names and a `body` property.
+    // Customise the generic constructor function with the specified parameter names and a `stateMachine` property.
     var originalSource = SlowRoutineFunction.toString();
     var sourceWithParamNames = originalSource.replace('SlowRoutineFunction()', `SlowRoutineFunction(${paramNames.join(', ')})`);
-    var constructorFunction = eval('(' + sourceWithParamNames + ')');
+    var constructorFunction: types.SlowRoutine.Function = eval('(' + sourceWithParamNames + ')');
 
-    // Add the `body` property to the constructor function.
-    constructorFunction.body = bodyFunc;
+    // Add the `stateMachine` property to the constructor function.
+    constructorFunction.stateMachine = stateMachine;
 
     // Return the customised constructor function.
     return constructorFunction;

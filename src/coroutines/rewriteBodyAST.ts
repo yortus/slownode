@@ -9,7 +9,7 @@ export = rewriteBodyAST;
 
 // TODO: this module needs more inline documentation to make it clearer what each bit does, to support long-term maintenance.
 // TODO: source maps?
-
+// TODO: note implicit use of "types".SlowRoutine.StateMachine.State type in here...
 
 /** Returns an equivalent AST in a form suitable for serialization/deserialization. */
 function rewriteBodyAST(funcExpr: ESTree.FunctionExpression): ESTree.FunctionExpression {
@@ -24,38 +24,6 @@ function rewriteBodyAST(funcExpr: ESTree.FunctionExpression): ESTree.FunctionExp
     // Extract and return the rewritten AST.
     var newFuncExpr = <ESTree.FunctionExpression> rewriter.generateAST();
     return newFuncExpr;
-}
-
-
-/**
- * This is the shape of the '$' state variable used throughout the rewritten AST's body.
- * This interface is not directly used but is here for documentation purposes.
- */
-interface State {
-
-    // TODO: doc all members...
-    pos?: string;
-
-    local?: { [name: string]: any; };
-
-    temp?: { [name: string]: any; };
-
-    error?: {
-        occurred?: boolean;
-        value?: any;
-        handler?: string;
-    };
-
-    finalizers?: {
-        pending?: string[];
-        afterward?: string;
-    };
-
-    result?: any;
-
-    incoming?: { type?: string; /* 'yield'|'throw'|'return' */ value?: any; };
-
-    outgoing?: { type?: string; /* 'yield'|'throw'|'return' */ value?: any; };
 }
 
 
