@@ -35,7 +35,6 @@
     <TypeScriptCompile Include="src\promises\resolveFunction.ts" />
     <TypeScriptCompile Include="src\promises\rejectFunction.ts" />
     <TypeScriptCompile Include="src\promises\standardResolutionProcedure.ts" />
-    <TypeScriptCompile Include="src\storage\api.ts" />
     <TypeScriptCompile Include="src\storage\rehydrate.ts" />
     <TypeScriptCompile Include="src\storage\storageLocation.ts" />
     <TypeScriptCompile Include="src\index.ts" />

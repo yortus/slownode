@@ -12,7 +12,7 @@ export = runToCompletion;
  * continues until the SlowAsyncFunctionActivation either returns or throws. If it throws,
  * this function rejects with the error. If it returns, this function resolves to its result.
  */
-function runToCompletion(safa: types.SlowAsyncFunctionActivation) {
+function runToCompletion(safa: types.SlowAsyncFunction.Activation) {
 
     // Kick off the recursive worker function.
     safa._slow.awaiting.then(value => step(safa, null, value), error => step(safa, error));
@@ -20,7 +20,7 @@ function runToCompletion(safa: types.SlowAsyncFunctionActivation) {
 
 
 /** Helper function to resume the underlying SlowRoutine, then handle its return/throw/yield. */
-function step(safa: types.SlowAsyncFunctionActivation, error?: any, next?: any) {
+function step(safa: types.SlowAsyncFunction.Activation, error?: any, next?: any) {
 
     // Resume the underlying SlowRoutine, either throwing into it or calling next(), depending on args.
     try {

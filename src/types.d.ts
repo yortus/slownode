@@ -1,4 +1,5 @@
 ﻿declare module "types" {
+    import slow = require('slownode');
 
 
     // TODO: doc...
@@ -6,11 +7,10 @@
     // - They are put here because (1) it forms a shared reference for internal code and (2) the public .d.ts should not contain provate stuff
 
 
-    import slow = require('slownode');
+
 
 
     type Async = typeof slow.async;
-
 
     interface SlowAsyncFunction {
         _slow: {
@@ -21,18 +21,23 @@
         };
     }
 
+    namespace SlowAsyncFunction {
 
-    interface SlowAsyncFunctionActivation extends SlowRoutine {
-        _slow: {
-            type: string;
-            id?: string|number;
-            asyncFunction: SlowAsyncFunction,
-            state: any, // TODO: may include Slow object refs
-            awaiting: any, // TODO: may be a slow object ref / may include slow object refs
-            resolve: slow.SlowPromise.ResolveFunction<any>, // TODO: is a slow object
-            reject: slow.SlowPromise.RejectFunction // TODO: is a slow object
-        };
+        interface Activation extends SlowRoutine {
+            _slow: {
+                type: string;
+                id?: string|number;
+                asyncFunction: SlowAsyncFunction,
+                state: any, // TODO: may include Slow object refs
+                awaiting: any, // TODO: may be a slow object ref / may include slow object refs
+                resolve: slow.SlowPromise.ResolveFunction<any>, // TODO: is a slow object
+                reject: slow.SlowPromise.RejectFunction // TODO: is a slow object
+            };
+        }
     }
+
+
+
 
 
     interface SlowPromise extends slow.SlowPromise<any> {
@@ -48,16 +53,13 @@
         _reject(reason?): void;
     }
 
-
     export namespace SlowPromise {
-
 
         interface Deferred extends slow.SlowPromise.Deferred<any> {
             promise: SlowPromise;
             resolve: ResolveFunction;
             reject: RejectFunction;
         }
-
 
         interface ResolveFunction extends slow.SlowPromise.ResolveFunction<any> {
             _slow: {
@@ -67,7 +69,6 @@
             };
         }
 
-
         interface RejectFunction extends slow.SlowPromise.RejectFunction {
             _slow: {
                 type: string;
@@ -75,7 +76,6 @@
                 promise: SlowPromise;
             };
         }
-
 
         const enum State {
             Pending,
@@ -85,22 +85,7 @@
     }
 
 
-    export var SlowRoutineFunction: {
-        new(bodyFunction: Function, options?: SlowRoutineOptions): SlowRoutineFunction;
-        (bodyFunction: Function, options?: SlowRoutineOptions): SlowRoutineFunction;
-    };
 
-
-    interface SlowRoutineOptions {
-        yieldIdentifier?: string;
-        constIdentifier?: string;
-    }
-
-
-    interface SlowRoutineFunction {
-        (...args: any[]): SlowRoutine;
-        body: Function;
-    }
 
 
     interface SlowRoutine {
@@ -109,6 +94,25 @@
         return(value?: any): { done: boolean; value: any; };
         state: any;
     }
+
+    namespace SlowRoutine {
+
+        interface Function {
+            (...args: any[]): SlowRoutine;
+            body: Function;
+        }
+
+        export var Function: {
+            new(bodyFunction: Function, options?: Options): Function;
+            (bodyFunction: Function, options?: Options): Function;
+        };
+
+        interface Options {
+            yieldIdentifier?: string;
+            constIdentifier?: string;
+        }
+    }
+
 
 
 

@@ -39,7 +39,7 @@ var asyncPseudoKeyword: types.Async = <any> ((bodyFunc: Function) => {
 
         // Create a new SlowAsyncFunctionActivation object using the given arguments.
         // TODO: subclass SlowRoutine so we have an runtime-identifiable prototype?
-        var safa: types.SlowAsyncFunctionActivation = sloroFunc.apply(sloroFunc, args);
+        var safa: types.SlowAsyncFunction.Activation = sloroFunc.apply(sloroFunc, args);
 
         // Add slow state to the SlowAsyncFunctionActivation instance.
         safa._slow = {

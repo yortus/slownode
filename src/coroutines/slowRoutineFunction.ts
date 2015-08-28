@@ -36,7 +36,7 @@ export = SlowRoutineFunction;
 
 
 /** Creates a SlowRoutineFunction instance. May be called with or without 'new'. */
-function SlowRoutineFunction(bodyFunction: Function, options?: types.SlowRoutineOptions) {
+function SlowRoutineFunction(bodyFunction: Function, options?: types.SlowRoutine.Options) {
 
     // Validate arguments.
     assert(typeof bodyFunction === 'function');
@@ -290,7 +290,7 @@ function ensureAmbientIdentifiersAreNotMutated(funcExpr: ESTree.FunctionExpressi
 
 
 /** Constructs a SlowRoutineFunction instance tailored to the given body code and parameter names. */
-function makeSlowRoutineFunction(bodyFunc: (state) => void, paramNames: string[]): types.SlowRoutineFunction {
+function makeSlowRoutineFunction(bodyFunc: (state) => void, paramNames: string[]): types.SlowRoutine.Function {
 
     // This is the generic constructor function. It closes over bodyFunc.
     function SlowRoutineFunction() {
