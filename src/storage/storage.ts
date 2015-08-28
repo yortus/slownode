@@ -6,7 +6,7 @@ import types = require('types');
 import storageLocation = require('./storageLocation');
 import dehydrate = require('./dehydrate');
 import rehydrate = require('./rehydrate');
-export = api;
+import typeRegistry = require('./typeRegistry');
 
 
 // TODO: doc... single process/thread exclusive by design...
@@ -21,33 +21,24 @@ export = api;
 var idCounter = 0;
 
 
-var api = { registerSlowType, init, upsert, remove };
-
-
 // TODO: temp testing...
 var logFileDescriptor;
 var cache = {};
 
 
-
-
 // TODO: temp testing...
-function registerSlowType(registration: {
-    type: string;
-    //dehydrate: (jsonSafeObject: any) => API.SlowObject;
-    rehydrate: (jsonSafeObject: any) => types.SlowObject;
-}) {
-
-    // TODO: ...
-
+export function registerType(registration: types.SlowObject.Registration) {
+    typeRegistry.store(registration);
 }
 
 
+// TODO: temp testing...
+export function lookup(slowObj: types.SlowObject): types.SlowObject {
+    return cache[makeKey(slowObj._slow)];
+}
 
 
-
-
-function init() {
+export function init() {
 
     // Check if the logFile already exists. Use fs.stat since fs.exists is deprecated.
     var fileExists = true;
@@ -80,11 +71,11 @@ function init() {
 }
 
 
-function upsert(slowObj: types.SlowObject) {
+export function upsert(slowObj: types.SlowObject) {
     var slow = slowObj._slow;
     slow.id = slow.id || `#${++idCounter}`;
     var serializedValue = JSON.stringify(dehydrate(slowObj));
-    cache[`${slow.id}-${slow.type}`] = slowObj;
+    cache[`${makeKey(slow)}`] = slowObj;
 
 
     // TODO: testing... NB node.d.ts is missing a typing here...
@@ -93,13 +84,14 @@ function upsert(slowObj: types.SlowObject) {
 }
 
 
-function remove(slowObj: types.SlowObject) {
+export function remove(slowObj: types.SlowObject) {
     var slow = slowObj._slow;
-    delete cache[`${slow.id}-${slow.type}`];
+    var key = makeKey(slow);
+    delete cache[key];
 
 
     // TODO: testing...
-    (<any>fs.writeSync)(logFileDescriptor, `,\n\n\n"REMOVE",\n"${slow.id}-${slow.type}"`, null, 'utf8');
+    (<any>fs.writeSync)(logFileDescriptor, `,\n\n\n"REMOVE",\n"${key}"`, null, 'utf8');
     fs.fsyncSync(logFileDescriptor);
 }
 
@@ -121,10 +113,10 @@ function replayLog() {
             case 'UPSERT':
                 assert(details.$type === 'SlowDef');
                 var slow = details.value;
-                var key: any = `${slow.id}-${slow.type}`;
+                var key = makeKey(slow);
 
                 // TODO: deserialize!!!!!!!!
-                var value = rehydrate(details);
+                var value = rehydrate(details, slow => cache[makeKey(slow)]);
                 cache[key] = value;
                 break;
 
@@ -137,4 +129,10 @@ function replayLog() {
                 throw new Error(`Unrecognised log entry command '${command}'`);
         }
     }
+}
+
+
+// TODO: doc...
+function makeKey(slow: { type: string; id?: string|number; }) {
+    return `${slow.id}-${slow.type}`;
 }

@@ -1,4 +1,5 @@
 ﻿import _ = require('lodash');
+import typeRegistry = require('./typeRegistry');
 export = dehydrate;
 
 

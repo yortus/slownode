@@ -23,8 +23,8 @@ function create(promise) {
     return resolve;
 }
 exports.create = create;
-// TODO: register rehydrator
-storage.registerSlowType({
+// TODO: register slow object type with storage (for rehydration logic)
+storage.registerType({
     type: 'SlowPromiseResolveFunction',
     rehydrate: function (obj) {
         return create(obj.promise);

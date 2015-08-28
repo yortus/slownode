@@ -117,10 +117,8 @@
 
 
 
-
     // TODO: ...
-
-    export interface SlowObject {
+    interface SlowObject {
         _slow: {
             type: string;
             id?: string|number;
@@ -129,9 +127,11 @@
         [other: string]: any;
     }
 
+    namespace SlowObject {
 
-
-
-
-
+        interface Registration {
+            type: string;
+            rehydrate(jsonSafeObject: any): SlowObject;
+        }
+    }
 }

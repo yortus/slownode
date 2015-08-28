@@ -36,7 +36,7 @@ export = SlowRoutineFunction;
 
 
 /** Creates a SlowRoutineFunction instance. May be called with or without 'new'. */
-function SlowRoutineFunction(bodyFunction: Function, options?: types.SlowRoutine.Options) {
+function SlowRoutineFunction(bodyFunction: Function|string, options?: types.SlowRoutine.Options) {
 
     // Validate arguments.
     assert(typeof bodyFunction === 'function');

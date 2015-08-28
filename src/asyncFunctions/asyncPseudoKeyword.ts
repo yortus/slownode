@@ -28,6 +28,34 @@ var asyncPseudoKeyword: types.Async = <any> ((bodyFunc: Function) => {
     //       - better: hash the original source instead of the sloroFunc source, and only make a new sloroFunc if the hash hasn't already been created.
     var sloroFunc = SlowRoutineFunction(bodyFunc, { yieldIdentifier: 'await', constIdentifier: '__const' });
     var source = sloroFunc.body.toString();
+
+
+    var originalSource = bodyFunc.toString();
+    var asyncFunction = makeSlowAsyncFunction(sloroFunc, source, originalSource);
+
+
+    // Ensure the SlowAsyncFunction definition has been persisted to storage.
+    storage.upsert(asyncFunction);
+
+    // Return the SlowAsyncFunction instance.
+    return asyncFunction;
+});
+
+
+// 1. { bodyFunc: Function }        ==>         { source: string, originalSource: string }      ==> sloroFunc
+// 2.                                           { source: string, originalSource: string }      ==> sloroFunc
+
+
+// TODO: doc...
+function makeSlowAsyncFunction(sloroFunc, source, originalSource) {
+
+    // Compile the details of the AsyncFunction definition based on the given bodyFunc.
+    // TODO: optimise! SlowRoutineFunction is VERY EXPENSIVE!!!
+    //       - better: hash the original source instead of the sloroFunc source, and only make a new sloroFunc if the hash hasn't already been created.
+    //var bodyFunc = _.isFunction(original) ? original : ???;
+    //var originalSource = _.isString(original) ? original : ???;
+    //var sloroFunc = SlowRoutineFunction(bodyFunc, { yieldIdentifier: 'await', constIdentifier: '__const' });
+    //var source = sloroFunc.body.toString();
     var asyncFunctionId: string = crypto.createHash('sha1').update(source).digest('hex').slice(0, 40);
 
     // Create the callable part of the SlowAsyncFunction object. When called, this function creates a new
@@ -64,7 +92,7 @@ var asyncPseudoKeyword: types.Async = <any> ((bodyFunc: Function) => {
         type: 'SlowAsyncFunction',
         id: asyncFunctionId,
         source,
-        originalSource: bodyFunc.toString()
+        originalSource
     };
 
     // Ensure the SlowAsyncFunction definition has been persisted to storage.
@@ -72,4 +100,18 @@ var asyncPseudoKeyword: types.Async = <any> ((bodyFunc: Function) => {
 
     // Return the SlowAsyncFunction instance.
     return asyncFunction;
+}
+
+
+
+
+
+// TODO: register slow object type with storage (for rehydration logic)
+storage.registerType({
+    type: 'SlowAsyncFunction',
+    rehydrate: obj => {
+
+        // TODO: this will also upsert the asyncFunction as a side-effect. Split out that functionality!! We just want to rehydrate it here, not upsert it too.
+        return <any> asyncPseudoKeyword(obj.originalSource);
+    }
 });
