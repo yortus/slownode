@@ -10,32 +10,32 @@ export = SlowPromise;
 
 
 /** Sentinal value used for internal promise constructor calls. */
-const DEFER: any = {};
+const INTERNAL: any = {};
 
 
 /** Promises A+ compliant Promise implementation with persistence. */
 class SlowPromise implements types.SlowPromise {
 
-    /** Constructs a SlowPromise instance. May be called with or without new. */
+    /** Constructs a SlowPromise instance. */
     constructor(resolver: (resolve: (value?: any) => void, reject: (reason?: any) => void) => void) {
 
         // Validate arguments.
-        assert(_.isFunction(resolver) || resolver == DEFER);
+        assert(_.isFunction(resolver) || resolver == INTERNAL);
+
+        // If this is an internal call, return the promise now.
+        if (resolver === INTERNAL) return;
 
         // Persist to storage.
         storage.upsert(this);
 
-        // If this is an internal call from makeDeferred(), return the promise now.
-        if (resolver === DEFER) return this;
-
-        // Otherwise, construct a deferred promise, then call the given resolver with the resolve and reject functions.
-        var deferred = SlowPromise.deferred();
-        try { resolver(deferred.resolve, deferred.reject); } catch (ex) { deferred.reject(ex); }
-        return deferred.promise;
+        // Construct resolve and reject functions, and call the resolver with them.
+        var resolve = resolveFunction.create(this);
+        var reject = rejectFunction.create(this);
+        try { resolver(resolve, reject); } catch (ex) { reject(ex); }
     }
 
     /** Returns a new SlowPromise instance that is already resolved with the given value. */
-    static resolved(value: any) {
+    static resolved(value?: any) {
         var deferred = SlowPromise.deferred();
         deferred.resolve(value);
         return deferred.promise;
@@ -52,7 +52,10 @@ class SlowPromise implements types.SlowPromise {
     static deferred() {
 
         // Get a new promise instance using the internal constructor.
-        var promise = new SlowPromise(DEFER);
+        var promise = new SlowPromise(INTERNAL);
+
+        // Persist the new promise to storage.
+        storage.upsert(promise);
 
         //// TODO: temp testing... monitor when this instance gets GC'd.
         //notifyGC(promise);
@@ -61,7 +64,7 @@ class SlowPromise implements types.SlowPromise {
         var resolve = resolveFunction.create(promise);
         var reject = rejectFunction.create(promise);
 
-        // All done.
+        // All done. Return the 'deferred' instance.
         return { promise, resolve, reject };
     }
 
@@ -132,11 +135,6 @@ class SlowPromise implements types.SlowPromise {
 }
 
 
-/** Returns an object containing a new SlowPromise instance, along with a resolve function and a reject function to control its fate. */
-function makeDeferred() {
-}
-
-
 /**
  * Dequeues and processes all enqueued onFulfilled/onRejected handlers.
  * The SlowPromise implementation calls this when `p` becomes settled,
@@ -182,3 +180,14 @@ function processAllHandlers(p: SlowPromise) {
         }
     }
 }
+
+
+// TODO: register slow object type with storage (for rehydration logic)
+storage.registerType({
+    type: 'SlowPromise',
+    rehydrate: obj => {
+        var promise = new SlowPromise(INTERNAL);
+        promise._slow = obj;
+        return promise;
+    }
+});

@@ -30,7 +30,7 @@ var asyncPseudoKeyword = (function (bodyFunc) {
 // TODO: temp testing...
 function tween(stateMachineSource, originalSource) {
     var stateMachine = eval('(' + stateMachineSource + ')');
-    var sloroFunc = function () {
+    var sloroFunc = (function () {
         var args = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i - 0] = arguments[_i];
@@ -38,7 +38,8 @@ function tween(stateMachineSource, originalSource) {
         var sloro = new SlowRoutine(stateMachine);
         sloro.state = { local: { arguments: args } };
         return sloro;
-    };
+    });
+    sloroFunc.stateMachine = stateMachine;
     return makeSlowAsyncFunction(sloroFunc, stateMachineSource, originalSource);
 }
 // TODO: doc...
@@ -68,7 +69,7 @@ function makeSlowAsyncFunction(sloroFunc, stateMachineSource, originalSource) {
             type: 'SlowAsyncFunctionActivation',
             asyncFunction: asyncFunction,
             state: safa.state,
-            awaiting: Promise.resolve(),
+            awaiting: SlowPromise.resolved(),
             resolve: deferred.resolve,
             reject: deferred.reject
         };
@@ -78,6 +79,8 @@ function makeSlowAsyncFunction(sloroFunc, stateMachineSource, originalSource) {
         runToCompletion(safa);
         return deferred.promise;
     });
+    // Add a reference to the stateMachine to the SlowAsyncFunction.
+    asyncFunction.stateMachine = sloroFunc.stateMachine;
     // Add slow state to the SlowAsyncFunction instance.
     asyncFunction._slow = {
         type: 'SlowAsyncFunction',
@@ -92,8 +95,18 @@ function makeSlowAsyncFunction(sloroFunc, stateMachineSource, originalSource) {
 storage.registerType({
     type: 'SlowAsyncFunction',
     rehydrate: function (obj) {
-        // TODO: this will also upsert the asyncFunction as a side-effect. Split out that functionality!! We just want to rehydrate it here, not upsert it too.
+        // TODO: clean up
         return tween(obj.stateMachineSource, obj.originalSource);
+    }
+});
+// TODO: register slow object type with storage (for rehydration logic)
+storage.registerType({
+    type: 'SlowAsyncFunctionActivation',
+    rehydrate: function (obj) {
+        var safa = new SlowRoutine(obj.asyncFunction.stateMachine);
+        safa.state = obj.state;
+        safa._slow = obj;
+        return safa;
     }
 });
 module.exports = asyncPseudoKeyword;

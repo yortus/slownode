@@ -4,7 +4,8 @@ var storage = require('../storage/storage');
  * Returns a new SlowPromiseResolveFunction instance.
  * This function may be used to resolve the given promise with a value.
  */
-function create(promise) {
+function create(promise, persist) {
+    if (persist === void 0) { persist = true; }
     // Create a function that resolves the given promise with the given value.
     var resolve = (function (value) {
         // As per spec, do nothing if promise's fate is already resolved.
@@ -18,7 +19,8 @@ function create(promise) {
     });
     // Add slow metadata to the resolve function, and persist it.
     resolve._slow = { type: 'SlowPromiseResolveFunction', promise: promise };
-    storage.upsert(resolve);
+    if (persist)
+        storage.upsert(resolve);
     // Return the resolve function.
     return resolve;
 }
@@ -27,7 +29,7 @@ exports.create = create;
 storage.registerType({
     type: 'SlowPromiseResolveFunction',
     rehydrate: function (obj) {
-        return create(obj.promise);
+        return create(obj.promise, false);
     }
 });
 //# sourceMappingURL=resolveFunction.js.map

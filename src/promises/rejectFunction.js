@@ -3,7 +3,8 @@ var storage = require('../storage/storage');
  * Returns a new SlowPromiseRejectFunction instance.
  * This function may be used to reject the given promise with a reason.
  */
-function create(promise) {
+function create(promise, persist) {
+    if (persist === void 0) { persist = true; }
     // Create a function that rejects the given promise with the given reason.
     var reject = (function (reason) {
         // As per spec, do nothing if promise's fate is already resolved.
@@ -17,9 +18,17 @@ function create(promise) {
     });
     // Add slow metadata to the reject function, and persist it.
     reject._slow = { type: 'SlowPromiseRejectFunction', promise: promise };
-    storage.upsert(reject);
+    if (persist)
+        storage.upsert(reject);
     // Return the reject function.
     return reject;
 }
 exports.create = create;
+// TODO: register slow object type with storage (for rehydration logic)
+storage.registerType({
+    type: 'SlowPromiseRejectFunction',
+    rehydrate: function (obj) {
+        return create(obj.promise, false);
+    }
+});
 //# sourceMappingURL=rejectFunction.js.map

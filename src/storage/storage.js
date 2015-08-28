@@ -23,7 +23,10 @@ function lookup(slowObj) {
     return cache[makeKey(slowObj._slow)];
 }
 exports.lookup = lookup;
-function init() {
+var init = function () {
+    // Ensure init is only performed once.
+    // TODO: this is a bit hacky... better way?
+    init = function () { };
     // Check if the logFile already exists. Use fs.stat since fs.exists is deprecated.
     var fileExists = true;
     try {
@@ -49,19 +52,26 @@ function init() {
     //}
     fs.writeSync(logFileDescriptor, "\"BEGIN\"", null, 'utf8');
     fs.fsyncSync(logFileDescriptor);
-}
-exports.init = init;
+};
 function upsert(slowObj) {
+    init();
     var slow = slowObj._slow;
     slow.id = slow.id || "#" + ++idCounter;
     var serializedValue = JSON.stringify(dehydrate(slowObj));
     cache[("" + makeKey(slow))] = slowObj;
     // TODO: testing... NB node.d.ts is missing a typing here...
-    fs.writeSync(logFileDescriptor, ",\n\n\n\"UPSERT\",\n" + serializedValue, null, 'utf8');
-    fs.fsyncSync(logFileDescriptor);
+    try {
+        fs.writeSync(logFileDescriptor, ",\n\n\n\"UPSERT\",\n" + serializedValue, null, 'utf8');
+        fs.fsyncSync(logFileDescriptor);
+    }
+    catch (ex) {
+        console.log('FILE DESCRIPTOR: ' + logFileDescriptor);
+        throw ex;
+    }
 }
 exports.upsert = upsert;
 function remove(slowObj) {
+    init();
     var slow = slowObj._slow;
     var key = makeKey(slow);
     delete cache[key];

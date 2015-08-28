@@ -9,7 +9,7 @@ import storage = require('../storage/storage');
  * Returns a new SlowPromiseResolveFunction instance.
  * This function may be used to resolve the given promise with a value.
  */
-export function create(promise: types.SlowPromise) {
+export function create(promise: types.SlowPromise, persist = true) {
 
     // Create a function that resolves the given promise with the given value.
     var resolve: types.SlowPromise.ResolveFunction = <any> ((value?: any) => {
@@ -27,7 +27,7 @@ export function create(promise: types.SlowPromise) {
 
     // Add slow metadata to the resolve function, and persist it.
     resolve._slow = { type: 'SlowPromiseResolveFunction', promise };
-    storage.upsert(resolve);
+    if (persist) storage.upsert(resolve);
 
     // Return the resolve function.
     return resolve;
@@ -38,6 +38,6 @@ export function create(promise: types.SlowPromise) {
 storage.registerType({
     type: 'SlowPromiseResolveFunction',
     rehydrate: obj => {
-        return create(obj.promise);
+        return create(obj.promise, false);
     }
 });

@@ -5,10 +5,10 @@ var rejectFunction = require('./rejectFunction');
 var standardResolutionProcedure = require('./standardResolutionProcedure');
 var storage = require('../storage/storage');
 /** Sentinal value used for internal promise constructor calls. */
-var DEFER = {};
+var INTERNAL = {};
 /** Promises A+ compliant Promise implementation with persistence. */
 var SlowPromise = (function () {
-    /** Constructs a SlowPromise instance. May be called with or without new. */
+    /** Constructs a SlowPromise instance. */
     function SlowPromise(resolver) {
         // -------------- Private implementation details from here down --------------
         this._slow = {
@@ -19,21 +19,21 @@ var SlowPromise = (function () {
             handlers: []
         };
         // Validate arguments.
-        assert(_.isFunction(resolver) || resolver == DEFER);
+        assert(_.isFunction(resolver) || resolver == INTERNAL);
+        // If this is an internal call, return the promise now.
+        if (resolver === INTERNAL)
+            return;
         // Persist to storage.
         storage.upsert(this);
-        // If this is an internal call from makeDeferred(), return the promise now.
-        if (resolver === DEFER)
-            return this;
-        // Otherwise, construct a deferred promise, then call the given resolver with the resolve and reject functions.
-        var deferred = SlowPromise.deferred();
+        // Construct resolve and reject functions, and call the resolver with them.
+        var resolve = resolveFunction.create(this);
+        var reject = rejectFunction.create(this);
         try {
-            resolver(deferred.resolve, deferred.reject);
+            resolver(resolve, reject);
         }
         catch (ex) {
-            deferred.reject(ex);
+            reject(ex);
         }
-        return deferred.promise;
     }
     /** Returns a new SlowPromise instance that is already resolved with the given value. */
     SlowPromise.resolved = function (value) {
@@ -50,13 +50,15 @@ var SlowPromise = (function () {
     /** Returns an object containing a new SlowPromise instance, along with a resolve function and a reject function to control its fate. */
     SlowPromise.deferred = function () {
         // Get a new promise instance using the internal constructor.
-        var promise = new SlowPromise(DEFER);
+        var promise = new SlowPromise(INTERNAL);
+        // Persist the new promise to storage.
+        storage.upsert(promise);
         //// TODO: temp testing... monitor when this instance gets GC'd.
         //notifyGC(promise);
         // Create the resolve and reject functions.
         var resolve = resolveFunction.create(promise);
         var reject = rejectFunction.create(promise);
-        // All done.
+        // All done. Return the 'deferred' instance.
         return { promise: promise, resolve: resolve, reject: reject };
     };
     // TODO: temp testing....
@@ -113,9 +115,6 @@ var SlowPromise = (function () {
     };
     return SlowPromise;
 })();
-/** Returns an object containing a new SlowPromise instance, along with a resolve function and a reject function to control its fate. */
-function makeDeferred() {
-}
 /**
  * Dequeues and processes all enqueued onFulfilled/onRejected handlers.
  * The SlowPromise implementation calls this when `p` becomes settled,
@@ -157,5 +156,14 @@ function processAllHandlers(p) {
         }
     }
 }
+// TODO: register slow object type with storage (for rehydration logic)
+storage.registerType({
+    type: 'SlowPromise',
+    rehydrate: function (obj) {
+        var promise = new SlowPromise(INTERNAL);
+        promise._slow = obj;
+        return promise;
+    }
+});
 module.exports = SlowPromise;
 //# sourceMappingURL=slowPromise.js.map

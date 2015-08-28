@@ -29,14 +29,7 @@ declare module "slownode" {
     // ==================== SlowPromise ====================
 
     // TODO: This is just an alias of the SlowPromise constructor to support slow.Promise(...) usage...
-    export var Promise: {
-        new<T>(resolver: (resolve: (value?: T | SlowThenable<T>) => void, reject: (error?: any) => void) => void): SlowPromise<T>
-        <T>(resolver: (resolve: (value?: T | SlowThenable<T>) => void, reject: (error?: any) => void) => void): SlowPromise<T>
-        resolved<T>(value?: T | SlowThenable<T>): SlowPromise<T>;
-        rejected(error: any): SlowPromise<any>;
-        deferred<T>(): SlowPromise.Deferred<T>;
-        delay(ms: number): SlowPromise<void>;
-    }
+    export var Promise: typeof SlowPromise;
 
     export class SlowPromise<T> {
 

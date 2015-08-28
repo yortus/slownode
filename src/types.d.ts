@@ -13,6 +13,7 @@
     type Async = typeof slow.async;
 
     interface SlowAsyncFunction {
+        stateMachine: SlowRoutine.StateMachine;
         _slow: {
             type: string;
             id?: string|number;
@@ -27,11 +28,11 @@
             _slow: {
                 type: string;
                 id?: string|number;
-                asyncFunction: SlowAsyncFunction,
-                state: any, // TODO: may include Slow object refs
-                awaiting: any, // TODO: may be a slow object ref / may include slow object refs
-                resolve: slow.SlowPromise.ResolveFunction<any>, // TODO: is a slow object
-                reject: slow.SlowPromise.RejectFunction // TODO: is a slow object
+                asyncFunction: SlowAsyncFunction;
+                state: SlowRoutine.StateMachine.State;
+                awaiting: any;
+                resolve: slow.SlowPromise.ResolveFunction<any>;
+                reject: slow.SlowPromise.RejectFunction;
             };
         }
     }
@@ -46,8 +47,8 @@
             id?: string|number;
             isFateResolved: boolean;
             state: SlowPromise.State;
-            settledValue: any; // TODO: may include Slow object refs
-            handlers: any[]; // TODO: may include SlowAsyncFunction refs
+            settledValue: any;
+            handlers: any[];
         };
         _fulfil(value?): void;
         _reject(reason?): void;
