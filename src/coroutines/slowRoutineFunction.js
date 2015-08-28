@@ -7,6 +7,7 @@ var traverse = require('./traverse');
 var rewriteBodyAST = require('./rewriteBodyAST');
 var SlowRoutine = require('./slowRoutine');
 //TODO: rename this and SlowRoutine. The 'Slow' implies DB persistence but this low-level util just rewrites a coro body, it doesn't persist anything.
+// TODO: another valid 'local' identifier is the function's own name
 //---------------------------------------------
 // TODO: doc all this in README...
 // Rules for SlowRoutine bodies:

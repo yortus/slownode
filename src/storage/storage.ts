@@ -118,6 +118,11 @@ function replayLog() {
     var logEntries: any[] = JSON.parse(json);
     var pos = 1;
 
+
+    // TODO: only rehydrate the LAST upsert/delete encountered for each key
+
+
+
     while (pos < logEntries.length) {
         var command: string = logEntries[pos++];
         var details: any = logEntries[pos++];

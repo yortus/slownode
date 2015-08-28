@@ -84,6 +84,7 @@ function replayLog() {
     var json = '[' + fs.readFileSync(storageLocation, 'utf8') + ']';
     var logEntries = JSON.parse(json);
     var pos = 1;
+    // TODO: only rehydrate the LAST upsert/delete encountered for each key
     while (pos < logEntries.length) {
         var command = logEntries[pos++];
         var details = logEntries[pos++];
