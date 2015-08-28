@@ -2,6 +2,7 @@
 import crypto = require('crypto');
 import _ = require('lodash');
 import types = require('types');
+import SlowRoutine = require('../coroutines/slowRoutine');
 import SlowPromise = require('../promises/slowPromise');
 import SlowRoutineFunction = require('../coroutines/slowRoutineFunction');
 import runToCompletion = require('./runToCompletion');
@@ -29,7 +30,6 @@ var asyncPseudoKeyword: types.Async = <any> ((bodyFunc: Function) => {
     var sloroFunc = SlowRoutineFunction(bodyFunc, { yieldIdentifier: 'await', constIdentifier: '__const' });
     var stateMachineSource = sloroFunc.stateMachine.toString();
 
-
     var originalSource = bodyFunc.toString();
     var asyncFunction = makeSlowAsyncFunction(sloroFunc, stateMachineSource, originalSource);
 
@@ -42,8 +42,29 @@ var asyncPseudoKeyword: types.Async = <any> ((bodyFunc: Function) => {
 });
 
 
-// 1. { bodyFunc: Function }        ==>         { source: string, originalSource: string }      ==> sloroFunc
-// 2.                                           { source: string, originalSource: string }      ==> sloroFunc
+
+
+
+// TODO: temp testing...
+function tween(stateMachineSource: string, originalSource: string) {
+
+    var stateMachine = eval('(' + stateMachineSource + ')');
+
+    var sloroFunc = (...args) => {
+        var sloro = new SlowRoutine(stateMachine);
+        sloro.state = { local: { arguments: args } };
+        return sloro;
+    };
+
+    return makeSlowAsyncFunction(sloroFunc, stateMachineSource, originalSource);
+}
+
+
+
+
+
+
+
 
 
 // TODO: doc...
@@ -95,9 +116,6 @@ function makeSlowAsyncFunction(sloroFunc, stateMachineSource, originalSource) {
         originalSource
     };
 
-    // Ensure the SlowAsyncFunction definition has been persisted to storage.
-    storage.upsert(asyncFunction);
-
     // Return the SlowAsyncFunction instance.
     return asyncFunction;
 }
@@ -112,6 +130,6 @@ storage.registerType({
     rehydrate: obj => {
 
         // TODO: this will also upsert the asyncFunction as a side-effect. Split out that functionality!! We just want to rehydrate it here, not upsert it too.
-        return <any> asyncPseudoKeyword(obj.originalSource);
+        return tween(obj.stateMachineSource, obj.originalSource);
     }
 });

@@ -1,5 +1,6 @@
 var assert = require('assert');
 var crypto = require('crypto');
+var SlowRoutine = require('../coroutines/slowRoutine');
 var SlowPromise = require('../promises/slowPromise');
 var SlowRoutineFunction = require('../coroutines/slowRoutineFunction');
 var runToCompletion = require('./runToCompletion');
@@ -26,8 +27,20 @@ var asyncPseudoKeyword = (function (bodyFunc) {
     // Return the SlowAsyncFunction instance.
     return asyncFunction;
 });
-// 1. { bodyFunc: Function }        ==>         { source: string, originalSource: string }      ==> sloroFunc
-// 2.                                           { source: string, originalSource: string }      ==> sloroFunc
+// TODO: temp testing...
+function tween(stateMachineSource, originalSource) {
+    var stateMachine = eval('(' + stateMachineSource + ')');
+    var sloroFunc = function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i - 0] = arguments[_i];
+        }
+        var sloro = new SlowRoutine(stateMachine);
+        sloro.state = { local: { arguments: args } };
+        return sloro;
+    };
+    return makeSlowAsyncFunction(sloroFunc, stateMachineSource, originalSource);
+}
 // TODO: doc...
 function makeSlowAsyncFunction(sloroFunc, stateMachineSource, originalSource) {
     // Compile the details of the AsyncFunction definition based on the given bodyFunc.
@@ -72,8 +85,6 @@ function makeSlowAsyncFunction(sloroFunc, stateMachineSource, originalSource) {
         stateMachineSource: stateMachineSource,
         originalSource: originalSource
     };
-    // Ensure the SlowAsyncFunction definition has been persisted to storage.
-    storage.upsert(asyncFunction);
     // Return the SlowAsyncFunction instance.
     return asyncFunction;
 }
@@ -82,7 +93,7 @@ storage.registerType({
     type: 'SlowAsyncFunction',
     rehydrate: function (obj) {
         // TODO: this will also upsert the asyncFunction as a side-effect. Split out that functionality!! We just want to rehydrate it here, not upsert it too.
-        return asyncPseudoKeyword(obj.originalSource);
+        return tween(obj.stateMachineSource, obj.originalSource);
     }
 });
 module.exports = asyncPseudoKeyword;

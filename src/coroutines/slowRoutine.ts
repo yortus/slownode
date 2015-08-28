@@ -6,27 +6,30 @@ export = SlowRoutine;
 class SlowRoutine implements types.SlowRoutine {
 
     // TODO: doc...
-    constructor(private stateMachine: types.SlowRoutine.StateMachine, public state: types.SlowRoutine.StateMachine.State) { }
+    constructor(public stateMachine: types.SlowRoutine.StateMachine) { }
 
     // TODO: doc...
-    next = makeResumeMethod('yield', this.stateMachine, this.state);
+    next = makeResumeMethod('yield', this);
 
     // TODO: doc...
-    throw = makeResumeMethod('throw', this.stateMachine, this.state);
+    throw = makeResumeMethod('throw', this);
 
     // TODO: doc...
-    return = makeResumeMethod('return', this.stateMachine, this.state);
+    return = makeResumeMethod('return', this);
+
+    // TODO: doc...
+    state: types.SlowRoutine.StateMachine.State
 }
 
 
 /** Helper function for creating SlowRoutine's `next`, `throw`, and `return` method bodies. */
-function makeResumeMethod(type: string, stateMachine: types.SlowRoutine.StateMachine, state: types.SlowRoutine.StateMachine.State) {
+function makeResumeMethod(type: string, sloro: SlowRoutine) {
     return (value?: any) => {
-        state.incoming = { type, value };
-        stateMachine(state);
-        var outgoing = state.outgoing;
-        delete state.incoming;
-        delete state.outgoing;
+        sloro.state.incoming = { type, value };
+        sloro.stateMachine(sloro.state);
+        var outgoing = sloro.state.outgoing;
+        delete sloro.state.incoming;
+        delete sloro.state.outgoing;
         if (outgoing.type === 'throw') throw outgoing.value;
         return { done: outgoing.type === 'return', value: outgoing.value };
     };

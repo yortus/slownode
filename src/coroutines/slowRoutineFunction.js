@@ -268,7 +268,9 @@ function ensureAmbientIdentifiersAreNotMutated(funcExpr) {
 function makeSlowRoutineFunction(stateMachine, paramNames) {
     // This is the generic constructor function. It closes over stateMachine.
     function SlowRoutineFunction() {
-        return new SlowRoutine(stateMachine, { local: { arguments: Array.prototype.slice.call(arguments) } });
+        var sloro = new SlowRoutine(stateMachine);
+        sloro.state = { local: { arguments: Array.prototype.slice.call(arguments) } };
+        return sloro;
     }
     // Customise the generic constructor function with the specified parameter names and a `stateMachine` property.
     var originalSource = SlowRoutineFunction.toString();
