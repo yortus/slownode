@@ -1,23 +1,22 @@
 var assert = require('assert');
 var fs = require('fs');
 var storageLocation = require('./storageLocation');
-var serialize = require('./serialize');
-var deserialize = require('./deserialize');
+var dehydrate = require('./dehydrate');
+var rehydrate = require('./rehydrate');
 // TODO: doc... single process/thread exclusive by design...
 // TODO: errors are not caught... What to do?
 // TODO: NB from linux manpage: Calling fsync() does not necessarily ensure that the entry in the directory containing the file has also reached disk. For that an explicit fsync() on a file descriptor for the directory is also needed.
 // TODO: doc... this works due to exclusive process requirement.
 // TODO: but how to ensure no clashes with client-supplied ids? doc client-supplied id restrictions in API...
 var idCounter = 0;
-var api = { registerSlowType: function () {
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i - 0] = arguments[_i];
-        }
-    }, init: init, upsert: upsert, remove: remove };
+var api = { registerSlowType: registerSlowType, init: init, upsert: upsert, remove: remove };
 // TODO: temp testing...
 var logFileDescriptor;
 var cache = {};
+// TODO: temp testing...
+function registerSlowType(registration) {
+    // TODO: ...
+}
 function init() {
     // Check if the logFile already exists. Use fs.stat since fs.exists is deprecated.
     var fileExists = true;
@@ -48,7 +47,7 @@ function init() {
 function upsert(slowObj) {
     var slow = slowObj._slow;
     slow.id = slow.id || "#" + ++idCounter;
-    var serializedValue = serialize(slowObj);
+    var serializedValue = JSON.stringify(dehydrate(slowObj));
     cache[(slow.id + "-" + slow.type)] = slowObj;
     // TODO: testing... NB node.d.ts is missing a typing here...
     fs.writeSync(logFileDescriptor, ",\n\n\n\"UPSERT\",\n" + serializedValue, null, 'utf8');
@@ -61,16 +60,6 @@ function remove(slowObj) {
     fs.writeSync(logFileDescriptor, ",\n\n\n\"REMOVE\",\n\"" + slow.id + "-" + slow.type + "\"", null, 'utf8');
     fs.fsyncSync(logFileDescriptor);
 }
-//// TODO: add `where` param (eg for event loop searching for what it can schedule)
-//// TODO: cache this one - it could be slow. Should only use at startup time (and event loop??)
-//function find(type: string, id?: string|number): any[] {
-//    //var filenames = fs.readdirSync(storageLocation);
-//    //var filenamePrefix = `${id || ''}-${type}`;
-//    //filenames = filenames.filter(filename => filename.indexOf(filenamePrefix) === 0);
-//    return [];
-//    //TODO: fix!... was... var results = filenames.map(filename => deserialize(fs.readFileSync(path.join(storageLocation, filename), { encoding: 'utf8', flag: 'r' })));
-//    //return results;
-//}
 function replayLog() {
     var json = '[' + fs.readFileSync(storageLocation, 'utf8') + ']';
     var logEntries = JSON.parse(json);
@@ -84,8 +73,7 @@ function replayLog() {
                 var slow = details.value;
                 var key = slow.id + "-" + slow.type;
                 // TODO: deserialize!!!!!!!!
-                // TODO: remove this extra round-trip to&from JSON. Expose unwrapJSONSafeObject() directly?
-                var value = deserialize(JSON.stringify(details));
+                var value = rehydrate(details);
                 cache[key] = value;
                 break;
             case 'REMOVE':

@@ -1,29 +1,12 @@
 ﻿import _ = require('lodash');
-export = serialize;
-
-
-/**
- * Serializes the given value to a string suitable for text-based storage and transport.
- * Throws an error if the value cannot be serialized.
- */
-function serialize(value: any) {
-    try {
-        var jsonSafeObject = toJSONSafeObject(value);
-        var json = JSON.stringify(jsonSafeObject);
-        return json;
-    }
-    catch (ex) {
-        // TODO: what to do? just rethrow for now...
-        throw ex;
-    }
-}
+export = dehydrate;
 
 
 /**
  * Recursively converts the given value into an object that can be safely converted to JSON.
  * Throws an error if any part of the value cannot be converted.
  */
-function toJSONSafeObject(value: any, treatSlowObjectsAsRefs = false) {
+function dehydrate(value: any, treatSlowObjectsAsRefs = false) {
 
     // Some primitives are already safe. Return them unchanged.
     if (_.isString(value) || _.isNumber(value) || _.isBoolean(value) || _.isNull(value)) {
@@ -32,12 +15,12 @@ function toJSONSafeObject(value: any, treatSlowObjectsAsRefs = false) {
 
     // Map an array of values to an array of safe values.
     else if (_.isArray(value)) {
-        return value.map(elem => toJSONSafeObject(elem, treatSlowObjectsAsRefs));
+        return value.map(elem => dehydrate(elem, treatSlowObjectsAsRefs));
     }
 
     // Map a plain (and non-slow) object to a new object whose property values are safe values.
     else if (_.isPlainObject(value) && !_.has(value, '_slow')) {
-        return _.mapValues(value, propValue => toJSONSafeObject(propValue, treatSlowObjectsAsRefs));
+        return _.mapValues(value, propValue => dehydrate(propValue, treatSlowObjectsAsRefs));
     }
 
     // Map `undefined` to a sentinel object that will be deserialized back to `undefined`
@@ -56,7 +39,7 @@ function toJSONSafeObject(value: any, treatSlowObjectsAsRefs = false) {
         else {
             return {
                 $type: 'SlowDef',
-                value: _.mapValues(value._slow, propValue => toJSONSafeObject(propValue, true))
+                value: _.mapValues(value._slow, propValue => dehydrate(propValue, true))
             };
         }
     }
@@ -68,5 +51,5 @@ function toJSONSafeObject(value: any, treatSlowObjectsAsRefs = false) {
 
 
     // If we get to here, the value is not recognised. Throw an error.
-    throw new Error(`toJSONSafeObject: value cannot be serialized: ${value}`);
+    throw new Error(`dehydration not supported for value : ${value}`);
 }

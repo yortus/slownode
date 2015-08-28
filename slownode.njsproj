@@ -36,11 +36,11 @@
     <TypeScriptCompile Include="src\promises\rejectFunction.ts" />
     <TypeScriptCompile Include="src\promises\standardResolutionProcedure.ts" />
     <TypeScriptCompile Include="src\storage\api.ts" />
+    <TypeScriptCompile Include="src\storage\rehydrate.ts" />
     <TypeScriptCompile Include="src\storage\storageLocation.ts" />
     <TypeScriptCompile Include="src\index.ts" />
     <TypeScriptCompile Include="src\storage\storage.ts" />
-    <TypeScriptCompile Include="src\storage\deserialize.ts" />
-    <TypeScriptCompile Include="src\storage\serialize.ts" />
+    <TypeScriptCompile Include="src\storage\dehydrate.ts" />
     <TypeScriptCompile Include="src\asyncFunctions\runToCompletion.ts" />
     <TypeScriptCompile Include="src\asyncFunctions\asyncPseudoKeyword.ts" />
     <TypeScriptCompile Include="src\asyncFunctions\rehydrate.ts" />
@@ -50,6 +50,7 @@
     <TypeScriptCompile Include="src\coroutines\slowRoutine.ts" />
     <TypeScriptCompile Include="src\coroutines\slowRoutineFunction.ts" />
     <TypeScriptCompile Include="src\coroutines\traverse.ts" />
+    <TypeScriptCompile Include="src\storage\typeRegistry.ts" />
     <TypeScriptCompile Include="src\types.d.ts" />
     <TypeScriptCompile Include="src\typings\asyncawait\asyncawait.d.ts" />
     <TypeScriptCompile Include="src\typings\chai-as-promised\chai-as-promised.d.ts" />

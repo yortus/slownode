@@ -2,10 +2,10 @@
 import fs = require('fs');
 import path = require('path');
 import crypto = require('crypto');
+import types = require('types');
 import storageLocation = require('./storageLocation');
-import serialize = require('./serialize');
-import deserialize = require('./deserialize');
-import API = require('./api');
+import dehydrate = require('./dehydrate');
+import rehydrate = require('./rehydrate');
 export = api;
 
 
@@ -21,12 +21,30 @@ export = api;
 var idCounter = 0;
 
 
-var api: API = { registerSlowType: (...args) => {}, init, upsert, remove };
+var api = { registerSlowType, init, upsert, remove };
 
 
 // TODO: temp testing...
 var logFileDescriptor;
 var cache = {};
+
+
+
+
+// TODO: temp testing...
+function registerSlowType(registration: {
+    type: string;
+    //dehydrate: (jsonSafeObject: any) => API.SlowObject;
+    rehydrate: (jsonSafeObject: any) => types.SlowObject;
+}) {
+
+    // TODO: ...
+
+}
+
+
+
+
 
 
 function init() {
@@ -62,10 +80,10 @@ function init() {
 }
 
 
-function upsert(slowObj: API.SlowObject) {
+function upsert(slowObj: types.SlowObject) {
     var slow = slowObj._slow;
     slow.id = slow.id || `#${++idCounter}`;
-    var serializedValue = serialize(slowObj);
+    var serializedValue = JSON.stringify(dehydrate(slowObj));
     cache[`${slow.id}-${slow.type}`] = slowObj;
 
 
@@ -75,7 +93,7 @@ function upsert(slowObj: API.SlowObject) {
 }
 
 
-function remove(slowObj: API.SlowObject) {
+function remove(slowObj: types.SlowObject) {
     var slow = slowObj._slow;
     delete cache[`${slow.id}-${slow.type}`];
 
@@ -86,16 +104,7 @@ function remove(slowObj: API.SlowObject) {
 }
 
 
-//// TODO: add `where` param (eg for event loop searching for what it can schedule)
-//// TODO: cache this one - it could be slow. Should only use at startup time (and event loop??)
-//function find(type: string, id?: string|number): any[] {
-//    //var filenames = fs.readdirSync(storageLocation);
-//    //var filenamePrefix = `${id || ''}-${type}`;
-//    //filenames = filenames.filter(filename => filename.indexOf(filenamePrefix) === 0);
-//    return [];
-//    //TODO: fix!... was... var results = filenames.map(filename => deserialize(fs.readFileSync(path.join(storageLocation, filename), { encoding: 'utf8', flag: 'r' })));
-//    //return results;
-//}
+
 
 
 function replayLog() {
@@ -115,8 +124,7 @@ function replayLog() {
                 var key: any = `${slow.id}-${slow.type}`;
 
                 // TODO: deserialize!!!!!!!!
-                // TODO: remove this extra round-trip to&from JSON. Expose unwrapJSONSafeObject() directly?
-                var value = deserialize(JSON.stringify(details));
+                var value = rehydrate(details);
                 cache[key] = value;
                 break;
 

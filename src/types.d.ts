@@ -109,4 +109,25 @@
         return(value?: any): { done: boolean; value: any; };
         state: any;
     }
+
+
+
+
+
+    // TODO: ...
+
+    export interface SlowObject {
+        _slow: {
+            type: string;
+            id?: string|number;
+            [other: string]: any;
+        }
+        [other: string]: any;
+    }
+
+
+
+
+
+
 }
