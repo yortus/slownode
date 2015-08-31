@@ -121,6 +121,7 @@
                 pos?: string;
                 local?: { [name: string]: any; };
                 temp?: { [name: string]: any; };
+                ambient?: { [name: string]: any; };
                 error?: {
                     occurred?: boolean;
                     value?: any;
@@ -157,5 +158,18 @@
             type: string;
             rehydrate(jsonSafeObject: any): SlowObject;
         }
+    }
+}
+
+
+declare module ESTree {
+    export interface FunctionExpression {
+        _ids: {
+            global: string[];
+            var: string[];
+            let: string[];
+            const: string[];
+            catch: string[];
+        };
     }
 }

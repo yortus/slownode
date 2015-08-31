@@ -3,8 +3,6 @@ import traverseTree = require('../traverseTree');
 export = replacePseudoConstCallsWithConstDeclarations;
 
 
-
-
 /** In the given AST, converts variable declarations whose 'init' is a direct call to `pseudoConstIdentifier` to equivalent const declarations. */
 function replacePseudoConstCallsWithConstDeclarations(funcExpr: ESTree.FunctionExpression, pseudoConstIdentifier: string) {
     traverseTree(funcExpr.body, node => {

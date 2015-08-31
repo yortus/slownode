@@ -6,8 +6,13 @@ import esprima = require('esprima');
 import escodegen = require('escodegen');
 import matchNode = require('./astOperations/matchNode');
 import traverseTree = require('./astOperations/traverseTree');
+import classifyIdentifiers = require('./astOperations/funcExpr/classifyIdentifiers');
 import replacePseudoYieldCallsWithYieldExpressions = require('./astOperations/funcExpr/replacePseudoYieldCallsWithYieldExpressions');
 import replacePseudoConstCallsWithConstDeclarations = require('./astOperations/funcExpr/replacePseudoConstCallsWithConstDeclarations');
+import ensureNodesAreLegalForSteppableBody = require('./astOperations/funcExpr/ensureNodesAreLegalForSteppableBody');
+import ensureIdentifiersAreLegalForSteppableBody = require('./astOperations/funcExpr/ensureIdentifiersAreLegalForSteppableBody');
+import ensureAllIdentifierReferencesAreKnownLocalsOrAmbients = require('./astOperations/funcExpr/ensureAllIdentifierReferencesAreKnownLocalsOrAmbients');
+import ensureAmbientIdentifiersAreNotMutated = require('./astOperations/funcExpr/ensureAmbientIdentifiersAreNotMutated');
 import transformToStateMachine = require('./astOperations/funcExpr/transformToStateMachine');
 import Steppable = require('./steppable');
 export = SteppableFunction;
@@ -39,15 +44,15 @@ export = SteppableFunction;
 //---------------------------------------------
 
 
-/** Creates a SteppableFunction instance. May be called with or without 'new'. */
-function SteppableFunction(bodyFunction: Function, options?: types.Steppable.Options) {
+/** Constructs a SteppableFunction instance. May be called with or without 'new'. */
+function SteppableFunction(steppableBody: Function, options?: types.Steppable.Options) {
 
     // Validate arguments.
-    assert(typeof bodyFunction === 'function');
+    assert(typeof steppableBody === 'function');
     options = _.defaults({}, options, { yieldIdentifier: null, constIdentifier: null });
 
     // Transform original function --> source code --> AST.
-    var originalFunction = bodyFunction;
+    var originalFunction = steppableBody;
     var originalSource = '(' + originalFunction.toString() + ')';
     var originalAST = esprima.parse(originalSource);
     var exprStmt = <ESTree.ExpressionStatement> originalAST.body[0];
@@ -60,8 +65,8 @@ function SteppableFunction(bodyFunction: Function, options?: types.Steppable.Opt
     if (options.constIdentifier) replacePseudoConstCallsWithConstDeclarations(funcExpr, options.constIdentifier);
 
     // Validate the AST.
-    ensureOnlySupportedConstructsInBody(funcExpr);
-    ensureIdentifierNamesAreValid(funcExpr);
+    ensureNodesAreLegalForSteppableBody(funcExpr);
+    ensureIdentifiersAreLegalForSteppableBody(funcExpr);
     ensureAllIdentifierReferencesAreKnownLocalsOrAmbients(funcExpr);
     ensureAmbientIdentifiersAreNotMutated(funcExpr);
 
@@ -77,166 +82,6 @@ function SteppableFunction(bodyFunction: Function, options?: types.Steppable.Opt
     var paramNames = funcExpr.params.map(p => <string> p['name']);
     var result = makeSteppableFunction(stateMachine, paramNames);
     return result;
-}
-
-
-/** Returns all global and local identifiers broken down into categories. Duplicates are not removed. */ 
-function findAllIdentifiers(funcExpr: ESTree.FunctionExpression) {
-    var globalIds = ['require'].concat(Object.getOwnPropertyNames(global));
-    var varIds = funcExpr.params.map(p => <string> p['name']);
-    var letIds: string[] = [];
-    var constIds: string[] = [];
-    var catchIds: string[] = [];
-    traverseTree(funcExpr.body, node => {
-        matchNode(node, {
-            VariableDeclaration: (stmt) => {
-                var ids = stmt.declarations.map(decl => decl.id['name']);
-                switch (stmt.kind) {
-                    case 'var': varIds = varIds.concat(ids); break;
-                    case 'let': letIds = letIds.concat(ids); break;
-                    case 'const': constIds = constIds.concat(ids); break;
-                }
-            },
-            TryStatement: (stmt) => {
-                if (stmt.handler) {
-                    catchIds.push(stmt.handler.param['name']);
-                }
-            },
-            Otherwise: (node) => { /* pass-through */ }
-        });
-    });
-    return {
-        global: globalIds,
-        var: varIds,
-        let: letIds,
-        const: constIds,
-        catch: catchIds
-    };
-}
-
-
-/**
- * Traverses the AST, throwing an error if any unsupported constructs are encountered.
- * Constructs may be unsupported for two main reasons:
- * (1) they violate the assumptions on which Steppables depend, in particular the single-scoped-body assumption.
- * (2) they have not been implemented yet (destructuring, for..of, and some other ES6+ constructs). 
- */
-function ensureOnlySupportedConstructsInBody(funcExpr: ESTree.FunctionExpression) {
-    const whitelistedNodeTypes = [
-        'EmptyStatement', 'BlockStatement', 'ExpressionStatement', 'IfStatement', 'SwitchStatement',
-        'WhileStatement', 'DoWhileStatement', 'ForStatement', 'ForInStatement', 'TryStatement',
-        'LabeledStatement', 'BreakStatement', 'ContinueStatement', 'ReturnStatement', 'ThrowStatement',
-        'VariableDeclaration', 'SequenceExpression', 'YieldExpression', 'AssignmentExpression', 'ConditionalExpression',
-        'LogicalExpression', 'BinaryExpression', 'UnaryExpression', 'UpdateExpression', 'CallExpression',
-        'NewExpression', 'MemberExpression', 'ArrayExpression', 'ObjectExpression', 'Identifier',
-        'TemplateLiteral', 'RegexLiteral', 'Literal'
-    ];
-
-    // Rule out non-whitelisted node types.
-    traverseTree(funcExpr.body, node => {
-        var whitelisted = whitelistedNodeTypes.indexOf(node.type) !== -1;
-        if (whitelisted) return;
-        switch (node.type) {
-            case 'FunctionDeclaration':
-            case 'FunctionExpression':
-            case 'ArrowFunctionExpression':
-                throw new Error(`Steppable: function delcarations, function expressions and arrow functions are not allowed within the body function`);
-            default:
-                throw new Error(`Steppable: construct '${node.type}' is not allowed within the body function`);
-        }
-    });
-
-    // Rule out block-scoped declarations (ie just 'let' declarations; 'const' declarations will be treated as ambients.
-    var ids = findAllIdentifiers(funcExpr);
-    if (ids.let.length > 0) throw new Error(`Steppable: block scoped variables are not allowed within the body function ('${ids.let.join("', '")}')`);
-
-    // Rule out catch block exception identifiers that shadow or are shadowed by any other identifier.
-    var nonCatchIds = [].concat(ids.var, ids.const, ids.global);
-    ids.catch.forEach((name, i) => {
-        var otherCatchIds = [].concat(ids.catch.slice(0, i), ids.catch.slice(i + 1));
-        if (nonCatchIds.indexOf(name) === -1 && otherCatchIds.indexOf(name) === -1) return;
-        throw new Error(`Steppable: exception identifier '${name}' shadows or is shadowed by another local or ambient identifier`);
-    });
-}
-
-
-/** Traverses the AST and throws an error if an identifier is encountered that contains exotic characters or is called '$' or '$ambient'. */
-function ensureIdentifierNamesAreValid(funcExpr: ESTree.FunctionExpression) {
-    traverseTree(funcExpr.body, node => {
-        return matchNode<any>(node, {
-            Identifier: (expr) => {
-                if (expr.name !== '$' && expr.name !== '$ambient' && /^[a-zA-Z$_][a-zA-Z$_0-9]*$/.test(expr.name)) return;
-                throw new Error(`Steppable: invalid or disallowed identifier name '${expr.name}'`);
-            },
-            Otherwise: (node) => { /* pass-through */ }
-        });
-    });
-}
-
-
-/** Traverses the AST, throwing an error if an unqualified identifier name is neither a local nor an ambient variable name. */
-function ensureAllIdentifierReferencesAreKnownLocalsOrAmbients(funcExpr: ESTree.FunctionExpression) {
-
-    // Collate all known identifiers, including ambients, locals, and catch block exception identifiers.
-    var ids = findAllIdentifiers(funcExpr);
-    var knownIds = [].concat(ids.global, ids.var, ids.const, ids.catch);
-
-    // Ensure all identifier references are to known ids.
-    traverseTree(funcExpr.body, node => {
-        return matchNode<any>(node, {
-
-            // Ignore the label identifier and continue checking the body.
-            LabeledStatement: (stmt) => stmt.body,
-
-            // Ignore the property identifier (if any) and continue checking the object.
-            MemberExpression: (expr) => expr.computed ? void 0 : expr.object,
-
-            // Ignore key identifiers (if any) but check everything else.
-            ObjectExpression: (expr) => {
-                var computedKeyExprs = expr.properties.filter(p => p.computed).map(p => p.key);
-                var valueExprs = expr.properties.map(p => p.value);
-                return { type: 'ArrayExpression', elements: computedKeyExprs.concat(valueExprs) };
-            },
-
-            Identifier: (expr) => {
-                if (knownIds.indexOf(expr.name) !== -1) return;
-                throw new Error(`Steppable: reference to unknown identifier '${expr.name}'`);
-            },
-
-            Otherwise: (node) => { /* pass-through */ }
-        });
-    });
-}
-
-
-/** Traverses the AST, throwing an error if any construct mutates an ambient variable. */
-function ensureAmbientIdentifiersAreNotMutated(funcExpr: ESTree.FunctionExpression) {
-
-    // Collate all ambient identifiers, including globals and local consts.
-    var ids = findAllIdentifiers(funcExpr);
-    var ambientIds = [].concat(ids.global, ids.const);
-
-    // Ensure all references to ambient identifiers are non-mutating (at least not obviously so; this is not definitive).
-    traverseTree(funcExpr.body, node => {
-        return matchNode<any>(node, {
-
-            AssignmentExpression: (expr) => {
-                if (expr.left.type !== 'Identifier') return;
-                var name = expr.left['name'];
-                if (ambientIds.indexOf(name) === -1) return;
-                throw new Error(`Steppable: cannot mutate ambient identifier '${name}'`);
-            },
-
-            UpdateExpression: (expr) => {
-                if (expr.argument.type !== 'Identifier') return;
-                var name = expr.argument['name'];
-                if (ambientIds.indexOf(name) === -1) return;
-                throw new Error(`Steppable: cannot mutate ambient identifier '${name}'`);
-            },
-
-            Otherwise: (node) => { /* pass-through */ }
-        });
-    });
 }
 
 
