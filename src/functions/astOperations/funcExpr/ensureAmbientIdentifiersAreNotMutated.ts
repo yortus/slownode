@@ -9,7 +9,7 @@ function ensureAmbientIdentifiersAreNotMutated(funcExpr: ESTree.FunctionExpressi
 
     // Collate all ambient identifiers, including globals and local consts.
     var ids = classifyIdentifiers(funcExpr);
-    var ambientIds = [].concat(ids.global, ids.const);
+    var ambientIds = [].concat(ids.freeGlobal, ids.const);
 
     // Ensure all references to ambient identifiers are non-mutating (at least not obviously so; this is not definitive).
     traverseTree(funcExpr.body, node => {

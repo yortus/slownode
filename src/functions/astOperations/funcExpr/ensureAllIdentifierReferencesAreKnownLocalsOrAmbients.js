@@ -1,11 +1,12 @@
 var matchNode = require('../matchNode');
 var traverseTree = require('../traverseTree');
 var classifyIdentifiers = require('./classifyIdentifiers');
+// TODO: this needs review in light of changed functionality of classifyIdentifiers(...)
 /** Traverses the AST, throwing an error if an unqualified identifier name is neither a local nor an ambient variable name. */
 function ensureAllIdentifierReferencesAreKnownLocalsOrAmbients(funcExpr) {
     // Collate all known identifiers, including ambients, locals, and catch block exception identifiers.
     var ids = classifyIdentifiers(funcExpr);
-    var knownIds = [].concat(ids.global, ids.var, ids.const, ids.catch);
+    var knownIds = [].concat(ids.freeGlobal, ids.var, ids.const, ids.catch);
     // Ensure all identifier references are to known ids.
     traverseTree(funcExpr.body, function (node) {
         return matchNode(node, {

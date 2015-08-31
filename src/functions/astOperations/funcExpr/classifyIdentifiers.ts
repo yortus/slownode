@@ -3,9 +3,14 @@ import traverseTree = require('../traverseTree');
 export = classifyIdentifiers;
 
 
+// TODO: BUG (corner case): A reference to a free (ie non-local) identifier with the same name
+//       as a catch block exception indentifier will be identified as referring to that catch ID,
+//       even if the reference appears outside the catch block, which is materially incorrect.
+
+
 /**
- * Find and classify all indentifiers present in the given function expression.
- * The results are memoized on the _id key.
+ * Find all indentifiers referenced in the given function expression,
+ * and classify them by scope. The results are memoized on the _id key.
  * NB: Duplicates are *not* removed.
  */
 function classifyIdentifiers(funcExpr: ESTree.FunctionExpression) {
@@ -13,14 +18,16 @@ function classifyIdentifiers(funcExpr: ESTree.FunctionExpression) {
     // Return the previously computed result, if available.
     if (funcExpr._ids) return funcExpr._ids;
 
-    // Find and classify all identifiers.
-    var globalIds = ['require'].concat(Object.getOwnPropertyNames(global));
+    // Find all locally-declared IDs, and all locally-referenced IDs.
     var varIds = funcExpr.params.map(p => <string> p['name']);
     var letIds: string[] = [];
     var constIds: string[] = [];
     var catchIds: string[] = [];
+    var refIds: string[] = [];
     traverseTree(funcExpr.body, node => {
-        matchNode(node, {
+        matchNode<any>(node, {
+
+            // Collect var/let/const IDs.
             VariableDeclaration: (stmt) => {
                 var ids = stmt.declarations.map(decl => decl.id['name']);
                 switch (stmt.kind) {
@@ -28,22 +35,49 @@ function classifyIdentifiers(funcExpr: ESTree.FunctionExpression) {
                     case 'let': letIds = letIds.concat(ids); break;
                     case 'const': constIds = constIds.concat(ids); break;
                 }
+                return false;
             },
+
+            // Collect catch block exception identifiers.
             TryStatement: (stmt) => {
                 if (stmt.handler) {
                     catchIds.push(stmt.handler.param['name']);
                 }
             },
+
+            // Collect all referenced IDs, excluding labels and property names.
+            LabeledStatement: (stmt) => stmt.body,
+            MemberExpression: (expr) => expr.computed ? void 0 : expr.object,
+            ObjectExpression: (expr) => {
+                var computedKeyExprs = expr.properties.filter(p => p.computed).map(p => p.key);
+                var valueExprs = expr.properties.map(p => p.value);
+                return { type: 'ArrayExpression', elements: computedKeyExprs.concat(valueExprs) };
+            },
+            Identifier: (expr) => {
+                refIds.push(expr.name);
+            },
+
+            // For all other constructs, just continue traversing their children.
             Otherwise: (node) => { /* pass-through */ }
         });
     });
 
+    // Extract global and scoped IDs from the collected refIDs.
+    var freeScopedIds: string[] = [];
+    var freeGlobalIds: string[] = ['require'];   // TODO: review!! require() is NOT global!
+    var allLocalIds = [].concat(varIds, letIds, constIds, catchIds);
+    refIds.forEach(refId => {
+        if (allLocalIds.indexOf(refId) !== -1) return;
+        (refId in global ? freeGlobalIds : freeScopedIds).push(refId);
+    });
+
     // Memoize and return the classified identifiers.
     return funcExpr._ids = {
-        global: globalIds,
         var: varIds,
         let: letIds,
         const: constIds,
-        catch: catchIds
+        catch: catchIds,
+        freeScoped: freeScopedIds,
+        freeGlobal: freeGlobalIds,
     };
 }

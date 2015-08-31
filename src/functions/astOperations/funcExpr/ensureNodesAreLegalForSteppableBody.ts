@@ -31,7 +31,7 @@ function ensureNodesAreLegalForSteppableBody(funcExpr: ESTree.FunctionExpression
     if (ids.let.length > 0) throw new Error(`Steppable: block scoped variables are not allowed within the steppable body ('${ids.let.join("', '")}')`);
 
     // Rule out catch block exception identifiers that shadow or are shadowed by any other identifier.
-    var nonCatchIds = [].concat(ids.var, ids.const, ids.global);
+    var nonCatchIds = [].concat(ids.var, ids.const, ids.freeGlobal);
     ids.catch.forEach((name, i) => {
         var otherCatchIds = [].concat(ids.catch.slice(0, i), ids.catch.slice(i + 1));
         if (nonCatchIds.indexOf(name) === -1 && otherCatchIds.indexOf(name) === -1) return;

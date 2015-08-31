@@ -3,7 +3,7 @@ export = traverseTree;
 
 
 /**
- * Traverses the AST rooted at the given node in depth-first preorder.
+ * Traverses the AST rooted at the given `rootNode` in depth-first preorder.
  * The action callback is applied to each node in turn. If the action callback
  * returns false (using strict equality) for a particular node, then traversal
  * does not continue to that node's children. If the action callback returns
