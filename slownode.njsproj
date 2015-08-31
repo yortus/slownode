@@ -32,7 +32,7 @@
     <Compile Include="scripts\runPromisesAPlusTestSuite.js" />
     <Compile Include="scripts\runSlownodeTestSuite.js" />
     <TypeScriptCompile Include="src\functions\astOperations\funcExpr\classifyIdentifiers.ts" />
-    <TypeScriptCompile Include="src\functions\astOperations\funcExpr\ensureAmbientIdentifiersAreNotMutated.ts" />
+    <TypeScriptCompile Include="src\functions\astOperations\funcExpr\ensureMutatingOperationsAreLegalForSteppableBody.ts" />
     <TypeScriptCompile Include="src\functions\astOperations\funcExpr\ensureIdentifiersAreLegalForSteppableBody.ts" />
     <TypeScriptCompile Include="src\functions\astOperations\funcExpr\ensureNodesAreLegalForSteppableBody.ts" />
     <TypeScriptCompile Include="src\functions\astOperations\funcExpr\replacePseudoYieldCallsWithYieldExpressions.ts" />

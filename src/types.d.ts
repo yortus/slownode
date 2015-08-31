@@ -165,12 +165,16 @@
 declare module ESTree {
     export interface FunctionExpression {
         _ids: {
-            var: string[];
-            let: string[];
-            const: string[];
-            catch: string[];
-            freeScoped: string[];
-            freeGlobal: string[];
+            local: {
+                var: string[];
+                let: string[];
+                const: string[];
+                catch: string[];
+                all: string[];
+            };
+            module: string[];
+            scoped: string[];
+            global: string[];
         };
     }
 }

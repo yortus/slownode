@@ -6,7 +6,7 @@ var replacePseudoYieldCallsWithYieldExpressions = require('./astOperations/funcE
 var replacePseudoConstCallsWithConstDeclarations = require('./astOperations/funcExpr/replacePseudoConstCallsWithConstDeclarations');
 var ensureNodesAreLegalForSteppableBody = require('./astOperations/funcExpr/ensureNodesAreLegalForSteppableBody');
 var ensureIdentifiersAreLegalForSteppableBody = require('./astOperations/funcExpr/ensureIdentifiersAreLegalForSteppableBody');
-var ensureAmbientIdentifiersAreNotMutated = require('./astOperations/funcExpr/ensureAmbientIdentifiersAreNotMutated');
+var ensureMutatingOperationsAreLegalForSteppableBody = require('./astOperations/funcExpr/ensureMutatingOperationsAreLegalForSteppableBody');
 var transformToStateMachine = require('./astOperations/funcExpr/transformToStateMachine');
 var Steppable = require('./steppable');
 // TODO: another valid 'local' identifier is the function's own name
@@ -52,7 +52,7 @@ function SteppableFunction(steppableBody, options) {
     // Validate the AST.
     ensureNodesAreLegalForSteppableBody(funcExpr);
     ensureIdentifiersAreLegalForSteppableBody(funcExpr);
-    ensureAmbientIdentifiersAreNotMutated(funcExpr);
+    ensureMutatingOperationsAreLegalForSteppableBody(funcExpr);
     // Rewrite the AST in a form suitable for serialization/deserialization.
     var stateMachineAST = transformToStateMachine(funcExpr);
     // Transform modified AST --> source code --> function.

@@ -12,6 +12,9 @@ export = ensureNodesAreLegalForSteppableBody;
  */
 function ensureNodesAreLegalForSteppableBody(funcExpr: ESTree.FunctionExpression) {
 
+    // Classify all identifiers referenced by the function.
+    var ids = classifyIdentifiers(funcExpr);
+
     // Rule out non-whitelisted node types.
     traverseTree(funcExpr.body, node => {
         var whitelisted = whitelistedNodeTypes.indexOf(node.type) !== -1;
@@ -27,13 +30,12 @@ function ensureNodesAreLegalForSteppableBody(funcExpr: ESTree.FunctionExpression
     });
 
     // Rule out block-scoped declarations (ie just 'let' declarations; 'const' declarations will be treated as ambients.
-    var ids = classifyIdentifiers(funcExpr);
-    if (ids.let.length > 0) throw new Error(`Steppable: block scoped variables are not allowed within the steppable body ('${ids.let.join("', '")}')`);
+    if (ids.local.let.length > 0) throw new Error(`Steppable: block scoped variables are not allowed within the steppable body ('${ids.local.let.join("', '")}')`);
 
     // Rule out catch block exception identifiers that shadow or are shadowed by any other identifier.
-    var nonCatchIds = [].concat(ids.var, ids.const, ids.freeGlobal);
-    ids.catch.forEach((name, i) => {
-        var otherCatchIds = [].concat(ids.catch.slice(0, i), ids.catch.slice(i + 1));
+    var nonCatchIds = [].concat(ids.local.var, ids.local.const, ids.module, ids.global);
+    ids.local.catch.forEach((name, i) => {
+        var otherCatchIds = [].concat(ids.local.catch.slice(0, i), ids.local.catch.slice(i + 1));
         if (nonCatchIds.indexOf(name) === -1 && otherCatchIds.indexOf(name) === -1) return;
         throw new Error(`Steppable: exception identifier '${name}' shadows or is shadowed by another local or ambient identifier`);
     });

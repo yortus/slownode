@@ -1,4 +1,5 @@
-﻿import matchNode = require('../matchNode');
+﻿import _ = require('lodash');
+import matchNode = require('../matchNode');
 import traverseTree = require('../traverseTree');
 export = classifyIdentifiers;
 
@@ -25,9 +26,9 @@ function classifyIdentifiers(funcExpr: ESTree.FunctionExpression) {
     var catchIds: string[] = [];
     var refIds: string[] = [];
     traverseTree(funcExpr.body, node => {
-        matchNode<any>(node, {
+        return matchNode<any>(node, {
 
-            // Collect var/let/const IDs.
+            // Collect locally-declared var/let/const IDs.
             VariableDeclaration: (stmt) => {
                 var ids = stmt.declarations.map(decl => decl.id['name']);
                 switch (stmt.kind) {
@@ -35,7 +36,7 @@ function classifyIdentifiers(funcExpr: ESTree.FunctionExpression) {
                     case 'let': letIds = letIds.concat(ids); break;
                     case 'const': constIds = constIds.concat(ids); break;
                 }
-                return false;
+                return { type: 'ArrayExpression', elements: stmt.declarations.filter(decl => !!decl.init).map(decl => decl.init) };
             },
 
             // Collect catch block exception identifiers.
@@ -53,9 +54,7 @@ function classifyIdentifiers(funcExpr: ESTree.FunctionExpression) {
                 var valueExprs = expr.properties.map(p => p.value);
                 return { type: 'ArrayExpression', elements: computedKeyExprs.concat(valueExprs) };
             },
-            Identifier: (expr) => {
-                refIds.push(expr.name);
-            },
+            Identifier: (expr) => { refIds.push(expr.name); },
 
             // For all other constructs, just continue traversing their children.
             Otherwise: (node) => { /* pass-through */ }
@@ -63,21 +62,27 @@ function classifyIdentifiers(funcExpr: ESTree.FunctionExpression) {
     });
 
     // Extract global and scoped IDs from the collected refIDs.
-    var freeScopedIds: string[] = [];
-    var freeGlobalIds: string[] = ['require'];   // TODO: review!! require() is NOT global!
+    var moduleIds: string[] = [];
+    var scopedIds: string[] = [];
+    var globalIds: string[] = [];
     var allLocalIds = [].concat(varIds, letIds, constIds, catchIds);
+    var allModuleIds = ['require', 'module', 'exports', '__filename', '__dirname'];
     refIds.forEach(refId => {
         if (allLocalIds.indexOf(refId) !== -1) return;
-        (refId in global ? freeGlobalIds : freeScopedIds).push(refId);
+        (refId in global ? globalIds : allModuleIds.indexOf(refId) === -1 ? scopedIds : moduleIds).push(refId);
     });
 
     // Memoize and return the classified identifiers.
     return funcExpr._ids = {
-        var: varIds,
-        let: letIds,
-        const: constIds,
-        catch: catchIds,
-        freeScoped: freeScopedIds,
-        freeGlobal: freeGlobalIds,
+        local: {
+            var: varIds,
+            let: letIds,
+            const: constIds,
+            catch: catchIds,
+            all: <string[]> _.unique([].concat(varIds, letIds, constIds, catchIds))
+        },
+        module: moduleIds,
+        scoped: scopedIds,
+        global: globalIds,
     };
 }

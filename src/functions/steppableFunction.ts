@@ -11,7 +11,7 @@ import replacePseudoYieldCallsWithYieldExpressions = require('./astOperations/fu
 import replacePseudoConstCallsWithConstDeclarations = require('./astOperations/funcExpr/replacePseudoConstCallsWithConstDeclarations');
 import ensureNodesAreLegalForSteppableBody = require('./astOperations/funcExpr/ensureNodesAreLegalForSteppableBody');
 import ensureIdentifiersAreLegalForSteppableBody = require('./astOperations/funcExpr/ensureIdentifiersAreLegalForSteppableBody');
-import ensureAmbientIdentifiersAreNotMutated = require('./astOperations/funcExpr/ensureAmbientIdentifiersAreNotMutated');
+import ensureMutatingOperationsAreLegalForSteppableBody = require('./astOperations/funcExpr/ensureMutatingOperationsAreLegalForSteppableBody');
 import transformToStateMachine = require('./astOperations/funcExpr/transformToStateMachine');
 import Steppable = require('./steppable');
 export = SteppableFunction;
@@ -67,7 +67,7 @@ function SteppableFunction(steppableBody: Function, options?: types.Steppable.Op
     // Validate the AST.
     ensureNodesAreLegalForSteppableBody(funcExpr);
     ensureIdentifiersAreLegalForSteppableBody(funcExpr);
-    ensureAmbientIdentifiersAreNotMutated(funcExpr);
+    ensureMutatingOperationsAreLegalForSteppableBody(funcExpr);
 
     // Rewrite the AST in a form suitable for serialization/deserialization.
     var stateMachineAST = transformToStateMachine(funcExpr);
