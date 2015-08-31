@@ -2,15 +2,18 @@ var assert = require('assert');
 var _ = require('lodash');
 var esprima = require('esprima');
 var escodegen = require('escodegen');
-var match = require('./match');
-var traverse = require('./traverse');
-var rewriteBodyAST = require('./rewriteBodyAST');
-var SlowRoutine = require('./slowRoutine');
-//TODO: rename this and SlowRoutine. The 'Slow' implies DB persistence but this low-level util just rewrites a coro body, it doesn't persist anything.
+var matchNode = require('./astOperations/matchNode');
+var traverseTree = require('./astOperations/traverseTree');
+var replacePseudoYieldCallsWithYieldExpressions = require('./astOperations/funcExpr/replacePseudoYieldCallsWithYieldExpressions');
+var replacePseudoConstCallsWithConstDeclarations = require('./astOperations/funcExpr/replacePseudoConstCallsWithConstDeclarations');
+var transformToStateMachine = require('./astOperations/funcExpr/transformToStateMachine');
+var Steppable = require('./steppable');
 // TODO: another valid 'local' identifier is the function's own name
+// TODO: disallow id refs to: '__dirname', '__filename', 'module'
+// TODO: support yield*?
 //---------------------------------------------
 // TODO: doc all this in README...
-// Rules for SlowRoutine bodies:
+// Rules for Steppable bodies:
 // - ensure the assumption of a *single* scope for identifiers within the function body is strictly met:
 //   - ensure function contains no closures (ie inner functions or lambdas)
 //   - ensure exception identifier names in catch blocks are disjoint with all other identifier names in the function
@@ -27,8 +30,8 @@ var SlowRoutine = require('./slowRoutine');
 // NB: no need to check for syntactic validity, since the function must be syntactically valid to have been passed in here.
 // NB: either a normal function or generator function can be passed in - it makes no difference (doc why to do this (hint: yield keyword available in gens))
 //---------------------------------------------
-/** Creates a SlowRoutineFunction instance. May be called with or without 'new'. */
-function SlowRoutineFunction(bodyFunction, options) {
+/** Creates a SteppableFunction instance. May be called with or without 'new'. */
+function SteppableFunction(bodyFunction, options) {
     // Validate arguments.
     assert(typeof bodyFunction === 'function');
     options = _.defaults({}, options, { yieldIdentifier: null, constIdentifier: null });
@@ -40,80 +43,25 @@ function SlowRoutineFunction(bodyFunction, options) {
     var funcExpr = exprStmt.expression;
     // Convert direct calls to options.yieldIdentifier to equivalent yield expressions.
     if (options.yieldIdentifier)
-        replaceYieldIdentifierCallsWithYieldExpressions(funcExpr, options.yieldIdentifier);
+        replacePseudoYieldCallsWithYieldExpressions(funcExpr, options.yieldIdentifier);
     // Convert variable declarations whose 'init' is a direct call to options.constIdentifier to equivalent const declarations.
     if (options.constIdentifier)
-        replaceConstIdentifierCallsWithConstDeclarations(funcExpr, options.constIdentifier);
+        replacePseudoConstCallsWithConstDeclarations(funcExpr, options.constIdentifier);
     // Validate the AST.
     ensureOnlySupportedConstructsInBody(funcExpr);
     ensureIdentifierNamesAreValid(funcExpr);
     ensureAllIdentifierReferencesAreKnownLocalsOrAmbients(funcExpr);
     ensureAmbientIdentifiersAreNotMutated(funcExpr);
     // Rewrite the AST in a form suitable for serialization/deserialization.
-    var stateMachineAST = rewriteBodyAST(funcExpr);
+    var stateMachineAST = transformToStateMachine(funcExpr);
     // Transform modified AST --> source code --> function.
     var stateMachineSource = '(' + escodegen.generate(stateMachineAST) + ')';
     var stateMachine = eval(stateMachineSource);
-    // Generate and return a SlowRoutineFunction instance (ie a callable that returns a SlowRoutine).
+    // Generate and return a SteppableFunction instance (ie a callable that returns a Steppable).
     assert(funcExpr.params.every(function (p) { return p.type === 'Identifier'; }));
     var paramNames = funcExpr.params.map(function (p) { return p['name']; });
-    var result = makeSlowRoutineFunction(stateMachine, paramNames);
+    var result = makeSteppableFunction(stateMachine, paramNames);
     return result;
-}
-/** In the given AST, converts direct calls to `yieldIdentifier` to equivalent yield expressions */
-function replaceYieldIdentifierCallsWithYieldExpressions(funcExpr, yieldIdentifier) {
-    traverse(funcExpr.body, function (node) {
-        match(node, {
-            CallExpression: function (expr) {
-                if (expr.callee.type !== 'Identifier')
-                    return;
-                if (expr.callee['name'] !== yieldIdentifier)
-                    return;
-                var args = expr.arguments;
-                if (args.length > 1)
-                    throw new Error("SlowRoutine: yield accepts at most one argument; " + args.length + " supplied");
-                // Replace the CallExpression with a YieldExpression.
-                Object.keys(expr).forEach(function (key) { return delete expr[key]; });
-                expr.type = 'YieldExpression';
-                if (args.length === 1)
-                    expr['argument'] = args[0];
-            },
-            Otherwise: function (node) { }
-        });
-    });
-}
-/** In the given AST, converts variable declarations whose 'init' is a direct call to `constIdentifier` to equivalent const declarations. */
-function replaceConstIdentifierCallsWithConstDeclarations(funcExpr, constIdentifier) {
-    traverse(funcExpr.body, function (node) {
-        match(node, {
-            VariableDeclaration: function (stmt) {
-                if (stmt.kind !== 'var')
-                    return;
-                var constDeclarators = stmt.declarations.filter(isConstMarkedDeclarator);
-                if (constDeclarators.length > 0 && constDeclarators.length < stmt.declarations.length) {
-                    throw new Error('SlowRoutine: cannot mix const and var declarators in a single declaration');
-                }
-                if (constDeclarators.length > 0) {
-                    stmt.kind = 'const';
-                    stmt.declarations.forEach(function (decl) { return decl.init = decl.init['arguments'][0]; });
-                }
-            },
-            Otherwise: function (node) { }
-        });
-    });
-    function isConstMarkedDeclarator(decl) {
-        if (!decl.init || decl.init.type !== 'CallExpression')
-            return false;
-        var callExpr = decl.init;
-        if (callExpr.callee.type !== 'Identifier')
-            return false;
-        if (callExpr.callee['name'] !== constIdentifier)
-            return false;
-        var args = callExpr.arguments;
-        if (args.length > 1)
-            throw new Error("SlowRoutine: " + constIdentifier + " must have one argument; " + args.length + " supplied");
-        return true;
-    }
 }
 /** Returns all global and local identifiers broken down into categories. Duplicates are not removed. */
 function findAllIdentifiers(funcExpr) {
@@ -122,8 +70,8 @@ function findAllIdentifiers(funcExpr) {
     var letIds = [];
     var constIds = [];
     var catchIds = [];
-    traverse(funcExpr.body, function (node) {
-        match(node, {
+    traverseTree(funcExpr.body, function (node) {
+        matchNode(node, {
             VariableDeclaration: function (stmt) {
                 var ids = stmt.declarations.map(function (decl) { return decl.id['name']; });
                 switch (stmt.kind) {
@@ -157,7 +105,7 @@ function findAllIdentifiers(funcExpr) {
 /**
  * Traverses the AST, throwing an error if any unsupported constructs are encountered.
  * Constructs may be unsupported for two main reasons:
- * (1) they violate the assumptions on which SlowRoutines depend, in particular the single-scoped-body assumption.
+ * (1) they violate the assumptions on which Steppables depend, in particular the single-scoped-body assumption.
  * (2) they have not been implemented yet (destructuring, for..of, and some other ES6+ constructs).
  */
 function ensureOnlySupportedConstructsInBody(funcExpr) {
@@ -171,7 +119,7 @@ function ensureOnlySupportedConstructsInBody(funcExpr) {
         'TemplateLiteral', 'RegexLiteral', 'Literal'
     ];
     // Rule out non-whitelisted node types.
-    traverse(funcExpr.body, function (node) {
+    traverseTree(funcExpr.body, function (node) {
         var whitelisted = whitelistedNodeTypes.indexOf(node.type) !== -1;
         if (whitelisted)
             return;
@@ -179,32 +127,32 @@ function ensureOnlySupportedConstructsInBody(funcExpr) {
             case 'FunctionDeclaration':
             case 'FunctionExpression':
             case 'ArrowFunctionExpression':
-                throw new Error("SlowRoutine: function delcarations, function expressions and arrow functions are not allowed within the body function");
+                throw new Error("Steppable: function delcarations, function expressions and arrow functions are not allowed within the body function");
             default:
-                throw new Error("SlowRoutine: construct '" + node.type + "' is not allowed within the body function");
+                throw new Error("Steppable: construct '" + node.type + "' is not allowed within the body function");
         }
     });
     // Rule out block-scoped declarations (ie just 'let' declarations; 'const' declarations will be treated as ambients.
     var ids = findAllIdentifiers(funcExpr);
     if (ids.let.length > 0)
-        throw new Error("SlowRoutine: block scoped variables are not allowed within the body function ('" + ids.let.join("', '") + "')");
+        throw new Error("Steppable: block scoped variables are not allowed within the body function ('" + ids.let.join("', '") + "')");
     // Rule out catch block exception identifiers that shadow or are shadowed by any other identifier.
     var nonCatchIds = [].concat(ids.var, ids.const, ids.global);
     ids.catch.forEach(function (name, i) {
         var otherCatchIds = [].concat(ids.catch.slice(0, i), ids.catch.slice(i + 1));
         if (nonCatchIds.indexOf(name) === -1 && otherCatchIds.indexOf(name) === -1)
             return;
-        throw new Error("SlowRoutine: exception identifier '" + name + "' shadows or is shadowed by another local or ambient identifier");
+        throw new Error("Steppable: exception identifier '" + name + "' shadows or is shadowed by another local or ambient identifier");
     });
 }
 /** Traverses the AST and throws an error if an identifier is encountered that contains exotic characters or is called '$' or '$ambient'. */
 function ensureIdentifierNamesAreValid(funcExpr) {
-    traverse(funcExpr.body, function (node) {
-        return match(node, {
+    traverseTree(funcExpr.body, function (node) {
+        return matchNode(node, {
             Identifier: function (expr) {
                 if (expr.name !== '$' && expr.name !== '$ambient' && /^[a-zA-Z$_][a-zA-Z$_0-9]*$/.test(expr.name))
                     return;
-                throw new Error("SlowRoutine: invalid or disallowed identifier name '" + expr.name + "'");
+                throw new Error("Steppable: invalid or disallowed identifier name '" + expr.name + "'");
             },
             Otherwise: function (node) { }
         });
@@ -216,8 +164,8 @@ function ensureAllIdentifierReferencesAreKnownLocalsOrAmbients(funcExpr) {
     var ids = findAllIdentifiers(funcExpr);
     var knownIds = [].concat(ids.global, ids.var, ids.const, ids.catch);
     // Ensure all identifier references are to known ids.
-    traverse(funcExpr.body, function (node) {
-        return match(node, {
+    traverseTree(funcExpr.body, function (node) {
+        return matchNode(node, {
             // Ignore the label identifier and continue checking the body.
             LabeledStatement: function (stmt) { return stmt.body; },
             // Ignore the property identifier (if any) and continue checking the object.
@@ -231,7 +179,7 @@ function ensureAllIdentifierReferencesAreKnownLocalsOrAmbients(funcExpr) {
             Identifier: function (expr) {
                 if (knownIds.indexOf(expr.name) !== -1)
                     return;
-                throw new Error("SlowRoutine: reference to unknown identifier '" + expr.name + "'");
+                throw new Error("Steppable: reference to unknown identifier '" + expr.name + "'");
             },
             Otherwise: function (node) { }
         });
@@ -243,15 +191,15 @@ function ensureAmbientIdentifiersAreNotMutated(funcExpr) {
     var ids = findAllIdentifiers(funcExpr);
     var ambientIds = [].concat(ids.global, ids.const);
     // Ensure all references to ambient identifiers are non-mutating (at least not obviously so; this is not definitive).
-    traverse(funcExpr.body, function (node) {
-        return match(node, {
+    traverseTree(funcExpr.body, function (node) {
+        return matchNode(node, {
             AssignmentExpression: function (expr) {
                 if (expr.left.type !== 'Identifier')
                     return;
                 var name = expr.left['name'];
                 if (ambientIds.indexOf(name) === -1)
                     return;
-                throw new Error("SlowRoutine: cannot mutate ambient identifier '" + name + "'");
+                throw new Error("Steppable: cannot mutate ambient identifier '" + name + "'");
             },
             UpdateExpression: function (expr) {
                 if (expr.argument.type !== 'Identifier')
@@ -259,28 +207,28 @@ function ensureAmbientIdentifiersAreNotMutated(funcExpr) {
                 var name = expr.argument['name'];
                 if (ambientIds.indexOf(name) === -1)
                     return;
-                throw new Error("SlowRoutine: cannot mutate ambient identifier '" + name + "'");
+                throw new Error("Steppable: cannot mutate ambient identifier '" + name + "'");
             },
             Otherwise: function (node) { }
         });
     });
 }
-/** Constructs a SlowRoutineFunction instance tailored to the given StateMachine function and parameter names. */
-function makeSlowRoutineFunction(stateMachine, paramNames) {
+/** Constructs a SteppableFunction instance tailored to the given StateMachine function and parameter names. */
+function makeSteppableFunction(stateMachine, paramNames) {
     // This is the generic constructor function. It closes over stateMachine.
-    function SlowRoutineFunction() {
-        var sloro = new SlowRoutine(stateMachine);
-        sloro.state = { local: { arguments: Array.prototype.slice.call(arguments) } };
-        return sloro;
+    function SteppableFunction() {
+        var steppable = new Steppable(stateMachine);
+        steppable.state = { local: { arguments: Array.prototype.slice.call(arguments) } };
+        return steppable;
     }
     // Customise the generic constructor function with the specified parameter names and a `stateMachine` property.
-    var originalSource = SlowRoutineFunction.toString();
-    var sourceWithParamNames = originalSource.replace('SlowRoutineFunction()', "SlowRoutineFunction(" + paramNames.join(', ') + ")");
+    var originalSource = SteppableFunction.toString();
+    var sourceWithParamNames = originalSource.replace('SteppableFunction()', "SteppableFunction(" + paramNames.join(', ') + ")");
     var constructorFunction = eval('(' + sourceWithParamNames + ')');
     // Add the `stateMachine` property to the constructor function.
     constructorFunction.stateMachine = stateMachine;
     // Return the customised constructor function.
     return constructorFunction;
 }
-module.exports = SlowRoutineFunction;
-//# sourceMappingURL=slowRoutineFunction.js.map
+module.exports = SteppableFunction;
+//# sourceMappingURL=steppableFunction.js.map

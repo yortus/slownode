@@ -4,21 +4,23 @@ import Promise = require('bluebird');
 import types = require('types');
 import esprima = require('esprima');
 import escodegen = require('escodegen');
-import match = require('./match');
-import traverse = require('./traverse');
-import rewriteBodyAST = require('./rewriteBodyAST');
-import SlowRoutine = require('./slowRoutine');
-export = SlowRoutineFunction;
-
-
-//TODO: rename this and SlowRoutine. The 'Slow' implies DB persistence but this low-level util just rewrites a coro body, it doesn't persist anything.
+import matchNode = require('./astOperations/matchNode');
+import traverseTree = require('./astOperations/traverseTree');
+import replacePseudoYieldCallsWithYieldExpressions = require('./astOperations/funcExpr/replacePseudoYieldCallsWithYieldExpressions');
+import replacePseudoConstCallsWithConstDeclarations = require('./astOperations/funcExpr/replacePseudoConstCallsWithConstDeclarations');
+import transformToStateMachine = require('./astOperations/funcExpr/transformToStateMachine');
+import Steppable = require('./steppable');
+export = SteppableFunction;
 
 
 // TODO: another valid 'local' identifier is the function's own name
+// TODO: disallow id refs to: '__dirname', '__filename', 'module'
+// TODO: support yield*?
+
 
 //---------------------------------------------
 // TODO: doc all this in README...
-// Rules for SlowRoutine bodies:
+// Rules for Steppable bodies:
 // - ensure the assumption of a *single* scope for identifiers within the function body is strictly met:
 //   - ensure function contains no closures (ie inner functions or lambdas)
 //   - ensure exception identifier names in catch blocks are disjoint with all other identifier names in the function
@@ -37,8 +39,8 @@ export = SlowRoutineFunction;
 //---------------------------------------------
 
 
-/** Creates a SlowRoutineFunction instance. May be called with or without 'new'. */
-function SlowRoutineFunction(bodyFunction: Function, options?: types.SlowRoutine.Options) {
+/** Creates a SteppableFunction instance. May be called with or without 'new'. */
+function SteppableFunction(bodyFunction: Function, options?: types.Steppable.Options) {
 
     // Validate arguments.
     assert(typeof bodyFunction === 'function');
@@ -52,10 +54,10 @@ function SlowRoutineFunction(bodyFunction: Function, options?: types.SlowRoutine
     var funcExpr = <ESTree.FunctionExpression> exprStmt.expression;
 
     // Convert direct calls to options.yieldIdentifier to equivalent yield expressions.
-    if (options.yieldIdentifier) replaceYieldIdentifierCallsWithYieldExpressions(funcExpr, options.yieldIdentifier);
+    if (options.yieldIdentifier) replacePseudoYieldCallsWithYieldExpressions(funcExpr, options.yieldIdentifier);
 
     // Convert variable declarations whose 'init' is a direct call to options.constIdentifier to equivalent const declarations.
-    if (options.constIdentifier) replaceConstIdentifierCallsWithConstDeclarations(funcExpr, options.constIdentifier);
+    if (options.constIdentifier) replacePseudoConstCallsWithConstDeclarations(funcExpr, options.constIdentifier);
 
     // Validate the AST.
     ensureOnlySupportedConstructsInBody(funcExpr);
@@ -64,70 +66,17 @@ function SlowRoutineFunction(bodyFunction: Function, options?: types.SlowRoutine
     ensureAmbientIdentifiersAreNotMutated(funcExpr);
 
     // Rewrite the AST in a form suitable for serialization/deserialization.
-    var stateMachineAST = rewriteBodyAST(funcExpr);
+    var stateMachineAST = transformToStateMachine(funcExpr);
 
     // Transform modified AST --> source code --> function.
     var stateMachineSource = '(' + escodegen.generate(stateMachineAST) + ')';
     var stateMachine = eval(stateMachineSource);
 
-    // Generate and return a SlowRoutineFunction instance (ie a callable that returns a SlowRoutine).
+    // Generate and return a SteppableFunction instance (ie a callable that returns a Steppable).
     assert(funcExpr.params.every(p => p.type === 'Identifier'));
     var paramNames = funcExpr.params.map(p => <string> p['name']);
-    var result = makeSlowRoutineFunction(stateMachine, paramNames);
+    var result = makeSteppableFunction(stateMachine, paramNames);
     return result;
-}
-
-
-/** In the given AST, converts direct calls to `yieldIdentifier` to equivalent yield expressions */
-function replaceYieldIdentifierCallsWithYieldExpressions(funcExpr: ESTree.FunctionExpression, yieldIdentifier: string) {
-    traverse(funcExpr.body, node => {
-        match(node, {
-            CallExpression: (expr) => {
-                if (expr.callee.type !== 'Identifier') return;
-                if (expr.callee['name'] !== yieldIdentifier) return;
-                var args = expr.arguments;
-                if (args.length > 1) throw new Error(`SlowRoutine: yield accepts at most one argument; ${args.length} supplied`);
-
-                // Replace the CallExpression with a YieldExpression.
-                Object.keys(expr).forEach(key => delete expr[key]);
-                expr.type = 'YieldExpression';
-                if (args.length === 1) expr['argument'] = args[0];
-            },
-
-            Otherwise: (node) => { /* pass-through */ }
-        });
-    });
-}
-
-
-/** In the given AST, converts variable declarations whose 'init' is a direct call to `constIdentifier` to equivalent const declarations. */
-function replaceConstIdentifierCallsWithConstDeclarations(funcExpr: ESTree.FunctionExpression, constIdentifier: string) {
-    traverse(funcExpr.body, node => {
-        match(node, {
-            VariableDeclaration: (stmt) => {
-                if (stmt.kind !== 'var') return;
-                var constDeclarators = stmt.declarations.filter(isConstMarkedDeclarator);
-                if (constDeclarators.length > 0 && constDeclarators.length < stmt.declarations.length) {
-                    throw new Error('SlowRoutine: cannot mix const and var declarators in a single declaration');
-                }
-                if (constDeclarators.length > 0) {
-                    stmt.kind = 'const';
-                    stmt.declarations.forEach(decl => decl.init = decl.init['arguments'][0]);
-                }
-            },
-            Otherwise: (node) => { /* pass-through */ }
-        });
-    });
-
-    function isConstMarkedDeclarator(decl: ESTree.VariableDeclarator) {
-        if (!decl.init || decl.init.type !== 'CallExpression') return false;
-        var callExpr = <ESTree.CallExpression> decl.init;
-        if (callExpr.callee.type !== 'Identifier') return false;
-        if (callExpr.callee['name'] !== constIdentifier) return false;
-        var args = callExpr.arguments;
-        if (args.length > 1) throw new Error(`SlowRoutine: ${constIdentifier} must have one argument; ${args.length} supplied`);
-        return true;
-    }
 }
 
 
@@ -138,8 +87,8 @@ function findAllIdentifiers(funcExpr: ESTree.FunctionExpression) {
     var letIds: string[] = [];
     var constIds: string[] = [];
     var catchIds: string[] = [];
-    traverse(funcExpr.body, node => {
-        match(node, {
+    traverseTree(funcExpr.body, node => {
+        matchNode(node, {
             VariableDeclaration: (stmt) => {
                 var ids = stmt.declarations.map(decl => decl.id['name']);
                 switch (stmt.kind) {
@@ -169,7 +118,7 @@ function findAllIdentifiers(funcExpr: ESTree.FunctionExpression) {
 /**
  * Traverses the AST, throwing an error if any unsupported constructs are encountered.
  * Constructs may be unsupported for two main reasons:
- * (1) they violate the assumptions on which SlowRoutines depend, in particular the single-scoped-body assumption.
+ * (1) they violate the assumptions on which Steppables depend, in particular the single-scoped-body assumption.
  * (2) they have not been implemented yet (destructuring, for..of, and some other ES6+ constructs). 
  */
 function ensureOnlySupportedConstructsInBody(funcExpr: ESTree.FunctionExpression) {
@@ -184,40 +133,40 @@ function ensureOnlySupportedConstructsInBody(funcExpr: ESTree.FunctionExpression
     ];
 
     // Rule out non-whitelisted node types.
-    traverse(funcExpr.body, node => {
+    traverseTree(funcExpr.body, node => {
         var whitelisted = whitelistedNodeTypes.indexOf(node.type) !== -1;
         if (whitelisted) return;
         switch (node.type) {
             case 'FunctionDeclaration':
             case 'FunctionExpression':
             case 'ArrowFunctionExpression':
-                throw new Error(`SlowRoutine: function delcarations, function expressions and arrow functions are not allowed within the body function`);
+                throw new Error(`Steppable: function delcarations, function expressions and arrow functions are not allowed within the body function`);
             default:
-                throw new Error(`SlowRoutine: construct '${node.type}' is not allowed within the body function`);
+                throw new Error(`Steppable: construct '${node.type}' is not allowed within the body function`);
         }
     });
 
     // Rule out block-scoped declarations (ie just 'let' declarations; 'const' declarations will be treated as ambients.
     var ids = findAllIdentifiers(funcExpr);
-    if (ids.let.length > 0) throw new Error(`SlowRoutine: block scoped variables are not allowed within the body function ('${ids.let.join("', '")}')`);
+    if (ids.let.length > 0) throw new Error(`Steppable: block scoped variables are not allowed within the body function ('${ids.let.join("', '")}')`);
 
     // Rule out catch block exception identifiers that shadow or are shadowed by any other identifier.
     var nonCatchIds = [].concat(ids.var, ids.const, ids.global);
     ids.catch.forEach((name, i) => {
         var otherCatchIds = [].concat(ids.catch.slice(0, i), ids.catch.slice(i + 1));
         if (nonCatchIds.indexOf(name) === -1 && otherCatchIds.indexOf(name) === -1) return;
-        throw new Error(`SlowRoutine: exception identifier '${name}' shadows or is shadowed by another local or ambient identifier`);
+        throw new Error(`Steppable: exception identifier '${name}' shadows or is shadowed by another local or ambient identifier`);
     });
 }
 
 
 /** Traverses the AST and throws an error if an identifier is encountered that contains exotic characters or is called '$' or '$ambient'. */
 function ensureIdentifierNamesAreValid(funcExpr: ESTree.FunctionExpression) {
-    traverse(funcExpr.body, node => {
-        return match<any>(node, {
+    traverseTree(funcExpr.body, node => {
+        return matchNode<any>(node, {
             Identifier: (expr) => {
                 if (expr.name !== '$' && expr.name !== '$ambient' && /^[a-zA-Z$_][a-zA-Z$_0-9]*$/.test(expr.name)) return;
-                throw new Error(`SlowRoutine: invalid or disallowed identifier name '${expr.name}'`);
+                throw new Error(`Steppable: invalid or disallowed identifier name '${expr.name}'`);
             },
             Otherwise: (node) => { /* pass-through */ }
         });
@@ -233,8 +182,8 @@ function ensureAllIdentifierReferencesAreKnownLocalsOrAmbients(funcExpr: ESTree.
     var knownIds = [].concat(ids.global, ids.var, ids.const, ids.catch);
 
     // Ensure all identifier references are to known ids.
-    traverse(funcExpr.body, node => {
-        return match<any>(node, {
+    traverseTree(funcExpr.body, node => {
+        return matchNode<any>(node, {
 
             // Ignore the label identifier and continue checking the body.
             LabeledStatement: (stmt) => stmt.body,
@@ -251,7 +200,7 @@ function ensureAllIdentifierReferencesAreKnownLocalsOrAmbients(funcExpr: ESTree.
 
             Identifier: (expr) => {
                 if (knownIds.indexOf(expr.name) !== -1) return;
-                throw new Error(`SlowRoutine: reference to unknown identifier '${expr.name}'`);
+                throw new Error(`Steppable: reference to unknown identifier '${expr.name}'`);
             },
 
             Otherwise: (node) => { /* pass-through */ }
@@ -268,21 +217,21 @@ function ensureAmbientIdentifiersAreNotMutated(funcExpr: ESTree.FunctionExpressi
     var ambientIds = [].concat(ids.global, ids.const);
 
     // Ensure all references to ambient identifiers are non-mutating (at least not obviously so; this is not definitive).
-    traverse(funcExpr.body, node => {
-        return match<any>(node, {
+    traverseTree(funcExpr.body, node => {
+        return matchNode<any>(node, {
 
             AssignmentExpression: (expr) => {
                 if (expr.left.type !== 'Identifier') return;
                 var name = expr.left['name'];
                 if (ambientIds.indexOf(name) === -1) return;
-                throw new Error(`SlowRoutine: cannot mutate ambient identifier '${name}'`);
+                throw new Error(`Steppable: cannot mutate ambient identifier '${name}'`);
             },
 
             UpdateExpression: (expr) => {
                 if (expr.argument.type !== 'Identifier') return;
                 var name = expr.argument['name'];
                 if (ambientIds.indexOf(name) === -1) return;
-                throw new Error(`SlowRoutine: cannot mutate ambient identifier '${name}'`);
+                throw new Error(`Steppable: cannot mutate ambient identifier '${name}'`);
             },
 
             Otherwise: (node) => { /* pass-through */ }
@@ -291,20 +240,20 @@ function ensureAmbientIdentifiersAreNotMutated(funcExpr: ESTree.FunctionExpressi
 }
 
 
-/** Constructs a SlowRoutineFunction instance tailored to the given StateMachine function and parameter names. */
-function makeSlowRoutineFunction(stateMachine: types.SlowRoutine.StateMachine, paramNames: string[]): types.SlowRoutine.Function {
+/** Constructs a SteppableFunction instance tailored to the given StateMachine function and parameter names. */
+function makeSteppableFunction(stateMachine: types.Steppable.StateMachine, paramNames: string[]): types.Steppable.Function {
 
     // This is the generic constructor function. It closes over stateMachine.
-    function SlowRoutineFunction() {
-        var sloro = new SlowRoutine(stateMachine);
-        sloro.state = { local: { arguments: Array.prototype.slice.call(arguments) } };
-        return sloro;
+    function SteppableFunction() {
+        var steppable = new Steppable(stateMachine);
+        steppable.state = { local: { arguments: Array.prototype.slice.call(arguments) } };
+        return steppable;
     }
 
     // Customise the generic constructor function with the specified parameter names and a `stateMachine` property.
-    var originalSource = SlowRoutineFunction.toString();
-    var sourceWithParamNames = originalSource.replace('SlowRoutineFunction()', `SlowRoutineFunction(${paramNames.join(', ')})`);
-    var constructorFunction: types.SlowRoutine.Function = eval('(' + sourceWithParamNames + ')');
+    var originalSource = SteppableFunction.toString();
+    var sourceWithParamNames = originalSource.replace('SteppableFunction()', `SteppableFunction(${paramNames.join(', ')})`);
+    var constructorFunction: types.Steppable.Function = eval('(' + sourceWithParamNames + ')');
 
     // Add the `stateMachine` property to the constructor function.
     constructorFunction.stateMachine = stateMachine;

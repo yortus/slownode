@@ -13,7 +13,7 @@
     type Async = typeof slow.async;
 
     interface SlowAsyncFunction {
-        stateMachine: SlowRoutine.StateMachine;
+        stateMachine: Steppable.StateMachine;
         _slow: {
             type: string;
             id?: string|number;
@@ -24,12 +24,12 @@
 
     namespace SlowAsyncFunction {
 
-        interface Activation extends SlowRoutine {
+        interface Activation extends Steppable {
             _slow: {
                 type: string;
                 id?: string|number;
                 asyncFunction: SlowAsyncFunction;
-                state: SlowRoutine.StateMachine.State;
+                state: Steppable.StateMachine.State;
                 awaiting: any;
                 resolve: slow.SlowPromise.ResolveFunction<any>;
                 reject: slow.SlowPromise.RejectFunction;
@@ -89,23 +89,23 @@
 
 
 
-    interface SlowRoutine {
+    interface Steppable {
         next(value?: any): { done: boolean; value: any; };
         throw(value?: any): { done: boolean; value: any; };
         return(value?: any): { done: boolean; value: any; };
-        state: any;
+        state: Steppable.StateMachine.State;
     }
 
-    namespace SlowRoutine {
+    namespace Steppable {
 
         interface Function {
-            (...args: any[]): SlowRoutine;
+            (...args: any[]): Steppable;
             stateMachine: StateMachine;
         }
 
         export var Function: {
-            new(bodyFunction: Function, options?: Options): Function;
-            (bodyFunction: Function, options?: Options): Function;
+            new(steppableBody: Function, options?: Options): Function;
+            (steppableBody: Function, options?: Options): Function;
         };
 
         interface Options {

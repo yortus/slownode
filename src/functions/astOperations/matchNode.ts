@@ -1,9 +1,9 @@
-﻿export = match;
+﻿export = matchNode;
 
 
 /** Performs a caller-defined operation on an ESTree node using pattern matching to choose the appropriate action. */
-function match<TReturn>(node: ESTree.Node, match: PatternMatch<TReturn>) {
-    var func = match[node.type] || match.Otherwise;
+function matchNode<TReturn>(node: ESTree.Node, cases: PatternMatch<TReturn>) {
+    var func = cases[node.type] || cases.Otherwise;
     if (func) return <TReturn> func(node);
     throw new Error("match: no handler for node type '" + node.type + "'");
 }
