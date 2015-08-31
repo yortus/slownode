@@ -6,12 +6,12 @@ var replacePseudoYieldCallsWithYieldExpressions = require('./astOperations/funcE
 var replacePseudoConstCallsWithConstDeclarations = require('./astOperations/funcExpr/replacePseudoConstCallsWithConstDeclarations');
 var ensureNodesAreLegalForSteppableBody = require('./astOperations/funcExpr/ensureNodesAreLegalForSteppableBody');
 var ensureIdentifiersAreLegalForSteppableBody = require('./astOperations/funcExpr/ensureIdentifiersAreLegalForSteppableBody');
-var ensureAllIdentifierReferencesAreKnownLocalsOrAmbients = require('./astOperations/funcExpr/ensureAllIdentifierReferencesAreKnownLocalsOrAmbients');
 var ensureAmbientIdentifiersAreNotMutated = require('./astOperations/funcExpr/ensureAmbientIdentifiersAreNotMutated');
 var transformToStateMachine = require('./astOperations/funcExpr/transformToStateMachine');
 var Steppable = require('./steppable');
 // TODO: another valid 'local' identifier is the function's own name
 // TODO: disallow id refs to: '__dirname', '__filename', 'module'
+// TODO: require() and its argument need special handling...
 // TODO: support yield*?
 //---------------------------------------------
 // TODO: doc all this in README...
@@ -52,7 +52,6 @@ function SteppableFunction(steppableBody, options) {
     // Validate the AST.
     ensureNodesAreLegalForSteppableBody(funcExpr);
     ensureIdentifiersAreLegalForSteppableBody(funcExpr);
-    ensureAllIdentifierReferencesAreKnownLocalsOrAmbients(funcExpr);
     ensureAmbientIdentifiersAreNotMutated(funcExpr);
     // Rewrite the AST in a form suitable for serialization/deserialization.
     var stateMachineAST = transformToStateMachine(funcExpr);
