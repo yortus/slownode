@@ -1,4 +1,3 @@
-var assert = require('assert');
 var fs = require('fs');
 var storageLocation = require('./storageLocation');
 var dehydrate = require('./dehydrate');
@@ -57,11 +56,12 @@ function upsert(slowObj) {
     init();
     var slow = slowObj._slow;
     slow.id = slow.id || "#" + ++idCounter;
+    var key = makeKey(slow);
     var serializedValue = JSON.stringify(dehydrate(slowObj));
-    cache[("" + makeKey(slow))] = slowObj;
+    cache[("" + key)] = slowObj;
     // TODO: testing... NB node.d.ts is missing a typing here...
     try {
-        fs.writeSync(logFileDescriptor, ",\n\n\n\"UPSERT\",\n" + serializedValue, null, 'utf8');
+        fs.writeSync(logFileDescriptor, ",\n\n\n\"" + key + "\", " + serializedValue, null, 'utf8');
         fs.fsyncSync(logFileDescriptor);
     }
     catch (ex) {
@@ -76,7 +76,7 @@ function remove(slowObj) {
     var key = makeKey(slow);
     delete cache[key];
     // TODO: testing...
-    fs.writeSync(logFileDescriptor, ",\n\n\n\"REMOVE\",\n\"" + key + "\"", null, 'utf8');
+    fs.writeSync(logFileDescriptor, ",\n\n\n\"" + key + "\", null", null, 'utf8');
     fs.fsyncSync(logFileDescriptor);
 }
 exports.remove = remove;
@@ -84,27 +84,24 @@ function replayLog() {
     var json = '[' + fs.readFileSync(storageLocation, 'utf8') + ']';
     var logEntries = JSON.parse(json);
     var pos = 1;
+    var keyOrder = [];
     // TODO: only rehydrate the LAST upsert/delete encountered for each key
     while (pos < logEntries.length) {
-        var command = logEntries[pos++];
-        var details = logEntries[pos++];
-        switch (command) {
-            case 'UPSERT':
-                assert(details.$type === 'SlowDef');
-                var slow = details.value;
-                var key = makeKey(slow);
-                // TODO: deserialize!!!!!!!!
-                var value = rehydrate(details, function (slow) { return cache[makeKey(slow)]; });
-                cache[key] = value;
-                break;
-            case 'REMOVE':
-                key = details;
-                delete cache[key];
-                break;
-            default:
-                throw new Error("Unrecognised log entry command '" + command + "'");
-        }
+        var key = logEntries[pos++];
+        var jsonSafeValue = logEntries[pos++];
+        if (!(key in cache))
+            keyOrder.push(key);
+        cache[key] = jsonSafeValue;
     }
+    keyOrder.forEach(function (key) {
+        if (cache[key] === null) {
+            delete cache[key];
+        }
+        else {
+            // TODO: important - relies on defs before refs!
+            cache[key] = rehydrate(cache[key], function (slow) { return cache[makeKey(slow)]; });
+        }
+    });
 }
 // TODO: doc...
 function makeKey(slow) {

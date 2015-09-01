@@ -1,4 +1,5 @@
 var _ = require('lodash');
+var typeRegistry = require('./typeRegistry');
 var isRelocatableFunction = require('../functions/isRelocatableFunction');
 /**
  * Recursively converts the given value into an object that can be safely converted to JSON.
@@ -18,10 +19,10 @@ function dehydrate(value, treatSlowObjectsAsRefs) {
             };
         }
         else {
-            return {
-                $type: 'SlowDef',
-                value: _.mapValues(value._slow, function (propValue) { return dehydrate(propValue, true); })
-            };
+            var slow = value._slow;
+            var dehydrateSlowObject = typeRegistry.fetch(slow.type).dehydrate;
+            dehydrateSlowObject = dehydrateSlowObject || (function (obj) { return _.mapValues(obj._slow, function (propValue) { return dehydrate(propValue, true); }); });
+            return { $type: 'SlowDef', value: dehydrateSlowObject(value) };
         }
     }
     else if (_.isArray(value)) {
@@ -41,9 +42,10 @@ function dehydrate(value, treatSlowObjectsAsRefs) {
     else if (value && value.constructor === Error) {
         return { $type: 'error', value: value.message };
     }
-    else {
-        return { $type: 'ERROR - UNKNOWN?!' };
-    }
+    // TODO: temp testing... remove this...
+    //else {
+    //    return { $type: 'ERROR - UNKNOWN?!' };
+    //}
     // If we get to here, the value is not recognised. Throw an error.
     throw new Error("dehydration not supported for value : " + value);
 }

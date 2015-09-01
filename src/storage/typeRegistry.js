@@ -13,4 +13,6 @@ function fetch(type) {
 exports.fetch = fetch;
 // TODO: ...
 var registry = {};
+// TODO: temp testing... remove this...
+exports._cache = registry;
 //# sourceMappingURL=typeRegistry.js.map

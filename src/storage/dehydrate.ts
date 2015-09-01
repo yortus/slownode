@@ -24,10 +24,10 @@ function dehydrate(value: any, treatSlowObjectsAsRefs = false) {
             };
         }
         else {
-            return {
-                $type: 'SlowDef',
-                value: _.mapValues(value._slow, propValue => dehydrate(propValue, true))
-            };
+            var slow: { type; id; } = value._slow;
+            var dehydrateSlowObject = typeRegistry.fetch(slow.type).dehydrate;
+            dehydrateSlowObject = dehydrateSlowObject || (obj => _.mapValues(obj._slow, propValue => dehydrate(propValue, true)));
+            return { $type: 'SlowDef', value: dehydrateSlowObject(value) };
         }
     }
 
@@ -58,9 +58,9 @@ function dehydrate(value: any, treatSlowObjectsAsRefs = false) {
     }
 
     // TODO: temp testing... remove this...
-    else {
-        return { $type: 'ERROR - UNKNOWN?!' };
-    }
+    //else {
+    //    return { $type: 'ERROR - UNKNOWN?!' };
+    //}
 
 
     // If we get to here, the value is not recognised. Throw an error.

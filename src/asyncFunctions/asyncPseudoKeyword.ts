@@ -97,11 +97,21 @@ function makeSlowAsyncFunction(steppableFunc: types.Steppable.Function, stateMac
             asyncFunction,
             state: safa.state,
             awaiting: null,
+            onAwaitedResult: null,
+            onAwaitedError: null,
             resolve: deferred.resolve,
             reject: deferred.reject
         };
 
+        // TODO: review below - got more complicated to ensure all ids are persisted and x-ref'd...
         // Persist the SlowAsyncFunctionActivation's initial state to the database.
+        storage.upsert(safa);
+        var onAwaitedResult = makeContinuationResultHandler(safa);
+        var onAwaitedError = makeContinuationErrorHandler(safa);
+        storage.upsert(onAwaitedResult);
+        storage.upsert(onAwaitedError);
+        safa._slow.onAwaitedResult = onAwaitedResult;
+        safa._slow.onAwaitedError = onAwaitedError;
         storage.upsert(safa);
 
         // Run the SlowAsyncFunctionActivation instance to completion, and return the promise of completion.
@@ -125,7 +135,17 @@ function makeSlowAsyncFunction(steppableFunc: types.Steppable.Function, stateMac
 }
 
 
-
+// TODO: doc...
+function makeContinuationResultHandler(safa) {
+    var result: any = value => runToCompletion(safa, null, value);
+    result._slow = { type: 'SlowAsyncFunctionContinuationWithResult', safa };
+    return result;
+}
+function makeContinuationErrorHandler(safa) {
+    var result: any = error => runToCompletion(safa, error);
+    result._slow = { type: 'SlowAsyncFunctionContinuationWithError', safa };
+    return result;
+}
 
 
 // TODO: register slow object type with storage (for rehydration logic)
@@ -146,6 +166,28 @@ storage.registerType({
         var safa: types.SlowAsyncFunction.Activation = <any> new Steppable(obj.asyncFunction.stateMachine);
         safa.state = obj.state;
         safa._slow = obj;
+        safa._slow.onAwaitedResult = makeContinuationResultHandler(safa);
+        safa._slow.onAwaitedError = makeContinuationErrorHandler(safa);
+
+        // TODO: and continue running it...
+        assert(safa._slow.awaiting); // should only ever be rehydrating from an awaiting state
+        safa._slow.awaiting.then(safa._slow.onAwaitedResult, safa._slow.onAwaitedError);
+
+        // All done.
         return safa;
     }
+});
+
+
+// TODO: register slow object type with storage (for rehydration logic)
+storage.registerType({
+    type: 'SlowAsyncFunctionContinuationWithResult',
+    rehydrate: obj => makeContinuationResultHandler(obj.safa)
+});
+
+
+// TODO: register slow object type with storage (for rehydration logic)
+storage.registerType({
+    type: 'SlowAsyncFunctionContinuationWithError',
+    rehydrate: obj => makeContinuationErrorHandler(obj.safa)
 });

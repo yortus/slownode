@@ -31,6 +31,8 @@
                 asyncFunction: SlowAsyncFunction;
                 state: Steppable.StateMachine.State;
                 awaiting: any;
+                onAwaitedResult: SlowObject & ((value) => void);
+                onAwaitedError: SlowObject & ((error) => void);
                 resolve: slow.SlowPromise.ResolveFunction<any>;
                 reject: slow.SlowPromise.RejectFunction;
             };
@@ -156,6 +158,7 @@
 
         interface Registration {
             type: string;
+            dehydrate?(obj: SlowObject): any;
             rehydrate(jsonSafeObject: any): SlowObject;
         }
     }

@@ -8,12 +8,7 @@ var storage = require('../storage/storage');
  * continues until the SlowAsyncFunctionActivation either returns or throws. If it throws,
  * this function rejects with the error. If it returns, this function resolves to its result.
  */
-function runToCompletion(safa) {
-    // Kick off the recursive worker function.
-    step(safa);
-}
-/** Helper function to resume the underlying Steppable, then handle its return/throw/yield. */
-function step(safa, error, next) {
+function runToCompletion(safa, error, next) {
     // Resume the underlying Steppable, either throwing into it or calling next(), depending on args.
     try {
         var yielded;
@@ -26,12 +21,16 @@ function step(safa, error, next) {
     }
     // The Steppable threw. Finalize and reject the SlowAsyncFunctionActivation.
     catch (ex) {
+        storage.remove(safa._slow.onAwaitedResult);
+        storage.remove(safa._slow.onAwaitedError);
         storage.remove(safa);
         safa._slow.reject(ex);
         return;
     }
     // The Steppable returned. Finalize and resolve the SlowAsyncFunctionActivation.
     if (yielded.done) {
+        storage.remove(safa._slow.onAwaitedResult);
+        storage.remove(safa._slow.onAwaitedError);
         storage.remove(safa);
         safa._slow.resolve(yielded.value);
         return;
@@ -42,30 +41,8 @@ function step(safa, error, next) {
     assert(awaiting && typeof awaiting.then === 'function', 'await: expected argument to be a Promise');
     // Persist activation state before suspending on the awaitable.
     storage.upsert(safa);
-    // Call step() recursively with the eventual result or error.
-    var onFulfilled = function (value) { return step(safa, null, value); };
-    onFulfilled._slow = { type: 'SlowAsyncFunctionActivationContinuationWithResult', safa: safa };
-    var onRejected = function (error) { return step(safa, error); };
-    onRejected._slow = { type: 'SlowAsyncFunctionActivationContinuationWithError', safa: safa };
-    awaiting.then(onFulfilled, onRejected);
+    // Suspend on the awaitable, then call self recursively with the eventual result or error.
+    awaiting.then(safa._slow.onAwaitedResult, safa._slow.onAwaitedError);
 }
-// TODO: register slow object type with storage (for rehydration logic)
-storage.registerType({
-    type: 'SlowAsyncFunctionActivationContinuationWithResult',
-    rehydrate: function (obj) {
-        var onFulfilled = function (value) { return step(obj.safa, null, value); };
-        onFulfilled._slow = obj;
-        return onFulfilled;
-    }
-});
-// TODO: register slow object type with storage (for rehydration logic)
-storage.registerType({
-    type: 'SlowAsyncFunctionActivationContinuationWithError',
-    rehydrate: function (obj) {
-        var onRejected = function (error) { return step(obj.safa, error); };
-        onRejected._slow = obj;
-        return onRejected;
-    }
-});
 module.exports = runToCompletion;
 //# sourceMappingURL=runToCompletion.js.map

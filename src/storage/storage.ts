@@ -81,12 +81,13 @@ export function upsert(slowObj: types.SlowObject) {
 
     var slow = slowObj._slow;
     slow.id = slow.id || `#${++idCounter}`;
+    var key = makeKey(slow);
     var serializedValue = JSON.stringify(dehydrate(slowObj));
-    cache[`${makeKey(slow)}`] = slowObj;
+    cache[`${key}`] = slowObj;
 
     // TODO: testing... NB node.d.ts is missing a typing here...
     try {
-        (<any>fs.writeSync)(logFileDescriptor, `,\n\n\n"UPSERT",\n${serializedValue}`, null, 'utf8');
+        (<any>fs.writeSync)(logFileDescriptor, `,\n\n\n"${key}", ${serializedValue}`, null, 'utf8');
         fs.fsyncSync(logFileDescriptor);
     }
     catch (ex) {
@@ -104,7 +105,7 @@ export function remove(slowObj: types.SlowObject) {
     delete cache[key];
 
     // TODO: testing...
-    (<any>fs.writeSync)(logFileDescriptor, `,\n\n\n"REMOVE",\n"${key}"`, null, 'utf8');
+    (<any>fs.writeSync)(logFileDescriptor, `,\n\n\n"${key}", null`, null, 'utf8');
     fs.fsyncSync(logFileDescriptor);
 }
 
@@ -117,6 +118,7 @@ function replayLog() {
     var json = '[' + fs.readFileSync(storageLocation, 'utf8') + ']';
     var logEntries: any[] = JSON.parse(json);
     var pos = 1;
+    var keyOrder = [];
 
 
     // TODO: only rehydrate the LAST upsert/delete encountered for each key
@@ -124,29 +126,22 @@ function replayLog() {
 
 
     while (pos < logEntries.length) {
-        var command: string = logEntries[pos++];
-        var details: any = logEntries[pos++];
-        switch (command) {
+        var key: string = logEntries[pos++];
+        var jsonSafeValue: any = logEntries[pos++];
 
-            case 'UPSERT':
-                assert(details.$type === 'SlowDef');
-                var slow = details.value;
-                var key = makeKey(slow);
-
-                // TODO: deserialize!!!!!!!!
-                var value = rehydrate(details, slow => cache[makeKey(slow)]);
-                cache[key] = value;
-                break;
-
-            case 'REMOVE':
-                key = details;
-                delete cache[key];
-                break;
-
-            default:
-                throw new Error(`Unrecognised log entry command '${command}'`);
-        }
+        if (!(key in cache)) keyOrder.push(key);
+        cache[key] = jsonSafeValue;
     }
+
+    keyOrder.forEach(key => {
+        if (cache[key] === null) {
+            delete cache[key];
+        }
+        else {
+            // TODO: important - relies on defs before refs!
+            cache[key] = rehydrate(cache[key], slow => cache[makeKey(slow)]);
+        }
+    });
 }
 
 

@@ -18,3 +18,7 @@ export function fetch(type: string): types.SlowObject.Registration {
 
 // TODO: ...
 var registry: { [slowObjectType: string]: types.SlowObject.Registration; } = {};
+
+
+// TODO: temp testing... remove this...
+export var _cache = registry;
