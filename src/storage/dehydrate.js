@@ -16,7 +16,7 @@ function dehydrate(value) {
         return value.map(dehydrate);
     }
     else if (_.isPlainObject(value) && !_.has(value, '_slow')) {
-        return _.mapValues(value, dehydrate);
+        return { $type: 'object', value: _.mapValues(value, dehydrate) };
     }
     else if (_.isUndefined(value)) {
         return { $type: 'undefined' };

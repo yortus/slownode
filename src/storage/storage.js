@@ -95,18 +95,17 @@ function dehydrateDef(value) {
     return jsonSafeValue;
 }
 function rehydrateDef(jsonSafeValue) {
-    var newValue = _.cloneDeep(jsonSafeValue, function (value) { });
     var slow = {};
     _.keys(jsonSafeValue).forEach(function (propName) {
         var propValue = jsonSafeValue[propName];
-        if (propValue && propValue.$ref) {
-            Object.defineProperty(slow, propName, {
-                get: function () { return cache[propValue.$ref]; }
-            });
-        }
-        else {
-            slow[propName] = rehydrate(propValue, function (id) { return cache[id]; });
-        }
+        //if (propValue && propValue.$ref) {
+        //    Object.defineProperty(slow, propName, {
+        //        get: () => cache[propValue.$ref]
+        //    });
+        //}
+        //else {
+        slow[propName] = rehydrate(propValue);
+        //}
     });
     var rehydrateSlowObject = typeRegistry.fetch(slow.type).rehydrate;
     var result = rehydrateSlowObject(slow);
@@ -125,6 +124,17 @@ function replayLog() {
             keyOrder.push(key);
         cache[key] = jsonSafeValue;
     }
+    //........
+    traverseJsonSafeObject(cache, function (obj, key) {
+        if (key === '$ref') {
+            console.log("{ $ref: " + obj[key] + "}");
+            var val = obj[key];
+            delete obj[key];
+            Object.defineProperty(obj, key, {
+                get: function () { return cache[val]; }
+            });
+        }
+    });
     keyOrder.forEach(function (key) {
         if (cache[key] === null) {
             delete cache[key];
@@ -138,16 +148,14 @@ function replayLog() {
 }
 // TODO: temp testing...
 function traverseJsonSafeObject(value, action) {
-    if (_.isPlainObject(value)) {
+    if (_.isPlainObject(value) || _.isArray(value)) {
         //TODO:...
-        _.each(value, function (val, key) {
-            action(val, key);
-            traverseJsonSafeObject(val, action);
+        _.forEach(value, function (val, key, obj) {
+            var result = action(obj, key);
+            if (result === false)
+                return;
+            traverseJsonSafeObject(result || val, action);
         });
-    }
-    else if (_.isArray(value)) {
-    }
-    else {
     }
 }
 //# sourceMappingURL=storage.js.map

@@ -25,8 +25,9 @@ function dehydrate(value: any) {
     }
 
     // Map a plain (and non-slow) object to a new object whose property values are safe values.
+    // TODO: use a $type here to avoid rehydration ambiguities (eg what if this object has a $type key?
     else if (_.isPlainObject(value) && !_.has(value, '_slow')) {
-        return _.mapValues(value, dehydrate);
+        return { $type: 'object', value: _.mapValues(value, dehydrate) };
     }
 
     // Map `undefined` to a sentinel object that will be deserialized back to `undefined`

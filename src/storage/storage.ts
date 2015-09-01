@@ -133,21 +133,20 @@ function dehydrateDef(value: any) {
 
 function rehydrateDef(jsonSafeValue: any) {
 
-    var newValue = _.cloneDeep(jsonSafeValue, (value) => {});
 
 
 
     var slow: { type; id; } = <any> {};
     _.keys(jsonSafeValue).forEach(propName => {
         var propValue = jsonSafeValue[propName];
-        if (propValue && propValue.$ref) {
-            Object.defineProperty(slow, propName, {
-                get: () => cache[propValue.$ref]
-            });
-        }
-        else {
-            slow[propName] = rehydrate(propValue, id => cache[id]);
-        }
+        //if (propValue && propValue.$ref) {
+        //    Object.defineProperty(slow, propName, {
+        //        get: () => cache[propValue.$ref]
+        //    });
+        //}
+        //else {
+            slow[propName] = rehydrate(propValue);
+        //}
     });
     var rehydrateSlowObject = typeRegistry.fetch(slow.type).rehydrate;
     var result = rehydrateSlowObject(slow);
@@ -158,15 +157,14 @@ function rehydrateDef(jsonSafeValue: any) {
 
 
 
-
 // TODO: must support circular refs between SlowObjects when rehydrating them!
 function replayLog() {
+
 
     var json = '[' + fs.readFileSync(storageLocation, 'utf8') + ']';
     var logEntries: any[] = JSON.parse(json);
     var pos = 1;
     var keyOrder = [];
-
 
 
     while (pos < logEntries.length) {
@@ -176,6 +174,20 @@ function replayLog() {
         if (!(key in cache)) keyOrder.push(key);
         cache[key] = jsonSafeValue;
     }
+
+
+    //........
+    traverseJsonSafeObject(cache, (obj, key) => {
+        if (key === '$ref') {
+            console.log(`{ $ref: ${obj[key]}}`);
+            var val = obj[key];
+            delete obj[key];
+            Object.defineProperty(obj, key, {
+                get: () => cache[val]
+            });
+        }
+    });
+
 
     keyOrder.forEach(key => {
         if (cache[key] === null) {
@@ -194,18 +206,13 @@ function replayLog() {
 
 
 // TODO: temp testing...
-function traverseJsonSafeObject(value, action: (value, key) => void) {
-    if (_.isPlainObject(value)) {
+function traverseJsonSafeObject(value, action: (obj: any, key: string) => any) {
+    if (_.isPlainObject(value) || _.isArray(value)) {
         //TODO:...
-        _.each(value, (val, key) => {
-            action(val, key);
-            traverseJsonSafeObject(val, action);
-        })
-    }
-    else if (_.isArray(value)) {
-        //TODO:...
-    }
-    else {
-        //TODO:...
+        _.forEach(value, (val, key, obj) => {
+            var result = action(obj, key);
+            if (result === false) return;
+            traverseJsonSafeObject(result || val, action);
+        });
     }
 }
