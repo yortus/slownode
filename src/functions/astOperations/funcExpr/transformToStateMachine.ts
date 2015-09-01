@@ -158,13 +158,18 @@ class Rewriter {
                 $.temp = $.temp || {};
                 $.error = $.error || { handler: '@fail' };
                 $.finalizers = $.finalizers || { pending: [] };
-                $.ambient = steppableBody.ambient || (steppableBody.ambient = (function () {
-                    ${this.constDecls.map(decl => `var ${decl.id['name']} = ${escodegen.generate(decl.init)};`).join('\n')}
-                    var ambient = Object.create(global);
-                    ambient.require = require.main.require;
-                    ${this.constDecls.map(decl => `ambient.${decl.id['name']} = ${decl.id['name']};`).join('\n')}
-                    return ambient;
-                })());
+                if (!$.ambient) {
+                    Object.defineProperty($, 'ambient', {
+                        enumerable: false,
+                        value: steppableBody.ambient || (steppableBody.ambient = (function () {
+                            ${this.constDecls.map(decl => `var ${decl.id['name']} = ${escodegen.generate(decl.init)};`).join('\n')}
+                            var ambient = Object.create(global);
+                            ambient.require = require.main.require;
+                            ${this.constDecls.map(decl => `ambient.${decl.id['name']} = ${decl.id['name']};`).join('\n')}
+                            return ambient;
+                        })())
+                    });
+                }
                 while (true) {
                     try {
                         switch ($.pos) {
