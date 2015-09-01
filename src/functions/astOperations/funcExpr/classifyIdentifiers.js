@@ -1,10 +1,10 @@
 var _ = require('lodash');
 var matchNode = require('../matchNode');
 var traverseTree = require('../traverseTree');
+var containsInnerFunctions = require('./containsInnerFunctions');
 // TODO: BUG (corner case): A reference to a free (ie non-local) identifier with the same name
 //       as a catch block exception indentifier will be identified as referring to that catch ID,
 //       even if the reference appears outside the catch block, which is materially incorrect.
-// TODO: BUG: If funcExpr has inner function/lambdas, results will not make sense.
 // TODO: what about arguments? Is that a local?
 /**
  * Find all indentifiers referenced in the given function expression,
@@ -15,6 +15,10 @@ function classifyIdentifiers(funcExpr) {
     // Return the previously computed result, if available.
     if (funcExpr._ids)
         return funcExpr._ids;
+    // Fail in the presence of inner functions.
+    // TODO: could this be relaxed / better implemented? Also, message is copied from elsewhere and is not super helpful here.
+    if (containsInnerFunctions(funcExpr))
+        throw new Error("Steppable: function delcarations, function expressions and arrow functions are not allowed within the steppable body");
     // Find all locally-declared IDs, and all locally-referenced IDs.
     var varIds = funcExpr.params.map(function (p) { return p['name']; });
     var letIds = [];
