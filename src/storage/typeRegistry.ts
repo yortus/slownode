@@ -17,8 +17,16 @@ export function fetch(type: types.SlowObject.Type): types.SlowObject.Registratio
 
 
 // TODO: ...
+export function fetchAll(): types.SlowObject.Registration[] {
+    return Object.keys(_cache).map(key => _cache[key]);
+}
+
+
+// TODO: ...
 var registry: { [slowObjectType: number]: types.SlowObject.Registration; } = {};
 
 
 // TODO: temp testing... remove this...
 export var _cache = registry;
+
+

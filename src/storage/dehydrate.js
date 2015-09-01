@@ -1,35 +1,22 @@
 var _ = require('lodash');
-var typeRegistry = require('./typeRegistry');
 var isRelocatableFunction = require('../functions/isRelocatableFunction');
 /**
  * Recursively converts the given value into an object that can be safely converted to JSON.
  * Throws an error if any part of the value cannot be converted.
  */
-function dehydrate(value, treatSlowObjectsAsRefs) {
-    if (treatSlowObjectsAsRefs === void 0) { treatSlowObjectsAsRefs = false; }
-    // Some primitives are already safe. Return them unchanged.
+function dehydrate(value) {
+    // Some primitives map to themselves. Return them as-is.
     if (_.isString(value) || _.isNumber(value) || _.isBoolean(value) || _.isNull(value)) {
         return value;
     }
     else if (_.isObject(value) && _.has(value, '_slow')) {
-        if (treatSlowObjectsAsRefs) {
-            return {
-                $type: 'SlowRef',
-                value: _.pick(value._slow, ['type', 'id'])
-            };
-        }
-        else {
-            var slow = value._slow;
-            var dehydrateSlowObject = typeRegistry.fetch(slow.type).dehydrate;
-            dehydrateSlowObject = dehydrateSlowObject || (function (obj) { return _.mapValues(obj._slow, function (propValue) { return dehydrate(propValue, true); }); });
-            return { $type: 'SlowDef', value: dehydrateSlowObject(value) };
-        }
+        return { $ref: value._slow.id };
     }
     else if (_.isArray(value)) {
-        return value.map(function (elem) { return dehydrate(elem, treatSlowObjectsAsRefs); });
+        return value.map(dehydrate);
     }
     else if (_.isPlainObject(value) && !_.has(value, '_slow')) {
-        return _.mapValues(value, function (propValue) { return dehydrate(propValue, treatSlowObjectsAsRefs); });
+        return _.mapValues(value, dehydrate);
     }
     else if (_.isUndefined(value)) {
         return { $type: 'undefined' };

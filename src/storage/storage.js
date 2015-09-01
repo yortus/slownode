@@ -1,6 +1,7 @@
 var fs = require('fs');
 var storageLocation = require('./storageLocation');
 var dehydrate = require('./dehydrate');
+var rehydrate = require('./rehydrate');
 var typeRegistry = require('./typeRegistry');
 // TODO: doc... single process/thread exclusive by design...
 // TODO: errors are not caught... What to do?
@@ -18,7 +19,7 @@ function registerType(registration) {
 exports.registerType = registerType;
 // TODO: temp testing...
 function lookup(slowObj) {
-    return cache[makeKey(slowObj._slow)];
+    return cache[slowObj._slow.id];
 }
 exports.lookup = lookup;
 var init = function () {
@@ -56,8 +57,8 @@ function track(slowObj) {
     init();
     var slow = slowObj._slow;
     slow.id = slow.id || "#" + ++idCounter;
-    var key = makeKey(slow);
-    var serializedValue = JSON.stringify(dehydrate(slowObj));
+    var key = slow.id;
+    var serializedValue = JSON.stringify(dehydrateDef(slowObj));
     cache[("" + key)] = slowObj;
     // TODO: testing... NB node.d.ts is missing a typing here...
     try {
@@ -74,37 +75,45 @@ exports.track = track;
 function clear(slowObj) {
     init();
     var slow = slowObj._slow;
-    var key = makeKey(slow);
+    var key = slow.id;
     delete cache[key];
     // TODO: testing...
     fs.writeSync(logFileDescriptor, ",\n\n\n\"" + key + "\", null", null, 'utf8');
     fs.fsyncSync(logFileDescriptor);
 }
 exports.clear = clear;
+// TODO: temp testing...
+var registrations;
+function dehydrateDef(value) {
+    registrations = registrations || typeRegistry.fetchAll();
+    var jsonSafeValue;
+    for (var i = 0; jsonSafeValue === void 0 && i < registrations.length; ++i) {
+        var reg = registrations[i];
+        jsonSafeValue = reg.dehydrate(value, dehydrate);
+    }
+    return jsonSafeValue;
+}
 // TODO: must support circular refs between SlowObjects when rehydrating them!
 function replayLog() {
-    //var json = '[' + fs.readFileSync(storageLocation, 'utf8') + ']';
-    //var logEntries: any[] = JSON.parse(json);
-    //var pos = 1;
-    //var keyOrder = [];
-    //while (pos < logEntries.length) {
-    //    var key: string = logEntries[pos++];
-    //    var jsonSafeValue: any = logEntries[pos++];
-    //    if (!(key in cache)) keyOrder.push(key);
-    //    cache[key] = jsonSafeValue;
-    //}
-    //keyOrder.forEach(key => {
-    //    if (cache[key] === null) {
-    //        delete cache[key];
-    //    }
-    //    else {
-    //        // TODO: important - relies on defs before refs!
-    //        cache[key] = rehydrate(cache[key], slow => cache[makeKey(slow)]);
-    //    }
-    //});
-}
-// TODO: doc...
-function makeKey(slow) {
-    return "" + slow.id;
+    var json = '[' + fs.readFileSync(storageLocation, 'utf8') + ']';
+    var logEntries = JSON.parse(json);
+    var pos = 1;
+    var keyOrder = [];
+    while (pos < logEntries.length) {
+        var key = logEntries[pos++];
+        var jsonSafeValue = logEntries[pos++];
+        if (!(key in cache))
+            keyOrder.push(key);
+        cache[key] = jsonSafeValue;
+    }
+    keyOrder.forEach(function (key) {
+        if (cache[key] === null) {
+            delete cache[key];
+        }
+        else {
+            // TODO: important - relies on defs before refs!
+            cache[key] = rehydrate(cache[key], function (id) { return cache[id]; });
+        }
+    });
 }
 //# sourceMappingURL=storage.js.map

@@ -34,7 +34,7 @@ export function registerType(registration: types.SlowObject.Registration) {
 
 // TODO: temp testing...
 export function lookup(slowObj: types.SlowObject): types.SlowObject {
-    return cache[makeKey(slowObj._slow)];
+    return cache[slowObj._slow.id];
 }
 
 
@@ -82,8 +82,8 @@ export function track(slowObj: types.SlowObject) {
 
     var slow = slowObj._slow;
     slow.id = slow.id || `#${++idCounter}`;
-    var key = makeKey(slow);
-    var serializedValue = JSON.stringify(dehydrate(slowObj));
+    var key = slow.id;
+    var serializedValue = JSON.stringify(dehydrateDef(slowObj));
     cache[`${key}`] = slowObj;
 
     // TODO: testing... NB node.d.ts is missing a typing here...
@@ -103,7 +103,7 @@ export function clear(slowObj: types.SlowObject) {
     init();
 
     var slow = slowObj._slow;
-    var key = makeKey(slow);
+    var key = slow.id;
     delete cache[key];
 
     // TODO: testing...
@@ -115,37 +115,53 @@ export function clear(slowObj: types.SlowObject) {
 
 
 
-// TODO: must support circular refs between SlowObjects when rehydrating them!
-function replayLog() {
 
-    //var json = '[' + fs.readFileSync(storageLocation, 'utf8') + ']';
-    //var logEntries: any[] = JSON.parse(json);
-    //var pos = 1;
-    //var keyOrder = [];
+// TODO: temp testing...
+var registrations: types.SlowObject.Registration[];
+function dehydrateDef(value: any) {
+    registrations = registrations || typeRegistry.fetchAll();
 
-
-
-    //while (pos < logEntries.length) {
-    //    var key: string = logEntries[pos++];
-    //    var jsonSafeValue: any = logEntries[pos++];
-
-    //    if (!(key in cache)) keyOrder.push(key);
-    //    cache[key] = jsonSafeValue;
-    //}
-
-    //keyOrder.forEach(key => {
-    //    if (cache[key] === null) {
-    //        delete cache[key];
-    //    }
-    //    else {
-    //        // TODO: important - relies on defs before refs!
-    //        cache[key] = rehydrate(cache[key], slow => cache[makeKey(slow)]);
-    //    }
-    //});
+    var jsonSafeValue;
+    for (var i = 0; jsonSafeValue === void 0 && i < registrations.length; ++i) {
+        var reg = registrations[i];
+        jsonSafeValue = reg.dehydrate(value, dehydrate);
+    }
+    return jsonSafeValue;
 }
 
 
-// TODO: doc...
-function makeKey(slow: { type: types.SlowObject.Type; id?: string|number; }) {
-    return `${slow.id}`;
+
+
+
+
+
+
+
+// TODO: must support circular refs between SlowObjects when rehydrating them!
+function replayLog() {
+
+    var json = '[' + fs.readFileSync(storageLocation, 'utf8') + ']';
+    var logEntries: any[] = JSON.parse(json);
+    var pos = 1;
+    var keyOrder = [];
+
+
+
+    while (pos < logEntries.length) {
+        var key: string = logEntries[pos++];
+        var jsonSafeValue: any = logEntries[pos++];
+
+        if (!(key in cache)) keyOrder.push(key);
+        cache[key] = jsonSafeValue;
+    }
+
+    keyOrder.forEach(key => {
+        if (cache[key] === null) {
+            delete cache[key];
+        }
+        else {
+            // TODO: important - relies on defs before refs!
+            cache[key] = rehydrate(cache[key], id => cache[id]);
+        }
+    });
 }

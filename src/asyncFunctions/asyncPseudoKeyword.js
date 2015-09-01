@@ -1,5 +1,6 @@
 var assert = require('assert');
 var crypto = require('crypto');
+var _ = require('lodash');
 var Steppable = require('../functions/steppable');
 var SteppableFunction = require('../functions/steppableFunction');
 var SlowPromise = require('../promises/slowPromise');
@@ -115,18 +116,30 @@ function makeContinuationErrorHandler(safa) {
 // TODO: register slow object type with storage (for rehydration logic)
 storage.registerType({
     type: 20 /* SlowAsyncFunction */,
-    rehydrate: function (obj) {
+    dehydrate: function (p, recurse) {
+        if (!p || !p._slow || p._slow.type !== 20 /* SlowAsyncFunction */)
+            return;
+        var jsonSafeObject = _.mapValues(p._slow, function (propValue) { return recurse(propValue); });
+        return jsonSafeObject;
+    },
+    rehydrate: function (jsonSafeObject) {
         // TODO: clean up
-        return tween(obj.stateMachineSource, obj.originalSource);
+        return tween(jsonSafeObject.stateMachineSource, jsonSafeObject.originalSource);
     }
 });
 // TODO: register slow object type with storage (for rehydration logic)
 storage.registerType({
     type: 30 /* SlowAsyncFunctionActivation */,
-    rehydrate: function (obj) {
-        var safa = new Steppable(obj.asyncFunction.stateMachine);
-        safa.state = obj.state;
-        safa._slow = obj;
+    dehydrate: function (p, recurse) {
+        if (!p || !p._slow || p._slow.type !== 30 /* SlowAsyncFunctionActivation */)
+            return;
+        var jsonSafeObject = _.mapValues(p._slow, function (propValue) { return recurse(propValue); });
+        return jsonSafeObject;
+    },
+    rehydrate: function (jsonSafeObject) {
+        var safa = new Steppable(jsonSafeObject.asyncFunction.stateMachine);
+        safa.state = jsonSafeObject.state;
+        safa._slow = jsonSafeObject;
         safa._slow.onAwaitedResult = makeContinuationResultHandler(safa);
         safa._slow.onAwaitedError = makeContinuationErrorHandler(safa);
         // TODO: and continue running it...
@@ -139,12 +152,24 @@ storage.registerType({
 // TODO: register slow object type with storage (for rehydration logic)
 storage.registerType({
     type: 31 /* SlowAsyncFunctionContinuationWithResult */,
-    rehydrate: function (obj) { return makeContinuationResultHandler(obj.safa); }
+    dehydrate: function (p, recurse) {
+        if (!p || !p._slow || p._slow.type !== 31 /* SlowAsyncFunctionContinuationWithResult */)
+            return;
+        var jsonSafeObject = _.mapValues(p._slow, function (propValue) { return recurse(propValue); });
+        return jsonSafeObject;
+    },
+    rehydrate: function (jsonSafeObject) { return makeContinuationResultHandler(jsonSafeObject.safa); }
 });
 // TODO: register slow object type with storage (for rehydration logic)
 storage.registerType({
     type: 32 /* SlowAsyncFunctionContinuationWithError */,
-    rehydrate: function (obj) { return makeContinuationErrorHandler(obj.safa); }
+    dehydrate: function (p, recurse) {
+        if (!p || !p._slow || p._slow.type !== 32 /* SlowAsyncFunctionContinuationWithError */)
+            return;
+        var jsonSafeObject = _.mapValues(p._slow, function (propValue) { return recurse(propValue); });
+        return jsonSafeObject;
+    },
+    rehydrate: function (jsonSafeObject) { return makeContinuationErrorHandler(jsonSafeObject.safa); }
 });
 module.exports = asyncPseudoKeyword;
 //# sourceMappingURL=asyncPseudoKeyword.js.map

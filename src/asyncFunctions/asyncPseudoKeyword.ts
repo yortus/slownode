@@ -152,10 +152,15 @@ function makeContinuationErrorHandler(safa) {
 // TODO: register slow object type with storage (for rehydration logic)
 storage.registerType({
     type: SlowType.SlowAsyncFunction,
-    rehydrate: obj => {
+    dehydrate: (p: types.SlowAsyncFunction, recurse: (obj) => any) => {
+        if (!p || !p._slow || p._slow.type !== SlowType.SlowAsyncFunction) return;
+        var jsonSafeObject = _.mapValues(p._slow, propValue => recurse(propValue));
+        return jsonSafeObject;
+    },
+    rehydrate: jsonSafeObject => {
 
         // TODO: clean up
-        return tween(obj.stateMachineSource, obj.originalSource);
+        return tween(jsonSafeObject.stateMachineSource, jsonSafeObject.originalSource);
     }
 });
 
@@ -163,10 +168,15 @@ storage.registerType({
 // TODO: register slow object type with storage (for rehydration logic)
 storage.registerType({
     type: SlowType.SlowAsyncFunctionActivation,
-    rehydrate: obj => {
-        var safa: types.SlowAsyncFunction.Activation = <any> new Steppable(obj.asyncFunction.stateMachine);
-        safa.state = obj.state;
-        safa._slow = obj;
+    dehydrate: (p: types.SlowAsyncFunction.Activation, recurse: (obj) => any) => {
+        if (!p || !p._slow || p._slow.type !== SlowType.SlowAsyncFunctionActivation) return;
+        var jsonSafeObject = _.mapValues(p._slow, propValue => recurse(propValue));
+        return jsonSafeObject;
+    },
+    rehydrate: jsonSafeObject => {
+        var safa: types.SlowAsyncFunction.Activation = <any> new Steppable(jsonSafeObject.asyncFunction.stateMachine);
+        safa.state = jsonSafeObject.state;
+        safa._slow = jsonSafeObject;
         safa._slow.onAwaitedResult = makeContinuationResultHandler(safa);
         safa._slow.onAwaitedError = makeContinuationErrorHandler(safa);
 
@@ -183,12 +193,22 @@ storage.registerType({
 // TODO: register slow object type with storage (for rehydration logic)
 storage.registerType({
     type: SlowType.SlowAsyncFunctionContinuationWithResult,
-    rehydrate: obj => makeContinuationResultHandler(obj.safa)
+    dehydrate: (p: any, recurse: (obj) => any) => {
+        if (!p || !p._slow || p._slow.type !== SlowType.SlowAsyncFunctionContinuationWithResult) return;
+        var jsonSafeObject = _.mapValues(p._slow, propValue => recurse(propValue));
+        return jsonSafeObject;
+    },
+    rehydrate: jsonSafeObject => makeContinuationResultHandler(jsonSafeObject.safa)
 });
 
 
 // TODO: register slow object type with storage (for rehydration logic)
 storage.registerType({
     type: SlowType.SlowAsyncFunctionContinuationWithError,
-    rehydrate: obj => makeContinuationErrorHandler(obj.safa)
+    dehydrate: (p: any, recurse: (obj) => any) => {
+        if (!p || !p._slow || p._slow.type !== SlowType.SlowAsyncFunctionContinuationWithError) return;
+        var jsonSafeObject = _.mapValues(p._slow, propValue => recurse(propValue));
+        return jsonSafeObject;
+    },
+    rehydrate: jsonSafeObject => makeContinuationErrorHandler(jsonSafeObject.safa)
 });

@@ -12,16 +12,16 @@ export = rehydrate;
  * TODO: Recursively converts the given json-safe object back to a normal value.
  * Throws an error if any part of the value cannot be converted.
  */
-function rehydrate(jsonSafeObject: any, getSlowObjectDef: (slow: { type: string; id: string|number; }) => types.SlowObject) {
+function rehydrate(jsonSafeObject: any, getSlowObjectDef: (id: string) => types.SlowObject) {
 
-    // Some primitives need no special processing. Return them as-is.
+    // Some primitives map to themselves. Return them as-is.
     if (_.isString(jsonSafeObject) || _.isNumber(jsonSafeObject) || _.isBoolean(jsonSafeObject) || _.isNull(jsonSafeObject)) {
         return jsonSafeObject;
     }
 
     // TODO: map a slow object reference...
-    else if (jsonSafeObject && jsonSafeObject.$type === 'SlowRef') {
-        return getSlowObjectDef(jsonSafeObject.value);
+    else if (jsonSafeObject && jsonSafeObject.$ref) {
+        return getSlowObjectDef(jsonSafeObject.$ref);
     }
 
     // TODO: map a slow object definition...

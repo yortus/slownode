@@ -6,12 +6,12 @@ var typeRegistry = require('./typeRegistry');
  * Throws an error if any part of the value cannot be converted.
  */
 function rehydrate(jsonSafeObject, getSlowObjectDef) {
-    // Some primitives need no special processing. Return them as-is.
+    // Some primitives map to themselves. Return them as-is.
     if (_.isString(jsonSafeObject) || _.isNumber(jsonSafeObject) || _.isBoolean(jsonSafeObject) || _.isNull(jsonSafeObject)) {
         return jsonSafeObject;
     }
-    else if (jsonSafeObject && jsonSafeObject.$type === 'SlowRef') {
-        return getSlowObjectDef(jsonSafeObject.value);
+    else if (jsonSafeObject && jsonSafeObject.$ref) {
+        return getSlowObjectDef(jsonSafeObject.$ref);
     }
     else if (jsonSafeObject && jsonSafeObject.$type === 'SlowDef') {
         var slow = _.mapValues(jsonSafeObject.value, function (propValue) { return rehydrate(propValue, getSlowObjectDef); });

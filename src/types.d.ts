@@ -16,7 +16,7 @@
         stateMachine: Steppable.StateMachine;
         _slow: {
             type: SlowObject.Type;
-            id?: string|number;
+            id?: string;
             stateMachineSource: string;
             originalSource: string; // TODO: not needed in operation, but preserve for future debugging/sourcemap needs?
         };
@@ -27,7 +27,7 @@
         interface Activation extends Steppable {
             _slow: {
                 type: SlowObject.Type;
-                id?: string|number;
+                id?: string;
                 asyncFunction: SlowAsyncFunction;
                 state: Steppable.StateMachine.State;
                 awaiting: any;
@@ -46,7 +46,7 @@
     interface SlowPromise extends slow.SlowPromise<any> {
         _slow: {
             type: SlowObject.Type;
-            id?: string|number;
+            id?: string;
             isFateResolved: boolean;
             state: SlowPromise.State;
             settledValue: any;
@@ -67,7 +67,7 @@
         interface ResolveFunction extends slow.SlowPromise.ResolveFunction<any> {
             _slow: {
                 type: SlowObject.Type;
-                id?: string|number;
+                id?: string;
                 promise: SlowPromise;
             };
         }
@@ -75,7 +75,7 @@
         interface RejectFunction extends slow.SlowPromise.RejectFunction {
             _slow: {
                 type: SlowObject.Type;
-                id?: string|number;
+                id?: string;
                 promise: SlowPromise;
             };
         }
@@ -148,7 +148,7 @@
     interface SlowObject {
         _slow: {
             type: SlowObject.Type;
-            id?: string|number;
+            id?: string;
             [other: string]: any;
         }
         [other: string]: any;
@@ -167,9 +167,9 @@
         }
 
         interface Registration {
-            type: SlowObject.Type;
-            dehydrate?(obj: SlowObject): any;
-            rehydrate(jsonSafeObject: any): SlowObject;
+            type: SlowObject.Type; // TODO: no longer needed. Remove?
+            dehydrate(obj: any, recurse: (obj) => any): any; // TODO: returns a jsonSafeObject, or void 0 for 'unhandled'
+            rehydrate(jsonSafeObject: any): any;
         }
     }
 }

@@ -1,3 +1,4 @@
+var _ = require('lodash');
 var standardResolutionProcedure = require('./standardResolutionProcedure');
 var storage = require('../storage/storage');
 /**
@@ -28,8 +29,14 @@ exports.create = create;
 // TODO: register slow object type with storage (for rehydration logic)
 storage.registerType({
     type: 11 /* SlowPromiseResolveFunction */,
-    rehydrate: function (obj) {
-        return create(obj.promise, false);
+    dehydrate: function (p, recurse) {
+        if (!p || !p._slow || p._slow.type !== 11 /* SlowPromiseResolveFunction */)
+            return;
+        var jsonSafeObject = _.mapValues(p._slow, function (propValue) { return recurse(propValue); });
+        return jsonSafeObject;
+    },
+    rehydrate: function (jsonSafeObject) {
+        return create(jsonSafeObject.promise, false);
     }
 });
 //# sourceMappingURL=resolveFunction.js.map

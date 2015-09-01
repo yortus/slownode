@@ -12,6 +12,11 @@ function fetch(type) {
 }
 exports.fetch = fetch;
 // TODO: ...
+function fetchAll() {
+    return Object.keys(exports._cache).map(function (key) { return exports._cache[key]; });
+}
+exports.fetchAll = fetchAll;
+// TODO: ...
 var registry = {};
 // TODO: temp testing... remove this...
 exports._cache = registry;

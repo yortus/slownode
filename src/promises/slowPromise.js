@@ -159,9 +159,15 @@ function processAllHandlers(p) {
 // TODO: register slow object type with storage (for rehydration logic)
 storage.registerType({
     type: 10 /* SlowPromise */,
-    rehydrate: function (obj) {
+    dehydrate: function (p, recurse) {
+        if (!p || !p._slow || p._slow.type !== 10 /* SlowPromise */)
+            return;
+        var jsonSafeObject = _.mapValues(p._slow, function (propValue) { return recurse(propValue); });
+        return jsonSafeObject;
+    },
+    rehydrate: function (jsonSafeObject) {
         var promise = new SlowPromise(INTERNAL);
-        promise._slow = obj;
+        promise._slow = jsonSafeObject;
         return promise;
     }
 });
