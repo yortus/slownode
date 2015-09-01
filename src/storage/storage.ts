@@ -196,10 +196,16 @@ function replayLog() {
 // TODO: temp testing...
 function traverseJsonSafeObject(value, action: (value, key) => void) {
     if (_.isPlainObject(value)) {
-        finish this...
+        //TODO:...
+        _.each(value, (val, key) => {
+            action(val, key);
+            traverseJsonSafeObject(val, action);
+        })
     }
     else if (_.isArray(value)) {
+        //TODO:...
     }
     else {
+        //TODO:...
     }
 }

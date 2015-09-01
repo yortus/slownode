@@ -139,8 +139,11 @@ function replayLog() {
 // TODO: temp testing...
 function traverseJsonSafeObject(value, action) {
     if (_.isPlainObject(value)) {
-        finish;
-        this;
+        //TODO:...
+        _.each(value, function (val, key) {
+            action(val, key);
+            traverseJsonSafeObject(val, action);
+        });
     }
     else if (_.isArray(value)) {
     }
