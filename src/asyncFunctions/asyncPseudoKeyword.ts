@@ -96,7 +96,7 @@ function makeSlowAsyncFunction(steppableFunc: types.Steppable.Function, stateMac
             type: 'SlowAsyncFunctionActivation',
             asyncFunction,
             state: safa.state,
-            awaiting: SlowPromise.resolved(),
+            awaiting: null,
             resolve: deferred.resolve,
             reject: deferred.reject
         };

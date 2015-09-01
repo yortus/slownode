@@ -69,7 +69,7 @@ function makeSlowAsyncFunction(steppableFunc, stateMachineSource, originalSource
             type: 'SlowAsyncFunctionActivation',
             asyncFunction: asyncFunction,
             state: safa.state,
-            awaiting: SlowPromise.resolved(),
+            awaiting: null,
             resolve: deferred.resolve,
             reject: deferred.reject
         };

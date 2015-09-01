@@ -34,17 +34,16 @@ function dehydrate(value, treatSlowObjectsAsRefs) {
         return { $type: 'undefined' };
     }
     else if (_.isFunction(value)) {
-        if (!isRelocatableFunction(value))
-            throw new Error("dehydration not supported for non-relocatable function: " + value);
-        return { $type: 'function', value: value.toString() };
+        if (isRelocatableFunction(value))
+            return { $type: 'function', value: value.toString() };
+        throw new Error("dehydration not supported for non-relocatable function: " + value);
     }
     else if (value && value.constructor === Error) {
         return { $type: 'error', value: value.message };
     }
-    // TODO: temp testing... remove this...
-    //else {
-    //    return { $type: 'ERROR - UNKNOWN?!' };
-    //}
+    else {
+        return { $type: 'ERROR - UNKNOWN?!' };
+    }
     // If we get to here, the value is not recognised. Throw an error.
     throw new Error("dehydration not supported for value : " + value);
 }

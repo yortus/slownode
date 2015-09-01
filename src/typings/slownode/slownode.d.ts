@@ -17,12 +17,12 @@ declare module "slownode" {
     export function async<T1, T2, T3, TReturn>(fn: (_1: T1, _2: T2, _3: T3) => TReturn): SlowAsyncFunctionTernary<T1, T2, T3, TReturn>;
     export function async<T1, T2, T3, T4, TReturn>(fn: (_1: T1, _2: T2, _3: T3, _4: T4) => TReturn): SlowAsyncFunctionQuaternary<T1, T2, T3, T4, TReturn>;
     export function async<TReturn>(fn: (...args: any[]) => TReturn): SlowAsyncFunctionVariadic<TReturn>;
-    type SlowAsyncFunctionNullary<TReturn> = () => Promise<TReturn>;
-    type SlowAsyncFunctionUnary<T1, TReturn> = (_1: T1) => Promise<TReturn>;
-    type SlowAsyncFunctionBinary<T1, T2, TReturn> = (_1: T1, _2: T2) => Promise<TReturn>;
-    type SlowAsyncFunctionTernary<T1, T2, T3, TReturn> = (_1: T1, _2: T2, _3: T3) => Promise<TReturn>;
-    type SlowAsyncFunctionQuaternary<T1, T2, T3, T4, TReturn> = (_1: T1, _2: T2, _3: T3, _4: T4) => Promise<TReturn>;
-    type SlowAsyncFunctionVariadic<TReturn> = (...args: any[]) => Promise<any>;
+    type SlowAsyncFunctionNullary<TReturn> = () => SlowPromise<TReturn>;
+    type SlowAsyncFunctionUnary<T1, TReturn> = (_1: T1) => SlowPromise<TReturn>;
+    type SlowAsyncFunctionBinary<T1, T2, TReturn> = (_1: T1, _2: T2) => SlowPromise<TReturn>;
+    type SlowAsyncFunctionTernary<T1, T2, T3, TReturn> = (_1: T1, _2: T2, _3: T3) => SlowPromise<TReturn>;
+    type SlowAsyncFunctionQuaternary<T1, T2, T3, T4, TReturn> = (_1: T1, _2: T2, _3: T3, _4: T4) => SlowPromise<TReturn>;
+    type SlowAsyncFunctionVariadic<TReturn> = (...args: any[]) => SlowPromise<any>;
 
 
 

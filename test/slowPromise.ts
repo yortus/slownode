@@ -17,6 +17,7 @@
 //    it('works 2', (done) => {
 
 //        // TODO: hacky hacky... satisfy dehydrator (but NOT rehydrator!)
+//        // TODO: Better to use some option where dehydration rules are relaxed (so closures allowed in then() calls)
 //        global['done'] = err => {
 //            delete global['done'];
 //            done(err);

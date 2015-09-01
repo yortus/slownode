@@ -1,4 +1,3 @@
-var async = require('asyncawait/async');
 var await = require('asyncawait/await');
 var slow = require('slownode');
 var chai = require("chai");
@@ -13,7 +12,13 @@ process.on('SIGINT', function () {
 describe('The async(...) function', function () {
     // Set timeout to 10mins for interactive debugging of tests.
     this.timeout(600000);
-    it('works', async.cps(function () {
+    it('works', function (done) {
+        // TODO: hacky hacky... satisfy dehydrator (but NOT rehydrator!)
+        // TODO: Better to use some option where dehydration rules are relaxed (so closures allowed in then() calls)
+        global['done'] = function (err) {
+            delete global['done'];
+            done(err);
+        };
         var fn = slow.async(function (delay, count) {
             var SlowPromise = __const(require('slownode').SlowPromise);
             for (var i = 0; i < count; ++i) {
@@ -22,13 +27,15 @@ describe('The async(...) function', function () {
             }
             return 'done';
         });
-        try {
-            var result = await(fn(500, 10));
+        fn(500, 10)
+            .then(function (result) {
             console.log(result);
-        }
-        catch (ex) {
-            console.log('ERROR: ' + ex.message);
-        }
-    }));
+            done(); // TODO: isRelocatableFunction sees this as global.done due to above hack and says its ok
+        })
+            .catch(function (error) {
+            console.log('ERROR: ' + error.message);
+            done(error); // TODO: isRelocatableFunction sees this as global.done due to above hack and says its ok
+        });
+    });
 });
 //# sourceMappingURL=slowAsyncFunction.js.map

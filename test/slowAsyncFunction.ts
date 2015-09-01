@@ -22,7 +22,14 @@ describe('The async(...) function', function () {
     this.timeout(600000);
 
 
-    it('works', async.cps(() => {
+    it('works', (done) => {
+
+        // TODO: hacky hacky... satisfy dehydrator (but NOT rehydrator!)
+        // TODO: Better to use some option where dehydration rules are relaxed (so closures allowed in then() calls)
+        global['done'] = err => {
+            delete global['done'];
+            done(err);
+        };
 
         var fn = slow.async((delay: number, count: number) => {
             const SlowPromise: typeof slow.Promise = __const(require('slownode').SlowPromise);
@@ -34,12 +41,15 @@ describe('The async(...) function', function () {
             return 'done';
         });
 
-        try {
-            var result = await(fn(500, 10));
+
+        fn(500, 10)
+        .then(result => {
             console.log(result);
-        }
-        catch (ex) {
-            console.log('ERROR: ' + ex.message);
-        }
-    }));
+            done(); // TODO: isRelocatableFunction sees this as global.done due to above hack and says its ok
+        })
+        .catch(error => {
+            console.log('ERROR: ' + error.message);
+            done(error); // TODO: isRelocatableFunction sees this as global.done due to above hack and says its ok
+        });
+    });
 });
