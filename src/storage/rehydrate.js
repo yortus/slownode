@@ -1,5 +1,4 @@
 var _ = require('lodash');
-var typeRegistry = require('./typeRegistry');
 // TODO: doc... this is unwrapJSONSafeObject by another name...
 /**
  * TODO: Recursively converts the given json-safe object back to a normal value.
@@ -12,11 +11,6 @@ function rehydrate(jsonSafeObject, getSlowObjectDef) {
     }
     else if (jsonSafeObject && jsonSafeObject.$ref) {
         return getSlowObjectDef(jsonSafeObject.$ref);
-    }
-    else if (jsonSafeObject && jsonSafeObject.$type === 'SlowDef') {
-        var slow = _.mapValues(jsonSafeObject.value, function (propValue) { return rehydrate(propValue, getSlowObjectDef); });
-        var rehydrateSlowObject = typeRegistry.fetch(slow.type).rehydrate;
-        return rehydrateSlowObject(slow);
     }
     else if (_.isArray(jsonSafeObject)) {
         return jsonSafeObject.map(function (element) { return rehydrate(element, getSlowObjectDef); });

@@ -2,6 +2,7 @@
 import fs = require('fs');
 import path = require('path');
 import crypto = require('crypto');
+import _ = require('lodash');
 import types = require('types');
 import storageLocation = require('./storageLocation');
 import dehydrate = require('./dehydrate');
@@ -130,7 +131,23 @@ function dehydrateDef(value: any) {
 }
 
 
-
+function rehydrateDef(jsonSafeValue: any) {
+    var slow: { type; id; } = <any> {};
+    _.keys(jsonSafeValue).forEach(propName => {
+        var propValue = jsonSafeValue[propName];
+        if (propValue && propValue.$ref) {
+            Object.defineProperty(slow, propName, {
+                get: () => cache[propValue.$ref]
+            });
+        }
+        else {
+            slow[propName] = rehydrate(propValue, id => cache[id]);
+        }
+    });
+    var rehydrateSlowObject = typeRegistry.fetch(slow.type).rehydrate;
+    var result = rehydrateSlowObject(slow);
+    return result;
+}
 
 
 
@@ -161,7 +178,25 @@ function replayLog() {
         }
         else {
             // TODO: important - relies on defs before refs!
-            cache[key] = rehydrate(cache[key], id => cache[id]);
+            var slowObj: types.SlowObject = rehydrateDef(cache[key]);
+            cache[key] = slowObj;
         }
     });
 }
+
+
+
+
+
+//// TODO: temp testing... BIG hack to habdle circular refs. But this will slow things down a lot (due to Object.setPrototypeOf). Find a better way..
+//function cloneInPlace(target, source) {
+
+//    assert(_.isObject(target));
+//    assert(_.isObject(source));
+
+//    var tkeys = Object.getOwnPropertyNames(target);
+//    var skeys = Object.getOwnPropertyNames(source);
+//    tkeys.forEach(propName => delete target[propName]);
+//    Object['setPrototypeOf'](target, Object.getPrototypeOf(source));
+//    skeys.forEach(propName => target[propName] = source[propName]);
+//}

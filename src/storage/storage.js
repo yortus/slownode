@@ -1,4 +1,5 @@
 var fs = require('fs');
+var _ = require('lodash');
 var storageLocation = require('./storageLocation');
 var dehydrate = require('./dehydrate');
 var rehydrate = require('./rehydrate');
@@ -93,6 +94,23 @@ function dehydrateDef(value) {
     }
     return jsonSafeValue;
 }
+function rehydrateDef(jsonSafeValue) {
+    var slow = {};
+    _.keys(jsonSafeValue).forEach(function (propName) {
+        var propValue = jsonSafeValue[propName];
+        if (propValue && propValue.$ref) {
+            Object.defineProperty(slow, propName, {
+                get: function () { return cache[propValue.$ref]; }
+            });
+        }
+        else {
+            slow[propName] = rehydrate(propValue, function (id) { return cache[id]; });
+        }
+    });
+    var rehydrateSlowObject = typeRegistry.fetch(slow.type).rehydrate;
+    var result = rehydrateSlowObject(slow);
+    return result;
+}
 // TODO: must support circular refs between SlowObjects when rehydrating them!
 function replayLog() {
     var json = '[' + fs.readFileSync(storageLocation, 'utf8') + ']';
@@ -112,8 +130,19 @@ function replayLog() {
         }
         else {
             // TODO: important - relies on defs before refs!
-            cache[key] = rehydrate(cache[key], function (id) { return cache[id]; });
+            var slowObj = rehydrateDef(cache[key]);
+            cache[key] = slowObj;
         }
     });
 }
+//// TODO: temp testing... BIG hack to habdle circular refs. But this will slow things down a lot (due to Object.setPrototypeOf). Find a better way..
+//function cloneInPlace(target, source) {
+//    assert(_.isObject(target));
+//    assert(_.isObject(source));
+//    var tkeys = Object.getOwnPropertyNames(target);
+//    var skeys = Object.getOwnPropertyNames(source);
+//    tkeys.forEach(propName => delete target[propName]);
+//    Object['setPrototypeOf'](target, Object.getPrototypeOf(source));
+//    skeys.forEach(propName => target[propName] = source[propName]);
+//}
 //# sourceMappingURL=storage.js.map

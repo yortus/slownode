@@ -24,13 +24,6 @@ function rehydrate(jsonSafeObject: any, getSlowObjectDef: (id: string) => types.
         return getSlowObjectDef(jsonSafeObject.$ref);
     }
 
-    // TODO: map a slow object definition...
-    else if (jsonSafeObject && jsonSafeObject.$type === 'SlowDef') {
-        var slow: { type; id; } = _.mapValues(jsonSafeObject.value, propValue => rehydrate(propValue, getSlowObjectDef));
-        var rehydrateSlowObject = typeRegistry.fetch(slow.type).rehydrate;
-        return rehydrateSlowObject(slow);
-    }
-
     // Map an array of JSON-safe values to an array of rehydrated values.
     else if (_.isArray(jsonSafeObject)) {
         return jsonSafeObject.map(element => rehydrate(element, getSlowObjectDef));
