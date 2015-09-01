@@ -12,7 +12,7 @@ var SlowPromise = (function () {
     function SlowPromise(resolver) {
         // -------------- Private implementation details from here down --------------
         this._slow = {
-            type: 'SlowPromise',
+            type: 10 /* SlowPromise */,
             isFateResolved: false,
             state: 0 /* Pending */,
             settledValue: void 0,
@@ -24,7 +24,7 @@ var SlowPromise = (function () {
         if (resolver === INTERNAL)
             return;
         // Persist to storage.
-        storage.upsert(this);
+        storage.track(this);
         // Construct resolve and reject functions, and call the resolver with them.
         var resolve = resolveFunction.create(this);
         var reject = rejectFunction.create(this);
@@ -52,7 +52,7 @@ var SlowPromise = (function () {
         // Get a new promise instance using the internal constructor.
         var promise = new SlowPromise(INTERNAL);
         // Persist the new promise to storage.
-        storage.upsert(promise);
+        storage.track(promise);
         //// TODO: temp testing... monitor when this instance gets GC'd.
         //notifyGC(promise);
         // Create the resolve and reject functions.
@@ -82,7 +82,7 @@ var SlowPromise = (function () {
         var _this = this;
         var deferred2 = SlowPromise.deferred();
         this._slow.handlers.push({ onFulfilled: onFulfilled, onRejected: onRejected, deferred2: deferred2 });
-        storage.upsert(this);
+        storage.track(this);
         if (this._slow.state !== 0 /* Pending */)
             setTimeout(function () { return processAllHandlers(_this); }, 0);
         return deferred2.promise;
@@ -100,7 +100,7 @@ var SlowPromise = (function () {
         if (this._slow.state !== 0 /* Pending */)
             return;
         _a = [1 /* Fulfilled */, value], this._slow.state = _a[0], this._slow.settledValue = _a[1];
-        storage.upsert(this);
+        storage.track(this);
         setTimeout(function () { return processAllHandlers(_this); }, 0);
         var _a;
     };
@@ -109,7 +109,7 @@ var SlowPromise = (function () {
         if (this._slow.state !== 0 /* Pending */)
             return;
         _a = [2 /* Rejected */, reason], this._slow.state = _a[0], this._slow.settledValue = _a[1];
-        storage.upsert(this);
+        storage.track(this);
         setTimeout(function () { return processAllHandlers(_this); }, 0);
         var _a;
     };
@@ -124,7 +124,7 @@ function processAllHandlers(p) {
     // Dequeue each onResolved/onRejected handler in order.
     while (p._slow.handlers.length > 0) {
         var handler = p._slow.handlers.shift();
-        storage.upsert(p);
+        storage.track(p);
         // Fulfilled case.
         if (p._slow.state === 1 /* Fulfilled */) {
             if (_.isFunction(handler.onFulfilled)) {
@@ -158,7 +158,7 @@ function processAllHandlers(p) {
 }
 // TODO: register slow object type with storage (for rehydration logic)
 storage.registerType({
-    type: 'SlowPromise',
+    type: 10 /* SlowPromise */,
     rehydrate: function (obj) {
         var promise = new SlowPromise(INTERNAL);
         promise._slow = obj;

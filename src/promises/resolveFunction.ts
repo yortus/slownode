@@ -1,6 +1,7 @@
 import assert = require('assert');
 import _ = require('lodash');
 import types = require('types');
+import SlowType = types.SlowObject.Type;
 import standardResolutionProcedure = require('./standardResolutionProcedure');
 import storage = require('../storage/storage');
 
@@ -19,15 +20,15 @@ export function create(promise: types.SlowPromise, persist = true) {
 
         // Indicate the promise's fate is now resolved, and persist this change to the promise's state
         promise._slow.isFateResolved = true;
-        storage.upsert(promise);
+        storage.track(promise);
 
         // Finally, resolve the promise using the standard resolution procedure.
         standardResolutionProcedure(promise, value);
     });
 
     // Add slow metadata to the resolve function, and persist it.
-    resolve._slow = { type: 'SlowPromiseResolveFunction', promise };
-    if (persist) storage.upsert(resolve);
+    resolve._slow = { type: SlowType.SlowPromiseResolveFunction, promise };
+    if (persist) storage.track(resolve);
 
     // Return the resolve function.
     return resolve;
@@ -36,7 +37,7 @@ export function create(promise: types.SlowPromise, persist = true) {
 
 // TODO: register slow object type with storage (for rehydration logic)
 storage.registerType({
-    type: 'SlowPromiseResolveFunction',
+    type: SlowType.SlowPromiseResolveFunction,
     rehydrate: obj => {
         return create(obj.promise, false);
     }

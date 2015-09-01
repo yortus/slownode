@@ -23,7 +23,7 @@ var asyncPseudoKeyword = (function (bodyFunc) {
     var originalSource = bodyFunc.toString();
     var asyncFunction = makeSlowAsyncFunction(steppableFunc, stateMachineSource, originalSource);
     // Ensure the SlowAsyncFunction definition has been persisted to storage.
-    storage.upsert(asyncFunction);
+    storage.track(asyncFunction);
     // Return the SlowAsyncFunction instance.
     return asyncFunction;
 });
@@ -66,7 +66,7 @@ function makeSlowAsyncFunction(steppableFunc, stateMachineSource, originalSource
         var safa = steppableFunc.apply(steppableFunc, args);
         // Add slow state to the SlowAsyncFunctionActivation instance.
         safa._slow = {
-            type: 'SlowAsyncFunctionActivation',
+            type: 30 /* SlowAsyncFunctionActivation */,
             asyncFunction: asyncFunction,
             state: safa.state,
             awaiting: null,
@@ -77,14 +77,14 @@ function makeSlowAsyncFunction(steppableFunc, stateMachineSource, originalSource
         };
         // TODO: review below - got more complicated to ensure all ids are persisted and x-ref'd...
         // Persist the SlowAsyncFunctionActivation's initial state to the database.
-        storage.upsert(safa);
+        storage.track(safa);
         var onAwaitedResult = makeContinuationResultHandler(safa);
         var onAwaitedError = makeContinuationErrorHandler(safa);
-        storage.upsert(onAwaitedResult);
-        storage.upsert(onAwaitedError);
+        storage.track(onAwaitedResult);
+        storage.track(onAwaitedError);
         safa._slow.onAwaitedResult = onAwaitedResult;
         safa._slow.onAwaitedError = onAwaitedError;
-        storage.upsert(safa);
+        storage.track(safa);
         // Run the SlowAsyncFunctionActivation instance to completion, and return the promise of completion.
         runToCompletion(safa);
         return deferred.promise;
@@ -93,7 +93,7 @@ function makeSlowAsyncFunction(steppableFunc, stateMachineSource, originalSource
     asyncFunction.stateMachine = steppableFunc.stateMachine;
     // Add slow state to the SlowAsyncFunction instance.
     asyncFunction._slow = {
-        type: 'SlowAsyncFunction',
+        type: 20 /* SlowAsyncFunction */,
         id: asyncFunctionId,
         stateMachineSource: stateMachineSource,
         originalSource: originalSource
@@ -104,17 +104,17 @@ function makeSlowAsyncFunction(steppableFunc, stateMachineSource, originalSource
 // TODO: doc...
 function makeContinuationResultHandler(safa) {
     var result = function (value) { return runToCompletion(safa, null, value); };
-    result._slow = { type: 'SlowAsyncFunctionContinuationWithResult', safa: safa };
+    result._slow = { type: 31 /* SlowAsyncFunctionContinuationWithResult */, safa: safa };
     return result;
 }
 function makeContinuationErrorHandler(safa) {
     var result = function (error) { return runToCompletion(safa, error); };
-    result._slow = { type: 'SlowAsyncFunctionContinuationWithError', safa: safa };
+    result._slow = { type: 32 /* SlowAsyncFunctionContinuationWithError */, safa: safa };
     return result;
 }
 // TODO: register slow object type with storage (for rehydration logic)
 storage.registerType({
-    type: 'SlowAsyncFunction',
+    type: 20 /* SlowAsyncFunction */,
     rehydrate: function (obj) {
         // TODO: clean up
         return tween(obj.stateMachineSource, obj.originalSource);
@@ -122,7 +122,7 @@ storage.registerType({
 });
 // TODO: register slow object type with storage (for rehydration logic)
 storage.registerType({
-    type: 'SlowAsyncFunctionActivation',
+    type: 30 /* SlowAsyncFunctionActivation */,
     rehydrate: function (obj) {
         var safa = new Steppable(obj.asyncFunction.stateMachine);
         safa.state = obj.state;
@@ -138,12 +138,12 @@ storage.registerType({
 });
 // TODO: register slow object type with storage (for rehydration logic)
 storage.registerType({
-    type: 'SlowAsyncFunctionContinuationWithResult',
+    type: 31 /* SlowAsyncFunctionContinuationWithResult */,
     rehydrate: function (obj) { return makeContinuationResultHandler(obj.safa); }
 });
 // TODO: register slow object type with storage (for rehydration logic)
 storage.registerType({
-    type: 'SlowAsyncFunctionContinuationWithError',
+    type: 32 /* SlowAsyncFunctionContinuationWithError */,
     rehydrate: function (obj) { return makeContinuationErrorHandler(obj.safa); }
 });
 module.exports = asyncPseudoKeyword;

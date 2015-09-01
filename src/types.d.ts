@@ -15,7 +15,7 @@
     interface SlowAsyncFunction {
         stateMachine: Steppable.StateMachine;
         _slow: {
-            type: string;
+            type: SlowObject.Type;
             id?: string|number;
             stateMachineSource: string;
             originalSource: string; // TODO: not needed in operation, but preserve for future debugging/sourcemap needs?
@@ -26,7 +26,7 @@
 
         interface Activation extends Steppable {
             _slow: {
-                type: string;
+                type: SlowObject.Type;
                 id?: string|number;
                 asyncFunction: SlowAsyncFunction;
                 state: Steppable.StateMachine.State;
@@ -45,7 +45,7 @@
 
     interface SlowPromise extends slow.SlowPromise<any> {
         _slow: {
-            type: string;
+            type: SlowObject.Type;
             id?: string|number;
             isFateResolved: boolean;
             state: SlowPromise.State;
@@ -66,7 +66,7 @@
 
         interface ResolveFunction extends slow.SlowPromise.ResolveFunction<any> {
             _slow: {
-                type: string;
+                type: SlowObject.Type;
                 id?: string|number;
                 promise: SlowPromise;
             };
@@ -74,7 +74,7 @@
 
         interface RejectFunction extends slow.SlowPromise.RejectFunction {
             _slow: {
-                type: string;
+                type: SlowObject.Type;
                 id?: string|number;
                 promise: SlowPromise;
             };
@@ -147,7 +147,7 @@
     // TODO: ...
     interface SlowObject {
         _slow: {
-            type: string;
+            type: SlowObject.Type;
             id?: string|number;
             [other: string]: any;
         }
@@ -156,8 +156,18 @@
 
     namespace SlowObject {
 
+        const enum Type {
+            SlowPromise = 10,
+            SlowPromiseResolveFunction = 11,
+            SlowPromiseRejectFunction = 12,
+            SlowAsyncFunction = 20,
+            SlowAsyncFunctionActivation = 30,
+            SlowAsyncFunctionContinuationWithResult = 31,
+            SlowAsyncFunctionContinuationWithError = 32
+        }
+
         interface Registration {
-            type: string;
+            type: SlowObject.Type;
             dehydrate?(obj: SlowObject): any;
             rehydrate(jsonSafeObject: any): SlowObject;
         }

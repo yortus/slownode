@@ -1,6 +1,7 @@
 import assert = require('assert');
 import _ = require('lodash');
 import types = require('types');
+import SlowType = types.SlowObject.Type;
 import storage = require('../storage/storage');
 
 
@@ -18,15 +19,15 @@ export function create(promise: types.SlowPromise, persist = true) {
 
         // Indicate the promise's fate is now resolved, and persist this change to the promise's state
         promise._slow.isFateResolved = true;
-        storage.upsert(promise);
+        storage.track(promise);
 
         // Finally, reject the promise using its own private _reject method.
         promise._reject(reason);
     });
 
     // Add slow metadata to the reject function, and persist it.
-    reject._slow = { type: 'SlowPromiseRejectFunction', promise };
-    if (persist) storage.upsert(reject);
+    reject._slow = { type: SlowType.SlowPromiseRejectFunction, promise };
+    if (persist) storage.track(reject);
 
     // Return the reject function.
     return reject;
@@ -35,7 +36,7 @@ export function create(promise: types.SlowPromise, persist = true) {
 
 // TODO: register slow object type with storage (for rehydration logic)
 storage.registerType({
-    type: 'SlowPromiseRejectFunction',
+    type: SlowType.SlowPromiseRejectFunction,
     rehydrate: obj => {
         return create(obj.promise, false);
     }

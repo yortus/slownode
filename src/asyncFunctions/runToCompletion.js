@@ -21,17 +21,17 @@ function runToCompletion(safa, error, next) {
     }
     // The Steppable threw. Finalize and reject the SlowAsyncFunctionActivation.
     catch (ex) {
-        storage.remove(safa._slow.onAwaitedResult);
-        storage.remove(safa._slow.onAwaitedError);
-        storage.remove(safa);
+        storage.clear(safa._slow.onAwaitedResult);
+        storage.clear(safa._slow.onAwaitedError);
+        storage.clear(safa);
         safa._slow.reject(ex);
         return;
     }
     // The Steppable returned. Finalize and resolve the SlowAsyncFunctionActivation.
     if (yielded.done) {
-        storage.remove(safa._slow.onAwaitedResult);
-        storage.remove(safa._slow.onAwaitedError);
-        storage.remove(safa);
+        storage.clear(safa._slow.onAwaitedResult);
+        storage.clear(safa._slow.onAwaitedError);
+        storage.clear(safa);
         safa._slow.resolve(yielded.value);
         return;
     }
@@ -40,7 +40,7 @@ function runToCompletion(safa, error, next) {
     var awaiting = safa._slow.awaiting = yielded.value;
     assert(awaiting && typeof awaiting.then === 'function', 'await: expected argument to be a Promise');
     // Persist activation state before suspending on the awaitable.
-    storage.upsert(safa);
+    storage.track(safa);
     // Suspend on the awaitable, then call self recursively with the eventual result or error.
     awaiting.then(safa._slow.onAwaitedResult, safa._slow.onAwaitedError);
 }

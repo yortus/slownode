@@ -2,6 +2,7 @@ import assert = require('assert');
 import _ = require('lodash');
 import types = require('types');
 import State = types.SlowPromise.State;
+import SlowType = types.SlowObject.Type;
 import resolveFunction = require('./resolveFunction');
 import rejectFunction = require('./rejectFunction');
 import standardResolutionProcedure = require('./standardResolutionProcedure');
@@ -26,7 +27,7 @@ class SlowPromise implements types.SlowPromise {
         if (resolver === INTERNAL) return;
 
         // Persist to storage.
-        storage.upsert(this);
+        storage.track(this);
 
         // Construct resolve and reject functions, and call the resolver with them.
         var resolve = resolveFunction.create(this);
@@ -55,7 +56,7 @@ class SlowPromise implements types.SlowPromise {
         var promise = new SlowPromise(INTERNAL);
 
         // Persist the new promise to storage.
-        storage.upsert(promise);
+        storage.track(promise);
 
         //// TODO: temp testing... monitor when this instance gets GC'd.
         //notifyGC(promise);
@@ -92,7 +93,7 @@ class SlowPromise implements types.SlowPromise {
     then(onFulfilled?: (value) => any, onRejected?: (error) => any) {
         var deferred2 = SlowPromise.deferred();
         this._slow.handlers.push({ onFulfilled, onRejected, deferred2 });
-        storage.upsert(this);
+        storage.track(this);
         if (this._slow.state !== State.Pending) setTimeout(() => processAllHandlers(this), 0);
         return deferred2.promise;
     }
@@ -108,7 +109,7 @@ class SlowPromise implements types.SlowPromise {
 
     // -------------- Private implementation details from here down --------------
     _slow = {
-        type: 'SlowPromise',
+        type: SlowType.SlowPromise,
         isFateResolved: false,
         state: State.Pending,
         settledValue: void 0,
@@ -122,14 +123,14 @@ class SlowPromise implements types.SlowPromise {
     _fulfil(value: any) {
         if (this._slow.state !== State.Pending) return;
         [this._slow.state, this._slow.settledValue] = [State.Fulfilled, value];
-        storage.upsert(this);
+        storage.track(this);
         setTimeout(() => processAllHandlers(this), 0);
     }
 
     _reject(reason: any) {
         if (this._slow.state !== State.Pending) return;
         [this._slow.state, this._slow.settledValue] = [State.Rejected, reason];
-        storage.upsert(this);
+        storage.track(this);
         setTimeout(() => processAllHandlers(this), 0);
     }
 }
@@ -145,7 +146,7 @@ function processAllHandlers(p: SlowPromise) {
     // Dequeue each onResolved/onRejected handler in order.
     while (p._slow.handlers.length > 0) {
         var handler = p._slow.handlers.shift();
-        storage.upsert(p);
+        storage.track(p);
 
         // Fulfilled case.
         if (p._slow.state === State.Fulfilled) {
@@ -184,7 +185,7 @@ function processAllHandlers(p: SlowPromise) {
 
 // TODO: register slow object type with storage (for rehydration logic)
 storage.registerType({
-    type: 'SlowPromise',
+    type: SlowType.SlowPromise,
     rehydrate: obj => {
         var promise = new SlowPromise(INTERNAL);
         promise._slow = obj;

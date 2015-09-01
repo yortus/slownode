@@ -10,14 +10,14 @@ export function store(registration: types.SlowObject.Registration) {
 
 
 // TODO: ...
-export function fetch(type: string): types.SlowObject.Registration {
+export function fetch(type: types.SlowObject.Type): types.SlowObject.Registration {
     assert(registry[type], `type not registered: '${type}'`);
     return registry[type];
 }
 
 
 // TODO: ...
-var registry: { [slowObjectType: string]: types.SlowObject.Registration; } = {};
+var registry: { [slowObjectType: number]: types.SlowObject.Registration; } = {};
 
 
 // TODO: temp testing... remove this...

@@ -12,21 +12,21 @@ function create(promise, persist) {
             return;
         // Indicate the promise's fate is now resolved, and persist this change to the promise's state
         promise._slow.isFateResolved = true;
-        storage.upsert(promise);
+        storage.track(promise);
         // Finally, reject the promise using its own private _reject method.
         promise._reject(reason);
     });
     // Add slow metadata to the reject function, and persist it.
-    reject._slow = { type: 'SlowPromiseRejectFunction', promise: promise };
+    reject._slow = { type: 12 /* SlowPromiseRejectFunction */, promise: promise };
     if (persist)
-        storage.upsert(reject);
+        storage.track(reject);
     // Return the reject function.
     return reject;
 }
 exports.create = create;
 // TODO: register slow object type with storage (for rehydration logic)
 storage.registerType({
-    type: 'SlowPromiseRejectFunction',
+    type: 12 /* SlowPromiseRejectFunction */,
     rehydrate: function (obj) {
         return create(obj.promise, false);
     }

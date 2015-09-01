@@ -1,7 +1,6 @@
 var fs = require('fs');
 var storageLocation = require('./storageLocation');
 var dehydrate = require('./dehydrate');
-var rehydrate = require('./rehydrate');
 var typeRegistry = require('./typeRegistry');
 // TODO: doc... single process/thread exclusive by design...
 // TODO: errors are not caught... What to do?
@@ -52,7 +51,8 @@ var init = function () {
     fs.writeSync(logFileDescriptor, "\"BEGIN\"", null, 'utf8');
     fs.fsyncSync(logFileDescriptor);
 };
-function upsert(slowObj) {
+// TODO: doc...
+function track(slowObj) {
     init();
     var slow = slowObj._slow;
     slow.id = slow.id || "#" + ++idCounter;
@@ -69,8 +69,9 @@ function upsert(slowObj) {
         throw ex;
     }
 }
-exports.upsert = upsert;
-function remove(slowObj) {
+exports.track = track;
+// TODO: doc...
+function clear(slowObj) {
     init();
     var slow = slowObj._slow;
     var key = makeKey(slow);
@@ -79,32 +80,31 @@ function remove(slowObj) {
     fs.writeSync(logFileDescriptor, ",\n\n\n\"" + key + "\", null", null, 'utf8');
     fs.fsyncSync(logFileDescriptor);
 }
-exports.remove = remove;
+exports.clear = clear;
 // TODO: must support circular refs between SlowObjects when rehydrating them!
 function replayLog() {
-    var json = '[' + fs.readFileSync(storageLocation, 'utf8') + ']';
-    var logEntries = JSON.parse(json);
-    var pos = 1;
-    var keyOrder = [];
-    while (pos < logEntries.length) {
-        var key = logEntries[pos++];
-        var jsonSafeValue = logEntries[pos++];
-        if (!(key in cache))
-            keyOrder.push(key);
-        cache[key] = jsonSafeValue;
-    }
-    keyOrder.forEach(function (key) {
-        if (cache[key] === null) {
-            delete cache[key];
-        }
-        else {
-            // TODO: important - relies on defs before refs!
-            cache[key] = rehydrate(cache[key], function (slow) { return cache[makeKey(slow)]; });
-        }
-    });
+    //var json = '[' + fs.readFileSync(storageLocation, 'utf8') + ']';
+    //var logEntries: any[] = JSON.parse(json);
+    //var pos = 1;
+    //var keyOrder = [];
+    //while (pos < logEntries.length) {
+    //    var key: string = logEntries[pos++];
+    //    var jsonSafeValue: any = logEntries[pos++];
+    //    if (!(key in cache)) keyOrder.push(key);
+    //    cache[key] = jsonSafeValue;
+    //}
+    //keyOrder.forEach(key => {
+    //    if (cache[key] === null) {
+    //        delete cache[key];
+    //    }
+    //    else {
+    //        // TODO: important - relies on defs before refs!
+    //        cache[key] = rehydrate(cache[key], slow => cache[makeKey(slow)]);
+    //    }
+    //});
 }
 // TODO: doc...
 function makeKey(slow) {
-    return slow.id + "-" + slow.type;
+    return "" + slow.id;
 }
 //# sourceMappingURL=storage.js.map

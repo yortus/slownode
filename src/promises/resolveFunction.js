@@ -13,21 +13,21 @@ function create(promise, persist) {
             return;
         // Indicate the promise's fate is now resolved, and persist this change to the promise's state
         promise._slow.isFateResolved = true;
-        storage.upsert(promise);
+        storage.track(promise);
         // Finally, resolve the promise using the standard resolution procedure.
         standardResolutionProcedure(promise, value);
     });
     // Add slow metadata to the resolve function, and persist it.
-    resolve._slow = { type: 'SlowPromiseResolveFunction', promise: promise };
+    resolve._slow = { type: 11 /* SlowPromiseResolveFunction */, promise: promise };
     if (persist)
-        storage.upsert(resolve);
+        storage.track(resolve);
     // Return the resolve function.
     return resolve;
 }
 exports.create = create;
 // TODO: register slow object type with storage (for rehydration logic)
 storage.registerType({
-    type: 'SlowPromiseResolveFunction',
+    type: 11 /* SlowPromiseResolveFunction */,
     rehydrate: function (obj) {
         return create(obj.promise, false);
     }

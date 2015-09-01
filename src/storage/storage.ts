@@ -76,7 +76,8 @@ var init = () => {
 };
 
 
-export function upsert(slowObj: types.SlowObject) {
+// TODO: doc...
+export function track(slowObj: types.SlowObject) {
     init();
 
     var slow = slowObj._slow;
@@ -97,7 +98,8 @@ export function upsert(slowObj: types.SlowObject) {
 }
 
 
-export function remove(slowObj: types.SlowObject) {
+// TODO: doc...
+export function clear(slowObj: types.SlowObject) {
     init();
 
     var slow = slowObj._slow;
@@ -116,34 +118,34 @@ export function remove(slowObj: types.SlowObject) {
 // TODO: must support circular refs between SlowObjects when rehydrating them!
 function replayLog() {
 
-    var json = '[' + fs.readFileSync(storageLocation, 'utf8') + ']';
-    var logEntries: any[] = JSON.parse(json);
-    var pos = 1;
-    var keyOrder = [];
+    //var json = '[' + fs.readFileSync(storageLocation, 'utf8') + ']';
+    //var logEntries: any[] = JSON.parse(json);
+    //var pos = 1;
+    //var keyOrder = [];
 
 
 
-    while (pos < logEntries.length) {
-        var key: string = logEntries[pos++];
-        var jsonSafeValue: any = logEntries[pos++];
+    //while (pos < logEntries.length) {
+    //    var key: string = logEntries[pos++];
+    //    var jsonSafeValue: any = logEntries[pos++];
 
-        if (!(key in cache)) keyOrder.push(key);
-        cache[key] = jsonSafeValue;
-    }
+    //    if (!(key in cache)) keyOrder.push(key);
+    //    cache[key] = jsonSafeValue;
+    //}
 
-    keyOrder.forEach(key => {
-        if (cache[key] === null) {
-            delete cache[key];
-        }
-        else {
-            // TODO: important - relies on defs before refs!
-            cache[key] = rehydrate(cache[key], slow => cache[makeKey(slow)]);
-        }
-    });
+    //keyOrder.forEach(key => {
+    //    if (cache[key] === null) {
+    //        delete cache[key];
+    //    }
+    //    else {
+    //        // TODO: important - relies on defs before refs!
+    //        cache[key] = rehydrate(cache[key], slow => cache[makeKey(slow)]);
+    //    }
+    //});
 }
 
 
 // TODO: doc...
-function makeKey(slow: { type: string; id?: string|number; }) {
-    return `${slow.id}-${slow.type}`;
+function makeKey(slow: { type: types.SlowObject.Type; id?: string|number; }) {
+    return `${slow.id}`;
 }
