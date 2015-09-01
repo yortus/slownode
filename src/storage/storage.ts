@@ -113,15 +113,13 @@ export function remove(slowObj: types.SlowObject) {
 
 
 
+// TODO: must support circular refs between SlowObjects when rehydrating them!
 function replayLog() {
 
     var json = '[' + fs.readFileSync(storageLocation, 'utf8') + ']';
     var logEntries: any[] = JSON.parse(json);
     var pos = 1;
     var keyOrder = [];
-
-
-    // TODO: only rehydrate the LAST upsert/delete encountered for each key
 
 
 
