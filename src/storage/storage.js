@@ -95,6 +95,7 @@ function dehydrateDef(value) {
     return jsonSafeValue;
 }
 function rehydrateDef(jsonSafeValue) {
+    var newValue = _.cloneDeep(jsonSafeValue, function (value) { });
     var slow = {};
     _.keys(jsonSafeValue).forEach(function (propName) {
         var propValue = jsonSafeValue[propName];
@@ -135,14 +136,15 @@ function replayLog() {
         }
     });
 }
-//// TODO: temp testing... BIG hack to habdle circular refs. But this will slow things down a lot (due to Object.setPrototypeOf). Find a better way..
-//function cloneInPlace(target, source) {
-//    assert(_.isObject(target));
-//    assert(_.isObject(source));
-//    var tkeys = Object.getOwnPropertyNames(target);
-//    var skeys = Object.getOwnPropertyNames(source);
-//    tkeys.forEach(propName => delete target[propName]);
-//    Object['setPrototypeOf'](target, Object.getPrototypeOf(source));
-//    skeys.forEach(propName => target[propName] = source[propName]);
-//}
+// TODO: temp testing...
+function traverseJsonSafeObject(value, action) {
+    if (_.isPlainObject(value)) {
+        finish;
+        this;
+    }
+    else if (_.isArray(value)) {
+    }
+    else {
+    }
+}
 //# sourceMappingURL=storage.js.map

@@ -181,8 +181,8 @@ storage.registerType({
         safa._slow.onAwaitedError = makeContinuationErrorHandler(safa);
 
         // TODO: and continue running it...
-        assert(safa._slow.awaiting); // should only ever be rehydrating from an awaiting state
-        safa._slow.awaiting.then(safa._slow.onAwaitedResult, safa._slow.onAwaitedError);
+        //assert(safa._slow.awaiting); // should only ever be rehydrating from an awaiting state
+        //safa._slow.awaiting.then(safa._slow.onAwaitedResult, safa._slow.onAwaitedError);
 
         // All done.
         return safa;
