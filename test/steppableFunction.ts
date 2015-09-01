@@ -28,7 +28,7 @@ describe('SteppableFunction', () => {
 
     var realRunner = (fn, args) => {
         var result = [];
-        var slowfunc = SteppableFunction(fn, { yieldIdentifier: '__yield', constIdentifier: '__const' });
+        var slowfunc = SteppableFunction(fn, { pseudoYield: '__yield', pseudoConst: '__const' });
         var steppable: Steppable = slowfunc.apply(null, args);
         while (true) {
             try {

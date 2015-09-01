@@ -1,12 +1,8 @@
 ﻿import assert = require('assert');
 import _ = require('lodash');
-import Promise = require('bluebird');
 import types = require('types');
 import esprima = require('esprima');
 import escodegen = require('escodegen');
-import matchNode = require('./astOperations/matchNode');
-import traverseTree = require('./astOperations/traverseTree');
-import classifyIdentifiers = require('./astOperations/funcExpr/classifyIdentifiers');
 import replacePseudoYieldCallsWithYieldExpressions = require('./astOperations/funcExpr/replacePseudoYieldCallsWithYieldExpressions');
 import replacePseudoConstCallsWithConstDeclarations = require('./astOperations/funcExpr/replacePseudoConstCallsWithConstDeclarations');
 import ensureNodesAreLegalForSteppableBody = require('./astOperations/funcExpr/ensureNodesAreLegalForSteppableBody');
@@ -17,8 +13,9 @@ import Steppable = require('./steppable');
 export = SteppableFunction;
 
 
+// TODO: memoize results (use shasum and cache)
 // TODO: another valid 'local' identifier is the function's own name
-// TODO: disallow id refs to: '__dirname', '__filename', 'module'
+// TODO: disallow id refs to: '__dirname', '__filename', 'module', 'exports'
 // TODO: require() and its argument need special handling...
 // TODO: support yield*?
 
@@ -49,7 +46,7 @@ function SteppableFunction(steppableBody: Function, options?: types.Steppable.Op
 
     // Validate arguments.
     assert(typeof steppableBody === 'function');
-    options = _.defaults({}, options, { yieldIdentifier: null, constIdentifier: null });
+    options = _.defaults({}, options, { pseudoYield: null, pseudoConst: null });
 
     // Transform original function --> source code --> AST.
     var originalFunction = steppableBody;
@@ -58,11 +55,11 @@ function SteppableFunction(steppableBody: Function, options?: types.Steppable.Op
     var exprStmt = <ESTree.ExpressionStatement> originalAST.body[0];
     var funcExpr = <ESTree.FunctionExpression> exprStmt.expression;
 
-    // Convert direct calls to options.yieldIdentifier to equivalent yield expressions.
-    if (options.yieldIdentifier) replacePseudoYieldCallsWithYieldExpressions(funcExpr, options.yieldIdentifier);
+    // Convert direct calls to options.pseudoYield to equivalent yield expressions.
+    if (options.pseudoYield) replacePseudoYieldCallsWithYieldExpressions(funcExpr, options.pseudoYield);
 
-    // Convert variable declarations whose 'init' is a direct call to options.constIdentifier to equivalent const declarations.
-    if (options.constIdentifier) replacePseudoConstCallsWithConstDeclarations(funcExpr, options.constIdentifier);
+    // Convert variable declarations whose 'init' is a direct call to options.pseudoConst to equivalent const declarations.
+    if (options.pseudoConst) replacePseudoConstCallsWithConstDeclarations(funcExpr, options.pseudoConst);
 
     // Validate the AST.
     ensureNodesAreLegalForSteppableBody(funcExpr);

@@ -1,5 +1,4 @@
-﻿import matchNode = require('../matchNode');
-import traverseTree = require('../traverseTree');
+﻿import traverseTree = require('../traverseTree');
 import classifyIdentifiers = require('./classifyIdentifiers');
 export = ensureNodesAreLegalForSteppableBody;
 

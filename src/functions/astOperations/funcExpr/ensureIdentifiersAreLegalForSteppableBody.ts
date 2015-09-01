@@ -1,6 +1,4 @@
 ﻿import _ = require('lodash');
-import matchNode = require('../matchNode');
-import traverseTree = require('../traverseTree');
 import classifyIdentifiers = require('./classifyIdentifiers');
 export = ensureIdentifiersAreLegalForSteppableBody;
 

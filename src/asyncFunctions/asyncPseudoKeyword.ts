@@ -27,7 +27,7 @@ var asyncPseudoKeyword: types.Async = <any> ((bodyFunc: Function) => {
     // Compile the details of the AsyncFunction definition based on the given bodyFunc.
     // TODO: optimise! SteppableFunction is VERY EXPENSIVE!!!
     //       - better: hash the original source instead of the steppableFunc source, and only make a new steppableFunc if the hash hasn't already been created.
-    var steppableFunc = SteppableFunction(bodyFunc, { yieldIdentifier: 'await', constIdentifier: '__const' });
+    var steppableFunc = SteppableFunction(bodyFunc, { pseudoYield: 'await', pseudoConst: '__const' });
     var stateMachineSource = steppableFunc.stateMachine.toString();
 
     var originalSource = bodyFunc.toString();

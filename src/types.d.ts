@@ -109,8 +109,8 @@
         };
 
         interface Options {
-            yieldIdentifier?: string;
-            constIdentifier?: string;
+            pseudoYield?: string;
+            pseudoConst?: string;
         }
 
         type StateMachine = (state: StateMachine.State) => void;
