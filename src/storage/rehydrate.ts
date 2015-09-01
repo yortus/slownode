@@ -1,4 +1,5 @@
-﻿import _ = require('lodash');
+﻿import assert = require('assert');
+import _ = require('lodash');
 import types = require('types');
 import typeRegistry = require('./typeRegistry');
 export = rehydrate;
@@ -18,6 +19,18 @@ function rehydrate(jsonSafeObject: any, getSlowObjectDef: (slow: { type: string;
         return jsonSafeObject;
     }
 
+    // TODO: map a slow object reference...
+    else if (jsonSafeObject && jsonSafeObject.$type === 'SlowRef') {
+        return getSlowObjectDef(jsonSafeObject.value);
+    }
+
+    // TODO: map a slow object definition...
+    else if (jsonSafeObject && jsonSafeObject.$type === 'SlowDef') {
+        var slow: { type; id; } = _.mapValues(jsonSafeObject.value, propValue => rehydrate(propValue, getSlowObjectDef));
+        var rehydrateSlowObject = typeRegistry.fetch(slow.type).rehydrate;
+        return rehydrateSlowObject(slow);
+    }
+
     // Map an array of JSON-safe values to an array of rehydrated values.
     else if (_.isArray(jsonSafeObject)) {
         return jsonSafeObject.map(element => rehydrate(element, getSlowObjectDef));
@@ -33,16 +46,14 @@ function rehydrate(jsonSafeObject: any, getSlowObjectDef: (slow: { type: string;
         return void 0;
     }
 
-    // TODO: map a slow object reference...
-    else if (jsonSafeObject && jsonSafeObject.$type === 'SlowRef') {
-        return getSlowObjectDef(jsonSafeObject.value);
+    // TODO: doc...
+    else if (jsonSafeObject && jsonSafeObject.$type === 'function') {
+        return eval('(' + jsonSafeObject.value + ')');
     }
 
-    // TODO: map a slow object definition...
-    else if (jsonSafeObject && jsonSafeObject.$type === 'SlowDef') {
-        var slow: { type; id; } = _.mapValues(jsonSafeObject.value, propValue => rehydrate(propValue, getSlowObjectDef));
-        var rehydrateSlowObject = typeRegistry.fetch(slow.type).rehydrate;
-        return rehydrateSlowObject(slow);
+    // TODO: doc...
+    else if (jsonSafeObject && jsonSafeObject.$type === 'error') {
+        return new Error(jsonSafeObject.value);
     }
 
     // If we get to here, the value is not recognised. Throw an error.

@@ -10,6 +10,14 @@ function rehydrate(jsonSafeObject, getSlowObjectDef) {
     if (_.isString(jsonSafeObject) || _.isNumber(jsonSafeObject) || _.isBoolean(jsonSafeObject) || _.isNull(jsonSafeObject)) {
         return jsonSafeObject;
     }
+    else if (jsonSafeObject && jsonSafeObject.$type === 'SlowRef') {
+        return getSlowObjectDef(jsonSafeObject.value);
+    }
+    else if (jsonSafeObject && jsonSafeObject.$type === 'SlowDef') {
+        var slow = _.mapValues(jsonSafeObject.value, function (propValue) { return rehydrate(propValue, getSlowObjectDef); });
+        var rehydrateSlowObject = typeRegistry.fetch(slow.type).rehydrate;
+        return rehydrateSlowObject(slow);
+    }
     else if (_.isArray(jsonSafeObject)) {
         return jsonSafeObject.map(function (element) { return rehydrate(element, getSlowObjectDef); });
     }
@@ -19,13 +27,11 @@ function rehydrate(jsonSafeObject, getSlowObjectDef) {
     else if (jsonSafeObject && jsonSafeObject.$type === 'undefined') {
         return void 0;
     }
-    else if (jsonSafeObject && jsonSafeObject.$type === 'SlowRef') {
-        return getSlowObjectDef(jsonSafeObject.value);
+    else if (jsonSafeObject && jsonSafeObject.$type === 'function') {
+        return eval('(' + jsonSafeObject.value + ')');
     }
-    else if (jsonSafeObject && jsonSafeObject.$type === 'SlowDef') {
-        var slow = _.mapValues(jsonSafeObject.value, function (propValue) { return rehydrate(propValue, getSlowObjectDef); });
-        var rehydrateSlowObject = typeRegistry.fetch(slow.type).rehydrate;
-        return rehydrateSlowObject(slow);
+    else if (jsonSafeObject && jsonSafeObject.$type === 'error') {
+        return new Error(jsonSafeObject.value);
     }
     // If we get to here, the value is not recognised. Throw an error.
     throw new Error("rehydration not supported for value: " + jsonSafeObject);

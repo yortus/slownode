@@ -4,6 +4,8 @@ var traverseTree = require('../traverseTree');
 // TODO: BUG (corner case): A reference to a free (ie non-local) identifier with the same name
 //       as a catch block exception indentifier will be identified as referring to that catch ID,
 //       even if the reference appears outside the catch block, which is materially incorrect.
+// TODO: BUG: If funcExpr has inner function/lambdas, results will not make sense.
+// TODO: what about arguments? Is that a local?
 /**
  * Find all indentifiers referenced in the given function expression,
  * and classify them by scope. The results are memoized on the _id key.
