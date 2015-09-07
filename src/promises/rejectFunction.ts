@@ -9,7 +9,7 @@ import storage = require('../storage/storage');
  * Returns a new SlowPromiseRejectFunction instance.
  * This function may be used to reject the given promise with a reason.
  */
-export function create(promise: types.SlowPromise, persist = true) {
+export function create(promise: types.SlowPromise, persist: boolean) {
 
     // Create a function that rejects the given promise with the given reason.
     var reject: types.SlowPromise.RejectFunction = <any> ((reason?: any) => {
@@ -34,15 +34,15 @@ export function create(promise: types.SlowPromise, persist = true) {
 }
 
 
-// TODO: register slow object type with storage (for rehydration logic)
-storage.registerType({
-    type: SlowType.SlowPromiseRejectFunction,
-    dehydrate: (p: types.SlowPromise.RejectFunction, recurse: (obj) => any) => {
-        if (!p || !p._slow || p._slow.type !== SlowType.SlowPromiseRejectFunction) return;
-        var jsonSafeObject = _.mapValues(p._slow, propValue => recurse(propValue));
-        return jsonSafeObject;
-    },
-    rehydrate: jsonSafeObject => {
-        return create(jsonSafeObject.promise, false);
-    }
-});
+//// TODO: register slow object type with storage (for rehydration logic)
+//storage.registerType({
+//    type: SlowType.SlowPromiseRejectFunction,
+//    dehydrate: (p: types.SlowPromise.RejectFunction, recurse: (obj) => any) => {
+//        if (!p || !p._slow || p._slow.type !== SlowType.SlowPromiseRejectFunction) return;
+//        var jsonSafeObject = _.mapValues(p._slow, propValue => recurse(propValue));
+//        return jsonSafeObject;
+//    },
+//    rehydrate: jsonSafeObject => {
+//        return create(jsonSafeObject.promise, false);
+//    }
+//});

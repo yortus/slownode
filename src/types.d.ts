@@ -28,12 +28,26 @@
             _slow: {
                 type: SlowObject.Type;
                 id?: string;
+
+                /** The body of code being executed by this activation. */
                 asyncFunction: SlowAsyncFunction;
+
+                /** State of all locals at the current point of suspended execution. */
                 state: Steppable.StateMachine.State;
+
+                /** The awaitable (ie slow promise) that must resolve before execution may resume. */
                 awaiting: any;
+
+                /** Resumes execution with a value. */
                 onAwaitedResult: SlowObject & ((value) => void);
+
+                /** Resumes execution with an error. */
                 onAwaitedError: SlowObject & ((error) => void);
+
+                /** Signals that the activation returned a result. */
                 resolve: slow.SlowPromise.ResolveFunction<any>;
+
+                /** Signals that the activation threw an error. */
                 reject: slow.SlowPromise.RejectFunction;
             };
         }

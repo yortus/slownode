@@ -30,8 +30,8 @@ class SlowPromise implements types.SlowPromise {
         storage.track(this);
 
         // Construct resolve and reject functions, and call the resolver with them.
-        var resolve = resolveFunction.create(this);
-        var reject = rejectFunction.create(this);
+        var resolve = resolveFunction.create(this, true);
+        var reject = rejectFunction.create(this, true);
         try { resolver(resolve, reject); } catch (ex) { reject(ex); }
     }
 
@@ -62,8 +62,8 @@ class SlowPromise implements types.SlowPromise {
         //notifyGC(promise);
 
         // Create the resolve and reject functions.
-        var resolve = resolveFunction.create(promise);
-        var reject = rejectFunction.create(promise);
+        var resolve = resolveFunction.create(promise, true);
+        var reject = rejectFunction.create(promise, true);
 
         // All done. Return the 'deferred' instance.
         return { promise, resolve, reject };
@@ -183,17 +183,17 @@ function processAllHandlers(p: SlowPromise) {
 }
 
 
-// TODO: register slow object type with storage (for rehydration logic)
-storage.registerType({
-    type: SlowType.SlowPromise,
-    dehydrate: (p: types.SlowPromise, recurse: (obj) => any) => {
-        if (!p || !p._slow || p._slow.type !== SlowType.SlowPromise) return;
-        var jsonSafeObject = _.mapValues(p._slow, propValue => recurse(propValue));
-        return jsonSafeObject;
-    },
-    rehydrate: jsonSafeObject => {
-        var promise = new SlowPromise(INTERNAL);
-        promise._slow = jsonSafeObject;
-        return promise;
-    }
-});
+//// TODO: register slow object type with storage (for rehydration logic)
+//storage.registerType({
+//    type: SlowType.SlowPromise,
+//    dehydrate: (p: types.SlowPromise, recurse: (obj) => any) => {
+//        if (!p || !p._slow || p._slow.type !== SlowType.SlowPromise) return;
+//        var jsonSafeObject = _.mapValues(p._slow, propValue => recurse(propValue));
+//        return jsonSafeObject;
+//    },
+//    rehydrate: jsonSafeObject => {
+//        var promise = new SlowPromise(INTERNAL);
+//        promise._slow = jsonSafeObject;
+//        return promise;
+//    }
+//});

@@ -42,7 +42,7 @@ describe('The async(...) function', function () {
         });
 
 
-        fn(500, 10)
+        fn(200, 6)
         .then(result => {
             console.log(result);
             done(); // TODO: isRelocatableFunction sees this as global.done due to above hack and says its ok
