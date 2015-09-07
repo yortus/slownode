@@ -10,6 +10,52 @@ import rehydrate = require('./rehydrate');
 import typeRegistry = require('./typeRegistry');
 
 
+
+namespace newImprovedApi {
+
+    interface SlowObject {
+        _slow: {
+            type: string;
+            id: string;
+            isDirty: boolean;
+        }
+    }
+
+    // Tracking control (all synchronous)
+    export function created(obj: SlowObject): void {return null;}
+    export function updated(obj: SlowObject): void {return null;}
+    export function deleted(obj: SlowObject): void {return null;}
+
+    // Serialization control (if synchronous)
+    export function saveStateSync(): void {}
+    export function loadStateSync(): void {}
+
+    // Serialization control (if asynchronous)
+    export function saveState(callback: (err?) => void) {}
+    export function loadState(callback: (err?) => void) {}
+
+    // Slow object type registration
+    export function registerSlowType(typeInfo: SlowTypeInfo) {}
+    interface SlowTypeInfo {
+        name: string;
+        createBlank: () => SlowObject;
+        getState: (obj: SlowObject) => any;
+        setState: (obj: SlowObject, value: any) => void;
+    }
+
+    // Internals...
+    var trackedObjects: SlowObject[];
+    var registry: any; //???
+}
+
+
+
+
+
+
+
+
+
 // TODO: doc... single process/thread exclusive by design...
 // TODO: errors are not caught... What to do?
 

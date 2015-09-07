@@ -1,3 +1,29 @@
+var newImprovedApi;
+(function (newImprovedApi) {
+    // Tracking control (all synchronous)
+    function created(obj) { return null; }
+    newImprovedApi.created = created;
+    function updated(obj) { return null; }
+    newImprovedApi.updated = updated;
+    function deleted(obj) { return null; }
+    newImprovedApi.deleted = deleted;
+    // Serialization control (if synchronous)
+    function saveStateSync() { }
+    newImprovedApi.saveStateSync = saveStateSync;
+    function loadStateSync() { }
+    newImprovedApi.loadStateSync = loadStateSync;
+    // Serialization control (if asynchronous)
+    function saveState(callback) { }
+    newImprovedApi.saveState = saveState;
+    function loadState(callback) { }
+    newImprovedApi.loadState = loadState;
+    // Slow object type registration
+    function registerSlowType(typeInfo) { }
+    newImprovedApi.registerSlowType = registerSlowType;
+    // Internals...
+    var trackedObjects;
+    var registry; //???
+})(newImprovedApi || (newImprovedApi = {}));
 // TODO: doc... single process/thread exclusive by design...
 // TODO: errors are not caught... What to do?
 // TODO: NB from linux manpage: Calling fsync() does not necessarily ensure that the entry in the directory containing the file has also reached disk. For that an explicit fsync() on a file descriptor for the directory is also needed.
