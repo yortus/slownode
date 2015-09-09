@@ -49,7 +49,6 @@ namespace newImprovedApi {
 }
 
 
-
 interface SlowObject {
     _slow: {
         type: types.SlowObject.Type;
@@ -58,23 +57,65 @@ interface SlowObject {
     }
 }
 
+
 export function created(obj: SlowObject): void {
-    // TODO: implement...
-console.log(`CREATED ${obj._slow.type}`);
-    return null;
+    allTrackedObjects.push(obj);
 }
+
 
 export function updated(obj: SlowObject): void {
-    // TODO: implement...
-console.log(`UPDATED ${obj._slow.type}`);
-    return null;
+
+    // TODO: sloooooow! Each updated() call iterates over all or many of the currently tracked objects. Better ways?
+    //       - use an ES6 Set
+    //       - use a hash whose keys are the slow object IDs (but they may not have IDs yet. But they can be assigned on demand).
+    var exists = updatedTrackedObjects.indexOf(obj) !== -1;
+    if (!exists) updatedTrackedObjects.push(obj);
 }
 
+
 export function deleted(obj: SlowObject): void {
-    // TODO: implement...
-console.log(`DELETED ${obj._slow.type}`);
-    return null;
+    deletedTrackedObjects.push(obj);
 }
+
+
+var allTrackedObjects: SlowObject[] = [];
+var updatedTrackedObjects: SlowObject[] = [];
+var deletedTrackedObjects: SlowObject[] = [];
+
+
+export function saveState() {
+
+    // STEPS:
+    // - for all deleted objects:
+    //   - mark deleted in log
+    //   - remove from tracked objects list?
+
+    // - for all updated objects: dehydrate and write to log
+    //   - dehydrate: traverse object; for each element/value:
+    //     - if it is on the tracked objects list, dehydrate as a $ref
+    //     - if it is on the deleted objects list - ?! is that an error? It shouldn't have any references to it
+    //     - otherwise - do normal/extended JSON serialization
+
+
+
+}
+
+export function loadState() {
+
+    // STEPS:
+    // - read the entire log into a biiiig array/hash
+
+
+
+
+
+
+}
+
+
+
+
+
 
 
 
