@@ -10,16 +10,19 @@ function create(promise, persist) {
         // As per spec, do nothing if promise's fate is already resolved.
         if (promise._slow.isFateResolved)
             return;
-        // Indicate the promise's fate is now resolved, and persist this change to the promise's state
+        // Indicate the promise's fate is now resolved.
         promise._slow.isFateResolved = true;
-        storage.track(promise);
+        // Synchronise with the persistent object graph.
+        storage.updated(promise);
         // Finally, resolve the promise using the standard resolution procedure.
         standardResolutionProcedure(promise, value);
     });
-    // Add slow metadata to the resolve function, and persist it.
+    // Add slow metadata to the resolve function.
     resolve._slow = { type: 11 /* SlowPromiseResolveFunction */, promise: promise };
+    // Synchronise with the persistent object graph.
+    // TODO: refactor this getting rid of conditional 'persist'
     if (persist)
-        storage.track(resolve);
+        storage.created(resolve);
     // Return the resolve function.
     return resolve;
 }

@@ -24,19 +24,23 @@ function runToCompletion(safa: types.SlowAsyncFunction.Activation, error?: any, 
 
     // The Steppable threw. Finalize and reject the SlowAsyncFunctionActivation.
     catch (ex) {
-        storage.clear(safa._slow.onAwaitedResult);
-        storage.clear(safa._slow.onAwaitedError);
-        storage.clear(safa);
         safa._slow.reject(ex);
+
+        // Synchronise with the persistent object graph.
+        storage.deleted(safa._slow.onAwaitedResult);
+        storage.deleted(safa._slow.onAwaitedError);
+        storage.deleted(safa);
         return;
     }
 
     // The Steppable returned. Finalize and resolve the SlowAsyncFunctionActivation.
     if (yielded.done) {
-        storage.clear(safa._slow.onAwaitedResult);
-        storage.clear(safa._slow.onAwaitedError);
-        storage.clear(safa);
         safa._slow.resolve(yielded.value);
+
+        // Synchronise with the persistent object graph.
+        storage.deleted(safa._slow.onAwaitedResult);
+        storage.deleted(safa._slow.onAwaitedError);
+        storage.deleted(safa);
         return;
     }
 
@@ -45,8 +49,9 @@ function runToCompletion(safa: types.SlowAsyncFunction.Activation, error?: any, 
     var awaiting: types.SlowPromise = safa._slow.awaiting = yielded.value;
     assert(awaiting && typeof awaiting.then === 'function', 'await: expected argument to be a Promise');
 
-    // Persist activation state before suspending on the awaitable.
-    storage.track(safa);
+    // Synchronise with the persistent object graph before suspending on the awaitable.
+    // TODO: revise this when storage API is done...
+    storage.updated(safa);
 
     // Suspend on the awaitable, then call self recursively with the eventual result or error.
     awaiting.then(safa._slow.onAwaitedResult, safa._slow.onAwaitedError);

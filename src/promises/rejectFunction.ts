@@ -17,17 +17,22 @@ export function create(promise: types.SlowPromise, persist: boolean) {
         // As per spec, do nothing if promise's fate is already resolved.
         if (promise._slow.isFateResolved) return;
 
-        // Indicate the promise's fate is now resolved, and persist this change to the promise's state
+        // Indicate the promise's fate is now resolved.
         promise._slow.isFateResolved = true;
-        storage.track(promise);
+
+        // Synchronise with the persistent object graph.
+        storage.updated(promise);
 
         // Finally, reject the promise using its own private _reject method.
         promise._reject(reason);
     });
 
-    // Add slow metadata to the reject function, and persist it.
+    // Add slow metadata to the reject function.
     reject._slow = { type: SlowType.SlowPromiseRejectFunction, promise };
-    if (persist) storage.track(reject);
+
+    // Synchronise with the persistent object graph.
+    // TODO: refactor this getting rid of conditional 'persist'
+    if (persist) storage.created(reject);
 
     // Return the reject function.
     return reject;

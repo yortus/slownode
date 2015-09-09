@@ -27,8 +27,8 @@ var asyncPseudoKeyword = (function (bodyFunc) {
     var stateMachineSource = steppableFunc.stateMachine.toString();
     var originalSource = bodyFunc.toString();
     var asyncFunction = makeSlowAsyncFunction(steppableFunc, stateMachineSource, originalSource);
-    // Ensure the SlowAsyncFunction definition has been persisted to storage.
-    storage.track(asyncFunction);
+    // Synchronise with the persistent object graph.
+    storage.created(asyncFunction);
     // Return the SlowAsyncFunction instance.
     return asyncFunction;
 });
@@ -75,8 +75,8 @@ function makeSlowAsyncFunction(steppableFunc, stateMachineSource, originalSource
             resolve: deferred.resolve,
             reject: deferred.reject
         };
-        // Persist the SlowAsyncFunctionActivation's initial state to storage.
-        storage.track(safa);
+        // Synchronise with the persistent object graph.
+        storage.created(safa);
         // Run the SlowAsyncFunctionActivation instance to completion, and return the promise of completion.
         runToCompletion(safa);
         return deferred.promise;

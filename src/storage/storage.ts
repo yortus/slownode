@@ -15,9 +15,9 @@ namespace newImprovedApi {
 
     interface SlowObject {
         _slow: {
-            type: string;
-            id: string;
-            isDirty: boolean;
+            type: types.SlowObject.Type;
+            id?: string;
+            isDirty?: boolean;
         }
     }
 
@@ -50,6 +50,31 @@ namespace newImprovedApi {
 
 
 
+interface SlowObject {
+    _slow: {
+        type: types.SlowObject.Type;
+        id?: string;
+        isDirty?: boolean;
+    }
+}
+
+export function created(obj: SlowObject): void {
+    // TODO: implement...
+console.log(`CREATED ${obj._slow.type}`);
+    return null;
+}
+
+export function updated(obj: SlowObject): void {
+    // TODO: implement...
+console.log(`UPDATED ${obj._slow.type}`);
+    return null;
+}
+
+export function deleted(obj: SlowObject): void {
+    // TODO: implement...
+console.log(`DELETED ${obj._slow.type}`);
+    return null;
+}
 
 
 
@@ -86,39 +111,39 @@ var cache = {};
 
 
 // TODO: doc...
-export function track(slowObj: types.SlowObject) {
-    //init();
+//export function track(slowObj: types.SlowObject) {
+//    init();
 
-    //var slow = slowObj._slow;
-    //slow.id = slow.id || `#${++idCounter}`;
-    //var key = slow.id;
-    //var serializedValue = JSON.stringify(dehydrateDef(slowObj));
-    //cache[`${key}`] = slowObj;
+//    var slow = slowObj._slow;
+//    slow.id = slow.id || `#${++idCounter}`;
+//    var key = slow.id;
+//    var serializedValue = JSON.stringify(dehydrateDef(slowObj));
+//    cache[`${key}`] = slowObj;
 
-    //// TODO: testing... NB node.d.ts is missing a typing here...
-    //try {
-    //    (<any>fs.writeSync)(logFileDescriptor, `,\n\n\n"${key}", ${serializedValue}`, null, 'utf8');
-    //    fs.fsyncSync(logFileDescriptor);
-    //}
-    //catch (ex) {
-    //    console.log('FILE DESCRIPTOR: ' + logFileDescriptor);
-    //    throw ex;
-    //}
-}
+//    // TODO: testing... NB node.d.ts is missing a typing here...
+//    try {
+//        (<any>fs.writeSync)(logFileDescriptor, `,\n\n\n"${key}", ${serializedValue}`, null, 'utf8');
+//        fs.fsyncSync(logFileDescriptor);
+//    }
+//    catch (ex) {
+//        console.log('FILE DESCRIPTOR: ' + logFileDescriptor);
+//        throw ex;
+//    }
+//}
 
 
 // TODO: doc...
-export function clear(slowObj: types.SlowObject) {
-    //init();
+//export function clear(slowObj: types.SlowObject) {
+//    init();
 
-    //var slow = slowObj._slow;
-    //var key = slow.id;
-    //delete cache[key];
+//    var slow = slowObj._slow;
+//    var key = slow.id;
+//    delete cache[key];
 
-    //// TODO: testing...
-    //(<any>fs.writeSync)(logFileDescriptor, `,\n\n\n"${key}", null`, null, 'utf8');
-    //fs.fsyncSync(logFileDescriptor);
-}
+//    // TODO: testing...
+//    (<any>fs.writeSync)(logFileDescriptor, `,\n\n\n"${key}", null`, null, 'utf8');
+//    fs.fsyncSync(logFileDescriptor);
+//}
 
 
 

@@ -24,6 +24,24 @@ var newImprovedApi;
     var trackedObjects;
     var registry; //???
 })(newImprovedApi || (newImprovedApi = {}));
+function created(obj) {
+    // TODO: implement...
+    console.log("CREATED " + obj._slow.type);
+    return null;
+}
+exports.created = created;
+function updated(obj) {
+    // TODO: implement...
+    console.log("UPDATED " + obj._slow.type);
+    return null;
+}
+exports.updated = updated;
+function deleted(obj) {
+    // TODO: implement...
+    console.log("DELETED " + obj._slow.type);
+    return null;
+}
+exports.deleted = deleted;
 // TODO: doc... single process/thread exclusive by design...
 // TODO: errors are not caught... What to do?
 // TODO: NB from linux manpage: Calling fsync() does not necessarily ensure that the entry in the directory containing the file has also reached disk. For that an explicit fsync() on a file descriptor for the directory is also needed.
@@ -42,35 +60,33 @@ var cache = {};
 //    return cache[slowObj._slow.id];
 //}
 // TODO: doc...
-function track(slowObj) {
-    //init();
-    //var slow = slowObj._slow;
-    //slow.id = slow.id || `#${++idCounter}`;
-    //var key = slow.id;
-    //var serializedValue = JSON.stringify(dehydrateDef(slowObj));
-    //cache[`${key}`] = slowObj;
-    //// TODO: testing... NB node.d.ts is missing a typing here...
-    //try {
-    //    (<any>fs.writeSync)(logFileDescriptor, `,\n\n\n"${key}", ${serializedValue}`, null, 'utf8');
-    //    fs.fsyncSync(logFileDescriptor);
-    //}
-    //catch (ex) {
-    //    console.log('FILE DESCRIPTOR: ' + logFileDescriptor);
-    //    throw ex;
-    //}
-}
-exports.track = track;
+//export function track(slowObj: types.SlowObject) {
+//    init();
+//    var slow = slowObj._slow;
+//    slow.id = slow.id || `#${++idCounter}`;
+//    var key = slow.id;
+//    var serializedValue = JSON.stringify(dehydrateDef(slowObj));
+//    cache[`${key}`] = slowObj;
+//    // TODO: testing... NB node.d.ts is missing a typing here...
+//    try {
+//        (<any>fs.writeSync)(logFileDescriptor, `,\n\n\n"${key}", ${serializedValue}`, null, 'utf8');
+//        fs.fsyncSync(logFileDescriptor);
+//    }
+//    catch (ex) {
+//        console.log('FILE DESCRIPTOR: ' + logFileDescriptor);
+//        throw ex;
+//    }
+//}
 // TODO: doc...
-function clear(slowObj) {
-    //init();
-    //var slow = slowObj._slow;
-    //var key = slow.id;
-    //delete cache[key];
-    //// TODO: testing...
-    //(<any>fs.writeSync)(logFileDescriptor, `,\n\n\n"${key}", null`, null, 'utf8');
-    //fs.fsyncSync(logFileDescriptor);
-}
-exports.clear = clear;
+//export function clear(slowObj: types.SlowObject) {
+//    init();
+//    var slow = slowObj._slow;
+//    var key = slow.id;
+//    delete cache[key];
+//    // TODO: testing...
+//    (<any>fs.writeSync)(logFileDescriptor, `,\n\n\n"${key}", null`, null, 'utf8');
+//    fs.fsyncSync(logFileDescriptor);
+//}
 // TODO: temp testing...
 //var registrations: types.SlowObject.Registration[];
 //function dehydrateDef(value: any) {
