@@ -104,6 +104,8 @@ export function loadState() {
 
     // STEPS:
     // - read the entire log into a biiiig array/hash
+    // - full tracked objects list == all updated objects - all deleted objects (can be further pruned to only refd objects later)
+    // - 
 
 
 
