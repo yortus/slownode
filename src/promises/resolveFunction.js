@@ -1,31 +1,25 @@
 var standardResolutionProcedure = require('./standardResolutionProcedure');
 var storage = require('../storage/storage');
-// TODO: temp testing...
-var Callable = function (constructorFunction) {
-    var C = function () {
-        var obj = function () {
-            C.prototype.call.apply(this, arguments);
-        };
-        obj['__proto__'] = C.prototype;
-        constructorFunction.apply(obj, arguments);
-        return obj;
-    };
-    return C;
-};
-function MyKindOfFunction(a, b, c) {
-    console.log(a, b, c);
-    this.prop = 'and a property value .prop';
-}
-var API = Callable(MyKindOfFunction);
-//API.prototype.call = function (arg) {
-//    console.log(arg);
-//};
-API.prototype.boss = function (arg) {
+var makeCallableClass = require('../util/makeCallableClass');
+var MyKindOfFunction = makeCallableClass(function () {
+    var args = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i - 0] = arguments[_i];
+    }
+    console.log("CTOR! " + args.join(', '));
+}, function () {
+    var args = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i - 0] = arguments[_i];
+    }
+    console.log("CALL! " + args.join(', '));
+});
+MyKindOfFunction.prototype.boss = function (arg) {
     console.log(arg, this.prop);
 };
-var a = new API(1, 2, 3);
+var a = new MyKindOfFunction(1, 2, 3);
 a('.call() invocation');
-a.boss('.boss() invocation');
+a['boss']('.boss() invocation');
 /**
  * Returns a new SlowPromiseResolveFunction instance.
  * This function may be used to resolve the given promise with a value.

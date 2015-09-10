@@ -4,41 +4,22 @@ import types = require('types');
 import SlowType = types.SlowObject.Type;
 import standardResolutionProcedure = require('./standardResolutionProcedure');
 import storage = require('../storage/storage');
+import makeCallableClass = require('../util/makeCallableClass');
 
 
 
 
-// TODO: temp testing...
-var Callable = function (constructorFunction): any {
-    var C = function () {
-        var obj = function () {
-            C.prototype.call.apply(this, arguments);
-        };
-        obj['__proto__'] = C.prototype;
-        constructorFunction.apply(obj, arguments);
-        return obj;
-    };
-    return C;
-};
 
-function MyKindOfFunction(a, b, c) {
-    console.log(a, b, c);
-    this.prop = 'and a property value .prop';
-}
 
-var API = Callable(MyKindOfFunction);
-
-//API.prototype.call = function (arg) {
-//    console.log(arg);
-//};
-
-API.prototype.boss = function (arg) {
+var MyKindOfFunction = makeCallableClass((...args) => { console.log(`CTOR! ${args.join(', ')}`); }, (...args) => { console.log(`CALL! ${args.join(', ')}`); });
+MyKindOfFunction.prototype.boss = function (arg) {
     console.log(arg, this.prop);
 };
 
-var a = new API(1,2,3);
+
+var a = new MyKindOfFunction(1,2,3);
 a('.call() invocation');
-a.boss('.boss() invocation');
+a['boss']('.boss() invocation');
 
 
 
