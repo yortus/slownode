@@ -76,6 +76,7 @@ var allTrackedObjects = new Set<SlowObject>();
 var updatedTrackedObjects = new Set<SlowObject>();
 var deletedTrackedObjects = new Set<SlowObject>();
 var nextId = 0;
+var isLoadingState = false;
 
 
 export function saveState(callback?: (err?) => void) {
@@ -129,14 +130,19 @@ export function saveState(callback?: (err?) => void) {
 export function loadState() {
 
     // STEPS:
+    // - set isLoadingState, so tracking calls are ignored.
     // - read the entire log into a biiiig array/hash
     // - full tracked objects list EQUALS all updated objects
     //                             MINUS  all deleted objects (can be further pruned to only refd objects later)
     //                             MINUS  all tracked objects with no $refs to them
     // - for each tracked object:
-    //   - 
+    //   - ???
+    // - clear isLoadingState, so tracking calls are reinstated.
 
-
+    // TODO: why not just allow tracking always? As load time that will effectively get the next log into the proper state....
+    isLoadingState = true;
+    // TODO: ...
+    isLoadingState = false;
 
 
 
