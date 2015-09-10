@@ -1,6 +1,5 @@
 //import async = require('asyncawait/async');
 //import await = require('asyncawait/await');
-//import Promise = require("bluebird");
 //import slow = require('slownode');
 //import SteppableFunction = require('../src/functions/steppableFunction');
 //import Steppable = require('../src/functions/steppable');

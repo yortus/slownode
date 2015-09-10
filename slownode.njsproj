@@ -62,6 +62,7 @@
     <TypeScriptCompile Include="src\typings\asyncawait\asyncawait.d.ts" />
     <TypeScriptCompile Include="src\typings\chai-as-promised\chai-as-promised.d.ts" />
     <TypeScriptCompile Include="src\typings\es6-collections\es6-collections.d.ts" />
+    <TypeScriptCompile Include="src\typings\es6-promise\es6-promise.d.ts" />
     <TypeScriptCompile Include="src\typings\escodegen\escodegen.d.ts" />
     <TypeScriptCompile Include="src\typings\esprima\esprima.d.ts" />
     <TypeScriptCompile Include="src\typings\estree\estree.d.ts" />
@@ -73,7 +74,6 @@
     <TypeScriptCompile Include="test\steppableFunction.ts" />
     <TypeScriptCompile Include="test\slowPromise.ts" />
     <TypeScriptCompile Include="test\slowAsyncFunction.ts" />
-    <TypeScriptCompile Include="src\typings\bluebird\bluebird.d.ts" />
     <TypeScriptCompile Include="src\typings\chai\chai.d.ts" />
     <TypeScriptCompile Include="src\typings\mocha\mocha.d.ts" />
     <TypeScriptCompile Include="src\typings\node\node.d.ts" />
@@ -90,17 +90,17 @@
     <Folder Include="src\functions\" />
     <Folder Include="src\asyncFunctions\" />
     <Folder Include="src\typings\" />
-    <Folder Include="src\typings\bluebird\" />
+    <Folder Include="src\typings\asyncawait\" />
     <Folder Include="src\typings\chai\" />
     <Folder Include="src\typings\escodegen\" />
     <Folder Include="src\typings\esprima\" />
     <Folder Include="src\typings\estree\" />
     <Folder Include="src\typings\mocha\" />
-    <Folder Include="src\typings\asyncawait\" />
     <Folder Include="src\typings\chai-as-promised\" />
     <Folder Include="src\typings\lodash\" />
     <Folder Include="src\typings\fs-ext\" />
     <Folder Include="src\typings\es6-collections\" />
+    <Folder Include="src\typings\es6-promise\" />
     <Folder Include="src\typings\node\" />
     <Folder Include="src\typings\slownode\" />
     <Folder Include="test" />

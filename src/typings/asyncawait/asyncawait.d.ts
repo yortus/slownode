@@ -3,7 +3,7 @@
 // Definitions by: Troy Gerwien <https://github.com/yortus>
 
 
-/// <reference path="../bluebird/bluebird.d.ts" />
+/// <reference path="../es6-promise/es6-promise.d.ts" />
 
 
 declare module AsyncAwait {
@@ -156,8 +156,8 @@ declare module AsyncAwait {
     }
 
     export interface AwaitFunction {
-        <T>(expr: Promise.Thenable<T>): T;
-        <T>(expr: Promise.Thenable<T>[]): T[];
+        <T>(expr: Thenable<T>): T;
+        <T>(expr: Thenable<T>[]): T[];
         <T>(expr: Thunk<T>): T;
         <T>(expr: Thunk<T>[]): T[];
         (expr: Object): Object;

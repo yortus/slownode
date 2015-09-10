@@ -1,4 +1,3 @@
-var await = require('asyncawait/await');
 var slow = require('slownode');
 var chai = require("chai");
 chai.use(require('chai-as-promised'));
