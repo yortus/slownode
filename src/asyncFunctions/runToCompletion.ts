@@ -4,18 +4,20 @@ import storage = require('../storage/storage');
 export = runToCompletion;
 
 
-// TODO: the following JSDoc is out of date. Revise it...
 /**
- * Runs the given SlowAsyncFunctionActivation instance to completion. First, the `awaiting`
- * value is awaited, and then the SlowAsyncFunctionActivation is resumed with the eventual
- * value. Subsequent values yielded by the SlowAsyncFunctionActivation are awaited, and the
- * SlowAsyncFunctionActivation is resumed with their eventual values each time. This process
- * continues until the SlowAsyncFunctionActivation either returns or throws. If it throws,
- * this function rejects with the error. If it returns, this function resolves to its result.
+ * Runs the given SlowAsyncFunctionActivation instance to completion. First, the activation
+ * (which must be currently suspended) is resumed, either passing the given `next` value into
+ * it, or throwing the given `error` value into it. If neither `error` or `next` is given, it
+ * is resumed with 'undefined' as its next value.
+ * If the activation returns or throws, then the activation's promise is settled accordingly.
+ * If the activation yields, then it goes back into a suspended state. The yielded value must
+ * be an awaitable value. A recursive call to runToCompletion() is scheduled for when the
+ * awaitable value is settled. Thus an asynchronous 'loop' is executed until the activation
+ * either returns or throws.
  */
 function runToCompletion(safa: types.SlowAsyncFunction.Activation, error?: any, next?: any) {
 
-    // Resume the underlying Steppable, either throwing into it or calling next(), depending on args.
+    // Resume the underlying Steppable by either throwing into it or calling next(), depending on args.
     try {
         var yielded;
         if (arguments.length === 1) yielded = safa.next();              // Resume as start (first call)
@@ -25,23 +27,21 @@ function runToCompletion(safa: types.SlowAsyncFunction.Activation, error?: any, 
 
     // The Steppable threw. Finalize and reject the SlowAsyncFunctionActivation.
     catch (ex) {
-        safa._slow.reject(ex);
+        var s = safa._slow;
+        s.reject(ex);
 
         // Synchronise with the persistent object graph.
-        storage.deleted(safa._slow.onAwaitedResult);
-        storage.deleted(safa._slow.onAwaitedError);
-        storage.deleted(safa);
+        storage.deleted(s.resolve, s.reject, s.onAwaitedResult, s.onAwaitedError, safa);
         return;
     }
 
     // The Steppable returned. Finalize and resolve the SlowAsyncFunctionActivation.
     if (yielded.done) {
-        safa._slow.resolve(yielded.value);
+        var s = safa._slow;
+        s.resolve(yielded.value);
 
         // Synchronise with the persistent object graph.
-        storage.deleted(safa._slow.onAwaitedResult);
-        storage.deleted(safa._slow.onAwaitedError);
-        storage.deleted(safa);
+        storage.deleted(s.resolve, s.reject, s.onAwaitedResult, s.onAwaitedError, safa);
         return;
     }
 
@@ -50,16 +50,17 @@ function runToCompletion(safa: types.SlowAsyncFunction.Activation, error?: any, 
     var awaiting: types.SlowPromise = safa._slow.awaiting = yielded.value;
     assert(awaiting && typeof awaiting.then === 'function', 'await: expected argument to be a Promise');
 
-    // The steppable's state has changed.
+    // Attach fulfilled/rejected handlers to the awaitable, which resume the steppable.
+    awaiting.then(safa._slow.onAwaitedResult, safa._slow.onAwaitedError);
+
     // Synchronise with the persistent object graph.
     storage.updated(safa);
 
-    // TODO: Ensure the persistent object graph is safely stored before potentially yielding to the event loop
-    // TODO: This doubles up on the saveState before calling a new SlowPromise's resolver. What to do? If anything?
-    //       - for starters: consider whether the awaitable is a SlowPromise or something else. If it *is* a SlowPromise
-    //       - we still have to save state because the promise's saveState call is before the storage.updated(safa) call above
+    // TL;DR: Now is a good time to ensure that the persistent object graph has been flushed to storage.
+    // At this point, we know an asynchronous operation has just got underway, i.e., the operation
+    // whose outcome is represented by the awaitable. Therefore a yield to the event loop is most
+    // likely imminent. We want to be sure that the persistent object graph has been safely flushed
+    // to storage, so that if the process dies between now and when the awaitable resolves, then when
+    // it restarts we can pick up where we left off by reloading the persisted state.
     storage.saveState();
-
-    // Suspend on the awaitable, then call self recursively with the eventual result or error.
-    awaiting.then(safa._slow.onAwaitedResult, safa._slow.onAwaitedError);
 }

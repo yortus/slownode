@@ -26,29 +26,47 @@ var newImprovedApi;
     var trackedObjects;
     var registry; //???
 })(newImprovedApi || (newImprovedApi = {}));
-function created(obj) {
-    assert(!allTrackedObjects.has(obj));
-    // Ensure it has a unique ID
-    obj._slow.id = obj._slow.id || "#" + ++nextId;
-    allTrackedObjects.add(obj);
-    updatedTrackedObjects.add(obj);
+function created() {
+    var objects = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        objects[_i - 0] = arguments[_i];
+    }
+    objects.forEach(function (obj) {
+        assert(!allTrackedObjects.has(obj));
+        // Ensure it has a unique ID
+        obj._slow.id = obj._slow.id || "#" + ++nextId;
+        allTrackedObjects.add(obj);
+        updatedTrackedObjects.add(obj);
+    });
 }
 exports.created = created;
-function updated(obj) {
-    assert(allTrackedObjects.has(obj));
-    updatedTrackedObjects.add(obj);
+function updated() {
+    var objects = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        objects[_i - 0] = arguments[_i];
+    }
+    objects.forEach(function (obj) {
+        assert(allTrackedObjects.has(obj));
+        updatedTrackedObjects.add(obj);
+    });
 }
 exports.updated = updated;
-function deleted(obj) {
-    assert(allTrackedObjects.has(obj));
-    deletedTrackedObjects.add(obj);
+function deleted() {
+    var objects = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        objects[_i - 0] = arguments[_i];
+    }
+    objects.forEach(function (obj) {
+        assert(allTrackedObjects.has(obj));
+        deletedTrackedObjects.add(obj);
+    });
 }
 exports.deleted = deleted;
 var allTrackedObjects = new Set();
 var updatedTrackedObjects = new Set();
 var deletedTrackedObjects = new Set();
 var nextId = 0;
-function saveState() {
+function saveState(callback) {
     // STEPS:
     // - for all deleted objects:
     //   - mark deleted in log
@@ -61,26 +79,31 @@ function saveState() {
     // - clear the deleted objects list
     // - clear the updated objects list
     // TODO: ...
-    log("======================================== SAVE STATE ========================================");
-    // TODO: temp testing for DEBUGGING only...
-    var debug = {
-        all: setToArray(allTrackedObjects),
-        deleted: setToArray(deletedTrackedObjects),
-        updated: setToArray(updatedTrackedObjects)
-    };
-    // TODO: Step 1
-    deletedTrackedObjects.forEach(function (obj) {
-        log("DELETE: " + obj._slow.id);
-        allTrackedObjects.delete(obj);
+    setImmediate(function () {
+        log("======================================== SAVE STATE ========================================");
+        // TODO: temp testing for DEBUGGING only...
+        //var debug = {
+        //    all: setToArray(allTrackedObjects),
+        //    deleted: setToArray(deletedTrackedObjects),
+        //    updated: setToArray(updatedTrackedObjects)
+        //}
+        // TODO: Step 1
+        deletedTrackedObjects.forEach(function (obj) {
+            log("DELETE: " + obj._slow.id);
+            allTrackedObjects.delete(obj);
+        });
+        // TODO: Step 2
+        updatedTrackedObjects.forEach(function (obj) {
+            var json = dehydrate(obj, allTrackedObjects);
+            log("UPSERT: " + JSON.stringify(json));
+        });
+        // TODO: Step 3
+        deletedTrackedObjects.clear();
+        updatedTrackedObjects.clear();
+        // TODO: Done. But catch errors!!!
+        if (callback)
+            callback();
     });
-    // TODO: Step 2
-    updatedTrackedObjects.forEach(function (obj) {
-        var json = dehydrate(obj, allTrackedObjects);
-        log("UPSERT: " + JSON.stringify(json));
-    });
-    // TODO: Step 3
-    deletedTrackedObjects.clear();
-    updatedTrackedObjects.clear();
 }
 exports.saveState = saveState;
 function loadState() {

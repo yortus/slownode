@@ -43,26 +43,32 @@ namespace newImprovedApi {
 }
 
 
-export function created(obj: SlowObject): void {
-    assert(!allTrackedObjects.has(obj));
+export function created(...objects: SlowObject[]): void {
+    objects.forEach(obj => {
+        assert(!allTrackedObjects.has(obj));
 
-    // Ensure it has a unique ID
-    obj._slow.id = obj._slow.id || `#${++nextId}`;
+        // Ensure it has a unique ID
+        obj._slow.id = obj._slow.id || `#${++nextId}`;
 
-    allTrackedObjects.add(obj);
-    updatedTrackedObjects.add(obj);
+        allTrackedObjects.add(obj);
+        updatedTrackedObjects.add(obj);
+    });
 }
 
 
-export function updated(obj: SlowObject): void {
-    assert(allTrackedObjects.has(obj));
-    updatedTrackedObjects.add(obj);
+export function updated(...objects: SlowObject[]): void {
+    objects.forEach(obj => {
+        assert(allTrackedObjects.has(obj));
+        updatedTrackedObjects.add(obj);
+    });
 }
 
 
-export function deleted(obj: SlowObject): void {
-    assert(allTrackedObjects.has(obj));
-    deletedTrackedObjects.add(obj);
+export function deleted(...objects: SlowObject[]): void {
+    objects.forEach(obj => {
+        assert(allTrackedObjects.has(obj));
+        deletedTrackedObjects.add(obj);
+    });
 }
 
 
@@ -72,7 +78,7 @@ var deletedTrackedObjects = new Set<SlowObject>();
 var nextId = 0;
 
 
-export function saveState() {
+export function saveState(callback?: (err?) => void) {
 
     // STEPS:
     // - for all deleted objects:
@@ -89,30 +95,35 @@ export function saveState() {
     // - clear the updated objects list
 
     // TODO: ...
-    log(`======================================== SAVE STATE ========================================`);
+    setImmediate(() => {
+        log(`======================================== SAVE STATE ========================================`);
 
 // TODO: temp testing for DEBUGGING only...
-var debug = {
-    all: setToArray(allTrackedObjects),
-    deleted: setToArray(deletedTrackedObjects),
-    updated: setToArray(updatedTrackedObjects)
-}
+//var debug = {
+//    all: setToArray(allTrackedObjects),
+//    deleted: setToArray(deletedTrackedObjects),
+//    updated: setToArray(updatedTrackedObjects)
+//}
 
-    // TODO: Step 1
-    deletedTrackedObjects.forEach(obj => {
-        log(`DELETE: ${obj._slow.id}`);
-        allTrackedObjects.delete(obj);
+        // TODO: Step 1
+        deletedTrackedObjects.forEach(obj => {
+            log(`DELETE: ${obj._slow.id}`);
+            allTrackedObjects.delete(obj);
+        });
+
+        // TODO: Step 2
+        updatedTrackedObjects.forEach(obj => {
+            var json = dehydrate(obj, allTrackedObjects);
+            log(`UPSERT: ${JSON.stringify(json)}`);
+        });
+
+        // TODO: Step 3
+        deletedTrackedObjects.clear();
+        updatedTrackedObjects.clear();
+
+        // TODO: Done. But catch errors!!!
+        if (callback) callback();
     });
-
-    // TODO: Step 2
-    updatedTrackedObjects.forEach(obj => {
-        var json = dehydrate(obj, allTrackedObjects);
-        log(`UPSERT: ${JSON.stringify(json)}`);
-    });
-
-    // TODO: Step 3
-    deletedTrackedObjects.clear();
-    updatedTrackedObjects.clear();
 }
 
 export function loadState() {

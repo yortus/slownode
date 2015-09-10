@@ -75,8 +75,7 @@ var SlowPromise = (function () {
         });
     };
     /**
-     * onFulfilled is called when/if "promise" resolves. onRejected is called when/if "promise" rejects.
-     * Both are optional, if either/both are omitted the next onFulfilled/onRejected in the chain is called.
+     * onFulfilled is called when the promise resolves. onRejected is called when the promise rejects.
      * Both callbacks have a single parameter , the fulfillment value or rejection reason.
      * "then" returns a new promise equivalent to the value you return from onFulfilled/onRejected after being passed through Promise.resolve.
      * If an error is thrown in the callback, the returned promise rejects with that error.
@@ -93,7 +92,7 @@ var SlowPromise = (function () {
         storage.updated(this);
         // If the promise is already settled, invoke the given handlers now (asynchronously).
         if (this._slow.state !== 0 /* Pending */)
-            setTimeout(function () { return processAllHandlers(_this); }, 0);
+            process.nextTick(function () { return processAllHandlers(_this); });
         // Return the chained promise.
         return deferred2.promise;
     };
@@ -114,7 +113,7 @@ var SlowPromise = (function () {
         // Synchronise with the persistent object graph.
         storage.updated(this);
         // Invoke any already-attached handlers now (asynchronously).
-        setTimeout(function () { return processAllHandlers(_this); }, 0);
+        process.nextTick(function () { return processAllHandlers(_this); });
         var _a;
     };
     SlowPromise.prototype._reject = function (reason) {
@@ -126,7 +125,7 @@ var SlowPromise = (function () {
         // Synchronise with the persistent object graph.
         storage.updated(this);
         // Invoke any already-attached handlers now (asynchronously).
-        setTimeout(function () { return processAllHandlers(_this); }, 0);
+        process.nextTick(function () { return processAllHandlers(_this); });
         var _a;
     };
     return SlowPromise;

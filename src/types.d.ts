@@ -45,10 +45,10 @@
                 onAwaitedError: SlowObject & ((error) => void);
 
                 /** Signals that the activation returned a result. */
-                resolve: slow.SlowPromise.ResolveFunction<any>;
+                resolve: SlowPromise.ResolveFunction;
 
                 /** Signals that the activation threw an error. */
-                reject: slow.SlowPromise.RejectFunction;
+                reject: SlowPromise.RejectFunction;
             };
         }
     }

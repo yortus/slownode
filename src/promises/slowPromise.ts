@@ -91,8 +91,7 @@ class SlowPromise implements types.SlowPromise {
 
 
 	/**
-	 * onFulfilled is called when/if "promise" resolves. onRejected is called when/if "promise" rejects.
-	 * Both are optional, if either/both are omitted the next onFulfilled/onRejected in the chain is called.
+	 * onFulfilled is called when the promise resolves. onRejected is called when the promise rejects.
 	 * Both callbacks have a single parameter , the fulfillment value or rejection reason.
 	 * "then" returns a new promise equivalent to the value you return from onFulfilled/onRejected after being passed through Promise.resolve.
 	 * If an error is thrown in the callback, the returned promise rejects with that error.
@@ -110,7 +109,7 @@ class SlowPromise implements types.SlowPromise {
         storage.updated(this);
 
         // If the promise is already settled, invoke the given handlers now (asynchronously).
-        if (this._slow.state !== State.Pending) setTimeout(() => processAllHandlers(this), 0);
+        if (this._slow.state !== State.Pending) process.nextTick(() => processAllHandlers(this));
 
         // Return the chained promise.
         return deferred2.promise;
@@ -148,7 +147,7 @@ class SlowPromise implements types.SlowPromise {
         storage.updated(this);
 
         // Invoke any already-attached handlers now (asynchronously).
-        setTimeout(() => processAllHandlers(this), 0);
+        process.nextTick(() => processAllHandlers(this));
     }
 
     _reject(reason: any) {
@@ -161,7 +160,7 @@ class SlowPromise implements types.SlowPromise {
         storage.updated(this);
 
         // Invoke any already-attached handlers now (asynchronously).
-        setTimeout(() => processAllHandlers(this), 0);
+        process.nextTick(() => processAllHandlers(this));
     }
 }
 
