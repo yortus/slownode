@@ -61,6 +61,7 @@
     <TypeScriptCompile Include="src\types.d.ts" />
     <TypeScriptCompile Include="src\typings\asyncawait\asyncawait.d.ts" />
     <TypeScriptCompile Include="src\typings\chai-as-promised\chai-as-promised.d.ts" />
+    <TypeScriptCompile Include="src\typings\es6-collections\es6-collections.d.ts" />
     <TypeScriptCompile Include="src\typings\escodegen\escodegen.d.ts" />
     <TypeScriptCompile Include="src\typings\esprima\esprima.d.ts" />
     <TypeScriptCompile Include="src\typings\estree\estree.d.ts" />
@@ -99,6 +100,7 @@
     <Folder Include="src\typings\chai-as-promised\" />
     <Folder Include="src\typings\lodash\" />
     <Folder Include="src\typings\fs-ext\" />
+    <Folder Include="src\typings\es6-collections\" />
     <Folder Include="src\typings\node\" />
     <Folder Include="src\typings\slownode\" />
     <Folder Include="test" />

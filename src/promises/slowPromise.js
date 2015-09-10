@@ -25,15 +25,21 @@ var SlowPromise = (function () {
             return;
         // Synchronise with the persistent object graph.
         storage.created(this);
-        // Construct resolve and reject functions, and call the resolver with them.
+        // Construct resolve and reject functions to be passed to the resolver.
         var resolve = resolveFunction.create(this, true);
         var reject = rejectFunction.create(this, true);
-        try {
-            resolver(resolve, reject);
-        }
-        catch (ex) {
-            reject(ex);
-        }
+        // TODO: temp testing...
+        setImmediate(function () {
+            // TODO: Ensure the persistent object graph is safely stored before potentially yielding to the event loop
+            storage.saveState();
+            // Call the given resolver. This kicks off the asynchronous operation whose outcome the Promise represents.
+            try {
+                resolver(resolve, reject);
+            }
+            catch (ex) {
+                reject(ex);
+            }
+        });
     }
     /** Returns a new SlowPromise instance that is already resolved with the given value. */
     SlowPromise.resolved = function (value) {

@@ -95,14 +95,29 @@ function makeSlowAsyncFunction(steppableFunc, stateMachineSource, originalSource
 }
 // TODO: doc...
 function makeContinuationResultHandler(safa, persist) {
-    var result = function (value) { return runToCompletion(safa, null, value); };
-    result._slow = { type: 31 /* SlowAsyncFunctionContinuationWithResult */, safa: safa };
-    return result;
+    // Make a function that resumes the given activation with a 'next' value.
+    var continuation = function (value) { return runToCompletion(safa, null, value); };
+    // Add slow metadata to the continuation function.
+    continuation._slow = { type: 31 /* SlowAsyncFunctionContinuationWithResult */, safa: safa };
+    // Synchronise with the persistent object graph.
+    // TODO: refactor this getting rid of conditional 'persist'
+    if (persist)
+        storage.created(continuation);
+    // Return the continuation.
+    return continuation;
 }
+// TODO: doc...
 function makeContinuationErrorHandler(safa, persist) {
-    var result = function (error) { return runToCompletion(safa, error); };
-    result._slow = { type: 32 /* SlowAsyncFunctionContinuationWithError */, safa: safa };
-    return result;
+    // Make a function that resumes the given activation, throwing the given error into it.
+    var continuation = function (error) { return runToCompletion(safa, error); };
+    // Add slow metadata to the continuation function.
+    continuation._slow = { type: 32 /* SlowAsyncFunctionContinuationWithError */, safa: safa };
+    // Synchronise with the persistent object graph.
+    // TODO: refactor this getting rid of conditional 'persist'
+    if (persist)
+        storage.created(continuation);
+    // Return the continuation.
+    return continuation;
 }
 module.exports = asyncPseudoKeyword;
 // TODO: register slow object type with storage (for rehydration logic)

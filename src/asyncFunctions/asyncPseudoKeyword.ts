@@ -142,14 +142,37 @@ function makeSlowAsyncFunction(steppableFunc: types.Steppable.Function, stateMac
 
 // TODO: doc...
 function makeContinuationResultHandler(safa, persist: boolean) {
-    var result: any = value => runToCompletion(safa, null, value);
-    result._slow = { type: SlowType.SlowAsyncFunctionContinuationWithResult, safa };
-    return result;
+
+    // Make a function that resumes the given activation with a 'next' value.
+    var continuation: any = value => runToCompletion(safa, null, value);
+
+    // Add slow metadata to the continuation function.
+    continuation._slow = { type: SlowType.SlowAsyncFunctionContinuationWithResult, safa };
+
+    // Synchronise with the persistent object graph.
+    // TODO: refactor this getting rid of conditional 'persist'
+    if (persist) storage.created(continuation);
+
+    // Return the continuation.
+    return continuation;
 }
+
+
+// TODO: doc...
 function makeContinuationErrorHandler(safa, persist: boolean) {
-    var result: any = error => runToCompletion(safa, error);
-    result._slow = { type: SlowType.SlowAsyncFunctionContinuationWithError, safa };
-    return result;
+
+    // Make a function that resumes the given activation, throwing the given error into it.
+    var continuation: any = error => runToCompletion(safa, error);
+
+    // Add slow metadata to the continuation function.
+    continuation._slow = { type: SlowType.SlowAsyncFunctionContinuationWithError, safa };
+
+    // Synchronise with the persistent object graph.
+    // TODO: refactor this getting rid of conditional 'persist'
+    if (persist) storage.created(continuation);
+
+    // Return the continuation.
+    return continuation;
 }
 
 

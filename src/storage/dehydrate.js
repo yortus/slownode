@@ -4,19 +4,25 @@ var isRelocatableFunction = require('../functions/isRelocatableFunction');
  * Recursively converts the given value into an object that can be safely converted to JSON.
  * Throws an error if any part of the value cannot be converted.
  */
-function dehydrate(value) {
+function dehydrate(value, allTrackedObjects, recursing) {
+    if (recursing === void 0) { recursing = false; }
     // Some primitives map to themselves. Return them as-is.
     if (_.isString(value) || _.isNumber(value) || _.isBoolean(value) || _.isNull(value)) {
         return value;
     }
-    else if (_.isObject(value) && _.has(value, '_slow')) {
-        return { $ref: value._slow.id };
+    else if (allTrackedObjects.has(value)) {
+        if (recursing) {
+            return { $ref: value._slow.id };
+        }
+        else {
+            return { $type: 'slow', value: _.mapValues(value._slow, function (v) { return dehydrate(v, allTrackedObjects, true); }) };
+        }
     }
     else if (_.isArray(value)) {
-        return value.map(dehydrate);
+        return value.map(function (v) { return dehydrate(v, allTrackedObjects); });
     }
-    else if (_.isPlainObject(value) && !_.has(value, '_slow')) {
-        return { $type: 'object', value: _.mapValues(value, dehydrate) };
+    else if (_.isPlainObject(value)) {
+        return { $type: 'object', value: _.mapValues(value, function (v) { return dehydrate(v, allTrackedObjects); }) };
     }
     else if (_.isUndefined(value)) {
         return { $type: 'undefined' };

@@ -1,3 +1,5 @@
+var assert = require('assert');
+var dehydrate = require('./dehydrate');
 var newImprovedApi;
 (function (newImprovedApi) {
     // Tracking control (all synchronous)
@@ -25,44 +27,81 @@ var newImprovedApi;
     var registry; //???
 })(newImprovedApi || (newImprovedApi = {}));
 function created(obj) {
-    allTrackedObjects.push(obj);
+    assert(!allTrackedObjects.has(obj));
+    // Ensure it has a unique ID
+    obj._slow.id = obj._slow.id || "#" + ++nextId;
+    allTrackedObjects.add(obj);
+    updatedTrackedObjects.add(obj);
 }
 exports.created = created;
 function updated(obj) {
-    // TODO: sloooooow! Each updated() call iterates over all or many of the currently tracked objects. Better ways?
-    //       - use an ES6 Set
-    //       - use a hash whose keys are the slow object IDs (but they may not have IDs yet. But they can be assigned on demand).
-    var exists = updatedTrackedObjects.indexOf(obj) !== -1;
-    if (!exists)
-        updatedTrackedObjects.push(obj);
+    assert(allTrackedObjects.has(obj));
+    updatedTrackedObjects.add(obj);
 }
 exports.updated = updated;
 function deleted(obj) {
-    deletedTrackedObjects.push(obj);
+    assert(allTrackedObjects.has(obj));
+    deletedTrackedObjects.add(obj);
 }
 exports.deleted = deleted;
-var allTrackedObjects = [];
-var updatedTrackedObjects = [];
-var deletedTrackedObjects = [];
+var allTrackedObjects = new Set();
+var updatedTrackedObjects = new Set();
+var deletedTrackedObjects = new Set();
+var nextId = 0;
 function saveState() {
     // STEPS:
     // - for all deleted objects:
     //   - mark deleted in log
-    //   - remove from tracked objects list?
+    //   - remove from tracked objects list
     // - for all updated objects: dehydrate and write to log
     //   - dehydrate: traverse object; for each element/value:
     //     - if it is on the tracked objects list, dehydrate as a $ref
     //     - if it is on the deleted objects list - ?! is that an error? It shouldn't have any references to it
     //     - otherwise - do normal/extended JSON serialization
+    // - clear the deleted objects list
+    // - clear the updated objects list
+    // TODO: ...
+    log("======================================== SAVE STATE ========================================");
+    // TODO: temp testing for DEBUGGING only...
+    var debug = {
+        all: setToArray(allTrackedObjects),
+        deleted: setToArray(deletedTrackedObjects),
+        updated: setToArray(updatedTrackedObjects)
+    };
+    // TODO: Step 1
+    deletedTrackedObjects.forEach(function (obj) {
+        log("DELETE: " + obj._slow.id);
+        allTrackedObjects.delete(obj);
+    });
+    // TODO: Step 2
+    updatedTrackedObjects.forEach(function (obj) {
+        var json = dehydrate(obj, allTrackedObjects);
+        log("UPSERT: " + JSON.stringify(json));
+    });
+    // TODO: Step 3
+    deletedTrackedObjects.clear();
+    updatedTrackedObjects.clear();
 }
 exports.saveState = saveState;
 function loadState() {
     // STEPS:
     // - read the entire log into a biiiig array/hash
-    // - full tracked objects list == all updated objects - all deleted objects (can be further pruned to only refd objects later)
-    // - 
+    // - full tracked objects list EQUALS all updated objects
+    //                             MINUS  all deleted objects (can be further pruned to only refd objects later)
+    //                             MINUS  all tracked objects with no $refs to them
+    // - for each tracked object:
+    //   - 
 }
 exports.loadState = loadState;
+function log(s) {
+    console.log(s);
+}
+// TODO: temp testing for DEBUGGING only...
+function setToArray(s) {
+    var result = [];
+    s.forEach(function (el) { return result.push(el); });
+    return result;
+}
 // TODO: doc... single process/thread exclusive by design...
 // TODO: errors are not caught... What to do?
 // TODO: NB from linux manpage: Calling fsync() does not necessarily ensure that the entry in the directory containing the file has also reached disk. For that an explicit fsync() on a file descriptor for the directory is also needed.

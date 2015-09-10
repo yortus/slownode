@@ -4,6 +4,7 @@ import path = require('path');
 import crypto = require('crypto');
 import _ = require('lodash');
 import types = require('types');
+import SlowObject = types.SlowObject;
 import storageLocation = require('./storageLocation');
 import dehydrate = require('./dehydrate');
 import rehydrate = require('./rehydrate');
@@ -13,13 +14,6 @@ import typeRegistry = require('./typeRegistry');
 
 namespace newImprovedApi {
 
-    interface SlowObject {
-        _slow: {
-            type: types.SlowObject.Type;
-            id?: string;
-            isDirty?: boolean;
-        }
-    }
 
     // Tracking control (all synchronous)
     export function created(obj: SlowObject): void {return null;}
@@ -49,38 +43,33 @@ namespace newImprovedApi {
 }
 
 
-interface SlowObject {
-    _slow: {
-        type: types.SlowObject.Type;
-        id?: string;
-        isDirty?: boolean;
-    }
-}
-
-
 export function created(obj: SlowObject): void {
-    allTrackedObjects.push(obj);
+    assert(!allTrackedObjects.has(obj));
+
+    // Ensure it has a unique ID
+    obj._slow.id = obj._slow.id || `#${++nextId}`;
+
+    allTrackedObjects.add(obj);
+    updatedTrackedObjects.add(obj);
 }
 
 
 export function updated(obj: SlowObject): void {
-
-    // TODO: sloooooow! Each updated() call iterates over all or many of the currently tracked objects. Better ways?
-    //       - use an ES6 Set
-    //       - use a hash whose keys are the slow object IDs (but they may not have IDs yet. But they can be assigned on demand).
-    var exists = updatedTrackedObjects.indexOf(obj) !== -1;
-    if (!exists) updatedTrackedObjects.push(obj);
+    assert(allTrackedObjects.has(obj));
+    updatedTrackedObjects.add(obj);
 }
 
 
 export function deleted(obj: SlowObject): void {
-    deletedTrackedObjects.push(obj);
+    assert(allTrackedObjects.has(obj));
+    deletedTrackedObjects.add(obj);
 }
 
 
-var allTrackedObjects: SlowObject[] = [];
-var updatedTrackedObjects: SlowObject[] = [];
-var deletedTrackedObjects: SlowObject[] = [];
+var allTrackedObjects = new Set<SlowObject>();
+var updatedTrackedObjects = new Set<SlowObject>();
+var deletedTrackedObjects = new Set<SlowObject>();
+var nextId = 0;
 
 
 export function saveState() {
@@ -88,7 +77,7 @@ export function saveState() {
     // STEPS:
     // - for all deleted objects:
     //   - mark deleted in log
-    //   - remove from tracked objects list?
+    //   - remove from tracked objects list
 
     // - for all updated objects: dehydrate and write to log
     //   - dehydrate: traverse object; for each element/value:
@@ -96,16 +85,45 @@ export function saveState() {
     //     - if it is on the deleted objects list - ?! is that an error? It shouldn't have any references to it
     //     - otherwise - do normal/extended JSON serialization
 
+    // - clear the deleted objects list
+    // - clear the updated objects list
 
+    // TODO: ...
+    log(`======================================== SAVE STATE ========================================`);
 
+// TODO: temp testing for DEBUGGING only...
+var debug = {
+    all: setToArray(allTrackedObjects),
+    deleted: setToArray(deletedTrackedObjects),
+    updated: setToArray(updatedTrackedObjects)
+}
+
+    // TODO: Step 1
+    deletedTrackedObjects.forEach(obj => {
+        log(`DELETE: ${obj._slow.id}`);
+        allTrackedObjects.delete(obj);
+    });
+
+    // TODO: Step 2
+    updatedTrackedObjects.forEach(obj => {
+        var json = dehydrate(obj, allTrackedObjects);
+        log(`UPSERT: ${JSON.stringify(json)}`);
+    });
+
+    // TODO: Step 3
+    deletedTrackedObjects.clear();
+    updatedTrackedObjects.clear();
 }
 
 export function loadState() {
 
     // STEPS:
     // - read the entire log into a biiiig array/hash
-    // - full tracked objects list == all updated objects - all deleted objects (can be further pruned to only refd objects later)
-    // - 
+    // - full tracked objects list EQUALS all updated objects
+    //                             MINUS  all deleted objects (can be further pruned to only refd objects later)
+    //                             MINUS  all tracked objects with no $refs to them
+    // - for each tracked object:
+    //   - 
 
 
 
@@ -115,7 +133,16 @@ export function loadState() {
 }
 
 
+function log(s: string) {
+    console.log(s);
+}
 
+// TODO: temp testing for DEBUGGING only...
+function setToArray<T>(s: Set<T>): T[] {
+    var result = [];
+    s.forEach(el => result.push(el));
+    return result;
+}
 
 
 
