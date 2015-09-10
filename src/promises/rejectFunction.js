@@ -5,7 +5,7 @@ var storage = require('../storage/storage');
  */
 function create(promise, persist) {
     // Create a function that rejects the given promise with the given reason.
-    var reject = (function (reason) {
+    var reject = function rejectSlowPromise(reason) {
         // As per spec, do nothing if promise's fate is already resolved.
         if (promise._slow.isFateResolved)
             return;
@@ -15,7 +15,7 @@ function create(promise, persist) {
         storage.updated(promise);
         // Finally, reject the promise using its own private _reject method.
         promise._reject(reason);
-    });
+    };
     // Add slow metadata to the reject function.
     reject._slow = { type: 12 /* SlowPromiseRejectFunction */, promise: promise };
     // Synchronise with the persistent object graph.

@@ -12,7 +12,7 @@ import storage = require('../storage/storage');
 export function create(promise: types.SlowPromise, persist: boolean) {
 
     // Create a function that rejects the given promise with the given reason.
-    var reject: types.SlowPromise.RejectFunction = <any> ((reason?: any) => {
+    var reject: types.SlowPromise.RejectFunction = <any> function rejectSlowPromise(reason?: any) {
 
         // As per spec, do nothing if promise's fate is already resolved.
         if (promise._slow.isFateResolved) return;
@@ -25,7 +25,7 @@ export function create(promise: types.SlowPromise, persist: boolean) {
 
         // Finally, reject the promise using its own private _reject method.
         promise._reject(reason);
-    });
+    };
 
     // Add slow metadata to the reject function.
     reject._slow = { type: SlowType.SlowPromiseRejectFunction, promise };
