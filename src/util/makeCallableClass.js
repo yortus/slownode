@@ -9,7 +9,7 @@ function makeCallableClass(ctorBody, callBody) {
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i - 0] = arguments[_i];
             }
-            callBody.apply(this, args);
+            callBody.apply(Callable, args);
         }
         Callable['__proto__'] = CallableConstructor.prototype;
         ctorBody.apply(Callable, args);
