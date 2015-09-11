@@ -59,7 +59,6 @@
     <TypeScriptCompile Include="src\functions\astOperations\traverseTree.ts" />
     <TypeScriptCompile Include="src\storage\typeRegistry.ts" />
     <TypeScriptCompile Include="src\types.d.ts" />
-    <TypeScriptCompile Include="src\typings\asyncawait\asyncawait.d.ts" />
     <TypeScriptCompile Include="src\typings\chai-as-promised\chai-as-promised.d.ts" />
     <TypeScriptCompile Include="src\typings\es6-collections\es6-collections.d.ts" />
     <TypeScriptCompile Include="src\typings\es6-promise\es6-promise.d.ts" />
@@ -92,7 +91,6 @@
     <Folder Include="src\functions\" />
     <Folder Include="src\asyncFunctions\" />
     <Folder Include="src\typings\" />
-    <Folder Include="src\typings\asyncawait\" />
     <Folder Include="src\typings\chai\" />
     <Folder Include="src\typings\escodegen\" />
     <Folder Include="src\typings\esprima\" />
