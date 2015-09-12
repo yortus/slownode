@@ -10,10 +10,6 @@ import storage = require('../storage/storage');
 export = SlowPromise;
 
 
-/** Sentinal value used for internal promise constructor calls. */
-const INTERNAL: any = {};
-
-
 /** Promises A+ compliant Promise implementation with persistence. */
 class SlowPromise implements types.SlowPromise {
 
@@ -21,19 +17,19 @@ class SlowPromise implements types.SlowPromise {
     constructor(resolver: (resolve: (value?: any) => void, reject: (reason?: any) => void) => void) {
 
         // Validate arguments.
-        assert(_.isFunction(resolver) || resolver == INTERNAL);
-
-        // If this is an internal call, return the promise now.
-        if (resolver === INTERNAL) return;
+        assert(!resolver || _.isFunction(resolver));
 
         // Synchronise with the persistent object graph.
         storage.created(this);
+
+        // If no resolver was given, just return now. This is an internal use of the constructor.
+        if (!resolver) return this;
 
         // Construct resolve and reject functions to be passed to the resolver.
         var resolve = new SlowPromiseResolveFunction(this);
         var reject = new SlowPromiseRejectFunction(this);
 
-        // TODO: temp testing...
+        // TODO: temp testing... why async? I think that's not in line with the draft PromisesAPlus constructor standard.
         setImmediate(() => {
 
             // TODO: Ensure the persistent object graph is safely stored before potentially yielding to the event loop
@@ -46,35 +42,25 @@ class SlowPromise implements types.SlowPromise {
 
     /** Returns a new SlowPromise instance that is already resolved with the given value. */
     static resolved(value?: any) {
-        var deferred = SlowPromise.deferred();
-        deferred.resolve(value);
-        return deferred.promise;
+        var promise = new SlowPromise(null);
+        var resolve = new SlowPromiseResolveFunction(promise);
+        resolve(value);
+        return promise;
     }
 
     /** Returns a new SlowPromise instance that is already rejected with the given reason. */
     static rejected(reason: any) {
-        var deferred = SlowPromise.deferred();
-        deferred.reject(reason);
-        return deferred.promise;
+        var promise = new SlowPromise(null);
+        var reject = new SlowPromiseRejectFunction(promise);
+        reject(reason);
+        return promise;
     }
 
     /** Returns an object containing a new SlowPromise instance, along with a resolve function and a reject function to control its fate. */
     static deferred() {
-
-        // Get a new promise instance using the internal constructor.
-        var promise = new SlowPromise(INTERNAL);
-
-        // Synchronise with the persistent object graph.
-        storage.created(promise);
-
-        //// TODO: temp testing... monitor when this instance gets GC'd.
-        //notifyGC(promise);
-
-        // Create the resolve and reject functions.
+        var promise = new SlowPromise(null);
         var resolve = new SlowPromiseResolveFunction(promise);
         var reject = new SlowPromiseRejectFunction(promise);
-
-        // All done. Return the 'deferred' instance.
         return { promise, resolve, reject };
     }
 
