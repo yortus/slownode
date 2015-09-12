@@ -1,7 +1,7 @@
 var assert = require('assert');
 var _ = require('lodash');
 var SlowPromiseResolveFunction = require('./resolveFunction');
-var rejectFunction = require('./rejectFunction');
+var SlowPromiseRejectFunction = require('./rejectFunction');
 var standardResolutionProcedure = require('./standardResolutionProcedure');
 var storage = require('../storage/storage');
 /** Sentinal value used for internal promise constructor calls. */
@@ -27,7 +27,7 @@ var SlowPromise = (function () {
         storage.created(this);
         // Construct resolve and reject functions to be passed to the resolver.
         var resolve = new SlowPromiseResolveFunction(this);
-        var reject = rejectFunction.create(this, true);
+        var reject = new SlowPromiseRejectFunction(this);
         // TODO: temp testing...
         setImmediate(function () {
             // TODO: Ensure the persistent object graph is safely stored before potentially yielding to the event loop
@@ -63,7 +63,7 @@ var SlowPromise = (function () {
         //notifyGC(promise);
         // Create the resolve and reject functions.
         var resolve = new SlowPromiseResolveFunction(promise);
-        var reject = rejectFunction.create(promise, true);
+        var reject = new SlowPromiseRejectFunction(promise);
         // All done. Return the 'deferred' instance.
         return { promise: promise, resolve: resolve, reject: reject };
     };

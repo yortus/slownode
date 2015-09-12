@@ -1,4 +1,4 @@
-function makeCallableClass(ctorBody, callBody) {
+function makeCallableClass(options) {
     return function CallableConstructor() {
         var args = [];
         for (var _i = 0; _i < arguments.length; _i++) {
@@ -9,10 +9,10 @@ function makeCallableClass(ctorBody, callBody) {
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i - 0] = arguments[_i];
             }
-            callBody.apply(Callable, args);
+            options.call.apply(Callable, args);
         }
         Callable['__proto__'] = CallableConstructor.prototype;
-        ctorBody.apply(Callable, args);
+        options.constructor.apply(Callable, args);
         return Callable;
     };
 }

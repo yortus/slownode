@@ -1,5 +1,4 @@
-//import async = require('asyncawait/async');
-//import await = require('asyncawait/await');
+//import {async, await} from 'asyncawait';
 //import slow = require('slownode');
 //import SteppableFunction = require('../src/functions/steppableFunction');
 //import Steppable = require('../src/functions/steppable');

@@ -1,12 +1,21 @@
+var makeCallableClass = require('../util/makeCallableClass');
 var storage = require('../storage/storage');
 /**
- * Returns a new SlowPromiseRejectFunction instance.
- * This function may be used to reject the given promise with a reason.
+ * Create a SlowPromiseRejectFunction callable instance.
+ * It may be called to reject the given promise with a reason.
  */
-function create(promise, persist) {
-    // Create a function that rejects the given promise with the given reason.
-    var reject = function rejectSlowPromise(reason) {
+var SlowPromiseRejectFunction = makeCallableClass({
+    // TODO: doc...
+    constructor: function (promise) {
+        // Add slow metadata to the resolve function.
+        this._slow = { type: 12 /* SlowPromiseRejectFunction */, promise: promise };
+        // Synchronise with the persistent object graph.
+        storage.created(this);
+    },
+    // TODO: doc...
+    call: function (reason) {
         // As per spec, do nothing if promise's fate is already resolved.
+        var promise = this._slow.promise;
         if (promise._slow.isFateResolved)
             return;
         // Indicate the promise's fate is now resolved.
@@ -15,17 +24,9 @@ function create(promise, persist) {
         storage.updated(promise);
         // Finally, reject the promise using its own private _reject method.
         promise._reject(reason);
-    };
-    // Add slow metadata to the reject function.
-    reject._slow = { type: 12 /* SlowPromiseRejectFunction */, promise: promise };
-    // Synchronise with the persistent object graph.
-    // TODO: refactor this getting rid of conditional 'persist'
-    if (persist)
-        storage.created(reject);
-    // Return the reject function.
-    return reject;
-}
-exports.create = create;
+    }
+});
+module.exports = SlowPromiseRejectFunction;
 //// TODO: register slow object type with storage (for rehydration logic)
 //storage.registerType({
 //    type: SlowType.SlowPromiseRejectFunction,

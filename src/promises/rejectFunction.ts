@@ -1,20 +1,33 @@
-import assert = require('assert');
-import _ = require('lodash');
+//import assert = require('assert');
+//import _ = require('lodash');
 import types = require('types');
 import SlowType = types.SlowObject.Type;
+import makeCallableClass = require('../util/makeCallableClass');
 import storage = require('../storage/storage');
+export = SlowPromiseRejectFunction;
 
 
 /**
- * Returns a new SlowPromiseRejectFunction instance.
- * This function may be used to reject the given promise with a reason.
+ * Create a SlowPromiseRejectFunction callable instance.
+ * It may be called to reject the given promise with a reason.
  */
-export function create(promise: types.SlowPromise, persist: boolean) {
+var SlowPromiseRejectFunction = <{ new(promise: types.SlowPromise): types.SlowPromise.RejectFunction; }> makeCallableClass({
 
-    // Create a function that rejects the given promise with the given reason.
-    var reject: types.SlowPromise.RejectFunction = <any> function rejectSlowPromise(reason?: any) {
+    // TODO: doc...
+    constructor: function (promise: types.SlowPromise) {
+
+        // Add slow metadata to the resolve function.
+        this._slow = { type: SlowType.SlowPromiseRejectFunction, promise };
+
+        // Synchronise with the persistent object graph.
+        storage.created(this);
+    },
+
+    // TODO: doc...
+    call: function (reason?: any) {
 
         // As per spec, do nothing if promise's fate is already resolved.
+        var promise: types.SlowPromise = this._slow.promise;
         if (promise._slow.isFateResolved) return;
 
         // Indicate the promise's fate is now resolved.
@@ -25,18 +38,11 @@ export function create(promise: types.SlowPromise, persist: boolean) {
 
         // Finally, reject the promise using its own private _reject method.
         promise._reject(reason);
-    };
+    }
+});
 
-    // Add slow metadata to the reject function.
-    reject._slow = { type: SlowType.SlowPromiseRejectFunction, promise };
 
-    // Synchronise with the persistent object graph.
-    // TODO: refactor this getting rid of conditional 'persist'
-    if (persist) storage.created(reject);
 
-    // Return the reject function.
-    return reject;
-}
 
 
 //// TODO: register slow object type with storage (for rehydration logic)

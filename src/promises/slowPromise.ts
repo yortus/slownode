@@ -4,7 +4,7 @@ import types = require('types');
 import State = types.SlowPromise.State;
 import SlowType = types.SlowObject.Type;
 import SlowPromiseResolveFunction = require('./resolveFunction');
-import rejectFunction = require('./rejectFunction');
+import SlowPromiseRejectFunction = require('./rejectFunction');
 import standardResolutionProcedure = require('./standardResolutionProcedure');
 import storage = require('../storage/storage');
 export = SlowPromise;
@@ -31,7 +31,7 @@ class SlowPromise implements types.SlowPromise {
 
         // Construct resolve and reject functions to be passed to the resolver.
         var resolve = new SlowPromiseResolveFunction(this);
-        var reject = rejectFunction.create(this, true);
+        var reject = new SlowPromiseRejectFunction(this);
 
         // TODO: temp testing...
         setImmediate(() => {
@@ -72,7 +72,7 @@ class SlowPromise implements types.SlowPromise {
 
         // Create the resolve and reject functions.
         var resolve = new SlowPromiseResolveFunction(promise);
-        var reject = rejectFunction.create(promise, true);
+        var reject = new SlowPromiseRejectFunction(promise);
 
         // All done. Return the 'deferred' instance.
         return { promise, resolve, reject };
