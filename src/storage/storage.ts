@@ -12,63 +12,63 @@ import typeRegistry = require('./typeRegistry');
 
 
 
-namespace newImprovedApi {
+//namespace newImprovedApi {
 
 
-    // Tracking control (all synchronous)
-    export function created(obj: SlowObject): void {return null;}
-    export function updated(obj: SlowObject): void {return null;}
-    export function deleted(obj: SlowObject): void {return null;}
+//    // Tracking control (all synchronous)
+//    export function created(obj: SlowObject): void {return null;}
+//    export function updated(obj: SlowObject): void {return null;}
+//    export function deleted(obj: SlowObject): void {return null;}
 
-    // Serialization control (if synchronous)
-    export function saveStateSync(): void {}
-    export function loadStateSync(): void {}
+//    // Serialization control (if synchronous)
+//    export function saveStateSync(): void {}
+//    export function loadStateSync(): void {}
 
-    // Serialization control (if asynchronous)
-    export function saveState(callback: (err?) => void) {}
-    export function loadState(callback: (err?) => void) {}
+//    // Serialization control (if asynchronous)
+//    export function saveState(callback: (err?) => void) {}
+//    export function loadState(callback: (err?) => void) {}
 
-    // Slow object type registration
-    export function registerSlowType(typeInfo: SlowTypeInfo) {}
-    interface SlowTypeInfo {
-        name: string;
-        createBlank: () => SlowObject;
-        getState: (obj: SlowObject) => any;
-        setState: (obj: SlowObject, value: any) => void;
-    }
+//    // Slow object type registration
+//    export function registerSlowType(typeInfo: SlowTypeInfo) {}
+//    interface SlowTypeInfo {
+//        name: string;
+//        createBlank: () => SlowObject;
+//        getState: (obj: SlowObject) => any;
+//        setState: (obj: SlowObject, value: any) => void;
+//    }
 
-    // Internals...
-    var trackedObjects: SlowObject[];
-    var registry: any; //???
+//    // Internals...
+//    var trackedObjects: SlowObject[];
+//    var registry: any; //???
+//}
+interface StorageAPI {
+    created(obj: SlowObject): StorageAPI;
+    updated(obj: SlowObject): StorageAPI;
+    deleted(obj: SlowObject): StorageAPI;
 }
 
 
-export function created(...objects: SlowObject[]): void {
-    objects.forEach(obj => {
-        assert(!allTrackedObjects.has(obj));
 
-        // Ensure it has a unique ID
-        obj._slow.id = obj._slow.id || `#${++nextId}`;
-
-        allTrackedObjects.add(obj);
-        updatedTrackedObjects.add(obj);
-    });
+export function created(obj: SlowObject): StorageAPI {
+    assert(!allTrackedObjects.has(obj));
+    ensureSlowObjectHasUniqueId(obj);
+    allTrackedObjects.add(obj);
+    updatedTrackedObjects.add(obj);
+    return module.exports;
 }
 
 
-export function updated(...objects: SlowObject[]): void {
-    objects.forEach(obj => {
-        assert(allTrackedObjects.has(obj));
-        updatedTrackedObjects.add(obj);
-    });
+export function updated(obj: SlowObject): StorageAPI {
+    assert(allTrackedObjects.has(obj));
+    updatedTrackedObjects.add(obj);
+    return module.exports;
 }
 
 
-export function deleted(...objects: SlowObject[]): void {
-    objects.forEach(obj => {
-        assert(allTrackedObjects.has(obj));
-        deletedTrackedObjects.add(obj);
-    });
+export function deleted(obj: SlowObject): StorageAPI {
+    assert(allTrackedObjects.has(obj));
+    deletedTrackedObjects.add(obj);
+    return module.exports;
 }
 
 
@@ -149,6 +149,10 @@ export function loadState() {
 
 }
 
+
+function ensureSlowObjectHasUniqueId(obj: SlowObject) {
+    obj._slow.id = obj._slow.id || `#${++nextId}`;
+}
 
 function log(s: string) {
     console.log(s);

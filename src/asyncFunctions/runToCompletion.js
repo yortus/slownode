@@ -27,7 +27,7 @@ function runToCompletion(safa, error, next) {
         var s = safa._slow;
         s.reject(ex);
         // Synchronise with the persistent object graph.
-        storage.deleted(s.resolve, s.reject, s.onAwaitedResult, s.onAwaitedError, safa);
+        storage.deleted(s.resolve).deleted(s.reject).deleted(s.onAwaitedResult).deleted(s.onAwaitedError).deleted(safa);
         return;
     }
     // The Steppable returned. Finalize and resolve the SlowAsyncFunctionActivation.
@@ -35,7 +35,7 @@ function runToCompletion(safa, error, next) {
         var s = safa._slow;
         s.resolve(yielded.value);
         // Synchronise with the persistent object graph.
-        storage.deleted(s.resolve, s.reject, s.onAwaitedResult, s.onAwaitedError, safa);
+        storage.deleted(s.resolve).deleted(s.reject).deleted(s.onAwaitedResult).deleted(s.onAwaitedError).deleted(safa);
         return;
     }
     // The Steppable yielded. Ensure the yielded value is awaitable.

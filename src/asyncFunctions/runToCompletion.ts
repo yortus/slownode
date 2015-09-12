@@ -31,7 +31,7 @@ function runToCompletion(safa: types.SlowAsyncFunction.Activation, error?: any, 
         s.reject(ex);
 
         // Synchronise with the persistent object graph.
-        storage.deleted(s.resolve, s.reject, s.onAwaitedResult, s.onAwaitedError, safa);
+        storage.deleted(s.resolve).deleted(s.reject).deleted(s.onAwaitedResult).deleted(s.onAwaitedError).deleted(safa);
         return;
     }
 
@@ -41,7 +41,7 @@ function runToCompletion(safa: types.SlowAsyncFunction.Activation, error?: any, 
         s.resolve(yielded.value);
 
         // Synchronise with the persistent object graph.
-        storage.deleted(s.resolve, s.reject, s.onAwaitedResult, s.onAwaitedError, safa);
+        storage.deleted(s.resolve).deleted(s.reject).deleted(s.onAwaitedResult).deleted(s.onAwaitedError).deleted(safa);
         return;
     }
 

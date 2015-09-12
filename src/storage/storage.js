@@ -1,65 +1,23 @@
 var assert = require('assert');
 var dehydrate = require('./dehydrate');
-var newImprovedApi;
-(function (newImprovedApi) {
-    // Tracking control (all synchronous)
-    function created(obj) { return null; }
-    newImprovedApi.created = created;
-    function updated(obj) { return null; }
-    newImprovedApi.updated = updated;
-    function deleted(obj) { return null; }
-    newImprovedApi.deleted = deleted;
-    // Serialization control (if synchronous)
-    function saveStateSync() { }
-    newImprovedApi.saveStateSync = saveStateSync;
-    function loadStateSync() { }
-    newImprovedApi.loadStateSync = loadStateSync;
-    // Serialization control (if asynchronous)
-    function saveState(callback) { }
-    newImprovedApi.saveState = saveState;
-    function loadState(callback) { }
-    newImprovedApi.loadState = loadState;
-    // Slow object type registration
-    function registerSlowType(typeInfo) { }
-    newImprovedApi.registerSlowType = registerSlowType;
-    // Internals...
-    var trackedObjects;
-    var registry; //???
-})(newImprovedApi || (newImprovedApi = {}));
-function created() {
-    var objects = [];
-    for (var _i = 0; _i < arguments.length; _i++) {
-        objects[_i - 0] = arguments[_i];
-    }
-    objects.forEach(function (obj) {
-        assert(!allTrackedObjects.has(obj));
-        // Ensure it has a unique ID
-        obj._slow.id = obj._slow.id || "#" + ++nextId;
-        allTrackedObjects.add(obj);
-        updatedTrackedObjects.add(obj);
-    });
+function created(obj) {
+    assert(!allTrackedObjects.has(obj));
+    ensureSlowObjectHasUniqueId(obj);
+    allTrackedObjects.add(obj);
+    updatedTrackedObjects.add(obj);
+    return module.exports;
 }
 exports.created = created;
-function updated() {
-    var objects = [];
-    for (var _i = 0; _i < arguments.length; _i++) {
-        objects[_i - 0] = arguments[_i];
-    }
-    objects.forEach(function (obj) {
-        assert(allTrackedObjects.has(obj));
-        updatedTrackedObjects.add(obj);
-    });
+function updated(obj) {
+    assert(allTrackedObjects.has(obj));
+    updatedTrackedObjects.add(obj);
+    return module.exports;
 }
 exports.updated = updated;
-function deleted() {
-    var objects = [];
-    for (var _i = 0; _i < arguments.length; _i++) {
-        objects[_i - 0] = arguments[_i];
-    }
-    objects.forEach(function (obj) {
-        assert(allTrackedObjects.has(obj));
-        deletedTrackedObjects.add(obj);
-    });
+function deleted(obj) {
+    assert(allTrackedObjects.has(obj));
+    deletedTrackedObjects.add(obj);
+    return module.exports;
 }
 exports.deleted = deleted;
 var allTrackedObjects = new Set();
@@ -123,6 +81,9 @@ function loadState() {
     isLoadingState = false;
 }
 exports.loadState = loadState;
+function ensureSlowObjectHasUniqueId(obj) {
+    obj._slow.id = obj._slow.id || "#" + ++nextId;
+}
 function log(s) {
     console.log(s);
 }
