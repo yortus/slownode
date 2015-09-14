@@ -3,13 +3,14 @@ import _ = require('lodash');
 import types = require('types');
 import esprima = require('esprima');
 import escodegen = require('escodegen');
+import makeCallableClass = require('../util/makeCallableClass');
+import SteppableObject = require('./steppableObject');
 import replacePseudoYieldCallsWithYieldExpressions = require('./astOperations/funcExpr/replacePseudoYieldCallsWithYieldExpressions');
 import replacePseudoConstCallsWithConstDeclarations = require('./astOperations/funcExpr/replacePseudoConstCallsWithConstDeclarations');
 import ensureNodesAreLegalForSteppableBody = require('./astOperations/funcExpr/ensureNodesAreLegalForSteppableBody');
 import ensureIdentifiersAreLegalForSteppableBody = require('./astOperations/funcExpr/ensureIdentifiersAreLegalForSteppableBody');
 import ensureMutatingOperationsAreLegalForSteppableBody = require('./astOperations/funcExpr/ensureMutatingOperationsAreLegalForSteppableBody');
 import transformToStateMachine = require('./astOperations/funcExpr/transformToStateMachine');
-import Steppable = require('./steppable');
 export = SteppableFunction;
 
 
@@ -41,25 +42,50 @@ export = SteppableFunction;
 //---------------------------------------------
 
 
-/** Constructs a SteppableFunction instance. May be called with or without 'new'. */
-function SteppableFunction(steppableBody: Function, options?: types.Steppable.Options) {
+/**
+ * Creates a SteppableFunction instance, calls to which return a SteppableObject instance.
+ * This is analogous to the ES6 generator function / generator object distinction.
+ */
+var SteppableFunction: typeof types.SteppableFunction = <any> makeCallableClass({
 
-    // Validate arguments.
-    assert(typeof steppableBody === 'function');
-    options = _.defaults({}, options, { pseudoYield: null, pseudoConst: null });
+    constructor: function (bodyFunc: Function, options?: types.Steppable.Options) {
+        assert(typeof bodyFunc === 'function');
+        var pseudoYield = options ? options.pseudoYield : null;
+        var pseudoConst = options ? options.pseudoConst : null;
+        this.stateMachine = makeStateMachine(bodyFunc, options.pseudoYield, options.pseudoConst);
+    },
 
-    // Transform original function --> source code --> AST.
-    var originalFunction = steppableBody;
+    call: function (...args: any[]): types.SteppableObject {
+        var steppable = new SteppableObject(this.stateMachine);
+        steppable.state = { local: { arguments: args } };
+        return steppable;
+    }
+});
+
+
+// Define the static `fromStateMachine` method on the SteppableFunction callable class.
+SteppableFunction.fromStateMachine = (stateMachine: types.Steppable.StateMachine) => {
+    var instance = new SteppableFunction(() => {});
+    instance.stateMachine = stateMachine;
+    return instance;
+};
+
+
+/** Helper function for validating a function body and transforming it into a state machine. */
+function makeStateMachine(bodyFunc: Function, pseudoYield: string, pseudoConst: string): types.Steppable.StateMachine {
+
+    // Transform original body function --> source code --> AST.
+    var originalFunction = bodyFunc;
     var originalSource = '(' + originalFunction.toString() + ')';
     var originalAST = esprima.parse(originalSource);
     var exprStmt = <ESTree.ExpressionStatement> originalAST.body[0];
     var funcExpr = <ESTree.FunctionExpression> exprStmt.expression;
 
-    // Convert direct calls to options.pseudoYield to equivalent yield expressions.
-    if (options.pseudoYield) replacePseudoYieldCallsWithYieldExpressions(funcExpr, options.pseudoYield);
+    // Convert direct calls to ${pseudoYield} to equivalent yield expressions.
+    if (pseudoYield) replacePseudoYieldCallsWithYieldExpressions(funcExpr, pseudoYield);
 
-    // Convert variable declarations whose 'init' is a direct call to options.pseudoConst to equivalent const declarations.
-    if (options.pseudoConst) replacePseudoConstCallsWithConstDeclarations(funcExpr, options.pseudoConst);
+    // Convert variable declarations whose 'init' is a direct call to ${pseudoConst} to equivalent const declarations.
+    if (pseudoConst) replacePseudoConstCallsWithConstDeclarations(funcExpr, pseudoConst);
 
     // Validate the AST.
     ensureNodesAreLegalForSteppableBody(funcExpr);
@@ -71,34 +97,8 @@ function SteppableFunction(steppableBody: Function, options?: types.Steppable.Op
 
     // Transform modified AST --> source code --> function.
     var stateMachineSource = '(' + escodegen.generate(stateMachineAST) + ')';
-    var stateMachine = eval(stateMachineSource);
+    var stateMachine: types.Steppable.StateMachine = eval(stateMachineSource);
 
-    // Generate and return a SteppableFunction instance (ie a callable that returns a Steppable).
-    assert(funcExpr.params.every(p => p.type === 'Identifier'));
-    var paramNames = funcExpr.params.map(p => <string> p['name']);
-    var result = makeSteppableFunction(stateMachine, paramNames);
-    return result;
-}
-
-
-/** Constructs a SteppableFunction instance tailored to the given StateMachine function and parameter names. */
-function makeSteppableFunction(stateMachine: types.Steppable.StateMachine, paramNames: string[]): types.Steppable.Function {
-
-    // This is the generic constructor function. It closes over stateMachine.
-    function SteppableFunction() {
-        var steppable = new Steppable(stateMachine);
-        steppable.state = { local: { arguments: Array.prototype.slice.call(arguments) } };
-        return steppable;
-    }
-
-    // Customise the generic constructor function with the specified parameter names and a `stateMachine` property.
-    var originalSource = SteppableFunction.toString();
-    var sourceWithParamNames = originalSource.replace('SteppableFunction()', `SteppableFunction(${paramNames.join(', ')})`);
-    var constructorFunction: types.Steppable.Function = eval('(' + sourceWithParamNames + ')');
-
-    // Add the `stateMachine` property to the constructor function.
-    constructorFunction.stateMachine = stateMachine;
-
-    // Return the customised constructor function.
-    return constructorFunction;
+    // All done.
+    return stateMachine;
 }

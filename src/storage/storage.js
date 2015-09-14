@@ -70,12 +70,13 @@ function loadState() {
     // - set isLoadingState, so tracking calls are ignored.
     // - read the entire log into a biiiig array/hash
     // - full tracked objects list EQUALS all updated objects
-    //                             MINUS  all deleted objects (can be further pruned to only refd objects later)
+    //                             MINUS  all deleted objects
     //                             MINUS  all tracked objects with no $refs to them
     // - for each tracked object:
     //   - ???
+    //   - profit
     // - clear isLoadingState, so tracking calls are reinstated.
-    // TODO: why not just allow tracking always? As load time that will effectively get the next log into the proper state....
+    // TODO: why not just allow tracking always? At load time that will effectively get the next log into the proper state....
     isLoadingState = true;
     // TODO: ...
     isLoadingState = false;

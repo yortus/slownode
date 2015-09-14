@@ -1,121 +1,107 @@
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
 var assert = require('assert');
-var crypto = require('crypto');
-var Steppable = require('../functions/steppable');
+var makeCallableClass = require('../util/makeCallableClass');
+var shasum = require('../util/shasum');
 var SteppableFunction = require('../functions/steppableFunction');
+var SteppableObject = require('../functions/steppableObject');
 var SlowPromise = require('../promises/slowPromise');
 var runToCompletion = require('./runToCompletion');
 var storage = require('../storage/storage');
-// TODO: internal factory function to create a 'blank' SlowAsyncFunction whose props can be assigned after creation
-//function create(): types.SlowAsyncFunction {
-//    var result = (...args) => {
-//    }
-//}
-// TODO: return something that really has a prototype of type SlowAsyncFunction?
-//       - ie so the following makes sense at runtime: ... if (fn instanceof SlowAsyncFunction) {...}
-//       - Is this even possible. How to create a 'function' object with a different prototype?
-//       - See: https://gist.github.com/tcr/4416956
-//       - See: http://stackoverflow.com/a/17111430/1075886
-//       - See: http://stackoverflow.com/a/346666/1075886
 // TODO: doc...
-var asyncPseudoKeyword = (function (bodyFunc) {
-    // Validate arguments.
-    assert(typeof bodyFunc === 'function');
-    // Get all inforation required to create the AsyncFunction instance, based on the given bodyFunc.
-    // TODO: optimise! SteppableFunction is VERY EXPENSIVE!!!
-    //       - better: hash the original source instead of the steppableFunc source, and only make a new steppableFunc if the hash hasn't already been created.
-    var steppableFunc = SteppableFunction(bodyFunc, { pseudoYield: 'await', pseudoConst: '__const' });
-    var stateMachineSource = steppableFunc.stateMachine.toString();
-    var originalSource = bodyFunc.toString();
-    var asyncFunction = makeSlowAsyncFunction(steppableFunc, stateMachineSource, originalSource);
-    // Synchronise with the persistent object graph.
-    storage.created(asyncFunction);
-    // Return the SlowAsyncFunction instance.
-    return asyncFunction;
-});
-// TODO: temp testing...
-function tween(stateMachineSource, originalSource) {
-    var stateMachine = eval('(' + stateMachineSource + ')');
-    var steppableFunc = (function () {
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i - 0] = arguments[_i];
-        }
-        var steppable = new Steppable(stateMachine);
-        steppable.state = { local: { arguments: args } };
-        return steppable;
-    });
-    steppableFunc.stateMachine = stateMachine;
-    return makeSlowAsyncFunction(steppableFunc, stateMachineSource, originalSource);
-}
-// TODO: doc...
-function makeSlowAsyncFunction(steppableFunc, stateMachineSource, originalSource) {
-    // TODO: ...
-    var asyncFunctionId = crypto.createHash('sha1').update(stateMachineSource).digest('hex').slice(0, 40);
-    // Create the callable part of the SlowAsyncFunction object. When called, this function creates a new
-    // SlowAsyncFunctionActivation object from the given SteppableFunction, and runs it to completion.
-    var asyncFunction = (function () {
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i - 0] = arguments[_i];
-        }
-        // TODO: Create a new SlowPromise to represent the eventual result of the operation...
-        var deferred = SlowPromise.deferred();
-        // Create a new SlowAsyncFunctionActivation object using the given arguments.
-        // A SlowAsyncFunctionActivation object is just a Steppable object with additional metadata.
-        // TODO: subclass Steppable so we have a runtime-identifiable prototype?
-        var safa = steppableFunc.apply(steppableFunc, args);
-        // Add slow state to the SlowAsyncFunctionActivation instance.
-        safa._slow = {
-            type: 30 /* SlowAsyncFunctionActivation */,
-            asyncFunction: asyncFunction,
-            state: safa.state,
-            awaiting: null,
-            onAwaitedResult: makeContinuationResultHandler(safa, true),
-            onAwaitedError: makeContinuationErrorHandler(safa, true),
-            resolve: deferred.resolve,
-            reject: deferred.reject
+var asyncPseudoKeyword = makeCallableClass({
+    constructor: function (bodyFunc) {
+        // Validate arguments.
+        assert(typeof bodyFunc === 'function');
+        // Get the shasum of the body function's source code. This is used
+        // to uniquely identify the SlowAsyncFunction for caching purposes.
+        var originalSource = bodyFunc.toString();
+        var safid = shasum(originalSource);
+        // Return the cached SlowAsyncFunction instance immediately if there is one.
+        var cached = asyncFunctionCache[safid];
+        if (cached)
+            return cached;
+        // Create a new SlowAsyncFunction instance.
+        var steppableFunc = new SteppableFunction(bodyFunc, { pseudoYield: 'await', pseudoConst: '__const' });
+        this.stateMachine = steppableFunc.stateMachine;
+        this._slow = {
+            type: 20 /* SlowAsyncFunction */,
+            id: safid,
+            stateMachineSource: steppableFunc.stateMachine.toString(),
+            originalSource: originalSource
         };
+        // Cache this SlowAsyncFunction instance to save re-computing it again.
+        asyncFunctionCache[safid] = this;
         // Synchronise with the persistent object graph.
-        storage.created(safa);
-        // Run the SlowAsyncFunctionActivation instance to completion, and return the promise of completion.
+        storage.created(this);
+    },
+    call: function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i - 0] = arguments[_i];
+        }
+        // Create a new SlowPromise to represent the eventual result of the slow async operation.
+        var deferred = SlowPromise.deferred();
+        // Create a new SlowAsyncFunctionActivation instance to run the async operation.
+        var safa = new SlowAsyncFunctionActivation(this.stateMachine, args, this, deferred);
+        // Run the async operation to completion, and return a promise of the outcome.
         runToCompletion(safa);
         return deferred.promise;
-    });
-    // Add a reference to the stateMachine to the SlowAsyncFunction.
-    asyncFunction.stateMachine = steppableFunc.stateMachine;
-    // Add slow state to the SlowAsyncFunction instance.
-    asyncFunction._slow = {
-        type: 20 /* SlowAsyncFunction */,
-        id: asyncFunctionId,
-        stateMachineSource: stateMachineSource,
-        originalSource: originalSource
-    };
-    // Return the SlowAsyncFunction instance.
-    return asyncFunction;
-}
+    }
+});
+/** Supports memoization of SlowAsyncFunction instances, which are immutable and expensive to compute. */
+var asyncFunctionCache = {};
+/** A SlowAsyncFunctionActivation is a SteppableObject with additional properties. */
+var SlowAsyncFunctionActivation = (function (_super) {
+    __extends(SlowAsyncFunctionActivation, _super);
+    function SlowAsyncFunctionActivation(stateMachine, args, asyncFunction, deferred) {
+        _super.call(this, stateMachine);
+        this.asyncFunction = asyncFunction;
+        this.deferred = deferred;
+        this._slow = {
+            type: 30 /* SlowAsyncFunctionActivation */,
+            asyncFunction: this.asyncFunction,
+            state: this.state,
+            awaiting: null,
+            onAwaitedResult: makeContinuationResultHandler(this),
+            onAwaitedError: makeContinuationErrorHandler(this),
+            resolve: this.deferred.resolve,
+            reject: this.deferred.reject
+        };
+        this.state = { local: { arguments: args } };
+        // Synchronise with the persistent object graph.
+        storage.created(this);
+    }
+    return SlowAsyncFunctionActivation;
+})(SteppableObject);
+// TODO: temp testing...
+//function tween(stateMachineSource: string, originalSource: string) {
+//    var stateMachine = eval('(' + stateMachineSource + ')');
+//    var steppableFunc = SteppableFunction.fromStateMachine(stateMachine);
+//    return makeSlowAsyncFunction(steppableFunc, stateMachineSource, originalSource);
+//}
 // TODO: doc...
-function makeContinuationResultHandler(safa, persist) {
+function makeContinuationResultHandler(safa) {
     // Make a function that resumes the given activation with a 'next' value.
     var continuation = function (value) { return runToCompletion(safa, null, value); };
     // Add slow metadata to the continuation function.
     continuation._slow = { type: 31 /* SlowAsyncFunctionContinuationWithResult */, safa: safa };
     // Synchronise with the persistent object graph.
-    // TODO: refactor this getting rid of conditional 'persist'
-    if (persist)
-        storage.created(continuation);
+    storage.created(continuation);
     // Return the continuation.
     return continuation;
 }
 // TODO: doc...
-function makeContinuationErrorHandler(safa, persist) {
+function makeContinuationErrorHandler(safa) {
     // Make a function that resumes the given activation, throwing the given error into it.
     var continuation = function (error) { return runToCompletion(safa, error); };
     // Add slow metadata to the continuation function.
     continuation._slow = { type: 32 /* SlowAsyncFunctionContinuationWithError */, safa: safa };
     // Synchronise with the persistent object graph.
-    // TODO: refactor this getting rid of conditional 'persist'
-    if (persist)
-        storage.created(continuation);
+    storage.created(continuation);
     // Return the continuation.
     return continuation;
 }

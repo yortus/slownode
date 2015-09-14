@@ -1,16 +1,12 @@
-// TODO: doc...
-var Steppable = (function () {
-    // TODO: doc...
-    function Steppable(stateMachine) {
+/** Defines the Steppable object returned by a call to SteppableFunction#[[call]]. */
+var SteppableObject = (function () {
+    function SteppableObject(stateMachine) {
         this.stateMachine = stateMachine;
-        // TODO: doc...
         this.next = makeResumeMethod('yield', this);
-        // TODO: doc...
         this.throw = makeResumeMethod('throw', this);
-        // TODO: doc...
         this.return = makeResumeMethod('return', this);
     }
-    return Steppable;
+    return SteppableObject;
 })();
 /** Helper function for creating Steppable's `next`, `throw`, and `return` method bodies. */
 function makeResumeMethod(type, steppable) {
@@ -25,5 +21,5 @@ function makeResumeMethod(type, steppable) {
         return { done: outgoing.type === 'return', value: outgoing.value };
     };
 }
-module.exports = Steppable;
-//# sourceMappingURL=steppable.js.map
+module.exports = SteppableObject;
+//# sourceMappingURL=steppableObject.js.map

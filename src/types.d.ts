@@ -13,6 +13,7 @@
     type Async = typeof slow.async;
 
     interface SlowAsyncFunction {
+        (...args): SlowPromise;
         stateMachine: Steppable.StateMachine;
         _slow: {
             type: SlowObject.Type;
@@ -24,7 +25,7 @@
 
     namespace SlowAsyncFunction {
 
-        interface Activation extends Steppable {
+        interface Activation extends SteppableObject {
             _slow: {
                 type: SlowObject.Type;
                 id?: string;
@@ -105,7 +106,18 @@
 
 
 
-    interface Steppable {
+    interface SteppableFunction {
+        (...args: any[]): SteppableObject;
+        stateMachine: Steppable.StateMachine;
+    }
+
+    export var SteppableFunction: {
+        new(bodyFunc: Function, options?: Steppable.Options): SteppableFunction;
+        (bodyFunc: Function, options?: Steppable.Options): SteppableFunction;
+        fromStateMachine(stateMachine: Steppable.StateMachine): SteppableFunction;
+    };
+
+    interface SteppableObject {
         next(value?: any): { done: boolean; value: any; };
         throw(value?: any): { done: boolean; value: any; };
         return(value?: any): { done: boolean; value: any; };
@@ -113,16 +125,6 @@
     }
 
     namespace Steppable {
-
-        interface Function {
-            (...args: any[]): Steppable;
-            stateMachine: StateMachine;
-        }
-
-        export var Function: {
-            new(steppableBody: Function, options?: Options): Function;
-            (steppableBody: Function, options?: Options): Function;
-        };
 
         interface Options {
             pseudoYield?: string;

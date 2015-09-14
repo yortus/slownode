@@ -40,6 +40,7 @@
     <TypeScriptCompile Include="src\functions\astOperations\funcExpr\replacePseudoYieldCallsWithYieldExpressions.ts" />
     <TypeScriptCompile Include="src\functions\astOperations\funcExpr\replacePseudoConstCallsWithConstDeclarations.ts" />
     <TypeScriptCompile Include="src\functions\isRelocatableFunction.ts" />
+    <TypeScriptCompile Include="src\functions\steppableObject.ts" />
     <TypeScriptCompile Include="src\mainInfo.ts" />
     <TypeScriptCompile Include="src\promises\resolveFunction.ts" />
     <TypeScriptCompile Include="src\promises\rejectFunction.ts" />
@@ -54,7 +55,6 @@
     <TypeScriptCompile Include="src\promises\slowPromise.ts" />
     <TypeScriptCompile Include="src\functions\astOperations\funcExpr\transformToStateMachine.ts" />
     <TypeScriptCompile Include="src\functions\astOperations\matchNode.ts" />
-    <TypeScriptCompile Include="src\functions\steppable.ts" />
     <TypeScriptCompile Include="src\functions\steppableFunction.ts" />
     <TypeScriptCompile Include="src\functions\astOperations\traverseTree.ts" />
     <TypeScriptCompile Include="src\storage\typeRegistry.ts" />
@@ -69,6 +69,7 @@
     <TypeScriptCompile Include="src\typings\lodash\lodash.d.ts" />
     <Content Include="test\fixtures\slowfuncs\1.ts" />
     <TypeScriptCompile Include="src\util\makeCallableClass.ts" />
+    <TypeScriptCompile Include="src\util\shasum.ts" />
     <TypeScriptCompile Include="test\fixtures\slowfuncs\3.ts" />
     <TypeScriptCompile Include="test\fixtures\slowfuncs\2.ts" />
     <TypeScriptCompile Include="test\steppableFunction.ts" />
