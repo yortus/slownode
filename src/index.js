@@ -1,4 +1,4 @@
-var asyncPseudoKeyword = require('./asyncFunctions/asyncPseudoKeyword');
+var SlowAsyncFunction = require('./asyncFunctions/slowAsyncFunction');
 var SlowPromise = require('./promises/slowPromise');
 //// TODO: Experiment with node-weak and global.gc to work out when to delete persistent slow objects. Works OK!
 //// NB: must run node with the --expose-gc flag for this to work... eg node --expose-gc ./debug
@@ -37,7 +37,7 @@ var SlowPromise = require('./promises/slowPromise');
 //rehydrate();
 // TODO: temp testing... Build the API for export...
 var api = {};
-api.async = asyncPseudoKeyword;
+api.async = SlowAsyncFunction;
 api.Promise = SlowPromise;
 api.SlowPromise = SlowPromise;
 module.exports = api;

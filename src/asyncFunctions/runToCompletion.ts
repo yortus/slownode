@@ -14,6 +14,9 @@ export = runToCompletion;
  * be an awaitable value. A recursive call to runToCompletion() is scheduled for when the
  * awaitable value is settled. Thus an asynchronous 'loop' is executed until the activation
  * either returns or throws.
+ * @param safa the SlowAsyncFunctionActivation instance
+ * @param type 'next'|'error'
+ * @param value the next or error value to pass in to the activation
  */
 function runToCompletion(safa: types.SlowAsyncFunction.Activation, error?: any, next?: any) {
 

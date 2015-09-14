@@ -1,150 +1,61 @@
-﻿import assert = require('assert');
-import _ = require('lodash');
-import types = require('types');
-import SlowType = types.SlowObject.Type;
-import makeCallableClass = require('../util/makeCallableClass');
-import shasum = require('../util/shasum');
-import SteppableFunction = require('../functions/steppableFunction');
-import SteppableObject = require('../functions/steppableObject');
-import SlowPromise = require('../promises/slowPromise');
-import runToCompletion = require('./runToCompletion');
-import storage = require('../storage/storage');
-export = asyncPseudoKeyword;
-
-
-// TODO: doc...
-var asyncPseudoKeyword: types.Async = <any> makeCallableClass({
-
-    constructor: function (bodyFunc: Function) {
-
+var assert = require('assert');
+var makeCallableClass = require('../util/makeCallableClass');
+var shasum = require('../util/shasum');
+var SteppableFunction = require('../functions/steppableFunction');
+var SlowPromise = require('../promises/slowPromise');
+var SlowAsyncFunctionActivation = require('./slowAsyncFunctionActivation');
+var runToCompletion = require('./runToCompletion');
+var storage = require('../storage/storage');
+/** TODO: doc... */
+var SlowAsyncFunction = makeCallableClass({
+    constructor: function (bodyFunc) {
         // Validate arguments.
         assert(typeof bodyFunc === 'function');
-
         // Get the shasum of the body function's source code. This is used
         // to uniquely identify the SlowAsyncFunction for caching purposes.
         var originalSource = bodyFunc.toString();
         var safid = shasum(originalSource);
-
         // Return the cached SlowAsyncFunction instance immediately if there is one.
         var cached = asyncFunctionCache[safid];
-        if (cached) return cached;
-
+        if (cached)
+            return cached;
         // Create a new SlowAsyncFunction instance.
         var steppableFunc = new SteppableFunction(bodyFunc, { pseudoYield: 'await', pseudoConst: '__const' });
         this.stateMachine = steppableFunc.stateMachine;
         this._slow = {
-            type: SlowType.SlowAsyncFunction,
+            type: 20 /* SlowAsyncFunction */,
             id: safid,
             stateMachineSource: steppableFunc.stateMachine.toString(),
-            originalSource
+            originalSource: originalSource
         };
-
         // Cache this SlowAsyncFunction instance to save re-computing it again.
         asyncFunctionCache[safid] = this;
-
         // Synchronise with the persistent object graph.
         storage.created(this);
     },
-
-    call: function (...args): types.SlowAsyncFunction {
-
+    call: function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i - 0] = arguments[_i];
+        }
         // Create a new SlowPromise to represent the eventual result of the slow async operation.
         var deferred = SlowPromise.deferred();
-
         // Create a new SlowAsyncFunctionActivation instance to run the async operation.
         var safa = new SlowAsyncFunctionActivation(this.stateMachine, args, this, deferred);
-
         // Run the async operation to completion, and return a promise of the outcome.
         runToCompletion(safa);
         return deferred.promise;
     }
 });
-
-
 /** Supports memoization of SlowAsyncFunction instances, which are immutable and expensive to compute. */
-var asyncFunctionCache: { [afid: string]: types.SlowAsyncFunction; } = {};
-
-
-/** A SlowAsyncFunctionActivation is a SteppableObject with additional properties. */
-class SlowAsyncFunctionActivation extends SteppableObject implements types.SlowAsyncFunction.Activation {
-
-    constructor(stateMachine: types.Steppable.StateMachine, args: any[], private asyncFunction: types.SlowAsyncFunction, private deferred: types.SlowPromise.Deferred) {
-        super(stateMachine);
-        this.state = { local: { arguments: args } };
-
-        // Synchronise with the persistent object graph.
-        storage.created(this);
-    }
-
-    _slow = {
-        type: SlowType.SlowAsyncFunctionActivation,
-        asyncFunction: this.asyncFunction,
-        state: this.state,
-        awaiting: null,
-        onAwaitedResult: makeContinuationResultHandler(this),
-        onAwaitedError: makeContinuationErrorHandler(this),
-        resolve: this.deferred.resolve,
-        reject: this.deferred.reject
-    };
-}
-
-
-
-
-
-
-
+var asyncFunctionCache = {};
+module.exports = SlowAsyncFunction;
 // TODO: temp testing...
 //function tween(stateMachineSource: string, originalSource: string) {
 //    var stateMachine = eval('(' + stateMachineSource + ')');
 //    var steppableFunc = SteppableFunction.fromStateMachine(stateMachine);
 //    return makeSlowAsyncFunction(steppableFunc, stateMachineSource, originalSource);
 //}
-    
-    
-    
-
-
-
-
-
-
-
-
-// TODO: doc...
-function makeContinuationResultHandler(safa: types.SlowAsyncFunction.Activation) {
-
-    // Make a function that resumes the given activation with a 'next' value.
-    var continuation: any = value => runToCompletion(safa, null, value);
-
-    // Add slow metadata to the continuation function.
-    continuation._slow = { type: SlowType.SlowAsyncFunctionContinuationWithResult, safa };
-
-    // Synchronise with the persistent object graph.
-    storage.created(continuation);
-
-    // Return the continuation.
-    return continuation;
-}
-
-
-// TODO: doc...
-function makeContinuationErrorHandler(safa: types.SlowAsyncFunction.Activation) {
-
-    // Make a function that resumes the given activation, throwing the given error into it.
-    var continuation: any = error => runToCompletion(safa, error);
-
-    // Add slow metadata to the continuation function.
-    continuation._slow = { type: SlowType.SlowAsyncFunctionContinuationWithError, safa };
-
-    // Synchronise with the persistent object graph.
-    storage.created(continuation);
-
-    // Return the continuation.
-    return continuation;
-}
-
-
 // TODO: register slow object type with storage (for rehydration logic)
 //storage.registerType({
 //    type: SlowType.SlowAsyncFunction,
@@ -154,13 +65,10 @@ function makeContinuationErrorHandler(safa: types.SlowAsyncFunction.Activation) 
 //        return jsonSafeObject;
 //    },
 //    rehydrate: jsonSafeObject => {
-
 //        // TODO: clean up
 //        return tween(jsonSafeObject.stateMachineSource, jsonSafeObject.originalSource);
 //    }
 //});
-
-
 //// TODO: register slow object type with storage (for rehydration logic)
 //storage.registerType({
 //    type: SlowType.SlowAsyncFunctionActivation,
@@ -175,17 +83,13 @@ function makeContinuationErrorHandler(safa: types.SlowAsyncFunction.Activation) 
 //        safa._slow = jsonSafeObject;
 //        safa._slow.onAwaitedResult = makeContinuationResultHandler(safa);
 //        safa._slow.onAwaitedError = makeContinuationErrorHandler(safa);
-
 //        // TODO: and continue running it...
 //        //assert(safa._slow.awaiting); // should only ever be rehydrating from an awaiting state
 //        //safa._slow.awaiting.then(safa._slow.onAwaitedResult, safa._slow.onAwaitedError);
-
 //        // All done.
 //        return safa;
 //    }
 //});
-
-
 //// TODO: register slow object type with storage (for rehydration logic)
 //storage.registerType({
 //    type: SlowType.SlowAsyncFunctionContinuationWithResult,
@@ -196,8 +100,6 @@ function makeContinuationErrorHandler(safa: types.SlowAsyncFunction.Activation) 
 //    },
 //    rehydrate: jsonSafeObject => makeContinuationResultHandler(jsonSafeObject.safa)
 //});
-
-
 //// TODO: register slow object type with storage (for rehydration logic)
 //storage.registerType({
 //    type: SlowType.SlowAsyncFunctionContinuationWithError,
@@ -208,3 +110,4 @@ function makeContinuationErrorHandler(safa: types.SlowAsyncFunction.Activation) 
 //    },
 //    rehydrate: jsonSafeObject => makeContinuationErrorHandler(jsonSafeObject.safa)
 //});
+//# sourceMappingURL=slowAsyncFunction.js.map

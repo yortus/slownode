@@ -191,6 +191,7 @@
 }
 
 
+// TODO: is this used? needed?
 declare module ESTree {
     export interface FunctionExpression {
         _ids: {

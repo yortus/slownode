@@ -1,5 +1,5 @@
 ﻿import API = require('slownode');
-import asyncPseudoKeyword = require('./asyncFunctions/asyncPseudoKeyword');
+import SlowAsyncFunction = require('./asyncFunctions/slowAsyncFunction');
 import SlowPromise = require('./promises/slowPromise');
 import storage = require('./storage/storage');
 //import rehydrate = require('./slowAsyncFunction/rehydrate');
@@ -59,6 +59,6 @@ export = api;
 
 // TODO: temp testing... Build the API for export...
 var api: typeof API = <any> {};
-api.async = asyncPseudoKeyword;
+api.async = <any> SlowAsyncFunction;
 api.Promise = <any> SlowPromise;
 api.SlowPromise = SlowPromise;
