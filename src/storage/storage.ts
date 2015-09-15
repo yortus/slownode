@@ -1,53 +1,21 @@
 ﻿import assert = require('assert');
 import fs = require('fs');
 import path = require('path');
-import crypto = require('crypto');
 import _ = require('lodash');
 import types = require('types');
 import SlowType = types.SlowObject.Type;
 import SlowObject = types.SlowObject;
 import storageLocation = require('./storageLocation');
 import dehydrateSlowObject = require('./dehydrateSlowObject');
-//import rehydrate = require('./rehydrate');
-import typeRegistry = require('./typeRegistry');
+import rehydrateSlowObject = require('./rehydrateSlowObject');
 
 
-
-//namespace newImprovedApi {
-
-
-//    // Tracking control (all synchronous)
-//    export function created(obj: SlowObject): void {return null;}
-//    export function updated(obj: SlowObject): void {return null;}
-//    export function deleted(obj: SlowObject): void {return null;}
-
-//    // Serialization control (if synchronous)
-//    export function saveStateSync(): void {}
-//    export function loadStateSync(): void {}
-
-//    // Serialization control (if asynchronous)
-//    export function saveState(callback: (err?) => void) {}
-//    export function loadState(callback: (err?) => void) {}
-
-//    // Slow object type registration
-//    export function registerSlowType(typeInfo: SlowTypeInfo) {}
-//    interface SlowTypeInfo {
-//        name: string;
-//        createBlank: () => SlowObject;
-//        getState: (obj: SlowObject) => any;
-//        setState: (obj: SlowObject, value: any) => void;
-//    }
-
-//    // Internals...
-//    var trackedObjects: SlowObject[];
-//    var registry: any; //???
-//}
 interface StorageAPI {
     created(obj: SlowObject): StorageAPI;
     updated(obj: SlowObject): StorageAPI;
     deleted(obj: SlowObject): StorageAPI;
+    // TODO: add saveChanges, loadState, registerSlowObjectFactory...
 }
-
 
 
 export function created(obj: SlowObject): StorageAPI {
@@ -90,7 +58,7 @@ var updatedTrackedObjects = new Set<SlowObject>();
 var deletedTrackedObjects = new Set<SlowObject>();
 var nextId = 0;
 var isLoadingState = false;
-var slowObjectFactories: {[type: number]: ($slow: { type: SlowType, id?: string }) => SlowObject} = {};
+var slowObjectFactories: SlowObject.Factories = {};
 
 
 export function saveChanges(callback?: (err?) => void) {
@@ -141,6 +109,9 @@ export function loadState() {
     var log: Array<[string,SlowObject]> = JSON.parse(json);
     log.pop();
 
+    // TODO: at this point we can start the new log file.
+    //       - but ensure the old one is safely reloaded before deleting it!!!
+
     // Collect each (still dehydrated) slow object that appears in the log, in its most recent state.
     var dehydratedSlowObjects = log.reduce((map, keyVal) => {
         if (keyVal[1]) map[keyVal[0]] = keyVal[1]; else delete map[keyVal[0]];
@@ -184,17 +155,11 @@ export function loadState() {
     // Set nextId to the highest-used id#
     nextId = _.keys(dehydratedSlowObjects).reduce((max, id) => Math.max(max, id[0] === '#' ? parseInt(id.slice(1)) : 0), 0);
 
-    // TODO: rehydrate...
-    _.forEach(dehydratedSlowObjects, (val, key) => {
-        var type = val.$slow.type;
-        var factory = slowObjectFactories[type];
-        if (!factory) {
-            debugger;
-        }
-
-        assert(factory);
-
-        var rehydrated = factory(val.$slow);
+    // Rehydrate all the slow objects. This also reconnects cross-references (including cycles).
+    var rehydratedSlowObjects: typeof dehydratedSlowObjects = {};
+    _.forEach(dehydratedSlowObjects, dehydrated => {
+        var rehydrated = rehydrateSlowObject(dehydrated, slowObjectFactories, rehydratedSlowObjects);
+        rehydratedSlowObjects[rehydrated.$slow.id] = rehydrated;
     });
 
 
@@ -203,8 +168,19 @@ export function loadState() {
     isLoadingState = false;
 
 
-    console.log('PROCESS.EXIT==========================>');
-    process.exit(0);
+
+    // TODO: pick up where we left off...
+    // TODO: use registration for this... don't hardcode logic here...
+    _.forEach(rehydratedSlowObjects, slowObj => {
+        //if (slowObj.$slow.type === SlowType.SlowAsyncFunctionActivation) {
+            
+        //}
+
+
+
+
+    });
+
 }
 
 

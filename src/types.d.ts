@@ -192,10 +192,8 @@
             SlowAsyncFunctionActivationResumeError = 32
         }
 
-        interface Registration {
-            type: SlowObject.Type; // TODO: no longer needed. Remove?
-            dehydrate(obj: any, recurse: (obj) => any): any; // TODO: returns a jsonSafeObject, or void 0 for 'unhandled'
-            rehydrate(jsonSafeObject: any): any;
+        interface Factories {
+            [type: number]: ($slow: { type: Type, id?: string }) => SlowObject;
         }
     }
 }

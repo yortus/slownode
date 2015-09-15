@@ -3,6 +3,7 @@ var fs = require('fs');
 var _ = require('lodash');
 var storageLocation = require('./storageLocation');
 var dehydrateSlowObject = require('./dehydrateSlowObject');
+var rehydrateSlowObject = require('./rehydrateSlowObject');
 function created(obj) {
     // TODO: temp testing...
     if (isLoadingState)
@@ -74,6 +75,8 @@ function loadState() {
     var json = "[" + fs.readFileSync(storageLocation, 'utf8') + " 0]";
     var log = JSON.parse(json);
     log.pop();
+    // TODO: at this point we can start the new log file.
+    //       - but ensure the old one is safely reloaded before deleting it!!!
     // Collect each (still dehydrated) slow object that appears in the log, in its most recent state.
     var dehydratedSlowObjects = log.reduce(function (map, keyVal) {
         if (keyVal[1])
@@ -118,19 +121,19 @@ function loadState() {
     });
     // Set nextId to the highest-used id#
     nextId = _.keys(dehydratedSlowObjects).reduce(function (max, id) { return Math.max(max, id[0] === '#' ? parseInt(id.slice(1)) : 0); }, 0);
-    // TODO: rehydrate...
-    _.forEach(dehydratedSlowObjects, function (val, key) {
-        var type = val.$slow.type;
-        var factory = slowObjectFactories[type];
-        if (!factory) {
-            debugger;
-        }
-        assert(factory);
-        var rehydrated = factory(val.$slow);
+    // Rehydrate all the slow objects. This also reconnects cross-references (including cycles).
+    var rehydratedSlowObjects = {};
+    _.forEach(dehydratedSlowObjects, function (dehydrated) {
+        var rehydrated = rehydrateSlowObject(dehydrated, slowObjectFactories, rehydratedSlowObjects);
+        rehydratedSlowObjects[rehydrated.$slow.id] = rehydrated;
     });
     isLoadingState = false;
-    console.log('PROCESS.EXIT==========================>');
-    process.exit(0);
+    // TODO: pick up where we left off...
+    // TODO: use registration for this... don't hardcode logic here...
+    _.forEach(rehydratedSlowObjects, function (slowObj) {
+        //if (slowObj.$slow.type === SlowType.SlowAsyncFunctionActivation) {
+        //}
+    });
 }
 exports.loadState = loadState;
 function registerSlowObjectFactory(type, factory) {

@@ -1,54 +1,52 @@
-//import assert = require('assert');
-//import _ = require('lodash');
-//import types = require('types');
-//import typeRegistry = require('./typeRegistry');
-//export = rehydrate;
-//// TODO: doc... this is unwrapJSONSafeObject by another name...
-///**
-// * TODO: Recursively converts the given dehydrated slow object back to a normal slow object.
-// * Throws an error if any part of the value cannot be converted.
-// */
-//function rehydrateSlowObject(dehydratedSlowObject: types.SlowObject, allSlowObjects: {[id: string]: types.SlowObject}): types.SlowObject {
-//    assert(allSlowObjects[dehydratedSlowObject.$slow.id]);
-//    // TODO: temp testing... need to use factory, chosen based on $slow.type
-//    return rehydrate(dehydratedSlowObject.$slow, allSlowObjects);
-//}
-///**
-// * TODO: Recursively converts the given json-safe value back to a normal value.
-// * Throws an error if any part of the value cannot be converted.
-// */
-//function rehydrate(jsonSafe: any, allSlowObjects: Set<types.SlowObject>) {
-//    // Some primitives map to themselves. Return them as-is.
-//    if (_.isString(jsonSafe) || _.isNumber(jsonSafe) || _.isBoolean(jsonSafe) || _.isNull(jsonSafe)) {
-//        return jsonSafe;
-//    }
-//    // Map a shorthand $ref object to the object it references
-//    else if (allSlowObjects.has(jsonSafe)) {
-//        return { $ref: value.$slow.id };
-//    }
-//    // Map an array of JSON-safe values to an array of rehydrated values.
-//    else if (_.isArray(jsonSafe)) {
-//        return jsonSafe.map(v => rehydrate(v, allSlowObjects));
-//    }
-//    // Map a plain (and non-special) object to an equivalent object whose property values have been rehydrated.
-//    else if (jsonSafe && jsonSafe.$type === 'object') {
-//        return _.mapValues(jsonSafe.value, rehydrate);
-//    }
-//    // Map the sentinel value for `undefined` back to `undefined`.
-//    else if (jsonSafe && jsonSafe.$type === 'undefined') {
-//        return void 0;
-//    }
-//    // TODO: doc...
-//    else if (jsonSafe && jsonSafe.$type === 'function') {
-//        return eval('(' + jsonSafe.value + ')');
-//    }
-//    // TODO: doc...
-//    else if (jsonSafe && jsonSafe.$type === 'error') {
-//        return new Error(jsonSafe.value);
-//    }
-//    // TODO: temp testing... else return as-is (already processed)
-//    //else return jsonSafe;
-//    // If we get to here, the value is not recognised. Throw an error.
-//    throw new Error(`rehydration not supported for value: ${jsonSafe}`);
-//}
+var assert = require('assert');
+var _ = require('lodash');
+/**
+ * TODO: Recursively converts the given dehydrated slow object back to a normal slow object.
+ * Throws an error if any part of the value cannot be converted.
+ */
+function rehydrateSlowObject(dehydrated, factories, allSlowObjects) {
+    // Rehydrate all the constituent parts in-place.
+    var $slow = dehydrated.$slow;
+    _.mapValues(dehydrated.$slow, function (val, key, obj) { return rehydrateInPlace(val, key, obj, allSlowObjects); });
+    // Rehydrate the slow object using the appropriate factory function.
+    var factory = factories[$slow.type];
+    assert(factory);
+    var rehydratedSlowObject = factory($slow);
+    return rehydratedSlowObject;
+}
+/**
+ * TODO: Recursively converts the given json-safe value back to a normal value.
+ * Throws an error if any part of the value cannot be converted.
+ */
+function rehydrateInPlace(val, key, obj, allSlowObjects) {
+    // Some primitives map to themselves. Return them as-is.
+    if (_.isString(val) || _.isNumber(val) || _.isBoolean(val) || _.isNull(val)) {
+    }
+    else if (val && val.$ref) {
+        var $ref = val.$ref;
+        delete obj[key]; // TODO: needed? test...
+        Object.defineProperty(obj, key, { get: function () { return allSlowObjects[$ref]; } });
+    }
+    else if (_.isArray(val)) {
+        val.forEach(function (elem, index) { return rehydrateInPlace(elem, index, val, allSlowObjects); });
+    }
+    else if (val && val.$type === 'object') {
+        var keys = val.keys, vals = val.values;
+        val = obj[key] = _.zipObject(keys, vals);
+        _.forEach(val, function (propValue, propName) { return rehydrateInPlace(propValue, propName, val, allSlowObjects); });
+    }
+    else if (val && val.$type === 'undefined') {
+        obj[key] = void 0;
+    }
+    else if (val && val.$type === 'function') {
+        obj[key] = eval('(' + val.value + ')');
+    }
+    else if (val && val.$type === 'error') {
+        obj[key] = new Error(val.value);
+    }
+    else {
+        throw new Error("rehydration not supported for value: " + val);
+    }
+}
+module.exports = rehydrateSlowObject;
 //# sourceMappingURL=rehydrateSlowObject.js.map

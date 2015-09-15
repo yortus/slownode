@@ -60,7 +60,6 @@
     <TypeScriptCompile Include="src\functions\astOperations\matchNode.ts" />
     <TypeScriptCompile Include="src\functions\steppableFunction.ts" />
     <TypeScriptCompile Include="src\functions\astOperations\traverseTree.ts" />
-    <TypeScriptCompile Include="src\storage\typeRegistry.ts" />
     <TypeScriptCompile Include="src\types.d.ts" />
     <TypeScriptCompile Include="src\typings\chai-as-promised\chai-as-promised.d.ts" />
     <TypeScriptCompile Include="src\typings\es6-collections\es6-collections.d.ts" />
