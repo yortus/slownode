@@ -27,17 +27,11 @@ var SlowPromiseResolve = makeCallableClass({
         standardResolutionProcedure(promise, value);
     }
 });
+// Tell storage how to create a SlowPromiseResolve instance.
+storage.registerSlowObjectFactory(11 /* SlowPromiseResolve */, function ($slow) {
+    var resolve = new SlowPromiseResolve(null);
+    resolve.$slow = $slow;
+    return resolve;
+});
 module.exports = SlowPromiseResolve;
-//// TODO: register slow object type with storage (for rehydration logic)
-//storage.registerType({
-//    type: SlowType.SlowPromiseResolveFunction,
-//    dehydrate: (p: types.SlowPromise.ResolveFunction, recurse: (obj) => any) => {
-//        if (!p || !p.$slow || p.$slow.type !== SlowType.SlowPromiseResolveFunction) return;
-//        var jsonSafeObject = _.mapValues(p.$slow, propValue => recurse(propValue));
-//        return jsonSafeObject;
-//    },
-//    rehydrate: jsonSafeObject => {
-//        return create(jsonSafeObject.promise, false);
-//    }
-//});
 //# sourceMappingURL=slowPromiseResolve.js.map

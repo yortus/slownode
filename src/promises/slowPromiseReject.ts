@@ -42,18 +42,9 @@ var SlowPromiseReject = <{ new(promise: types.SlowPromise): types.SlowPromise.Re
 });
 
 
-
-
-
-//// TODO: register slow object type with storage (for rehydration logic)
-//storage.registerType({
-//    type: SlowType.SlowPromiseRejectFunction,
-//    dehydrate: (p: types.SlowPromise.RejectFunction, recurse: (obj) => any) => {
-//        if (!p || !p.$slow || p.$slow.type !== SlowType.SlowPromiseRejectFunction) return;
-//        var jsonSafeObject = _.mapValues(p.$slow, propValue => recurse(propValue));
-//        return jsonSafeObject;
-//    },
-//    rehydrate: jsonSafeObject => {
-//        return create(jsonSafeObject.promise, false);
-//    }
-//});
+// Tell storage how to create a SlowPromiseReject instance.
+storage.registerSlowObjectFactory(SlowType.SlowPromiseReject, $slow => {
+    var reject = new SlowPromiseReject(null);
+    reject.$slow = <any> $slow;
+    return reject;
+});
