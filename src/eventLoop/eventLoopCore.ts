@@ -1,0 +1,3 @@
+﻿
+
+export var foo = 'bar';
