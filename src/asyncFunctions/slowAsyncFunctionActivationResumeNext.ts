@@ -25,16 +25,9 @@ var SlowAsyncFunctionActivationResumeNext = makeCallableClass({
 });
 
 
-
-
-
-//// TODO: register slow object type with storage (for rehydration logic)
-//storage.registerType({
-//    type: SlowType.SlowAsyncFunctionContinuationWithResult,
-//    dehydrate: (p: any, recurse: (obj) => any) => {
-//        if (!p || !p.$slow || p.$slow.type !== SlowType.SlowAsyncFunctionContinuationWithResult) return;
-//        var jsonSafeObject = _.mapValues(p.$slow, propValue => recurse(propValue));
-//        return jsonSafeObject;
-//    },
-//    rehydrate: jsonSafeObject => makeContinuationResultHandler(jsonSafeObject.safa)
-//});
+// Tell storage how to create a SlowAsyncFunctionActivationResumeNext instance.
+storage.registerSlowObjectFactory(SlowType.SlowAsyncFunctionActivationResumeNext, $slow => {
+    var resumeNext = new SlowAsyncFunctionActivationResumeNext(null);
+    resumeNext.$slow = <any> $slow;
+    return resumeNext;
+});

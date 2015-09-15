@@ -15,15 +15,11 @@ var SlowAsyncFunctionActivationResumeNext = makeCallableClass({
     },
     bindThis: true
 });
+// Tell storage how to create a SlowAsyncFunctionActivationResumeNext instance.
+storage.registerSlowObjectFactory(31 /* SlowAsyncFunctionActivationResumeNext */, function ($slow) {
+    var resumeNext = new SlowAsyncFunctionActivationResumeNext(null);
+    resumeNext.$slow = $slow;
+    return resumeNext;
+});
 module.exports = SlowAsyncFunctionActivationResumeNext;
-//// TODO: register slow object type with storage (for rehydration logic)
-//storage.registerType({
-//    type: SlowType.SlowAsyncFunctionContinuationWithResult,
-//    dehydrate: (p: any, recurse: (obj) => any) => {
-//        if (!p || !p.$slow || p.$slow.type !== SlowType.SlowAsyncFunctionContinuationWithResult) return;
-//        var jsonSafeObject = _.mapValues(p.$slow, propValue => recurse(propValue));
-//        return jsonSafeObject;
-//    },
-//    rehydrate: jsonSafeObject => makeContinuationResultHandler(jsonSafeObject.safa)
-//});
 //# sourceMappingURL=slowAsyncFunctionActivationResumeNext.js.map

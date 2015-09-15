@@ -116,6 +116,8 @@ function loadState() {
         if (!reachableSlowObjectIds.has(id))
             delete dehydratedSlowObjects[id];
     });
+    // Set nextId to the highest-used id#
+    nextId = _.keys(dehydratedSlowObjects).reduce(function (max, id) { return Math.max(max, id[0] === '#' ? parseInt(id.slice(1)) : 0); }, 0);
     // TODO: rehydrate...
     _.forEach(dehydratedSlowObjects, function (val, key) {
         var type = val.$slow.type;

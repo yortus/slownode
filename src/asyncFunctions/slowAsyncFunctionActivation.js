@@ -17,38 +17,26 @@ var SlowAsyncFunctionActivation = (function (_super) {
         this.$slow = {
             type: 30 /* SlowAsyncFunctionActivation */,
             asyncFunction: this.asyncFunction,
-            state: this.state,
+            state: null,
             awaiting: null,
             resumeNext: new SlowAsyncFunctionActivationResumeNext(this),
             resumeError: new SlowAsyncFunctionActivationResumeError(this),
             resolve: this.deferred.resolve,
             reject: this.deferred.reject
         };
-        this.state = { local: { arguments: args } };
+        this.state = this.$slow.state = { local: { arguments: args } };
         storage.created(this);
     }
     return SlowAsyncFunctionActivation;
 })(SteppableObject);
+// Tell storage how to create a SlowAsyncFunctionActivation instance.
+storage.registerSlowObjectFactory(30 /* SlowAsyncFunctionActivation */, function ($slow) {
+    var safa = new SlowAsyncFunctionActivation(function () { }, [], null, {});
+    safa.$slow = $slow;
+    safa.state = safa.$slow.state;
+    // TODO: temp testing...
+    Object.defineProperty(safa, 'stateMachine', { get: function () { return safa.$slow.asyncFunction.stateMachine; } });
+    return safa;
+});
 module.exports = SlowAsyncFunctionActivation;
-//// TODO: register slow object type with storage (for rehydration logic)
-//storage.registerType({
-//    type: SlowType.SlowAsyncFunctionActivation,
-//    dehydrate: (p: types.SlowAsyncFunction.Activation, recurse: (obj) => any) => {
-//        if (!p || !p.$slow || p.$slow.type !== SlowType.SlowAsyncFunctionActivation) return;
-//        var jsonSafeObject = _.mapValues(p.$slow, propValue => recurse(propValue));
-//        return jsonSafeObject;
-//    },
-//    rehydrate: jsonSafeObject => {
-//        var safa: types.SlowAsyncFunction.Activation = <any> new Steppable(jsonSafeObject.asyncFunction.stateMachine);
-//        safa.state = jsonSafeObject.state;
-//        safa.$slow = jsonSafeObject;
-//        safa.$slow.onAwaitedResult = makeContinuationResultHandler(safa);
-//        safa.$slow.onAwaitedError = makeContinuationErrorHandler(safa);
-//        // TODO: and continue running it...
-//        //assert(safa.$slow.awaiting); // should only ever be rehydrating from an awaiting state
-//        //safa.$slow.awaiting.then(safa.$slow.onAwaitedResult, safa.$slow.onAwaitedError);
-//        // All done.
-//        return safa;
-//    }
-//});
 //# sourceMappingURL=slowAsyncFunctionActivation.js.map
