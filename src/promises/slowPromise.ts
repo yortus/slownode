@@ -3,8 +3,8 @@ import _ = require('lodash');
 import types = require('types');
 import State = types.SlowPromise.State;
 import SlowType = types.SlowObject.Type;
-import SlowPromiseResolveFunction = require('./resolveFunction');
-import SlowPromiseRejectFunction = require('./rejectFunction');
+import SlowPromiseResolve = require('./slowPromiseResolve');
+import SlowPromiseReject = require('./slowPromiseReject');
 import standardResolutionProcedure = require('./standardResolutionProcedure');
 import storage = require('../storage/storage');
 export = SlowPromise;
@@ -26,8 +26,8 @@ class SlowPromise implements types.SlowPromise {
         if (!resolver) return this;
 
         // Construct resolve and reject functions to be passed to the resolver.
-        var resolve = new SlowPromiseResolveFunction(this);
-        var reject = new SlowPromiseRejectFunction(this);
+        var resolve = new SlowPromiseResolve(this);
+        var reject = new SlowPromiseReject(this);
 
         // TODO: temp testing... why async? I think that's not in line with the draft PromisesAPlus constructor standard.
         setImmediate(() => {
@@ -43,7 +43,7 @@ class SlowPromise implements types.SlowPromise {
     /** Returns a new SlowPromise instance that is already resolved with the given value. */
     static resolved(value?: any) {
         var promise = new SlowPromise(null);
-        var resolve = new SlowPromiseResolveFunction(promise);
+        var resolve = new SlowPromiseResolve(promise);
         resolve(value);
         return promise;
     }
@@ -51,7 +51,7 @@ class SlowPromise implements types.SlowPromise {
     /** Returns a new SlowPromise instance that is already rejected with the given reason. */
     static rejected(reason: any) {
         var promise = new SlowPromise(null);
-        var reject = new SlowPromiseRejectFunction(promise);
+        var reject = new SlowPromiseReject(promise);
         reject(reason);
         return promise;
     }
@@ -59,8 +59,8 @@ class SlowPromise implements types.SlowPromise {
     /** Returns an object containing a new SlowPromise instance, along with a resolve function and a reject function to control its fate. */
     static deferred() {
         var promise = new SlowPromise(null);
-        var resolve = new SlowPromiseResolveFunction(promise);
-        var reject = new SlowPromiseRejectFunction(promise);
+        var resolve = new SlowPromiseResolve(promise);
+        var reject = new SlowPromiseReject(promise);
         return { promise, resolve, reject };
     }
 

@@ -34,7 +34,7 @@ function runToCompletion(safa: types.SlowAsyncFunction.Activation, error?: any, 
         s.reject(ex);
 
         // Synchronise with the persistent object graph.
-        storage.deleted(s.resolve).deleted(s.reject).deleted(s.onAwaitedResult).deleted(s.onAwaitedError).deleted(safa);
+        storage.deleted(s.resolve).deleted(s.reject).deleted(s.resumeNext).deleted(s.resumeError).deleted(safa);
         return;
     }
 
@@ -44,7 +44,7 @@ function runToCompletion(safa: types.SlowAsyncFunction.Activation, error?: any, 
         s.resolve(yielded.value);
 
         // Synchronise with the persistent object graph.
-        storage.deleted(s.resolve).deleted(s.reject).deleted(s.onAwaitedResult).deleted(s.onAwaitedError).deleted(safa);
+        storage.deleted(s.resolve).deleted(s.reject).deleted(s.resumeNext).deleted(s.resumeError).deleted(safa);
         return;
     }
 
@@ -54,7 +54,7 @@ function runToCompletion(safa: types.SlowAsyncFunction.Activation, error?: any, 
     assert(awaiting && typeof awaiting.then === 'function', 'await: expected argument to be a Promise');
 
     // Attach fulfilled/rejected handlers to the awaitable, which resume the steppable.
-    awaiting.then(safa._slow.onAwaitedResult, safa._slow.onAwaitedError);
+    awaiting.then(safa._slow.resumeNext, safa._slow.resumeError);
 
     // Synchronise with the persistent object graph.
     storage.updated(safa);
@@ -63,7 +63,7 @@ function runToCompletion(safa: types.SlowAsyncFunction.Activation, error?: any, 
     // At this point, we know an asynchronous operation has just got underway, i.e., the operation
     // whose outcome is represented by the awaitable. Therefore a yield to the event loop is most
     // likely imminent. We want to be sure that the persistent object graph has been safely flushed
-    // to storage, so that if the process dies between now and when the awaitable resolves, then when
+    // to storage, so that if the process dies between now and when the awaitable is settled, then when
     // it restarts we can pick up where we left off by reloading the persisted state.
     storage.saveState();
 }

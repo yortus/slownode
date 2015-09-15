@@ -57,15 +57,15 @@ declare module "slownode" {
 
         interface Deferred<T> {
             promise: SlowPromise<T>;
-            resolve: ResolveFunction<T>;
-            reject: RejectFunction;
+            resolve: Resolve<T>;
+            reject: Reject;
         }
 
-        interface ResolveFunction<T> {
+        interface Resolve<T> {
             (value?: T | SlowThenable<T>): void;
         }
 
-        interface RejectFunction {
+        interface Reject {
             (error?: any): void;
         }
     }

@@ -1,7 +1,7 @@
 var assert = require('assert');
 var _ = require('lodash');
-var SlowPromiseResolveFunction = require('./resolveFunction');
-var SlowPromiseRejectFunction = require('./rejectFunction');
+var SlowPromiseResolve = require('./slowPromiseResolve');
+var SlowPromiseReject = require('./slowPromiseReject');
 var standardResolutionProcedure = require('./standardResolutionProcedure');
 var storage = require('../storage/storage');
 /** Promises A+ compliant Promise implementation with persistence. */
@@ -24,8 +24,8 @@ var SlowPromise = (function () {
         if (!resolver)
             return this;
         // Construct resolve and reject functions to be passed to the resolver.
-        var resolve = new SlowPromiseResolveFunction(this);
-        var reject = new SlowPromiseRejectFunction(this);
+        var resolve = new SlowPromiseResolve(this);
+        var reject = new SlowPromiseReject(this);
         // TODO: temp testing... why async? I think that's not in line with the draft PromisesAPlus constructor standard.
         setImmediate(function () {
             // TODO: Ensure the persistent object graph is safely stored before potentially yielding to the event loop
@@ -42,22 +42,22 @@ var SlowPromise = (function () {
     /** Returns a new SlowPromise instance that is already resolved with the given value. */
     SlowPromise.resolved = function (value) {
         var promise = new SlowPromise(null);
-        var resolve = new SlowPromiseResolveFunction(promise);
+        var resolve = new SlowPromiseResolve(promise);
         resolve(value);
         return promise;
     };
     /** Returns a new SlowPromise instance that is already rejected with the given reason. */
     SlowPromise.rejected = function (reason) {
         var promise = new SlowPromise(null);
-        var reject = new SlowPromiseRejectFunction(promise);
+        var reject = new SlowPromiseReject(promise);
         reject(reason);
         return promise;
     };
     /** Returns an object containing a new SlowPromise instance, along with a resolve function and a reject function to control its fate. */
     SlowPromise.deferred = function () {
         var promise = new SlowPromise(null);
-        var resolve = new SlowPromiseResolveFunction(promise);
-        var reject = new SlowPromiseRejectFunction(promise);
+        var resolve = new SlowPromiseResolve(promise);
+        var reject = new SlowPromiseReject(promise);
         return { promise: promise, resolve: resolve, reject: reject };
     };
     // TODO: temp testing....

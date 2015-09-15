@@ -40,17 +40,24 @@
                 awaiting: any;
 
                 /** Resumes execution with a value. */
-                onAwaitedResult: SlowObject & ((value) => void);
+                resumeNext: Activation.ResumeNext;
 
                 /** Resumes execution with an error. */
-                onAwaitedError: SlowObject & ((error) => void);
+                resumeError: Activation.ResumeError;
 
                 /** Signals that the activation returned a result. */
-                resolve: SlowPromise.ResolveFunction;
+                resolve: SlowPromise.Resolve;
 
                 /** Signals that the activation threw an error. */
-                reject: SlowPromise.RejectFunction;
+                reject: SlowPromise.Reject;
             };
+        }
+
+        namespace Activation {
+
+            type ResumeNext = SlowObject & ((value) => void);
+
+            type ResumeError = SlowObject & ((error) => void);
         }
     }
 
@@ -75,11 +82,11 @@
 
         interface Deferred extends slow.SlowPromise.Deferred<any> {
             promise: SlowPromise;
-            resolve: ResolveFunction;
-            reject: RejectFunction;
+            resolve: Resolve;
+            reject: Reject;
         }
 
-        interface ResolveFunction extends slow.SlowPromise.ResolveFunction<any> {
+        interface Resolve extends slow.SlowPromise.Resolve<any> {
             _slow: {
                 type: SlowObject.Type;
                 id?: string;
@@ -87,7 +94,7 @@
             };
         }
 
-        interface RejectFunction extends slow.SlowPromise.RejectFunction {
+        interface Reject extends slow.SlowPromise.Reject {
             _slow: {
                 type: SlowObject.Type;
                 id?: string;
@@ -174,12 +181,12 @@
 
         const enum Type {
             SlowPromise = 10,
-            SlowPromiseResolveFunction = 11,
-            SlowPromiseRejectFunction = 12,
+            SlowPromiseResolve = 11,
+            SlowPromiseReject = 12,
             SlowAsyncFunction = 20,
             SlowAsyncFunctionActivation = 30,
-            SlowAsyncFunctionContinuationWithResult = 31,
-            SlowAsyncFunctionContinuationWithError = 32
+            SlowAsyncFunctionActivationResumeNext = 31,
+            SlowAsyncFunctionActivationResumeError = 32
         }
 
         interface Registration {

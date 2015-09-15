@@ -14,7 +14,7 @@ export = SlowAsyncFunction;
 
 
 
-/** TODO: doc... */
+/** Creates a slow async function instance. */
 var SlowAsyncFunction: types.SlowAsyncFunction = <any> makeCallableClass({
 
     constructor: function (bodyFunc: Function) {
@@ -48,7 +48,7 @@ var SlowAsyncFunction: types.SlowAsyncFunction = <any> makeCallableClass({
         storage.created(this);
     },
 
-    call: function (...args): types.SlowAsyncFunction {
+    call: function (...args): types.SlowPromise {
 
         // Create a new SlowPromise to represent the eventual result of the slow async operation.
         var deferred = SlowPromise.deferred();

@@ -31,6 +31,8 @@
     <Content Include="tsconfig.json" />
     <Compile Include="scripts\runPromisesAPlusTestSuite.js" />
     <Compile Include="scripts\runSlownodeTestSuite.js" />
+    <TypeScriptCompile Include="src\asyncFunctions\slowAsyncFunctionActivationResumeNext.ts" />
+    <TypeScriptCompile Include="src\asyncFunctions\slowAsyncFunctionActivationResumeError.ts" />
     <TypeScriptCompile Include="src\asyncFunctions\slowAsyncFunctionActivation.ts" />
     <TypeScriptCompile Include="src\functions\astOperations\funcExpr\classifyIdentifiers.ts" />
     <TypeScriptCompile Include="src\functions\astOperations\funcExpr\containsInnerFunctions.ts" />
@@ -43,8 +45,8 @@
     <TypeScriptCompile Include="src\functions\isRelocatableFunction.ts" />
     <TypeScriptCompile Include="src\functions\steppableObject.ts" />
     <TypeScriptCompile Include="src\mainInfo.ts" />
-    <TypeScriptCompile Include="src\promises\resolveFunction.ts" />
-    <TypeScriptCompile Include="src\promises\rejectFunction.ts" />
+    <TypeScriptCompile Include="src\promises\slowPromiseResolve.ts" />
+    <TypeScriptCompile Include="src\promises\slowPromiseReject.ts" />
     <TypeScriptCompile Include="src\promises\standardResolutionProcedure.ts" />
     <TypeScriptCompile Include="src\storage\rehydrate.ts" />
     <TypeScriptCompile Include="src\storage\storageLocation.ts" />

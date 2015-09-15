@@ -6,7 +6,7 @@ var SlowPromise = require('../promises/slowPromise');
 var SlowAsyncFunctionActivation = require('./slowAsyncFunctionActivation');
 var runToCompletion = require('./runToCompletion');
 var storage = require('../storage/storage');
-/** TODO: doc... */
+/** Creates a slow async function instance. */
 var SlowAsyncFunction = makeCallableClass({
     constructor: function (bodyFunc) {
         // Validate arguments.
