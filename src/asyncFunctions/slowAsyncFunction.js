@@ -49,65 +49,12 @@ var SlowAsyncFunction = makeCallableClass({
 });
 /** Supports memoization of SlowAsyncFunction instances, which are immutable and expensive to compute. */
 var asyncFunctionCache = {};
+// TODO: doc...
+storage.registerSlowObjectFactory(20 /* SlowAsyncFunction */, function ($slow) {
+    var saf = new SlowAsyncFunction(function () { });
+    saf.$slow = $slow;
+    saf.stateMachine = eval("(" + saf.$slow.stateMachineSource + ")");
+    return saf;
+});
 module.exports = SlowAsyncFunction;
-// TODO: temp testing...
-//function tween(stateMachineSource: string, originalSource: string) {
-//    var stateMachine = eval('(' + stateMachineSource + ')');
-//    var steppableFunc = SteppableFunction.fromStateMachine(stateMachine);
-//    return makeSlowAsyncFunction(steppableFunc, stateMachineSource, originalSource);
-//}
-// TODO: register slow object type with storage (for rehydration logic)
-//storage.registerType({
-//    type: SlowType.SlowAsyncFunction,
-//    dehydrate: (p: types.SlowAsyncFunction, recurse: (obj) => any) => {
-//        if (!p || !p.$slow || p.$slow.type !== SlowType.SlowAsyncFunction) return;
-//        var jsonSafeObject = _.mapValues(p.$slow, propValue => recurse(propValue));
-//        return jsonSafeObject;
-//    },
-//    rehydrate: jsonSafeObject => {
-//        // TODO: clean up
-//        return tween(jsonSafeObject.stateMachineSource, jsonSafeObject.originalSource);
-//    }
-//});
-//// TODO: register slow object type with storage (for rehydration logic)
-//storage.registerType({
-//    type: SlowType.SlowAsyncFunctionActivation,
-//    dehydrate: (p: types.SlowAsyncFunction.Activation, recurse: (obj) => any) => {
-//        if (!p || !p.$slow || p.$slow.type !== SlowType.SlowAsyncFunctionActivation) return;
-//        var jsonSafeObject = _.mapValues(p.$slow, propValue => recurse(propValue));
-//        return jsonSafeObject;
-//    },
-//    rehydrate: jsonSafeObject => {
-//        var safa: types.SlowAsyncFunction.Activation = <any> new Steppable(jsonSafeObject.asyncFunction.stateMachine);
-//        safa.state = jsonSafeObject.state;
-//        safa.$slow = jsonSafeObject;
-//        safa.$slow.onAwaitedResult = makeContinuationResultHandler(safa);
-//        safa.$slow.onAwaitedError = makeContinuationErrorHandler(safa);
-//        // TODO: and continue running it...
-//        //assert(safa.$slow.awaiting); // should only ever be rehydrating from an awaiting state
-//        //safa.$slow.awaiting.then(safa.$slow.onAwaitedResult, safa.$slow.onAwaitedError);
-//        // All done.
-//        return safa;
-//    }
-//});
-//// TODO: register slow object type with storage (for rehydration logic)
-//storage.registerType({
-//    type: SlowType.SlowAsyncFunctionContinuationWithResult,
-//    dehydrate: (p: any, recurse: (obj) => any) => {
-//        if (!p || !p.$slow || p.$slow.type !== SlowType.SlowAsyncFunctionContinuationWithResult) return;
-//        var jsonSafeObject = _.mapValues(p.$slow, propValue => recurse(propValue));
-//        return jsonSafeObject;
-//    },
-//    rehydrate: jsonSafeObject => makeContinuationResultHandler(jsonSafeObject.safa)
-//});
-//// TODO: register slow object type with storage (for rehydration logic)
-//storage.registerType({
-//    type: SlowType.SlowAsyncFunctionContinuationWithError,
-//    dehydrate: (p: any, recurse: (obj) => any) => {
-//        if (!p || !p.$slow || p.$slow.type !== SlowType.SlowAsyncFunctionContinuationWithError) return;
-//        var jsonSafeObject = _.mapValues(p.$slow, propValue => recurse(propValue));
-//        return jsonSafeObject;
-//    },
-//    rehydrate: jsonSafeObject => makeContinuationErrorHandler(jsonSafeObject.safa)
-//});
 //# sourceMappingURL=slowAsyncFunction.js.map

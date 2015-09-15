@@ -90,6 +90,7 @@ var updatedTrackedObjects = new Set<SlowObject>();
 var deletedTrackedObjects = new Set<SlowObject>();
 var nextId = 0;
 var isLoadingState = false;
+var slowObjectFactories: {[type: number]: ($slow: { type: SlowType, id?: string }) => SlowObject} = {};
 
 
 export function saveChanges(callback?: (err?) => void) {
@@ -130,37 +131,26 @@ export function saveChanges(callback?: (err?) => void) {
 
 export function loadState() {
 
-    // STEPS:
-    // - set isLoadingState, so tracking calls are ignored.
-    // - read the entire log into a biiiig array/hash
-    // - full tracked objects list EQUALS all updated objects
-    //                             MINUS  all deleted objects
-    //                             MINUS  all tracked objects with no $refs to them
-    // - for each tracked object:
-    //   - ???
-    //   - profit
-    // - clear isLoadingState, so tracking calls are reinstated.
 
     // TODO: why not just allow tracking always? At load time that will effectively get the next log into the proper state....
-
-
     isLoadingState = true;
+
 
     // Read and parse the whole log file into an object.
     var json = `[${fs.readFileSync(storageLocation, 'utf8')} 0]`;
-    var log: Array<[string,types.SlowObject]> = JSON.parse(json);
+    var log: Array<[string,SlowObject]> = JSON.parse(json);
     log.pop();
 
     // Collect each (still dehydrated) slow object that appears in the log, in its most recent state.
     var dehydratedSlowObjects = log.reduce((map, keyVal) => {
         if (keyVal[1]) map[keyVal[0]] = keyVal[1]; else delete map[keyVal[0]];
         return map;
-    }, <{ [key: string]: types.SlowObject }> {});
+    }, <{ [key: string]: SlowObject }> {});
 
     // Further filter the slow objects to those that are transitively reachable from roots.
     // Root slow objects are: (1) SlowAsyncFunctionActivation instances.
     // TODO: others? e.g. event loop
-    var rootSlowObjectIds = _.values<types.SlowObject>(dehydratedSlowObjects)
+    var rootSlowObjectIds = _.values<SlowObject>(dehydratedSlowObjects)
         .filter(so => so.$slow.type === SlowType.SlowAsyncFunctionActivation)
         .map(so => so.$slow.id);
     var reachableSlowObjectIds = new Set(rootSlowObjectIds);
@@ -192,6 +182,15 @@ export function loadState() {
     });
 
 
+    // TODO: rehydrate...
+    _.forEach(dehydratedSlowObjects, (val, key) => {
+        var type = val.$slow.type;
+        var factory = slowObjectFactories[type];
+        assert(factory);
+
+        var rehydrated = factory(val.$slow);
+    });
+
 
 
 
@@ -201,6 +200,37 @@ export function loadState() {
     console.log('PROCESS.EXIT==========================>');
     process.exit(0);
 }
+
+
+
+
+
+
+
+
+export function registerSlowObjectFactory(type: SlowType, factory: ($slow: { type: SlowType, id: string }) => SlowObject) {
+    slowObjectFactories[type] = factory;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 function ensureSlowObjectHasUniqueId(obj: SlowObject) {
@@ -276,19 +306,19 @@ var cache = {};
 
 
 // TODO: temp testing...
-//export function registerType(registration: types.SlowObject.Registration) {
+//export function registerType(registration: SlowObject.Registration) {
 //    typeRegistry.store(registration);
 //}
 
 
 // TODO: temp testing...
-//export function lookup(slowObj: types.SlowObject): types.SlowObject {
+//export function lookup(slowObj: SlowObject): SlowObject {
 //    return cache[slowObj.$slow.id];
 //}
 
 
 // TODO: doc...
-//export function track(slowObj: types.SlowObject) {
+//export function track(slowObj: SlowObject) {
 //    init();
 
 //    var slow = slowObj.$slow;
@@ -310,7 +340,7 @@ var cache = {};
 
 
 // TODO: doc...
-//export function clear(slowObj: types.SlowObject) {
+//export function clear(slowObj: SlowObject) {
 //    init();
 
 //    var slow = slowObj.$slow;
@@ -328,7 +358,7 @@ var cache = {};
 
 
 // TODO: temp testing...
-//var registrations: types.SlowObject.Registration[];
+//var registrations: SlowObject.Registration[];
 //function dehydrateDef(value: any) {
 //    registrations = registrations || typeRegistry.fetchAll();
 
@@ -405,7 +435,7 @@ var cache = {};
 //        }
 //        else {
 //            // TODO: important - relies on defs before refs!
-//            var slowObj: types.SlowObject = rehydrateDef(cache[key]);
+//            var slowObj: SlowObject = rehydrateDef(cache[key]);
 //            cache[key] = slowObj;
 //        }
 //    });

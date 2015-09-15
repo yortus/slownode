@@ -37,6 +37,7 @@ var updatedTrackedObjects = new Set();
 var deletedTrackedObjects = new Set();
 var nextId = 0;
 var isLoadingState = false;
+var slowObjectFactories = {};
 function saveChanges(callback) {
     // TODO: ... why async here?
     setImmediate(function () {
@@ -67,16 +68,6 @@ function saveChanges(callback) {
 }
 exports.saveChanges = saveChanges;
 function loadState() {
-    // STEPS:
-    // - set isLoadingState, so tracking calls are ignored.
-    // - read the entire log into a biiiig array/hash
-    // - full tracked objects list EQUALS all updated objects
-    //                             MINUS  all deleted objects
-    //                             MINUS  all tracked objects with no $refs to them
-    // - for each tracked object:
-    //   - ???
-    //   - profit
-    // - clear isLoadingState, so tracking calls are reinstated.
     // TODO: why not just allow tracking always? At load time that will effectively get the next log into the proper state....
     isLoadingState = true;
     // Read and parse the whole log file into an object.
@@ -125,11 +116,22 @@ function loadState() {
         if (!reachableSlowObjectIds.has(id))
             delete dehydratedSlowObjects[id];
     });
+    // TODO: rehydrate...
+    _.forEach(dehydratedSlowObjects, function (val, key) {
+        var type = val.$slow.type;
+        var factory = slowObjectFactories[type];
+        assert(factory);
+        var rehydrated = factory(val.$slow);
+    });
     isLoadingState = false;
     console.log('PROCESS.EXIT==========================>');
     process.exit(0);
 }
 exports.loadState = loadState;
+function registerSlowObjectFactory(type, factory) {
+    slowObjectFactories[type] = factory;
+}
+exports.registerSlowObjectFactory = registerSlowObjectFactory;
 function ensureSlowObjectHasUniqueId(obj) {
     obj.$slow.id = obj.$slow.id || "#" + ++nextId;
 }
@@ -172,15 +174,15 @@ var idCounter = 0;
 var logFileDescriptor;
 var cache = {};
 // TODO: temp testing...
-//export function registerType(registration: types.SlowObject.Registration) {
+//export function registerType(registration: SlowObject.Registration) {
 //    typeRegistry.store(registration);
 //}
 // TODO: temp testing...
-//export function lookup(slowObj: types.SlowObject): types.SlowObject {
+//export function lookup(slowObj: SlowObject): SlowObject {
 //    return cache[slowObj.$slow.id];
 //}
 // TODO: doc...
-//export function track(slowObj: types.SlowObject) {
+//export function track(slowObj: SlowObject) {
 //    init();
 //    var slow = slowObj.$slow;
 //    slow.id = slow.id || `#${++idCounter}`;
@@ -198,7 +200,7 @@ var cache = {};
 //    }
 //}
 // TODO: doc...
-//export function clear(slowObj: types.SlowObject) {
+//export function clear(slowObj: SlowObject) {
 //    init();
 //    var slow = slowObj.$slow;
 //    var key = slow.id;
@@ -208,7 +210,7 @@ var cache = {};
 //    fs.fsyncSync(logFileDescriptor);
 //}
 // TODO: temp testing...
-//var registrations: types.SlowObject.Registration[];
+//var registrations: SlowObject.Registration[];
 //function dehydrateDef(value: any) {
 //    registrations = registrations || typeRegistry.fetchAll();
 //    var jsonSafeValue;
@@ -264,7 +266,7 @@ var cache = {};
 //        }
 //        else {
 //            // TODO: important - relies on defs before refs!
-//            var slowObj: types.SlowObject = rehydrateDef(cache[key]);
+//            var slowObj: SlowObject = rehydrateDef(cache[key]);
 //            cache[key] = slowObj;
 //        }
 //    });

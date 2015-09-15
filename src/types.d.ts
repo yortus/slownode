@@ -10,7 +10,10 @@
 
 
 
-    type Async = typeof slow.async;
+    interface SlowAsyncFunctionStatic {
+        (bodyFunc: Function): SlowAsyncFunction;
+        new(bodyFunc: Function): SlowAsyncFunction;
+    }
 
     interface SlowAsyncFunction {
         (...args): SlowPromise;
