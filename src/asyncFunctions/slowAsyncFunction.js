@@ -49,7 +49,7 @@ var SlowAsyncFunction = makeCallableClass({
 });
 /** Supports memoization of SlowAsyncFunction instances, which are immutable and expensive to compute. */
 var asyncFunctionCache = {};
-// TODO: doc...
+// Tell storage how to create a SlowAsyncFunction instance.
 storage.registerSlowObjectFactory(20 /* SlowAsyncFunction */, function ($slow) {
     var saf = new SlowAsyncFunction(function () { });
     saf.$slow = $slow;

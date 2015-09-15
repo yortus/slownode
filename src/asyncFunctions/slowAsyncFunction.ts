@@ -67,7 +67,7 @@ var SlowAsyncFunction: types.SlowAsyncFunctionStatic = <any> makeCallableClass({
 var asyncFunctionCache: { [afid: string]: types.SlowAsyncFunction; } = {};
 
 
-// TODO: doc...
+// Tell storage how to create a SlowAsyncFunction instance.
 storage.registerSlowObjectFactory(SlowType.SlowAsyncFunction, $slow => {
     var saf = new SlowAsyncFunction(() => {});
     saf.$slow = <any> $slow;

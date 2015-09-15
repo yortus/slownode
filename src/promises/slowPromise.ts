@@ -200,17 +200,9 @@ function processAllHandlers(p: SlowPromise) {
 }
 
 
-//// TODO: register slow object type with storage (for rehydration logic)
-//storage.registerType({
-//    type: SlowType.SlowPromise,
-//    dehydrate: (p: types.SlowPromise, recurse: (obj) => any) => {
-//        if (!p || !p.$slow || p.$slow.type !== SlowType.SlowPromise) return;
-//        var jsonSafeObject = _.mapValues(p.$slow, propValue => recurse(propValue));
-//        return jsonSafeObject;
-//    },
-//    rehydrate: jsonSafeObject => {
-//        var promise = new SlowPromise(INTERNAL);
-//        promise.$slow = jsonSafeObject;
-//        return promise;
-//    }
-//});
+// Tell storage how to create a SlowPromise instance.
+storage.registerSlowObjectFactory(SlowType.SlowPromise, $slow => {
+    var promise = new SlowPromise(null);
+    promise.$slow = <any> $slow;
+    return promise;
+});

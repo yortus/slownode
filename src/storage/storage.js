@@ -120,6 +120,9 @@ function loadState() {
     _.forEach(dehydratedSlowObjects, function (val, key) {
         var type = val.$slow.type;
         var factory = slowObjectFactories[type];
+        if (!factory) {
+            debugger;
+        }
         assert(factory);
         var rehydrated = factory(val.$slow);
     });
