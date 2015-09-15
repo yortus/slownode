@@ -9,18 +9,18 @@ var SlowPromiseResolve = makeCallableClass({
     // TODO: doc...
     constructor: function (promise) {
         // Add slow metadata to the resolve function.
-        this._slow = { type: 11 /* SlowPromiseResolve */, promise: promise };
+        this.$slow = { type: 11 /* SlowPromiseResolve */, promise: promise };
         // Synchronise with the persistent object graph.
         storage.created(this);
     },
     // TODO: doc...
     call: function (value) {
         // As per spec, do nothing if promise's fate is already resolved.
-        var promise = this._slow.promise;
-        if (promise._slow.isFateResolved)
+        var promise = this.$slow.promise;
+        if (promise.$slow.isFateResolved)
             return;
         // Indicate the promise's fate is now resolved.
-        promise._slow.isFateResolved = true;
+        promise.$slow.isFateResolved = true;
         // Synchronise with the persistent object graph.
         storage.updated(promise);
         // Finally, resolve the promise using the standard resolution procedure.
@@ -32,8 +32,8 @@ module.exports = SlowPromiseResolve;
 //storage.registerType({
 //    type: SlowType.SlowPromiseResolveFunction,
 //    dehydrate: (p: types.SlowPromise.ResolveFunction, recurse: (obj) => any) => {
-//        if (!p || !p._slow || p._slow.type !== SlowType.SlowPromiseResolveFunction) return;
-//        var jsonSafeObject = _.mapValues(p._slow, propValue => recurse(propValue));
+//        if (!p || !p.$slow || p.$slow.type !== SlowType.SlowPromiseResolveFunction) return;
+//        var jsonSafeObject = _.mapValues(p.$slow, propValue => recurse(propValue));
 //        return jsonSafeObject;
 //    },
 //    rehydrate: jsonSafeObject => {

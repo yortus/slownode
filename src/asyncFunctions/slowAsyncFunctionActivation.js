@@ -14,7 +14,7 @@ var SlowAsyncFunctionActivation = (function (_super) {
         _super.call(this, stateMachine);
         this.asyncFunction = asyncFunction;
         this.deferred = deferred;
-        this._slow = {
+        this.$slow = {
             type: 30 /* SlowAsyncFunctionActivation */,
             asyncFunction: this.asyncFunction,
             state: this.state,

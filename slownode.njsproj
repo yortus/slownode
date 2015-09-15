@@ -48,11 +48,11 @@
     <TypeScriptCompile Include="src\promises\slowPromiseResolve.ts" />
     <TypeScriptCompile Include="src\promises\slowPromiseReject.ts" />
     <TypeScriptCompile Include="src\promises\standardResolutionProcedure.ts" />
-    <TypeScriptCompile Include="src\storage\rehydrate.ts" />
+    <TypeScriptCompile Include="src\storage\rehydrateSlowObject.ts" />
     <TypeScriptCompile Include="src\storage\storageLocation.ts" />
     <TypeScriptCompile Include="src\index.ts" />
     <TypeScriptCompile Include="src\storage\storage.ts" />
-    <TypeScriptCompile Include="src\storage\dehydrate.ts" />
+    <TypeScriptCompile Include="src\storage\dehydrateSlowObject.ts" />
     <TypeScriptCompile Include="src\asyncFunctions\runToCompletion.ts" />
     <TypeScriptCompile Include="src\asyncFunctions\slowAsyncFunction.ts" />
     <TypeScriptCompile Include="src\promises\slowPromise.ts" />

@@ -1,6 +1,12 @@
 var assert = require('assert');
-var dehydrate = require('./dehydrate');
+var fs = require('fs');
+var _ = require('lodash');
+var storageLocation = require('./storageLocation');
+var dehydrateSlowObject = require('./dehydrateSlowObject');
 function created(obj) {
+    // TODO: temp testing...
+    if (isLoadingState)
+        return module.exports;
     assert(!allTrackedObjects.has(obj));
     ensureSlowObjectHasUniqueId(obj);
     allTrackedObjects.add(obj);
@@ -9,12 +15,18 @@ function created(obj) {
 }
 exports.created = created;
 function updated(obj) {
+    // TODO: temp testing...
+    if (isLoadingState)
+        return module.exports;
     assert(allTrackedObjects.has(obj));
     updatedTrackedObjects.add(obj);
     return module.exports;
 }
 exports.updated = updated;
 function deleted(obj) {
+    // TODO: temp testing...
+    if (isLoadingState)
+        return module.exports;
     assert(allTrackedObjects.has(obj));
     deletedTrackedObjects.add(obj);
     return module.exports;
@@ -25,38 +37,27 @@ var updatedTrackedObjects = new Set();
 var deletedTrackedObjects = new Set();
 var nextId = 0;
 var isLoadingState = false;
-function saveState(callback) {
-    // STEPS:
-    // - for all deleted objects:
-    //   - mark deleted in log
-    //   - remove from tracked objects list
-    // - for all updated objects: dehydrate and write to log
-    //   - dehydrate: traverse object; for each element/value:
-    //     - if it is on the tracked objects list, dehydrate as a $ref
-    //     - if it is on the deleted objects list - ?! is that an error? It shouldn't have any references to it
-    //     - otherwise - do normal/extended JSON serialization
-    // - clear the deleted objects list
-    // - clear the updated objects list
-    // TODO: ...
+function saveChanges(callback) {
+    // TODO: ... why async here?
     setImmediate(function () {
-        log("======================================== SAVE STATE ========================================");
         // TODO: temp testing for DEBUGGING only...
+        //console.log(`======================================== SAVE CHANGES ========================================`);
         //var debug = {
         //    all: setToArray(allTrackedObjects),
         //    deleted: setToArray(deletedTrackedObjects),
         //    updated: setToArray(updatedTrackedObjects)
         //}
-        // TODO: Step 1
+        // For each deleted object, mark it as deleted in the log, and remove it from the set of tracked objects.
         deletedTrackedObjects.forEach(function (obj) {
-            log("DELETE: " + obj._slow.id);
+            log("[\"" + obj.$slow.id + "\", null],\n\n\n");
             allTrackedObjects.delete(obj);
         });
-        // TODO: Step 2
+        // For each updated object, dehydrate it and write its serialized form to the log.
         updatedTrackedObjects.forEach(function (obj) {
-            var json = dehydrate(obj, allTrackedObjects);
-            log("UPSERT: " + JSON.stringify(json));
+            var jsonSafe = dehydrateSlowObject(obj, allTrackedObjects);
+            log("[\"" + obj.$slow.id + "\", " + JSON.stringify(jsonSafe) + "],\n\n\n");
         });
-        // TODO: Step 3
+        // Clear the deleted and updated sets.
         deletedTrackedObjects.clear();
         updatedTrackedObjects.clear();
         // TODO: Done. But catch errors!!!
@@ -64,7 +65,7 @@ function saveState(callback) {
             callback();
     });
 }
-exports.saveState = saveState;
+exports.saveChanges = saveChanges;
 function loadState() {
     // STEPS:
     // - set isLoadingState, so tracking calls are ignored.
@@ -78,15 +79,65 @@ function loadState() {
     // - clear isLoadingState, so tracking calls are reinstated.
     // TODO: why not just allow tracking always? At load time that will effectively get the next log into the proper state....
     isLoadingState = true;
-    // TODO: ...
+    // Read and parse the whole log file into an object.
+    var json = "[" + fs.readFileSync(storageLocation, 'utf8') + " 0]";
+    var log = JSON.parse(json);
+    log.pop();
+    // Collect each (still dehydrated) slow object that appears in the log, in its most recent state.
+    var dehydratedSlowObjects = log.reduce(function (map, keyVal) {
+        if (keyVal[1])
+            map[keyVal[0]] = keyVal[1];
+        else
+            delete map[keyVal[0]];
+        return map;
+    }, {});
+    // Further filter the slow objects to those that are transitively reachable from roots.
+    // Root slow objects are: (1) SlowAsyncFunctionActivation instances.
+    // TODO: others? e.g. event loop
+    var rootSlowObjectIds = _.values(dehydratedSlowObjects)
+        .filter(function (so) { return so.$slow.type === 30 /* SlowAsyncFunctionActivation */; })
+        .map(function (so) { return so.$slow.id; });
+    var reachableSlowObjectIds = new Set(rootSlowObjectIds);
+    var reachableObjects = rootSlowObjectIds.reduce(function (objs, id) { return objs.concat(_.values(dehydratedSlowObjects[id].$slow)); }, []);
+    while (reachableObjects.length > 0) {
+        var reachableObject = reachableObjects.pop();
+        if (_.isArray(reachableObject)) {
+            reachableObjects = reachableObjects.concat(reachableObject);
+        }
+        else if (_.isPlainObject(reachableObject)) {
+            var $ref = reachableObject.$ref;
+            if ($ref) {
+                if (!reachableSlowObjectIds.has($ref)) {
+                    reachableSlowObjectIds.add($ref);
+                    reachableObjects = reachableObjects.concat(_.values(dehydratedSlowObjects[$ref].$slow));
+                }
+            }
+            else {
+                var $type = reachableObject.$type;
+                assert($type);
+                if ($type === 'object') {
+                    reachableObjects = reachableObjects.concat(reachableObject.values);
+                }
+            }
+        }
+    }
+    _.keys(dehydratedSlowObjects).forEach(function (id) {
+        if (!reachableSlowObjectIds.has(id))
+            delete dehydratedSlowObjects[id];
+    });
     isLoadingState = false;
+    console.log('PROCESS.EXIT==========================>');
+    process.exit(0);
 }
 exports.loadState = loadState;
 function ensureSlowObjectHasUniqueId(obj) {
-    obj._slow.id = obj._slow.id || "#" + ++nextId;
+    obj.$slow.id = obj.$slow.id || "#" + ++nextId;
 }
 function log(s) {
-    console.log(s);
+    //console.log(s);
+    init();
+    fs.writeSync(logFileDescriptor, s, null, 'utf8');
+    fs.fsyncSync(logFileDescriptor);
 }
 // TODO: temp testing for DEBUGGING only...
 function setToArray(s) {
@@ -94,6 +145,23 @@ function setToArray(s) {
     s.forEach(function (el) { return result.push(el); });
     return result;
 }
+var init = function () {
+    // Ensure init is only performed once.
+    // TODO: this is a bit hacky... better way?
+    init = function () { };
+    // Check if the logFile already exists. Use fs.stat since fs.exists is deprecated.
+    var fileExists = true;
+    try {
+        fs.statSync(storageLocation);
+    }
+    catch (ex) {
+        fileExists = false;
+    }
+    // Resume the current epoch (if file exists) or start a new epoch (if no file).
+    // TODO: fix ...
+    logFileDescriptor = fs.openSync(storageLocation, 'a'); // TODO: ensure this file gets closed eventually!!!
+    //TODO: NEEDED!:   fs.flockSync(logFileDescriptor, 'ex'); // TODO: ensure exclusion. HANDLE EXCEPTIONS HERE! ALSO: THIS LOCK MUST BE EXPLICITLY REMOVED AFTER FINISHED!
+};
 // TODO: doc... single process/thread exclusive by design...
 // TODO: errors are not caught... What to do?
 // TODO: NB from linux manpage: Calling fsync() does not necessarily ensure that the entry in the directory containing the file has also reached disk. For that an explicit fsync() on a file descriptor for the directory is also needed.
@@ -109,12 +177,12 @@ var cache = {};
 //}
 // TODO: temp testing...
 //export function lookup(slowObj: types.SlowObject): types.SlowObject {
-//    return cache[slowObj._slow.id];
+//    return cache[slowObj.$slow.id];
 //}
 // TODO: doc...
 //export function track(slowObj: types.SlowObject) {
 //    init();
-//    var slow = slowObj._slow;
+//    var slow = slowObj.$slow;
 //    slow.id = slow.id || `#${++idCounter}`;
 //    var key = slow.id;
 //    var serializedValue = JSON.stringify(dehydrateDef(slowObj));
@@ -132,7 +200,7 @@ var cache = {};
 // TODO: doc...
 //export function clear(slowObj: types.SlowObject) {
 //    init();
-//    var slow = slowObj._slow;
+//    var slow = slowObj.$slow;
 //    var key = slow.id;
 //    delete cache[key];
 //    // TODO: testing...

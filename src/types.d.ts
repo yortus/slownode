@@ -15,7 +15,7 @@
     interface SlowAsyncFunction {
         (...args): SlowPromise;
         stateMachine: Steppable.StateMachine;
-        _slow: {
+        $slow: {
             type: SlowObject.Type;
             id?: string;
             stateMachineSource: string;
@@ -26,7 +26,7 @@
     namespace SlowAsyncFunction {
 
         interface Activation extends SteppableObject {
-            _slow: {
+            $slow: {
                 type: SlowObject.Type;
                 id?: string;
 
@@ -66,7 +66,7 @@
 
 
     interface SlowPromise extends slow.SlowPromise<any> {
-        _slow: {
+        $slow: {
             type: SlowObject.Type;
             id?: string;
             isFateResolved: boolean;
@@ -87,7 +87,7 @@
         }
 
         interface Resolve extends slow.SlowPromise.Resolve<any> {
-            _slow: {
+            $slow: {
                 type: SlowObject.Type;
                 id?: string;
                 promise: SlowPromise;
@@ -95,7 +95,7 @@
         }
 
         interface Reject extends slow.SlowPromise.Reject {
-            _slow: {
+            $slow: {
                 type: SlowObject.Type;
                 id?: string;
                 promise: SlowPromise;
@@ -169,7 +169,7 @@
 
     // TODO: ...
     interface SlowObject {
-        _slow: {
+        $slow: {
             type: SlowObject.Type;
             id?: string;
             [other: string]: any;

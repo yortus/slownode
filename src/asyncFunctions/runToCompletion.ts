@@ -30,7 +30,7 @@ function runToCompletion(safa: types.SlowAsyncFunction.Activation, error?: any, 
 
     // The Steppable threw. Finalize and reject the SlowAsyncFunctionActivation.
     catch (ex) {
-        var s = safa._slow;
+        var s = safa.$slow;
         s.reject(ex);
 
         // Synchronise with the persistent object graph.
@@ -40,7 +40,7 @@ function runToCompletion(safa: types.SlowAsyncFunction.Activation, error?: any, 
 
     // The Steppable returned. Finalize and resolve the SlowAsyncFunctionActivation.
     if (yielded.done) {
-        var s = safa._slow;
+        var s = safa.$slow;
         s.resolve(yielded.value);
 
         // Synchronise with the persistent object graph.
@@ -50,11 +50,11 @@ function runToCompletion(safa: types.SlowAsyncFunction.Activation, error?: any, 
 
     // The Steppable yielded. Ensure the yielded value is awaitable.
     // TODO: review awaitability checks, supported values/types, and error handling
-    var awaiting: types.SlowPromise = safa._slow.awaiting = yielded.value;
+    var awaiting: types.SlowPromise = safa.$slow.awaiting = yielded.value;
     assert(awaiting && typeof awaiting.then === 'function', 'await: expected argument to be a Promise');
 
     // Attach fulfilled/rejected handlers to the awaitable, which resume the steppable.
-    awaiting.then(safa._slow.resumeNext, safa._slow.resumeError);
+    awaiting.then(safa.$slow.resumeNext, safa.$slow.resumeError);
 
     // Synchronise with the persistent object graph.
     storage.updated(safa);
@@ -65,5 +65,5 @@ function runToCompletion(safa: types.SlowAsyncFunction.Activation, error?: any, 
     // likely imminent. We want to be sure that the persistent object graph has been safely flushed
     // to storage, so that if the process dies between now and when the awaitable is settled, then when
     // it restarts we can pick up where we left off by reloading the persisted state.
-    storage.saveState();
+    storage.saveChanges();
 }

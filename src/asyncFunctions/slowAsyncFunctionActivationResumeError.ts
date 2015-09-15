@@ -13,12 +13,12 @@ export = SlowAsyncFunctionActivationResumeError;
 var SlowAsyncFunctionActivationResumeError = makeCallableClass({
 
     constructor: function (safa: types.SlowAsyncFunction.Activation) {
-        this._slow = { type: SlowType.SlowAsyncFunctionActivationResumeError, safa };
+        this.$slow = { type: SlowType.SlowAsyncFunctionActivationResumeError, safa };
         storage.created(this);
     },
 
     call: <types.SlowAsyncFunction.Activation.ResumeError> function (error) {
-        runToCompletion(this._slow.safa, error);
+        runToCompletion(this.$slow.safa, error);
     },
 
     bindThis: true

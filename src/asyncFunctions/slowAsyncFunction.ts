@@ -34,7 +34,7 @@ var SlowAsyncFunction: types.SlowAsyncFunction = <any> makeCallableClass({
         // Create a new SlowAsyncFunction instance.
         var steppableFunc = new SteppableFunction(bodyFunc, { pseudoYield: 'await', pseudoConst: '__const' });
         this.stateMachine = steppableFunc.stateMachine;
-        this._slow = {
+        this.$slow = {
             type: SlowType.SlowAsyncFunction,
             id: safid,
             stateMachineSource: steppableFunc.stateMachine.toString(),
@@ -97,8 +97,8 @@ var asyncFunctionCache: { [afid: string]: types.SlowAsyncFunction; } = {};
 //storage.registerType({
 //    type: SlowType.SlowAsyncFunction,
 //    dehydrate: (p: types.SlowAsyncFunction, recurse: (obj) => any) => {
-//        if (!p || !p._slow || p._slow.type !== SlowType.SlowAsyncFunction) return;
-//        var jsonSafeObject = _.mapValues(p._slow, propValue => recurse(propValue));
+//        if (!p || !p.$slow || p.$slow.type !== SlowType.SlowAsyncFunction) return;
+//        var jsonSafeObject = _.mapValues(p.$slow, propValue => recurse(propValue));
 //        return jsonSafeObject;
 //    },
 //    rehydrate: jsonSafeObject => {
@@ -113,20 +113,20 @@ var asyncFunctionCache: { [afid: string]: types.SlowAsyncFunction; } = {};
 //storage.registerType({
 //    type: SlowType.SlowAsyncFunctionActivation,
 //    dehydrate: (p: types.SlowAsyncFunction.Activation, recurse: (obj) => any) => {
-//        if (!p || !p._slow || p._slow.type !== SlowType.SlowAsyncFunctionActivation) return;
-//        var jsonSafeObject = _.mapValues(p._slow, propValue => recurse(propValue));
+//        if (!p || !p.$slow || p.$slow.type !== SlowType.SlowAsyncFunctionActivation) return;
+//        var jsonSafeObject = _.mapValues(p.$slow, propValue => recurse(propValue));
 //        return jsonSafeObject;
 //    },
 //    rehydrate: jsonSafeObject => {
 //        var safa: types.SlowAsyncFunction.Activation = <any> new Steppable(jsonSafeObject.asyncFunction.stateMachine);
 //        safa.state = jsonSafeObject.state;
-//        safa._slow = jsonSafeObject;
-//        safa._slow.onAwaitedResult = makeContinuationResultHandler(safa);
-//        safa._slow.onAwaitedError = makeContinuationErrorHandler(safa);
+//        safa.$slow = jsonSafeObject;
+//        safa.$slow.onAwaitedResult = makeContinuationResultHandler(safa);
+//        safa.$slow.onAwaitedError = makeContinuationErrorHandler(safa);
 
 //        // TODO: and continue running it...
-//        //assert(safa._slow.awaiting); // should only ever be rehydrating from an awaiting state
-//        //safa._slow.awaiting.then(safa._slow.onAwaitedResult, safa._slow.onAwaitedError);
+//        //assert(safa.$slow.awaiting); // should only ever be rehydrating from an awaiting state
+//        //safa.$slow.awaiting.then(safa.$slow.onAwaitedResult, safa.$slow.onAwaitedError);
 
 //        // All done.
 //        return safa;
@@ -138,8 +138,8 @@ var asyncFunctionCache: { [afid: string]: types.SlowAsyncFunction; } = {};
 //storage.registerType({
 //    type: SlowType.SlowAsyncFunctionContinuationWithResult,
 //    dehydrate: (p: any, recurse: (obj) => any) => {
-//        if (!p || !p._slow || p._slow.type !== SlowType.SlowAsyncFunctionContinuationWithResult) return;
-//        var jsonSafeObject = _.mapValues(p._slow, propValue => recurse(propValue));
+//        if (!p || !p.$slow || p.$slow.type !== SlowType.SlowAsyncFunctionContinuationWithResult) return;
+//        var jsonSafeObject = _.mapValues(p.$slow, propValue => recurse(propValue));
 //        return jsonSafeObject;
 //    },
 //    rehydrate: jsonSafeObject => makeContinuationResultHandler(jsonSafeObject.safa)
@@ -150,8 +150,8 @@ var asyncFunctionCache: { [afid: string]: types.SlowAsyncFunction; } = {};
 //storage.registerType({
 //    type: SlowType.SlowAsyncFunctionContinuationWithError,
 //    dehydrate: (p: any, recurse: (obj) => any) => {
-//        if (!p || !p._slow || p._slow.type !== SlowType.SlowAsyncFunctionContinuationWithError) return;
-//        var jsonSafeObject = _.mapValues(p._slow, propValue => recurse(propValue));
+//        if (!p || !p.$slow || p.$slow.type !== SlowType.SlowAsyncFunctionContinuationWithError) return;
+//        var jsonSafeObject = _.mapValues(p.$slow, propValue => recurse(propValue));
 //        return jsonSafeObject;
 //    },
 //    rehydrate: jsonSafeObject => makeContinuationErrorHandler(jsonSafeObject.safa)

@@ -7,11 +7,11 @@ var storage = require('../storage/storage');
  */
 var SlowAsyncFunctionActivationResumeNext = makeCallableClass({
     constructor: function (safa) {
-        this._slow = { type: 31 /* SlowAsyncFunctionActivationResumeNext */, safa: safa };
+        this.$slow = { type: 31 /* SlowAsyncFunctionActivationResumeNext */, safa: safa };
         storage.created(this);
     },
     call: function (value) {
-        runToCompletion(this._slow.safa, null, value);
+        runToCompletion(this.$slow.safa, null, value);
     },
     bindThis: true
 });

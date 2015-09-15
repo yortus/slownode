@@ -62,3 +62,7 @@ var api: typeof API = <any> {};
 api.async = <any> SlowAsyncFunction;
 api.Promise = <any> SlowPromise;
 api.SlowPromise = SlowPromise;
+
+
+// TODO: temp testing...
+storage.loadState();

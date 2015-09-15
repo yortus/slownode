@@ -16,7 +16,7 @@ class SlowAsyncFunctionActivation extends SteppableObject implements types.SlowA
         storage.created(this);
     }
 
-    _slow = {
+    $slow = {
         type: SlowType.SlowAsyncFunctionActivation,
         asyncFunction: this.asyncFunction,
         state: this.state,

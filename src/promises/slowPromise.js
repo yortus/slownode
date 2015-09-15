@@ -9,7 +9,7 @@ var SlowPromise = (function () {
     /** Constructs a SlowPromise instance. */
     function SlowPromise(resolver) {
         // -------------- Private implementation details from here down --------------
-        this._slow = {
+        this.$slow = {
             type: 10 /* SlowPromise */,
             isFateResolved: false,
             state: 0 /* Pending */,
@@ -29,7 +29,7 @@ var SlowPromise = (function () {
         // TODO: temp testing... why async? I think that's not in line with the draft PromisesAPlus constructor standard.
         setImmediate(function () {
             // TODO: Ensure the persistent object graph is safely stored before potentially yielding to the event loop
-            storage.saveState();
+            storage.saveChanges();
             // Call the given resolver. This kicks off the asynchronous operation whose outcome the Promise represents.
             try {
                 resolver(resolve, reject);
@@ -80,11 +80,11 @@ var SlowPromise = (function () {
         var _this = this;
         // Create the new promise to be returned by this .then() call.
         var deferred2 = SlowPromise.deferred();
-        this._slow.handlers.push({ onFulfilled: onFulfilled, onRejected: onRejected, deferred2: deferred2 });
+        this.$slow.handlers.push({ onFulfilled: onFulfilled, onRejected: onRejected, deferred2: deferred2 });
         // Synchronise with the persistent object graph.
         storage.updated(this);
         // If the promise is already settled, invoke the given handlers now (asynchronously).
-        if (this._slow.state !== 0 /* Pending */)
+        if (this.$slow.state !== 0 /* Pending */)
             process.nextTick(function () { return processAllHandlers(_this); });
         // Return the chained promise.
         return deferred2.promise;
@@ -100,9 +100,9 @@ var SlowPromise = (function () {
     SlowPromise.prototype._fulfil = function (value) {
         var _this = this;
         // Update the promise state.
-        if (this._slow.state !== 0 /* Pending */)
+        if (this.$slow.state !== 0 /* Pending */)
             return;
-        _a = [1 /* Fulfilled */, value], this._slow.state = _a[0], this._slow.settledValue = _a[1];
+        _a = [1 /* Fulfilled */, value], this.$slow.state = _a[0], this.$slow.settledValue = _a[1];
         // Synchronise with the persistent object graph.
         storage.updated(this);
         // Invoke any already-attached handlers now (asynchronously).
@@ -112,9 +112,9 @@ var SlowPromise = (function () {
     SlowPromise.prototype._reject = function (reason) {
         var _this = this;
         // Update the promise state.
-        if (this._slow.state !== 0 /* Pending */)
+        if (this.$slow.state !== 0 /* Pending */)
             return;
-        _a = [2 /* Rejected */, reason], this._slow.state = _a[0], this._slow.settledValue = _a[1];
+        _a = [2 /* Rejected */, reason], this.$slow.state = _a[0], this.$slow.settledValue = _a[1];
         // Synchronise with the persistent object graph.
         storage.updated(this);
         // Invoke any already-attached handlers now (asynchronously).
@@ -130,15 +130,15 @@ var SlowPromise = (function () {
  */
 function processAllHandlers(p) {
     // Dequeue each onResolved/onRejected handler in order.
-    while (p._slow.handlers.length > 0) {
-        var handler = p._slow.handlers.shift();
+    while (p.$slow.handlers.length > 0) {
+        var handler = p.$slow.handlers.shift();
         // Synchronise with the persistent object graph.
         storage.updated(p);
         // Fulfilled case.
-        if (p._slow.state === 1 /* Fulfilled */) {
+        if (p.$slow.state === 1 /* Fulfilled */) {
             if (_.isFunction(handler.onFulfilled)) {
                 try {
-                    var ret = handler.onFulfilled.apply(void 0, [p._slow.settledValue]);
+                    var ret = handler.onFulfilled.apply(void 0, [p.$slow.settledValue]);
                     standardResolutionProcedure(handler.deferred2.promise, ret);
                 }
                 catch (ex) {
@@ -146,13 +146,13 @@ function processAllHandlers(p) {
                 }
             }
             else {
-                handler.deferred2.resolve(p._slow.settledValue);
+                handler.deferred2.resolve(p.$slow.settledValue);
             }
         }
-        else if (p._slow.state === 2 /* Rejected */) {
+        else if (p.$slow.state === 2 /* Rejected */) {
             if (_.isFunction(handler.onRejected)) {
                 try {
-                    var ret = handler.onRejected.apply(void 0, [p._slow.settledValue]);
+                    var ret = handler.onRejected.apply(void 0, [p.$slow.settledValue]);
                     standardResolutionProcedure(handler.deferred2.promise, ret);
                 }
                 catch (ex) {
@@ -160,7 +160,7 @@ function processAllHandlers(p) {
                 }
             }
             else {
-                handler.deferred2.reject(p._slow.settledValue);
+                handler.deferred2.reject(p.$slow.settledValue);
             }
         }
     }
@@ -170,13 +170,13 @@ module.exports = SlowPromise;
 //storage.registerType({
 //    type: SlowType.SlowPromise,
 //    dehydrate: (p: types.SlowPromise, recurse: (obj) => any) => {
-//        if (!p || !p._slow || p._slow.type !== SlowType.SlowPromise) return;
-//        var jsonSafeObject = _.mapValues(p._slow, propValue => recurse(propValue));
+//        if (!p || !p.$slow || p.$slow.type !== SlowType.SlowPromise) return;
+//        var jsonSafeObject = _.mapValues(p.$slow, propValue => recurse(propValue));
 //        return jsonSafeObject;
 //    },
 //    rehydrate: jsonSafeObject => {
 //        var promise = new SlowPromise(INTERNAL);
-//        promise._slow = jsonSafeObject;
+//        promise.$slow = jsonSafeObject;
 //        return promise;
 //    }
 //});

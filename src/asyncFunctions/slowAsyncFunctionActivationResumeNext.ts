@@ -13,12 +13,12 @@ export = SlowAsyncFunctionActivationResumeNext;
 var SlowAsyncFunctionActivationResumeNext = makeCallableClass({
 
     constructor: function (safa: types.SlowAsyncFunction.Activation) {
-        this._slow = { type: SlowType.SlowAsyncFunctionActivationResumeNext, safa };
+        this.$slow = { type: SlowType.SlowAsyncFunctionActivationResumeNext, safa };
         storage.created(this);
     },
 
     call: <types.SlowAsyncFunction.Activation.ResumeNext> function (value) {
-        runToCompletion(this._slow.safa, null, value);
+        runToCompletion(this.$slow.safa, null, value);
     },
 
     bindThis: true
