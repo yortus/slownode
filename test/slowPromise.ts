@@ -10,8 +10,8 @@ var expect = chai.expect;
 
 describe('SlowPromise', function () {
 
-    //// Set timeout to 10mins for interactive debugging of tests.
-    //this.timeout(600000);
+    // Set timeout to 10mins for interactive debugging of tests.
+    this.timeout(600000);
 
     it('works 2', (done) => {
 
@@ -23,9 +23,10 @@ describe('SlowPromise', function () {
         };
 
 
-        var p = new slow.Promise((resolve, reject) => {
-            setTimeout(() => resolve('foo'), 500);        
-        });
+        //var p = new slow.Promise((resolve, reject) => {
+        //    setTimeout(() => resolve('foo'), 500);        
+        //});
+        var p = slow.Promise.delay(500);
 
         console.log('AAA');
         p.then(value => {

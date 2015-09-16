@@ -35,7 +35,6 @@
     <TypeScriptCompile Include="src\asyncFunctions\slowAsyncFunctionActivationResumeError.ts" />
     <TypeScriptCompile Include="src\asyncFunctions\slowAsyncFunctionActivation.ts" />
     <TypeScriptCompile Include="src\eventLoop\slowEventLoop.ts" />
-    <TypeScriptCompile Include="src\eventLoop\setTimeout.ts" />
     <TypeScriptCompile Include="src\functions\astOperations\funcExpr\classifyIdentifiers.ts" />
     <TypeScriptCompile Include="src\functions\astOperations\funcExpr\containsInnerFunctions.ts" />
     <TypeScriptCompile Include="src\functions\astOperations\funcExpr\isRelocatable.ts" />

@@ -3,6 +3,7 @@ var _ = require('lodash');
 var SlowPromiseResolve = require('./slowPromiseResolve');
 var SlowPromiseReject = require('./slowPromiseReject');
 var standardResolutionProcedure = require('./standardResolutionProcedure');
+var slowEventLoop = require('../eventLoop/slowEventLoop');
 var storage = require('../storage/storage');
 /** Promises A+ compliant Promise implementation with persistence. */
 var SlowPromise = (function () {
@@ -26,18 +27,15 @@ var SlowPromise = (function () {
         // Construct resolve and reject functions to be passed to the resolver.
         var resolve = new SlowPromiseResolve(this);
         var reject = new SlowPromiseReject(this);
-        // TODO: temp testing... why async? I think that's not in line with the draft PromisesAPlus constructor standard.
-        setImmediate(function () {
-            // TODO: Ensure the persistent object graph is safely stored before potentially yielding to the event loop
-            storage.saveChanges();
-            // Call the given resolver. This kicks off the asynchronous operation whose outcome the Promise represents.
-            try {
-                resolver(resolve, reject);
-            }
-            catch (ex) {
-                reject(ex);
-            }
-        });
+        // TODO: Ensure the persistent object graph is safely stored before potentially yielding to the event loop
+        storage.saveChanges();
+        // Call the given resolver. This kicks off the asynchronous operation whose outcome the Promise represents.
+        try {
+            resolver(resolve, reject);
+        }
+        catch (ex) {
+            reject(ex);
+        }
     }
     /** Returns a new SlowPromise instance that is already resolved with the given value. */
     SlowPromise.resolved = function (value) {
@@ -63,8 +61,8 @@ var SlowPromise = (function () {
     // TODO: temp testing....
     SlowPromise.delay = function (ms) {
         return new SlowPromise(function (resolve) {
-            // TODO: use SLOW event loop!!
-            setTimeout(function () { return resolve(); }, ms);
+            //setTimeout(() => resolve(), ms);
+            slowEventLoop.setTimeout(function () { return resolve(); }, ms);
         });
     };
     /**

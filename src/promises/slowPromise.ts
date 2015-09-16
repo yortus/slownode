@@ -6,6 +6,7 @@ import SlowType = types.SlowObject.Type;
 import SlowPromiseResolve = require('./slowPromiseResolve');
 import SlowPromiseReject = require('./slowPromiseReject');
 import standardResolutionProcedure = require('./standardResolutionProcedure');
+import slowEventLoop = require('../eventLoop/slowEventLoop');
 import storage = require('../storage/storage');
 export = SlowPromise;
 
@@ -29,15 +30,11 @@ class SlowPromise implements types.SlowPromise {
         var resolve = new SlowPromiseResolve(this);
         var reject = new SlowPromiseReject(this);
 
-        // TODO: temp testing... why async? I think that's not in line with the draft PromisesAPlus constructor standard.
-        setImmediate(() => {
+        // TODO: Ensure the persistent object graph is safely stored before potentially yielding to the event loop
+        storage.saveChanges();
 
-            // TODO: Ensure the persistent object graph is safely stored before potentially yielding to the event loop
-            storage.saveChanges();
-
-            // Call the given resolver. This kicks off the asynchronous operation whose outcome the Promise represents.
-            try { resolver(resolve, reject); } catch (ex) { reject(ex); }
-        });
+        // Call the given resolver. This kicks off the asynchronous operation whose outcome the Promise represents.
+        try { resolver(resolve, reject); } catch (ex) { reject(ex); }
     }
 
     /** Returns a new SlowPromise instance that is already resolved with the given value. */
@@ -68,11 +65,9 @@ class SlowPromise implements types.SlowPromise {
     // TODO: temp testing....
     static delay(ms: number) {
         return new SlowPromise(resolve => {
-
-            // TODO: use SLOW event loop!!
-            setTimeout(() => resolve(), ms);
+            //setTimeout(() => resolve(), ms);
+            slowEventLoop.setTimeout(() => resolve(), ms);
         });
-
     }
 
 
