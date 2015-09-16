@@ -48,31 +48,31 @@ function saveChanges(callback) {
     if (isLoadingState)
         return module.exports;
     // TODO: ... why async here?
-    //setImmediate(() => {
-    // TODO: temp testing for DEBUGGING only...
-    //console.log(`======================================== SAVE CHANGES ========================================`);
-    var debug = {
-        all: setToArray(allTrackedObjects),
-        deleted: setToArray(deletedTrackedObjects),
-        updated: setToArray(updatedTrackedObjects)
-    };
-    // For each deleted object, mark it as deleted in the log, and remove it from the set of tracked objects.
-    deletedTrackedObjects.forEach(function (obj) {
-        log("[\"" + obj.$slow.id + "\", null],\n\n\n");
-        allTrackedObjects.delete(obj);
+    setImmediate(function () {
+        // TODO: temp testing for DEBUGGING only...
+        //console.log(`======================================== SAVE CHANGES ========================================`);
+        var debug = {
+            all: setToArray(allTrackedObjects),
+            deleted: setToArray(deletedTrackedObjects),
+            updated: setToArray(updatedTrackedObjects)
+        };
+        // For each deleted object, mark it as deleted in the log, and remove it from the set of tracked objects.
+        deletedTrackedObjects.forEach(function (obj) {
+            log("[\"" + obj.$slow.id + "\", null],\n\n\n");
+            allTrackedObjects.delete(obj);
+        });
+        // For each updated object, dehydrate it and write its serialized form to the log.
+        updatedTrackedObjects.forEach(function (obj) {
+            var jsonSafe = dehydrateSlowObject(obj, allTrackedObjects);
+            log("[\"" + obj.$slow.id + "\", " + JSON.stringify(jsonSafe) + "],\n\n\n");
+        });
+        // Clear the deleted and updated sets.
+        deletedTrackedObjects.clear();
+        updatedTrackedObjects.clear();
+        // TODO: Done. But catch errors!!!
+        if (callback)
+            callback();
     });
-    // For each updated object, dehydrate it and write its serialized form to the log.
-    updatedTrackedObjects.forEach(function (obj) {
-        var jsonSafe = dehydrateSlowObject(obj, allTrackedObjects);
-        log("[\"" + obj.$slow.id + "\", " + JSON.stringify(jsonSafe) + "],\n\n\n");
-    });
-    // Clear the deleted and updated sets.
-    deletedTrackedObjects.clear();
-    updatedTrackedObjects.clear();
-    // TODO: Done. But catch errors!!!
-    if (callback)
-        callback();
-    //});
 }
 exports.saveChanges = saveChanges;
 function loadState() {

@@ -71,7 +71,7 @@ export function saveChanges(callback?: (err?) => void) {
 
 
     // TODO: ... why async here?
-    //setImmediate(() => {
+    setImmediate(() => {
 
 
 // TODO: temp testing for DEBUGGING only...
@@ -101,7 +101,7 @@ var debug = {
 
         // TODO: Done. But catch errors!!!
         if (callback) callback();
-    //});
+    });
 }
 
 export function loadState() {

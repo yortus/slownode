@@ -9,16 +9,16 @@ process.on('SIGINT', function () {
     process.exit();
 });
 describe('The async(...) function', function () {
-    it('aaa', function (done) {
-        setTimeout(done, 3000);
-    });
+    //it('aaa', done => {
+    //    setTimeout(done, 3000);
+    //});
     it('works', function (done) {
         // TODO: hacky hacky... satisfy dehydrator (but NOT rehydrator!)
         // TODO: Better to use some option where dehydration rules are relaxed (so closures allowed in then() calls)
-        global['done'] = function (err) {
-            delete global['done'];
-            done(err);
-        };
+        //global['done'] = err => {
+        //    delete global['done'];
+        //    done(err);
+        //};
         var fn = slow.async(function (delay, count, cb) {
             var SlowPromise = __const(require('slownode').SlowPromise);
             for (var i = 0; i < count; ++i) {
@@ -31,15 +31,15 @@ describe('The async(...) function', function () {
         function test() {
             console.log('---');
         }
-        fn(500, 30, test)
-            .then(function (result) {
-            console.log(result);
-            done(); // TODO: isRelocatableFunction sees this as global.done due to above hack and says its ok
-        })
-            .catch(function (error) {
-            console.log('ERROR: ' + error.message);
-            done(error); // TODO: isRelocatableFunction sees this as global.done due to above hack and says its ok
-        });
+        fn(500, 30, test);
+        //.then(result => {
+        //    console.log(result);
+        //    done(); // TODO: isRelocatableFunction sees this as global.done due to above hack and says its ok
+        //})
+        //.catch(error => {
+        //    console.log('ERROR: ' + error.message);
+        //    done(error); // TODO: isRelocatableFunction sees this as global.done due to above hack and says its ok
+        //});
     });
 });
 //# sourceMappingURL=slowAsyncFunction.js.map

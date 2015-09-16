@@ -3,7 +3,6 @@ var SlowClosure = require('./functions/slowClosure');
 var slowEventLoop = require('./eventLoop/slowEventLoop');
 var SlowAsyncFunction = require('./asyncFunctions/slowAsyncFunction');
 var SlowPromise = require('./promises/slowPromise');
-var storage = require('./storage/storage');
 //// TODO: Experiment with node-weak and global.gc to work out when to delete persistent slow objects. Works OK!
 //// NB: must run node with the --expose-gc flag for this to work... eg node --expose-gc ./debug
 //var weak = require('weak');
@@ -50,7 +49,7 @@ api.clearImmediate = slowEventLoop.clearImmediate;
 api.async = SlowAsyncFunction;
 api.Promise = SlowPromise;
 api.SlowPromise = SlowPromise;
-// TODO: temp testing...
-storage.loadState();
 module.exports = api;
+// TODO: temp testing...
+//storage.loadState();
 //# sourceMappingURL=index.js.map
