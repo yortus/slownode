@@ -24,9 +24,6 @@ export function created(obj: SlowObject): StorageAPI {
     if (isLoadingState) return module.exports;
 
     // TODO: temp hack for early-created singleton event loop. Fix this!
-    if (!obj) {
-        debugger;
-    }
     if (obj.$slow.id !== '<EventLoop>') {
         assert(!allTrackedObjects.has(obj));
     }
@@ -114,9 +111,9 @@ export function loadState() {
 
     // Read and parse the whole log file into an object.
     // TODO: temp testing...
-    //var json = `[${fs.readFileSync(path.join(__dirname, '../../slowlog.bak.txt'), 'utf8')} 0]`;
+    var json = `[${fs.readFileSync(path.join(__dirname, '../../slowlog.bak.txt'), 'utf8')} 0]`;
     //TODO: was restore...
-    var json = exists() ? `[${fs.readFileSync(storageLocation, 'utf8')} 0]` : `[0]`;
+    //var json = exists() ? `[${fs.readFileSync(storageLocation, 'utf8')} 0]` : `[0]`;
     var log: Array<[string,SlowObject]> = JSON.parse(json);
     log.pop();
 

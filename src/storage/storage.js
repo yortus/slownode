@@ -1,5 +1,6 @@
 var assert = require('assert');
 var fs = require('fs');
+var path = require('path');
 var _ = require('lodash');
 var storageLocation = require('./storageLocation');
 var dehydrateSlowObject = require('./dehydrateSlowObject');
@@ -9,9 +10,6 @@ function created(obj) {
     if (isLoadingState)
         return module.exports;
     // TODO: temp hack for early-created singleton event loop. Fix this!
-    if (!obj) {
-        debugger;
-    }
     if (obj.$slow.id !== '<EventLoop>') {
         assert(!allTrackedObjects.has(obj));
     }
@@ -82,9 +80,9 @@ function loadState() {
     isLoadingState = true;
     // Read and parse the whole log file into an object.
     // TODO: temp testing...
-    //var json = `[${fs.readFileSync(path.join(__dirname, '../../slowlog.bak.txt'), 'utf8')} 0]`;
+    var json = "[" + fs.readFileSync(path.join(__dirname, '../../slowlog.bak.txt'), 'utf8') + " 0]";
     //TODO: was restore...
-    var json = exists() ? "[" + fs.readFileSync(storageLocation, 'utf8') + " 0]" : "[0]";
+    //var json = exists() ? `[${fs.readFileSync(storageLocation, 'utf8')} 0]` : `[0]`;
     var log = JSON.parse(json);
     log.pop();
     // TODO: at this point we can start the new log file.

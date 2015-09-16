@@ -14,9 +14,10 @@ process.on('SIGINT', () => {
 
 describe('The async(...) function', function () {
 
-    //it('aaa', done => {
-    //    setTimeout(done, 3000);
-    //});
+    it('aaa', done => {
+        slow;
+        setTimeout(done, 3000);
+    });
 
     it('works', (done) => {
 
