@@ -7,6 +7,38 @@
     // - They are put here because (1) it forms a shared reference for internal code and (2) the public .d.ts should not contain provate stuff
 
 
+    namespace EventLoop {
+
+        type Timer = slow.EventLoop.Timer;
+
+        // TODO: doc...
+        interface Entry {
+            id: number;
+            event: Event;
+            callback: Function;
+            arguments: any[];
+        }
+
+        // TODO: doc...
+        interface Event {
+            type: EventType;
+            [other: string]: any;
+        }
+
+        // TODO: doc...
+        const enum EventType {
+            TimerEvent
+        }
+
+        // TODO: doc...
+        interface TimerEvent extends Event {
+
+            /** UNIX timestamp */
+            due: number;
+        }
+    }
+
+
 
 
 

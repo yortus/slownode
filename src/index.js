@@ -1,3 +1,4 @@
+var slowEventLoop = require('./eventLoop/slowEventLoop');
 var SlowAsyncFunction = require('./asyncFunctions/slowAsyncFunction');
 var SlowPromise = require('./promises/slowPromise');
 var storage = require('./storage/storage');
@@ -38,6 +39,10 @@ var storage = require('./storage/storage');
 //rehydrate();
 // TODO: temp testing... Build the API for export...
 var api = {};
+api.setTimeout = slowEventLoop.setTimeout;
+api.clearTimeout = slowEventLoop.clearTimeout;
+api.setImmediate = slowEventLoop.setImmediate;
+api.clearImmediate = slowEventLoop.clearImmediate;
 api.async = SlowAsyncFunction;
 api.Promise = SlowPromise;
 api.SlowPromise = SlowPromise;

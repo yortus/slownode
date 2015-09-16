@@ -65,8 +65,8 @@ class SlowPromise implements types.SlowPromise {
     // TODO: temp testing....
     static delay(ms: number) {
         return new SlowPromise(resolve => {
-            //setTimeout(() => resolve(), ms);
             slowEventLoop.setTimeout(() => resolve(), ms);
+            // TODO: was... setTimeout(() => resolve(), ms);
         });
     }
 

@@ -8,6 +8,7 @@ function setTimeout(callback, delay) {
         args[_i - 2] = arguments[_i];
     }
     var entry = {
+        id: ++nextId,
         event: {
             type: 0 /* TimerEvent */,
             due: Date.now() + delay
@@ -16,9 +17,19 @@ function setTimeout(callback, delay) {
         arguments: args
     };
     entries.push(entry);
-    // TODO: return token...
+    return entry.id;
 }
 exports.setTimeout = setTimeout;
+// TODO: doc...
+function clearTimeout(timeoutObject) {
+    for (var i = 0; i < entries.length; ++i) {
+        if (entries[i].id !== timeoutObject)
+            continue;
+        entries.splice(i, 1);
+        break;
+    }
+}
+exports.clearTimeout = clearTimeout;
 // TODO: doc...
 // TODO: should return a token for use with clearTimeout
 function setImmediate(callback) {
@@ -30,13 +41,23 @@ function setImmediate(callback) {
 }
 exports.setImmediate = setImmediate;
 // TODO: doc...
+function clearImmediate(immediateObject) {
+    return clearTimeout(immediateObject);
+}
+exports.clearImmediate = clearImmediate;
+// TODO: doc...
 var entries = [];
 // TODO: doc...
 var slowPollInterval = 200;
+// TODO: doc... need to set this appropriately high after rehydrating the event loop
+var nextId = 0;
 // TODO: doc...
 function runLoop() {
     //// TODO: temp testing...
     //process.stdout.write(`==================== EVENT LOOP FLUSH `);
+    // TODO: if finished?... exit?
+    if (entries.length === 0) {
+    }
     // TODO: traverse all entries once...
     var thisLoop = entries;
     entries = [];
@@ -61,10 +82,6 @@ function runLoop() {
     //// TODO: temp testing...
     //process.stdout.write(`\n`);
     // TODO: persist state
-    // TODO: if finished?... exit?
-    if (entries.length === 0) {
-        console.log("==================== EVENT LOOP EMPTY =========================");
-    }
     // TODO: prep for next run
     global.setTimeout(runLoop, slowPollInterval);
 }

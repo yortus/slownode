@@ -61,8 +61,8 @@ var SlowPromise = (function () {
     // TODO: temp testing....
     SlowPromise.delay = function (ms) {
         return new SlowPromise(function (resolve) {
-            //setTimeout(() => resolve(), ms);
             slowEventLoop.setTimeout(function () { return resolve(); }, ms);
+            // TODO: was... setTimeout(() => resolve(), ms);
         });
     };
     /**

@@ -13,7 +13,7 @@ describe('SlowPromise', function () {
     // Set timeout to 10mins for interactive debugging of tests.
     this.timeout(600000);
 
-    it('works 2', (done) => {
+    it('works', (done) => {
 
         // TODO: hacky hacky... satisfy dehydrator (but NOT rehydrator!)
         // TODO: Better to use some option where dehydration rules are relaxed (so closures allowed in then() calls)

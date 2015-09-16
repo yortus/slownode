@@ -6,6 +6,21 @@
 
 declare module "slownode" {
 
+    // ==================== Slow Event Loop ====================
+
+    export function setTimeout(callback: Function, delay: number, ...args: any[]): EventLoop.Timer;
+
+    export function clearTimeout(timeoutObject: EventLoop.Timer): void;
+
+    export function setImmediate(callback: Function, ...args: any[]): EventLoop.Timer;
+
+    export function clearImmediate(immediateObject: EventLoop.Timer): void;
+
+    namespace EventLoop {
+
+        type Timer = number;
+    }
+
 
 
     // ==================== async() and SlowAsyncFunction ====================

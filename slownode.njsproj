@@ -75,6 +75,7 @@
     <TypeScriptCompile Include="src\util\shasum.ts" />
     <TypeScriptCompile Include="test\fixtures\slowfuncs\3.ts" />
     <TypeScriptCompile Include="test\fixtures\slowfuncs\2.ts" />
+    <TypeScriptCompile Include="test\slowEventLoop.ts" />
     <TypeScriptCompile Include="test\steppableFunction.ts" />
     <TypeScriptCompile Include="test\slowPromise.ts" />
     <TypeScriptCompile Include="test\slowAsyncFunction.ts" />
