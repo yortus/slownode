@@ -23,7 +23,10 @@ export function created(obj: SlowObject): StorageAPI {
     // TODO: temp testing...
     if (isLoadingState) return module.exports;
 
-    assert(!allTrackedObjects.has(obj));
+    // TODO: temp hack for early-created singleton event loop. Fix this!
+    if (obj.$slow.id !== '<EventLoop>') {
+        assert(!allTrackedObjects.has(obj));
+    }
     ensureSlowObjectHasUniqueId(obj);
     allTrackedObjects.add(obj);
     updatedTrackedObjects.add(obj);
@@ -68,16 +71,16 @@ export function saveChanges(callback?: (err?) => void) {
 
 
     // TODO: ... why async here?
-    setImmediate(() => {
+    //setImmediate(() => {
 
 
 // TODO: temp testing for DEBUGGING only...
 //console.log(`======================================== SAVE CHANGES ========================================`);
-//var debug = {
-//    all: setToArray(allTrackedObjects),
-//    deleted: setToArray(deletedTrackedObjects),
-//    updated: setToArray(updatedTrackedObjects)
-//}
+var debug = {
+    all: setToArray(allTrackedObjects),
+    deleted: setToArray(deletedTrackedObjects),
+    updated: setToArray(updatedTrackedObjects)
+};
 
 
         // For each deleted object, mark it as deleted in the log, and remove it from the set of tracked objects.
@@ -98,25 +101,26 @@ export function saveChanges(callback?: (err?) => void) {
 
         // TODO: Done. But catch errors!!!
         if (callback) callback();
-    });
+    //});
 }
 
 export function loadState() {
 
-
     // TODO: why not just allow tracking always? At load time that will effectively get the next log into the proper state....
     isLoadingState = true;
 
-
     // Read and parse the whole log file into an object.
-    var json = exists() ? `[${fs.readFileSync(storageLocation, 'utf8')} 0]` : `[0]`;
+    var json = `[${fs.readFileSync(path.join(__dirname, '../../slowlog.bak.txt'), 'utf8')} 0]`;
+
+    //TODO: was restore...
+    //var json = exists() ? `[${fs.readFileSync(storageLocation, 'utf8')} 0]` : `[0]`;
     var log: Array<[string,SlowObject]> = JSON.parse(json);
     log.pop();
 
     // TODO: at this point we can start the new log file.
     //       - but ensure the old one is safely reloaded before deleting it!!!
     // TODO: delete the old file for now, but this is NOT SAFE! See prev comment.
-    //if (exists()) fs.unlinkSync(storageLocation);
+    if (exists()) fs.unlinkSync(storageLocation);
 
     // Collect each (still dehydrated) slow object that appears in the log, in its most recent state.
     var dehydratedSlowObjects = log.reduce((map, keyVal) => {
@@ -167,10 +171,17 @@ export function loadState() {
         rehydratedSlowObjects[rehydrated.$slow.id] = rehydrated;
     });
 
+    // TODO: temp testing
+    isLoadingState = false;
+
+    // TODO: Add all the slow objects preserved from the old log to the new log
+    _.forEach(rehydratedSlowObjects, created);
+    saveChanges();
 
 
 
-    //isLoadingState = false;
+
+
 
 //// TODO: temp testing
 //process.exit(1);

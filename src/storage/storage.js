@@ -1,5 +1,6 @@
 var assert = require('assert');
 var fs = require('fs');
+var path = require('path');
 var _ = require('lodash');
 var storageLocation = require('./storageLocation');
 var dehydrateSlowObject = require('./dehydrateSlowObject');
@@ -8,7 +9,10 @@ function created(obj) {
     // TODO: temp testing...
     if (isLoadingState)
         return module.exports;
-    assert(!allTrackedObjects.has(obj));
+    // TODO: temp hack for early-created singleton event loop. Fix this!
+    if (obj.$slow.id !== '<EventLoop>') {
+        assert(!allTrackedObjects.has(obj));
+    }
     ensureSlowObjectHasUniqueId(obj);
     allTrackedObjects.add(obj);
     updatedTrackedObjects.add(obj);
@@ -44,44 +48,47 @@ function saveChanges(callback) {
     if (isLoadingState)
         return module.exports;
     // TODO: ... why async here?
-    setImmediate(function () {
-        // TODO: temp testing for DEBUGGING only...
-        //console.log(`======================================== SAVE CHANGES ========================================`);
-        //var debug = {
-        //    all: setToArray(allTrackedObjects),
-        //    deleted: setToArray(deletedTrackedObjects),
-        //    updated: setToArray(updatedTrackedObjects)
-        //}
-        // For each deleted object, mark it as deleted in the log, and remove it from the set of tracked objects.
-        deletedTrackedObjects.forEach(function (obj) {
-            log("[\"" + obj.$slow.id + "\", null],\n\n\n");
-            allTrackedObjects.delete(obj);
-        });
-        // For each updated object, dehydrate it and write its serialized form to the log.
-        updatedTrackedObjects.forEach(function (obj) {
-            var jsonSafe = dehydrateSlowObject(obj, allTrackedObjects);
-            log("[\"" + obj.$slow.id + "\", " + JSON.stringify(jsonSafe) + "],\n\n\n");
-        });
-        // Clear the deleted and updated sets.
-        deletedTrackedObjects.clear();
-        updatedTrackedObjects.clear();
-        // TODO: Done. But catch errors!!!
-        if (callback)
-            callback();
+    //setImmediate(() => {
+    // TODO: temp testing for DEBUGGING only...
+    //console.log(`======================================== SAVE CHANGES ========================================`);
+    var debug = {
+        all: setToArray(allTrackedObjects),
+        deleted: setToArray(deletedTrackedObjects),
+        updated: setToArray(updatedTrackedObjects)
+    };
+    // For each deleted object, mark it as deleted in the log, and remove it from the set of tracked objects.
+    deletedTrackedObjects.forEach(function (obj) {
+        log("[\"" + obj.$slow.id + "\", null],\n\n\n");
+        allTrackedObjects.delete(obj);
     });
+    // For each updated object, dehydrate it and write its serialized form to the log.
+    updatedTrackedObjects.forEach(function (obj) {
+        var jsonSafe = dehydrateSlowObject(obj, allTrackedObjects);
+        log("[\"" + obj.$slow.id + "\", " + JSON.stringify(jsonSafe) + "],\n\n\n");
+    });
+    // Clear the deleted and updated sets.
+    deletedTrackedObjects.clear();
+    updatedTrackedObjects.clear();
+    // TODO: Done. But catch errors!!!
+    if (callback)
+        callback();
+    //});
 }
 exports.saveChanges = saveChanges;
 function loadState() {
     // TODO: why not just allow tracking always? At load time that will effectively get the next log into the proper state....
     isLoadingState = true;
     // Read and parse the whole log file into an object.
-    var json = exists() ? "[" + fs.readFileSync(storageLocation, 'utf8') + " 0]" : "[0]";
+    var json = "[" + fs.readFileSync(path.join(__dirname, '../../slowlog.bak.txt'), 'utf8') + " 0]";
+    //TODO: was restore...
+    //var json = exists() ? `[${fs.readFileSync(storageLocation, 'utf8')} 0]` : `[0]`;
     var log = JSON.parse(json);
     log.pop();
     // TODO: at this point we can start the new log file.
     //       - but ensure the old one is safely reloaded before deleting it!!!
     // TODO: delete the old file for now, but this is NOT SAFE! See prev comment.
-    //if (exists()) fs.unlinkSync(storageLocation);
+    if (exists())
+        fs.unlinkSync(storageLocation);
     // Collect each (still dehydrated) slow object that appears in the log, in its most recent state.
     var dehydratedSlowObjects = log.reduce(function (map, keyVal) {
         if (keyVal[1])
@@ -131,7 +138,11 @@ function loadState() {
         var rehydrated = rehydrateSlowObject(dehydrated, slowObjectFactories, rehydratedSlowObjects);
         rehydratedSlowObjects[rehydrated.$slow.id] = rehydrated;
     });
-    //isLoadingState = false;
+    // TODO: temp testing
+    isLoadingState = false;
+    // TODO: Add all the slow objects preserved from the old log to the new log
+    _.forEach(rehydratedSlowObjects, created);
+    saveChanges();
     //// TODO: temp testing
     //process.exit(1);
 }

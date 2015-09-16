@@ -20,11 +20,10 @@ describe('The async(...) function', function () {
             done(err);
         };
         var fn = slow.async(function (delay, count, cb) {
-            cb();
             var SlowPromise = __const(require('slownode').SlowPromise);
-            cb();
             for (var i = 0; i < count; ++i) {
                 console.log("waiting..." + i);
+                cb();
                 await(SlowPromise.delay(delay));
             }
             return 'done';

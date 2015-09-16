@@ -28,11 +28,10 @@ describe('The async(...) function', function () {
         };
 
         var fn = slow.async((delay: number, count: number, cb) => {
-            cb();
             const SlowPromise: typeof slow.Promise = __const(require('slownode').SlowPromise);
-            cb();
             for (var i = 0; i < count; ++i) {
                 console.log(`waiting...${i}`);
+                cb();
                 await (SlowPromise.delay(delay));
                 //if (i > 4) throw new Error('herp derp');
             }
