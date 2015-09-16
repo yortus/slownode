@@ -1,5 +1,4 @@
-// TODO: doc... ???
-global.setTimeout(runLoop, 200);
+var storage = require('../storage/storage');
 // TODO: doc...
 // TODO: should return a token for use with clearTimeout
 function setTimeout(callback, delay) {
@@ -47,6 +46,17 @@ function clearImmediate(immediateObject) {
 exports.clearImmediate = clearImmediate;
 // TODO: doc...
 var entries = [];
+var persistedEventLoop = {
+    $slow: {
+        type: 1 /* SlowEventLoop */,
+        id: '<EventLoop>',
+        entries: entries
+    }
+};
+// TODO: temp testing needs work...
+// Synchronise with the persistent object graph.
+storage.created(persistedEventLoop);
+global.setTimeout(runLoop, 200);
 // TODO: doc...
 var slowPollInterval = 200;
 // TODO: doc... need to set this appropriately high after rehydrating the event loop
@@ -60,7 +70,7 @@ function runLoop() {
     }
     // TODO: traverse all entries once...
     var thisLoop = entries;
-    entries = [];
+    entries = persistedEventLoop.$slow.entries = [];
     while (thisLoop.length > 0) {
         //// TODO: temp testing...
         //process.stdout.write(`.`);
@@ -81,14 +91,17 @@ function runLoop() {
     }
     //// TODO: temp testing...
     //process.stdout.write(`\n`);
-    // TODO: persist state
+    // Synchronise with the persistent object graph.
+    storage.updated(persistedEventLoop);
+    // TODO: temp testing...
+    storage.saveChanges();
     // TODO: prep for next run
     global.setTimeout(runLoop, slowPollInterval);
 }
 // Tell storage how to restore the slow event loop.
-//storage.registerSlowObjectFactory(SlowType.SlowPromise, $slow => {
-//    var promise = new SlowPromise(null);
-//    promise.$slow = <any> $slow;
-//    return promise;
-//});
+storage.registerSlowObjectFactory(1 /* SlowEventLoop */, function ($slow) {
+    persistedEventLoop.$slow = $slow;
+    entries = persistedEventLoop.$slow.entries;
+    return persistedEventLoop;
+});
 //# sourceMappingURL=slowEventLoop.js.map

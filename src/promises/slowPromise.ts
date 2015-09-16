@@ -30,7 +30,8 @@ class SlowPromise implements types.SlowPromise {
         var resolve = new SlowPromiseResolve(this);
         var reject = new SlowPromiseReject(this);
 
-        // TODO: Ensure the persistent object graph is safely stored before potentially yielding to the event loop
+        // Ensure the persistent object graph is safely stored before potentially yielding to the event loop
+        // TODO: probably doesn't belong here? investigate...
         storage.saveChanges();
 
         // Call the given resolver. This kicks off the asynchronous operation whose outcome the Promise represents.
@@ -62,11 +63,10 @@ class SlowPromise implements types.SlowPromise {
     }
 
 
-    // TODO: temp testing....
+    /** Returns a new SlowPromise instance that resolves after `ms` milliseconds. */
     static delay(ms: number) {
         return new SlowPromise(resolve => {
-            slowEventLoop.setTimeout(() => resolve(), ms);
-            // TODO: was... setTimeout(() => resolve(), ms);
+            slowEventLoop.setTimeout(resolve => resolve(), ms, resolve);
         });
     }
 

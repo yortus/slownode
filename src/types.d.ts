@@ -6,6 +6,13 @@
     // - These are the full shapes of the types used in this module, including 'private' definitions
     // - They are put here because (1) it forms a shared reference for internal code and (2) the public .d.ts should not contain provate stuff
 
+    interface EventLoop {
+        $slow: {
+            type: SlowObject.Type;
+            id?: string;
+            entries: EventLoop.Entry[];
+        };
+    }
 
     namespace EventLoop {
 
@@ -215,6 +222,7 @@
     namespace SlowObject {
 
         const enum Type {
+            SlowEventLoop = 1,
             SlowPromise = 10,
             SlowPromiseResolve = 11,
             SlowPromiseReject = 12,

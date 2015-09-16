@@ -70,13 +70,16 @@ function saveChanges(callback) {
 exports.saveChanges = saveChanges;
 function loadState() {
     // TODO: why not just allow tracking always? At load time that will effectively get the next log into the proper state....
-    isLoadingState = true;
+    //isLoadingState = true;
     // Read and parse the whole log file into an object.
-    var json = "[" + fs.readFileSync(storageLocation, 'utf8') + " 0]";
+    var json = exists() ? "[" + fs.readFileSync(storageLocation, 'utf8') + " 0]" : "[0]";
     var log = JSON.parse(json);
     log.pop();
     // TODO: at this point we can start the new log file.
     //       - but ensure the old one is safely reloaded before deleting it!!!
+    // TODO: delete the old file for now, but this is NOT SAFE! See prev comment.
+    if (exists())
+        fs.unlinkSync(storageLocation);
     // Collect each (still dehydrated) slow object that appears in the log, in its most recent state.
     var dehydratedSlowObjects = log.reduce(function (map, keyVal) {
         if (keyVal[1])
@@ -86,10 +89,9 @@ function loadState() {
         return map;
     }, {});
     // Further filter the slow objects to those that are transitively reachable from roots.
-    // Root slow objects are: (1) SlowAsyncFunctionActivation instances.
-    // TODO: others? e.g. event loop
+    // There is only one root slow object: the slow event loop.
     var rootSlowObjectIds = _.values(dehydratedSlowObjects)
-        .filter(function (so) { return so.$slow.type === 30 /* SlowAsyncFunctionActivation */; })
+        .filter(function (so) { return so.$slow.type === 1 /* SlowEventLoop */; })
         .map(function (so) { return so.$slow.id; });
     var reachableSlowObjectIds = new Set(rootSlowObjectIds);
     var reachableObjects = rootSlowObjectIds.reduce(function (objs, id) { return objs.concat(_.values(dehydratedSlowObjects[id].$slow)); }, []);
@@ -128,6 +130,8 @@ function loadState() {
         rehydratedSlowObjects[rehydrated.$slow.id] = rehydrated;
     });
     isLoadingState = false;
+    //// TODO: temp testing
+    //process.exit(1);
     // TODO: pick up where we left off...
     // TODO: use registration for this... don't hardcode logic here...
     _.forEach(rehydratedSlowObjects, function (slowObj) {
@@ -159,19 +163,23 @@ var init = function () {
     // Ensure init is only performed once.
     // TODO: this is a bit hacky... better way?
     init = function () { };
-    // Check if the logFile already exists. Use fs.stat since fs.exists is deprecated.
-    var fileExists = true;
-    try {
-        fs.statSync(storageLocation);
-    }
-    catch (ex) {
-        fileExists = false;
-    }
+    //var fileExists = exists();
     // Resume the current epoch (if file exists) or start a new epoch (if no file).
     // TODO: fix ...
     logFileDescriptor = fs.openSync(storageLocation, 'a'); // TODO: ensure this file gets closed eventually!!!
     //TODO: NEEDED!:   fs.flockSync(logFileDescriptor, 'ex'); // TODO: ensure exclusion. HANDLE EXCEPTIONS HERE! ALSO: THIS LOCK MUST BE EXPLICITLY REMOVED AFTER FINISHED!
 };
+function exists() {
+    // Check if the logFile already exists. Use fs.stat since fs.exists is deprecated.
+    var result = true;
+    try {
+        fs.statSync(storageLocation);
+    }
+    catch (ex) {
+        result = false;
+    }
+    return result;
+}
 // TODO: doc... single process/thread exclusive by design...
 // TODO: errors are not caught... What to do?
 // TODO: NB from linux manpage: Calling fsync() does not necessarily ensure that the entry in the directory containing the file has also reached disk. For that an explicit fsync() on a file descriptor for the directory is also needed.

@@ -27,7 +27,8 @@ var SlowPromise = (function () {
         // Construct resolve and reject functions to be passed to the resolver.
         var resolve = new SlowPromiseResolve(this);
         var reject = new SlowPromiseReject(this);
-        // TODO: Ensure the persistent object graph is safely stored before potentially yielding to the event loop
+        // Ensure the persistent object graph is safely stored before potentially yielding to the event loop
+        // TODO: probably doesn't belong here? investigate...
         storage.saveChanges();
         // Call the given resolver. This kicks off the asynchronous operation whose outcome the Promise represents.
         try {
@@ -58,11 +59,10 @@ var SlowPromise = (function () {
         var reject = new SlowPromiseReject(promise);
         return { promise: promise, resolve: resolve, reject: reject };
     };
-    // TODO: temp testing....
+    /** Returns a new SlowPromise instance that resolves after `ms` milliseconds. */
     SlowPromise.delay = function (ms) {
         return new SlowPromise(function (resolve) {
-            slowEventLoop.setTimeout(function () { return resolve(); }, ms);
-            // TODO: was... setTimeout(() => resolve(), ms);
+            slowEventLoop.setTimeout(function (resolve) { return resolve(); }, ms, resolve);
         });
     };
     /**
