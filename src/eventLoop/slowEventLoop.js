@@ -16,6 +16,9 @@ function setTimeout(callback, delay) {
         arguments: args
     };
     entries.push(entry);
+    // Synchronise with the persistent object graph.
+    storage.updated(persistedEventLoop);
+    // TODO: and save changes?
     return entry.id;
 }
 exports.setTimeout = setTimeout;
@@ -25,6 +28,9 @@ function clearTimeout(timeoutObject) {
         if (entries[i].id !== timeoutObject)
             continue;
         entries.splice(i, 1);
+        // Synchronise with the persistent object graph.
+        storage.updated(persistedEventLoop);
+        // TODO: and save changes?
         break;
     }
 }
@@ -45,7 +51,9 @@ function clearImmediate(immediateObject) {
 }
 exports.clearImmediate = clearImmediate;
 // TODO: doc...
-var entries = [];
+console.log("==================== EVENT LOOP INITS");
+global['slowEventLoopEntries'] = global['slowEventLoopEntries'] || [];
+var entries = global['slowEventLoopEntries'];
 var persistedEventLoop = {
     $slow: {
         type: 1 /* SlowEventLoop */,
@@ -69,12 +77,13 @@ function runLoop() {
     if (entries.length === 0) {
     }
     // TODO: traverse all entries once...
-    var thisLoop = entries;
-    entries = persistedEventLoop.$slow.entries = [];
-    while (thisLoop.length > 0) {
+    var remaining = entries.length;
+    while (--remaining >= 0) {
         //// TODO: temp testing...
         //process.stdout.write(`.`);
-        var entry = thisLoop.shift();
+        var entry = entries.shift();
+        // Synchronise with the persistent object graph.
+        storage.updated(persistedEventLoop);
         switch (entry.event.type) {
             case 0 /* TimerEvent */:
                 var ev = entry.event;
@@ -83,6 +92,8 @@ function runLoop() {
                 }
                 else {
                     entries.push(entry);
+                    // Synchronise with the persistent object graph.
+                    storage.updated(persistedEventLoop);
                 }
                 break;
             default:
@@ -91,8 +102,6 @@ function runLoop() {
     }
     //// TODO: temp testing...
     //process.stdout.write(`\n`);
-    // Synchronise with the persistent object graph.
-    storage.updated(persistedEventLoop);
     // TODO: temp testing...
     storage.saveChanges();
     // TODO: prep for next run
@@ -100,8 +109,7 @@ function runLoop() {
 }
 // Tell storage how to restore the slow event loop.
 storage.registerSlowObjectFactory(1 /* SlowEventLoop */, function ($slow) {
-    persistedEventLoop.$slow = $slow;
-    entries = persistedEventLoop.$slow.entries;
+    entries.push.apply(entries, $slow.entries);
     return persistedEventLoop;
 });
 //# sourceMappingURL=slowEventLoop.js.map

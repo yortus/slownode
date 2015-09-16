@@ -63,6 +63,10 @@ var slowObjectFactories: SlowObject.Factories = {};
 
 export function saveChanges(callback?: (err?) => void) {
 
+    // TODO: temp testing...
+    if (isLoadingState) return module.exports;
+
+
     // TODO: ... why async here?
     setImmediate(() => {
 
@@ -101,7 +105,7 @@ export function loadState() {
 
 
     // TODO: why not just allow tracking always? At load time that will effectively get the next log into the proper state....
-    //isLoadingState = true;
+    isLoadingState = true;
 
 
     // Read and parse the whole log file into an object.
@@ -112,7 +116,7 @@ export function loadState() {
     // TODO: at this point we can start the new log file.
     //       - but ensure the old one is safely reloaded before deleting it!!!
     // TODO: delete the old file for now, but this is NOT SAFE! See prev comment.
-    if (exists()) fs.unlinkSync(storageLocation);
+    //if (exists()) fs.unlinkSync(storageLocation);
 
     // Collect each (still dehydrated) slow object that appears in the log, in its most recent state.
     var dehydratedSlowObjects = log.reduce((map, keyVal) => {
@@ -166,22 +170,10 @@ export function loadState() {
 
 
 
-    isLoadingState = false;
+    //isLoadingState = false;
 
 //// TODO: temp testing
 //process.exit(1);
-
-    // TODO: pick up where we left off...
-    // TODO: use registration for this... don't hardcode logic here...
-    _.forEach(rehydratedSlowObjects, slowObj => {
-        //if (slowObj.$slow.type === SlowType.SlowAsyncFunctionActivation) {
-            
-        //}
-
-
-
-
-    });
 
 }
 

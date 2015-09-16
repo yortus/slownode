@@ -1,7 +1,6 @@
 //import {async, await} from 'asyncawait';
 //import slow = require('slownode');
 //import SteppableFunction = require('../src/functions/steppableFunction');
-//import Steppable = require('../src/functions/steppable');
 //import chai = require("chai");
 //chai.use(require('chai-as-promised'));
 //var expect = chai.expect;
@@ -22,7 +21,7 @@
 //    var realRunner = (fn, args) => {
 //        var result = [];
 //        var slowfunc = SteppableFunction(fn, { pseudoYield: '__yield', pseudoConst: '__const' });
-//        var steppable: Steppable = slowfunc.apply(null, args);
+//        var steppable = slowfunc.apply(slowfunc, args);
 //        while (true) {
 //            try {
 //                var yielded = steppable.next();

@@ -14,10 +14,9 @@ process.on('SIGINT', () => {
 
 describe('The async(...) function', function () {
 
-
-    // Set timeout to 10mins for interactive debugging of tests.
-    this.timeout(600000);
-
+    it('aaa', done => {
+        setTimeout(done, 3000);
+    });
 
     it('works', (done) => {
 
@@ -28,8 +27,10 @@ describe('The async(...) function', function () {
             done(err);
         };
 
-        var fn = slow.async((delay: number, count: number) => {
+        var fn = slow.async((delay: number, count: number, cb) => {
+            cb();
             const SlowPromise: typeof slow.Promise = __const(require('slownode').SlowPromise);
+            cb();
             for (var i = 0; i < count; ++i) {
                 console.log(`waiting...${i}`);
                 await (SlowPromise.delay(delay));
@@ -38,8 +39,11 @@ describe('The async(...) function', function () {
             return 'done';
         });
 
+        function test() {
+            console.log('---');
+        }
 
-        fn(200, 30)
+        fn(500, 30, test)
         .then(result => {
             console.log(result);
             done(); // TODO: isRelocatableFunction sees this as global.done due to above hack and says its ok

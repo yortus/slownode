@@ -9,8 +9,9 @@ process.on('SIGINT', function () {
     process.exit();
 });
 describe('The async(...) function', function () {
-    // Set timeout to 10mins for interactive debugging of tests.
-    this.timeout(600000);
+    it('aaa', function (done) {
+        setTimeout(done, 3000);
+    });
     it('works', function (done) {
         // TODO: hacky hacky... satisfy dehydrator (but NOT rehydrator!)
         // TODO: Better to use some option where dehydration rules are relaxed (so closures allowed in then() calls)
@@ -18,15 +19,20 @@ describe('The async(...) function', function () {
             delete global['done'];
             done(err);
         };
-        var fn = slow.async(function (delay, count) {
+        var fn = slow.async(function (delay, count, cb) {
+            cb();
             var SlowPromise = __const(require('slownode').SlowPromise);
+            cb();
             for (var i = 0; i < count; ++i) {
                 console.log("waiting..." + i);
                 await(SlowPromise.delay(delay));
             }
             return 'done';
         });
-        fn(200, 30)
+        function test() {
+            console.log('---');
+        }
+        fn(500, 30, test)
             .then(function (result) {
             console.log(result);
             done(); // TODO: isRelocatableFunction sees this as global.done due to above hack and says its ok

@@ -4,8 +4,6 @@
 //chai.use(require('chai-as-promised'));
 //var expect = chai.expect;
 //describe('The slow event loop', function () {
-//    //// Set timeout to 10mins for interactive debugging of tests.
-//    //this.timeout(600000);
 //    it('implements setTimeout calls correctly', (done) => {
 //        // TODO: hacky hacky... satisfy dehydrator (but NOT rehydrator!)
 //        // TODO: Better to use some option where dehydration rules are relaxed (so closures allowed in then() calls)

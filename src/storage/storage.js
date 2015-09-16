@@ -40,6 +40,9 @@ var nextId = 0;
 var isLoadingState = false;
 var slowObjectFactories = {};
 function saveChanges(callback) {
+    // TODO: temp testing...
+    if (isLoadingState)
+        return module.exports;
     // TODO: ... why async here?
     setImmediate(function () {
         // TODO: temp testing for DEBUGGING only...
@@ -70,7 +73,7 @@ function saveChanges(callback) {
 exports.saveChanges = saveChanges;
 function loadState() {
     // TODO: why not just allow tracking always? At load time that will effectively get the next log into the proper state....
-    //isLoadingState = true;
+    isLoadingState = true;
     // Read and parse the whole log file into an object.
     var json = exists() ? "[" + fs.readFileSync(storageLocation, 'utf8') + " 0]" : "[0]";
     var log = JSON.parse(json);
@@ -78,8 +81,7 @@ function loadState() {
     // TODO: at this point we can start the new log file.
     //       - but ensure the old one is safely reloaded before deleting it!!!
     // TODO: delete the old file for now, but this is NOT SAFE! See prev comment.
-    if (exists())
-        fs.unlinkSync(storageLocation);
+    //if (exists()) fs.unlinkSync(storageLocation);
     // Collect each (still dehydrated) slow object that appears in the log, in its most recent state.
     var dehydratedSlowObjects = log.reduce(function (map, keyVal) {
         if (keyVal[1])
@@ -129,15 +131,9 @@ function loadState() {
         var rehydrated = rehydrateSlowObject(dehydrated, slowObjectFactories, rehydratedSlowObjects);
         rehydratedSlowObjects[rehydrated.$slow.id] = rehydrated;
     });
-    isLoadingState = false;
+    //isLoadingState = false;
     //// TODO: temp testing
     //process.exit(1);
-    // TODO: pick up where we left off...
-    // TODO: use registration for this... don't hardcode logic here...
-    _.forEach(rehydratedSlowObjects, function (slowObj) {
-        //if (slowObj.$slow.type === SlowType.SlowAsyncFunctionActivation) {
-        //}
-    });
 }
 exports.loadState = loadState;
 function registerSlowObjectFactory(type, factory) {
