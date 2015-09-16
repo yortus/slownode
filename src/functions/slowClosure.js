@@ -8,7 +8,7 @@ var SlowClosure = makeCallableClass({
     // TODO: doc...
     constructor: function (fn, env) {
         // TODO: this won't work in strict mode. Will need to do it another way eventually (ie via eval)...
-        var func = eval("(with (env) (" + fn.toString() + "))");
+        var func = eval("with (env) " + fn.toString());
         this.$slow = {
             type: 50 /* SlowClosure */,
             func: func,

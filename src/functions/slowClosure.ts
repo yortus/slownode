@@ -15,7 +15,7 @@ var SlowClosure: types.SlowClosureStatic = <any> makeCallableClass({
     constructor: function (fn: Function, env: { [name: string]: any; }) {
 
         // TODO: this won't work in strict mode. Will need to do it another way eventually (ie via eval)...
-        var func = eval(`(with (env) (${fn.toString()}))`);
+        var func = eval(`with (env) ${fn.toString()}`);
 
         this.$slow = {
             type: SlowType.SlowClosure,

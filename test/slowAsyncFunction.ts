@@ -42,11 +42,13 @@ describe('The async(...) function', function () {
             console.log('---');
         }
 
-        fn(500, 30, test)
-        //.then(result => {
-        //    console.log(result);
-        //    done(); // TODO: isRelocatableFunction sees this as global.done due to above hack and says its ok
-        //})
+        slow.makeWeakRef(done);
+
+        fn(500, 5, test)
+        .then(slow.Closure(result => {
+            console.log(result);
+            done(); // TODO: isRelocatableFunction sees this as global.done due to above hack and says its ok
+        }, { done }))
         //.catch(error => {
         //    console.log('ERROR: ' + error.message);
         //    done(error); // TODO: isRelocatableFunction sees this as global.done due to above hack and says its ok
