@@ -1,5 +1,3 @@
-//import assert = require('assert');
-//import _ = require('lodash');
 import types = require('types');
 import SlowType = types.SlowObject.Type;
 import makeCallableClass = require('../util/makeCallableClass');

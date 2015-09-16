@@ -6,6 +6,25 @@
     // - These are the full shapes of the types used in this module, including 'private' definitions
     // - They are put here because (1) it forms a shared reference for internal code and (2) the public .d.ts should not contain provate stuff
 
+
+    interface SlowClosureStatic extends slow.SlowClosureStatic {
+        new(fn: Function, env: { [name: string]: any; }): SlowClosure;
+        (fn: Function, env: { [name: string]: any; }): SlowClosure;
+    }
+
+    interface SlowClosure extends slow.SlowClosure {
+        $slow: {
+            type: SlowObject.Type;
+            id?: string;
+            func: Function;
+            env: { [name: string]: any; };
+        }
+    }
+
+
+
+
+
     interface EventLoop {
         $slow: {
             type: SlowObject.Type;
@@ -229,7 +248,9 @@
             SlowAsyncFunction = 20,
             SlowAsyncFunctionActivation = 30,
             SlowAsyncFunctionActivationResumeNext = 31,
-            SlowAsyncFunctionActivationResumeError = 32
+            SlowAsyncFunctionActivationResumeError = 32,
+            SlowClosure = 50,
+            SlowWeakRef = 60
         }
 
         interface Factories {

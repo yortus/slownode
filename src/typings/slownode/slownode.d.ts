@@ -6,6 +6,21 @@
 
 declare module "slownode" {
 
+    // ==================== Slow Primitives ====================
+    export var Closure: SlowClosureStatic;
+
+    interface SlowClosureStatic {
+        new(fn: Function, env: { [name: string]: any; }): SlowClosure;
+        (fn: Function, env: { [name: string]: any; }): SlowClosure;
+    }
+
+    interface SlowClosure {
+        // TODO: allow args?
+        (...args): any;
+    }
+
+    export function makeWeakRef(obj: any): void;
+
     // ==================== Slow Event Loop ====================
 
     export function setTimeout(callback: Function, delay: number, ...args: any[]): EventLoop.Timer;

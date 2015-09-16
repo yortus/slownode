@@ -1,3 +1,5 @@
+var makeWeakRef = require('./makeWeakRef');
+var SlowClosure = require('./functions/slowClosure');
 var slowEventLoop = require('./eventLoop/slowEventLoop');
 var SlowAsyncFunction = require('./asyncFunctions/slowAsyncFunction');
 var SlowPromise = require('./promises/slowPromise');
@@ -39,6 +41,8 @@ var storage = require('./storage/storage');
 //rehydrate();
 // TODO: temp testing... Build the API for export...
 var api = {};
+api.makeWeakRef = makeWeakRef;
+api.Closure = SlowClosure;
 api.setTimeout = slowEventLoop.setTimeout;
 api.clearTimeout = slowEventLoop.clearTimeout;
 api.setImmediate = slowEventLoop.setImmediate;
