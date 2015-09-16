@@ -32,10 +32,15 @@ describe('The async(...) function', function () {
             console.log('---');
         }
         slow.makeWeakRef(done);
-        fn(500, 5, test)
+        fn(300, 30, test)
             .then(slow.Closure(function (result) {
             console.log(result);
-            done(); // TODO: isRelocatableFunction sees this as global.done due to above hack and says its ok
+            if (done) {
+                done(); // TODO: isRelocatableFunction sees this as global.done due to above hack and says its ok
+            }
+            else {
+                console.log('NB: done weak ref is null');
+            }
         }, { done: done }));
         //.catch(error => {
         //    console.log('ERROR: ' + error.message);

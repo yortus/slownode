@@ -7,13 +7,18 @@ var storage = require('../storage/storage');
 var SlowClosure = makeCallableClass({
     // TODO: doc...
     constructor: function (fn, env) {
+        // Ensure `fn` is relocatable with the exception of names in env
         // TODO: this won't work in strict mode. Will need to do it another way eventually (ie via eval)...
-        var func = eval("with (env) " + fn.toString());
+        var functionSource = fn.toString();
+        eval("with (env) fn = " + fn.toString() + ";");
+        this.function = fn;
         this.$slow = {
             type: 50 /* SlowClosure */,
-            func: func,
-            env: env
+            functionSource: functionSource,
+            environment: env
         };
+        // Synchronise with the persistent object graph.
+        storage.created(this);
     },
     // TODO: doc...
     call: function () {
@@ -21,14 +26,13 @@ var SlowClosure = makeCallableClass({
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i - 0] = arguments[_i];
         }
-        var func = this.$slow.func;
-        var env = this.$slow.env;
-    }
+        return this.function.apply(void 0, args);
+    },
+    bindThis: true
 });
 // Tell storage how to create a SlowPromiseReject instance.
 storage.registerSlowObjectFactory(50 /* SlowClosure */, function ($slow) {
-    var closure = new SlowClosure(null, null);
-    closure.$slow = $slow;
+    var closure = new SlowClosure($slow.functionSource, $slow.environment);
     return closure;
 });
 module.exports = SlowClosure;

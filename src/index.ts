@@ -74,4 +74,4 @@ api.SlowPromise = SlowPromise;
 
 
 // TODO: temp testing...
-//storage.loadState();
+storage.loadState();

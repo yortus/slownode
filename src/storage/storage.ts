@@ -24,6 +24,9 @@ export function created(obj: SlowObject): StorageAPI {
     if (isLoadingState) return module.exports;
 
     // TODO: temp hack for early-created singleton event loop. Fix this!
+    if (!obj) {
+        debugger;
+    }
     if (obj.$slow.id !== '<EventLoop>') {
         assert(!allTrackedObjects.has(obj));
     }
@@ -110,10 +113,10 @@ export function loadState() {
     isLoadingState = true;
 
     // Read and parse the whole log file into an object.
-    var json = `[${fs.readFileSync(path.join(__dirname, '../../slowlog.bak.txt'), 'utf8')} 0]`;
-
+    // TODO: temp testing...
+    //var json = `[${fs.readFileSync(path.join(__dirname, '../../slowlog.bak.txt'), 'utf8')} 0]`;
     //TODO: was restore...
-    //var json = exists() ? `[${fs.readFileSync(storageLocation, 'utf8')} 0]` : `[0]`;
+    var json = exists() ? `[${fs.readFileSync(storageLocation, 'utf8')} 0]` : `[0]`;
     var log: Array<[string,SlowObject]> = JSON.parse(json);
     log.pop();
 
@@ -165,17 +168,18 @@ export function loadState() {
     nextId = _.keys(dehydratedSlowObjects).reduce((max, id) => Math.max(max, id[0] === '#' ? parseInt(id.slice(1)) : 0), 0);
 
     // Rehydrate all the slow objects. This also reconnects cross-references (including cycles).
+    // TODO: doc/revise - (1) rehydrated objects may be null (eg weak refs). (2) If they have a $slow.id, it must be same as dehydrated one.
     var rehydratedSlowObjects: typeof dehydratedSlowObjects = {};
     _.forEach(dehydratedSlowObjects, dehydrated => {
         var rehydrated = rehydrateSlowObject(dehydrated, slowObjectFactories, rehydratedSlowObjects);
-        rehydratedSlowObjects[rehydrated.$slow.id] = rehydrated;
+        rehydratedSlowObjects[dehydrated.$slow.id] = rehydrated;
     });
 
     // TODO: temp testing
     isLoadingState = false;
 
     // TODO: Add all the slow objects preserved from the old log to the new log
-    _.forEach(rehydratedSlowObjects, created);
+    _.forEach(rehydratedSlowObjects, obj => obj && created(obj));
     saveChanges();
 
 

@@ -13,11 +13,12 @@
     }
 
     interface SlowClosure extends slow.SlowClosure {
+        function: Function;
         $slow: {
             type: SlowObject.Type;
             id?: string;
-            func: Function;
-            env: { [name: string]: any; };
+            functionSource: string;
+            environment: { [name: string]: any; };
         }
     }
 
