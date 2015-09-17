@@ -2,15 +2,21 @@
 
 
 /**
- * TODO: doc...
- * @param options
+ * TODO: Creates a constructor function whose instances (1) are callable
+ * and (2) have the constructor function as their prototype. Normally JS
+ * allows only one or the other of these properties but not both. Having
+ * both is desirable in situations where you want to be able to create
+ * callable instances (ie functions) with a particular prototype, so they
+ * work with instanceof etc.
+ * Performance warning: this uses ES5's Object.setPrototypeOf(), so the
+ * instances created via this mechanism may not be optimizable by V8.
  */
 function makeCallableClass<T extends Function>(options: CallableClassOptions<T>): { new(...args): T; } {
     return <any> function CallableConstructor(...args) {
         function Callable(...args) {
             return options.call.apply(Callable, args);
         }
-        Callable['__proto__'] = CallableConstructor.prototype;
+        (<any> Object).setPrototypeOf(Callable, CallableConstructor.prototype);
         Callable.apply = (thisArg, argsArray) => options.call.apply(options.bindThis ? Callable : thisArg, argsArray);
         var instance = options.constructor.apply(Callable, args) || Callable;
         return instance;
@@ -18,12 +24,19 @@ function makeCallableClass<T extends Function>(options: CallableClassOptions<T>)
 }
 
 
-/** TODO: doc... */
+/** Options for makeCallableClass */
 interface CallableClassOptions<T extends Function> {
 
+    /** Defines the constructor logic that is applied to each callable instance created. */
     constructor: Function;
 
+    /** Defines the body of code to be executed when a callable instance is called. */
     call: T;
 
+    /**
+     * Specifies whether calls to apply() on an instance ignore the supplied thisArg or not.
+     * If `bindThis` is set to true, the `thisArg` value in apply() calls is ignored, and
+     * the callable instance itself is unconditionally used as the `thisArg` value.
+     */
     bindThis?: boolean
 }
