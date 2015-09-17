@@ -41,7 +41,7 @@ var SlowAsyncFunction = makeCallableClass({
         // Create a new SlowPromise to represent the eventual result of the slow async operation.
         var deferred = SlowPromise.deferred();
         // Create a new SlowAsyncFunctionActivation instance to run the async operation.
-        var safa = new SlowAsyncFunctionActivation(this.stateMachine, args, this, deferred);
+        var safa = new SlowAsyncFunctionActivation(this, deferred.resolve, deferred.reject, args);
         // Run the async operation to completion, and return a promise of the outcome.
         runToCompletion(safa);
         return deferred.promise;

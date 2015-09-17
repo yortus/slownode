@@ -5,7 +5,6 @@ import SlowType = types.SlowObject.Type;
 import makeCallableClass = require('../util/makeCallableClass');
 import shasum = require('../util/shasum');
 import SteppableFunction = require('../functions/steppableFunction');
-import SteppableObject = require('../functions/steppableObject');
 import SlowPromise = require('../promises/slowPromise');
 import SlowAsyncFunctionActivation = require('./slowAsyncFunctionActivation');
 import runToCompletion = require('./runToCompletion');
@@ -48,13 +47,13 @@ var SlowAsyncFunction: types.SlowAsyncFunctionStatic = <any> makeCallableClass({
         storage.created(this);
     },
 
-    call: function (...args): types.SlowPromise {
+    call: function (...args: any[]): types.SlowPromise {
 
         // Create a new SlowPromise to represent the eventual result of the slow async operation.
         var deferred = SlowPromise.deferred();
 
         // Create a new SlowAsyncFunctionActivation instance to run the async operation.
-        var safa = new SlowAsyncFunctionActivation(this.stateMachine, args, this, deferred);
+        var safa = new SlowAsyncFunctionActivation(this, deferred.resolve, deferred.reject, args);
 
         // Run the async operation to completion, and return a promise of the outcome.
         runToCompletion(safa);

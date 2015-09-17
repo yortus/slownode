@@ -10,32 +10,36 @@ var storage = require('../storage/storage');
 /** A SlowAsyncFunctionActivation is a SteppableObject with additional properties. */
 var SlowAsyncFunctionActivation = (function (_super) {
     __extends(SlowAsyncFunctionActivation, _super);
-    function SlowAsyncFunctionActivation(stateMachine, args, asyncFunction, deferred) {
-        _super.call(this, stateMachine);
-        this.asyncFunction = asyncFunction;
-        this.deferred = deferred;
+    function SlowAsyncFunctionActivation(asyncFunction, resolve, reject, args) {
+        _super.call(this, asyncFunction.stateMachine);
         this.$slow = {
             type: 30 /* SlowAsyncFunctionActivation */,
-            asyncFunction: this.asyncFunction,
+            asyncFunction: null,
             state: null,
             awaiting: null,
             resumeNext: new SlowAsyncFunctionActivationResumeNext(this),
             resumeError: new SlowAsyncFunctionActivationResumeError(this),
-            resolve: this.deferred.resolve,
-            reject: this.deferred.reject
+            resolve: null,
+            reject: null
         };
         this.state = this.$slow.state = { local: { arguments: args } };
+        this.$slow.asyncFunction = asyncFunction;
+        this.$slow.resolve = resolve;
+        this.$slow.reject = reject;
         storage.created(this);
     }
     return SlowAsyncFunctionActivation;
 })(SteppableObject);
 // Tell storage how to create a SlowAsyncFunctionActivation instance.
 storage.registerSlowObjectFactory(30 /* SlowAsyncFunctionActivation */, function ($slow) {
-    var safa = new SlowAsyncFunctionActivation(function () { }, [], null, {});
+    // NB: The rehydration approach used here depends on two implementation details:
+    // (1) the safa constructor doesn't care about the passed values for resolve/reject/args,
+    //     so these can be fixed up after construction (by re-assigning the $slow property).
+    // (2) the given $slow already has a valid `asyncFunction` property because that will
+    //     always appear in the storage log before any activations using it.
+    var safa = new SlowAsyncFunctionActivation($slow.asyncFunction, null, null, null);
     safa.$slow = $slow;
     safa.state = safa.$slow.state;
-    // TODO: temp testing...
-    Object.defineProperty(safa, 'stateMachine', { get: function () { return safa.$slow.asyncFunction.stateMachine; } });
     return safa;
 });
 module.exports = SlowAsyncFunctionActivation;
