@@ -11,9 +11,7 @@ function makeCallableClass<T extends Function>(options: CallableClassOptions<T>)
             return options.call.apply(Callable, args);
         }
         Callable['__proto__'] = CallableConstructor.prototype;
-        CallableConstructor.prototype.apply = (thisArg, argsArray) => options.call.apply(options.bindThis ? Callable : thisArg, argsArray);
-        CallableConstructor.prototype.bind = (thisArg, ...args) => options.call.bind(options.bindThis ? Callable : thisArg, ...args);
-        CallableConstructor.prototype.call = (thisArg, ...args) => options.call.call(options.bindThis ? Callable : thisArg, ...args);
+        Callable.apply = (thisArg, argsArray) => options.call.apply(options.bindThis ? Callable : thisArg, argsArray);
         var instance = options.constructor.apply(Callable, args) || Callable;
         return instance;
     };

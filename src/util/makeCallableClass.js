@@ -16,23 +16,7 @@ function makeCallableClass(options) {
             return options.call.apply(Callable, args);
         }
         Callable['__proto__'] = CallableConstructor.prototype;
-        CallableConstructor.prototype.apply = function (thisArg, argsArray) { return options.call.apply(options.bindThis ? Callable : thisArg, argsArray); };
-        CallableConstructor.prototype.bind = function (thisArg) {
-            var args = [];
-            for (var _i = 1; _i < arguments.length; _i++) {
-                args[_i - 1] = arguments[_i];
-            }
-            return (_a = options.call).bind.apply(_a, [options.bindThis ? Callable : thisArg].concat(args));
-            var _a;
-        };
-        CallableConstructor.prototype.call = function (thisArg) {
-            var args = [];
-            for (var _i = 1; _i < arguments.length; _i++) {
-                args[_i - 1] = arguments[_i];
-            }
-            return (_a = options.call).call.apply(_a, [options.bindThis ? Callable : thisArg].concat(args));
-            var _a;
-        };
+        Callable.apply = function (thisArg, argsArray) { return options.call.apply(options.bindThis ? Callable : thisArg, argsArray); };
         var instance = options.constructor.apply(Callable, args) || Callable;
         return instance;
     };
