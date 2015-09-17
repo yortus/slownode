@@ -9,10 +9,7 @@ function created(obj) {
     // TODO: temp testing...
     if (isLoadingState)
         return module.exports;
-    // TODO: temp hack for early-created singleton event loop. Fix this!
-    if (obj.$slow.id !== '<EventLoop>') {
-        assert(!allTrackedObjects.has(obj));
-    }
+    assert(!allTrackedObjects.has(obj));
     ensureSlowObjectHasUniqueId(obj);
     allTrackedObjects.add(obj);
     updatedTrackedObjects.add(obj);
@@ -50,7 +47,7 @@ function saveChanges(callback) {
     // TODO: ... why async here?
     setImmediate(function () {
         // TODO: temp testing for DEBUGGING only...
-        //console.log(`======================================== SAVE CHANGES ========================================`);
+        log("======================================== SAVE CHANGES ========================================\n");
         var debug = {
             all: setToArray(allTrackedObjects),
             deleted: setToArray(deletedTrackedObjects),
@@ -122,7 +119,7 @@ function loadState() {
                 var $type = reachableObject.$type;
                 assert($type);
                 if ($type === 'object') {
-                    reachableObjects = reachableObjects.concat(reachableObject.values);
+                    reachableObjects = reachableObjects.concat(reachableObject.value);
                 }
             }
         }
@@ -137,13 +134,21 @@ function loadState() {
     // TODO: doc/revise - (1) rehydrated objects may be null (eg weak refs). (2) If they have a $slow.id, it must be same as dehydrated one.
     var rehydratedSlowObjects = {};
     _.forEach(dehydratedSlowObjects, function (dehydrated) {
-        var rehydrated = rehydrateSlowObject(dehydrated, slowObjectFactories, rehydratedSlowObjects);
+        var rehydrated = rehydrateSlowObject(dehydrated, rehydratedSlowObjects, slowObjectFactories);
         rehydratedSlowObjects[dehydrated.$slow.id] = rehydrated;
     });
     // TODO: temp testing
     isLoadingState = false;
     // TODO: Add all the slow objects preserved from the old log to the new log
-    _.forEach(rehydratedSlowObjects, function (obj) { return obj && created(obj); });
+    _.forEach(rehydratedSlowObjects, function (obj) {
+        // TODO: for weakrefs - they may rehydrate to null - need cleaner code for this 'exception'?
+        if (!obj)
+            return;
+        // TODO: temp hack for early-created singleton event loop. Fix this!
+        if (obj.$slow.id === '<EventLoop>')
+            return;
+        created(obj);
+    });
     saveChanges();
     //// TODO: temp testing
     //process.exit(1);

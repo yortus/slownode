@@ -8,7 +8,7 @@ export = rehydrateSlowObject;
  * TODO: Recursively converts the given dehydrated slow object back to a normal slow object.
  * Throws an error if any part of the value cannot be converted.
  */
-function rehydrateSlowObject(dehydrated: types.SlowObject, factories: types.SlowObject.Factories, allSlowObjects: {[id: string]: types.SlowObject}): types.SlowObject {
+function rehydrateSlowObject(dehydrated: types.SlowObject, allSlowObjects: {[id: string]: types.SlowObject}, factories: types.SlowObject.Factories): types.SlowObject {
 
     // Rehydrate all the constituent parts in-place.
     var $slow = dehydrated.$slow;
@@ -37,7 +37,7 @@ function rehydrateInPlace(val: any, key: any, obj: any, allSlowObjects: {[id: st
     else if (val && val.$ref) {
         var $ref = val.$ref;
         delete obj[key]; // TODO: needed? test...
-        Object.defineProperty(obj, key, { get: () => allSlowObjects[$ref] });
+        Object.defineProperty(obj, key, { get: () => allSlowObjects[$ref], configurable: true, enumerable: true });
     }
 
     // Map an array of JSON-safe values to an array of rehydrated values.

@@ -7,7 +7,7 @@
 ["#1", {"$slow":{"type":60,"id":"#1"}}],
 
 
-["#2", {"$slow":{"type":10,"isFateResolved":false,"state":0,"settledValue":{"$type":"undefined"},"handlers":[{"$type":"object","keys":["onFulfilled","onRejected","deferred2"],"values":[{"$ref":"#14"},{"$type":"undefined"},{"$type":"object","keys":["promise","resolve","reject"],"values":[{"$ref":"#15"},{"$ref":"#16"},{"$ref":"#17"}]}]}],"id":"#2"}}],
+["#2", {"$slow":{"type":10,"isFateResolved":false,"state":0,"settledValue":{"$type":"undefined"},"handlers":[{"$type":"object","value":[["onFulfilled",{"$ref":"#14"}],["onRejected",{"$type":"undefined"}],["deferred2",{"$type":"object","value":[["promise",{"$ref":"#15"}],["resolve",{"$ref":"#16"}],["reject",{"$ref":"#17"}]]}]]}],"id":"#2"}}],
 
 
 ["#3", {"$slow":{"type":11,"promise":{"$ref":"#2"},"id":"#3"}}],
@@ -22,10 +22,10 @@
 ["#6", {"$slow":{"type":32,"safa":{"$ref":"#7"},"id":"#6"}}],
 
 
-["#7", {"$slow":{"type":30,"asyncFunction":{"$ref":"a3e25a55d9828ca1cf16184b8ca1ed6d40711774"},"state":{"$type":"object","keys":["local","pos","temp","error","finalizers"],"values":[{"$type":"object","keys":["arguments","delay","count","cb","i"],"values":[[300,30,{"$type":"function","value":"function test() {\r\n            console.log('---');\r\n        }"}],300,30,{"$type":"function","value":"function test() {\r\n            console.log('---');\r\n        }"},0]},"@5",{"$type":"object","keys":[],"values":[]},{"$type":"object","keys":["handler"],"values":["@fail"]},{"$type":"object","keys":["pending"],"values":[[]]}]},"awaiting":{"$ref":"#8"},"resumeNext":{"$ref":"#5"},"resumeError":{"$ref":"#6"},"resolve":{"$ref":"#3"},"reject":{"$ref":"#4"},"id":"#7"}}],
+["#7", {"$slow":{"type":30,"asyncFunction":{"$ref":"a3e25a55d9828ca1cf16184b8ca1ed6d40711774"},"state":{"$type":"object","value":[["local",{"$type":"object","value":[["arguments",[300,30,{"$type":"function","value":"function test() {\r\n            console.log('---');\r\n        }"}]],["delay",300],["count",30],["cb",{"$type":"function","value":"function test() {\r\n            console.log('---');\r\n        }"}],["i",0]]}],["pos","@5"],["temp",{"$type":"object","value":[]}],["error",{"$type":"object","value":[["handler","@fail"]]}],["finalizers",{"$type":"object","value":[["pending",[]]]}]]},"awaiting":{"$ref":"#8"},"resumeNext":{"$ref":"#5"},"resumeError":{"$ref":"#6"},"resolve":{"$ref":"#3"},"reject":{"$ref":"#4"},"id":"#7"}}],
 
 
-["#8", {"$slow":{"type":10,"isFateResolved":false,"state":0,"settledValue":{"$type":"undefined"},"handlers":[{"$type":"object","keys":["onFulfilled","onRejected","deferred2"],"values":[{"$ref":"#5"},{"$ref":"#6"},{"$type":"object","keys":["promise","resolve","reject"],"values":[{"$ref":"#11"},{"$ref":"#12"},{"$ref":"#13"}]}]}],"id":"#8"}}],
+["#8", {"$slow":{"type":10,"isFateResolved":false,"state":0,"settledValue":{"$type":"undefined"},"handlers":[{"$type":"object","value":[["onFulfilled",{"$ref":"#5"}],["onRejected",{"$ref":"#6"}],["deferred2",{"$type":"object","value":[["promise",{"$ref":"#11"}],["resolve",{"$ref":"#12"}],["reject",{"$ref":"#13"}]]}]]}],"id":"#8"}}],
 
 
 ["#9", {"$slow":{"type":11,"promise":{"$ref":"#8"},"id":"#9"}}],
@@ -34,7 +34,7 @@
 ["#10", {"$slow":{"type":12,"promise":{"$ref":"#8"},"id":"#10"}}],
 
 
-["<EventLoop>", {"$slow":{"type":1,"id":"<EventLoop>","entries":[{"$type":"object","keys":["id","event","callback","arguments"],"values":[1,{"$type":"object","keys":["type","due"],"values":[0,1442407465807]},{"$type":"function","value":"function (resolve) { return resolve(); }"},[{"$ref":"#9"}]]}]}}],
+["<EventLoop>", {"$slow":{"type":1,"id":"<EventLoop>","entries":[{"$type":"object","value":[["id",1],["event",{"$type":"object","value":[["type",0],["due",1442458812178]]}],["callback",{"$type":"function","value":"function (resolve) { return resolve(); }"}],["arguments",[{"$ref":"#9"}]]]}]}}],
 
 
 ["#11", {"$slow":{"type":10,"isFateResolved":false,"state":0,"settledValue":{"$type":"undefined"},"handlers":[],"id":"#11"}}],
@@ -46,7 +46,7 @@
 ["#13", {"$slow":{"type":12,"promise":{"$ref":"#11"},"id":"#13"}}],
 
 
-["#14", {"$slow":{"type":50,"functionSource":"function (result) {\r\n            console.log(result);\r\n            if (done) {\r\n                done(); // TODO: isRelocatableFunction sees this as global.done due to above hack and says its ok\r\n            }\r\n            else {\r\n                console.log('NB: done weak ref is null');\r\n            }\r\n        }","environment":{"$type":"object","keys":["done"],"values":[{"$ref":"#1"}]},"id":"#14"}}],
+["#14", {"$slow":{"type":50,"functionSource":"function (result) {\r\n            console.log(result);\r\n            if (done) {\r\n                done(); // TODO: isRelocatableFunction sees this as global.done due to above hack and says its ok\r\n            }\r\n            else {\r\n                console.log('NB: done weak ref is null');\r\n            }\r\n        }","environment":{"$type":"object","value":[["done",{"$ref":"#1"}]]},"id":"#14"}}],
 
 
 ["#15", {"$slow":{"type":10,"isFateResolved":false,"state":0,"settledValue":{"$type":"undefined"},"handlers":[],"id":"#15"}}],
@@ -58,19 +58,19 @@
 ["#17", {"$slow":{"type":12,"promise":{"$ref":"#15"},"id":"#17"}}],
 
 
-["<EventLoop>", {"$slow":{"type":1,"id":"<EventLoop>","entries":[{"$type":"object","keys":["id","event","callback","arguments"],"values":[1,{"$type":"object","keys":["type","due"],"values":[0,1442407465807]},{"$type":"function","value":"function (resolve) { return resolve(); }"},[{"$ref":"#9"}]]}]}}],
+["<EventLoop>", {"$slow":{"type":1,"id":"<EventLoop>","entries":[{"$type":"object","value":[["id",1],["event",{"$type":"object","value":[["type",0],["due",1442458812178]]}],["callback",{"$type":"function","value":"function (resolve) { return resolve(); }"}],["arguments",[{"$ref":"#9"}]]]}]}}],
 
 
-["<EventLoop>", {"$slow":{"type":1,"id":"<EventLoop>","entries":[{"$type":"object","keys":["id","event","callback","arguments"],"values":[1,{"$type":"object","keys":["type","due"],"values":[0,1442407465807]},{"$type":"function","value":"function (resolve) { return resolve(); }"},[{"$ref":"#9"}]]}]}}],
+["<EventLoop>", {"$slow":{"type":1,"id":"<EventLoop>","entries":[{"$type":"object","value":[["id",1],["event",{"$type":"object","value":[["type",0],["due",1442458812178]]}],["callback",{"$type":"function","value":"function (resolve) { return resolve(); }"}],["arguments",[{"$ref":"#9"}]]]}]}}],
 
 
-["<EventLoop>", {"$slow":{"type":1,"id":"<EventLoop>","entries":[{"$type":"object","keys":["id","event","callback","arguments"],"values":[2,{"$type":"object","keys":["type","due"],"values":[0,1442407466235]},{"$type":"function","value":"function (resolve) { return resolve(); }"},[{"$ref":"#19"}]]}]}}],
+["<EventLoop>", {"$slow":{"type":1,"id":"<EventLoop>","entries":[{"$type":"object","value":[["id",2],["event",{"$type":"object","value":[["type",0],["due",1442458812637]]}],["callback",{"$type":"function","value":"function (resolve) { return resolve(); }"}],["arguments",[{"$ref":"#19"}]]]}]}}],
 
 
 ["#8", {"$slow":{"type":10,"isFateResolved":true,"state":1,"settledValue":{"$type":"undefined"},"handlers":[],"id":"#8"}}],
 
 
-["#18", {"$slow":{"type":10,"isFateResolved":false,"state":0,"settledValue":{"$type":"undefined"},"handlers":[{"$type":"object","keys":["onFulfilled","onRejected","deferred2"],"values":[{"$ref":"#5"},{"$ref":"#6"},{"$type":"object","keys":["promise","resolve","reject"],"values":[{"$ref":"#21"},{"$ref":"#22"},{"$ref":"#23"}]}]}],"id":"#18"}}],
+["#18", {"$slow":{"type":10,"isFateResolved":false,"state":0,"settledValue":{"$type":"undefined"},"handlers":[{"$type":"object","value":[["onFulfilled",{"$ref":"#5"}],["onRejected",{"$ref":"#6"}],["deferred2",{"$type":"object","value":[["promise",{"$ref":"#21"}],["resolve",{"$ref":"#22"}],["reject",{"$ref":"#23"}]]}]]}],"id":"#18"}}],
 
 
 ["#19", {"$slow":{"type":11,"promise":{"$ref":"#18"},"id":"#19"}}],
@@ -88,22 +88,22 @@
 ["#23", {"$slow":{"type":12,"promise":{"$ref":"#21"},"id":"#23"}}],
 
 
-["#7", {"$slow":{"type":30,"asyncFunction":{"$ref":"a3e25a55d9828ca1cf16184b8ca1ed6d40711774"},"state":{"$type":"object","keys":["local","pos","temp","error","finalizers"],"values":[{"$type":"object","keys":["arguments","delay","count","cb","i"],"values":[[300,30,{"$type":"function","value":"function test() {\r\n            console.log('---');\r\n        }"}],300,30,{"$type":"function","value":"function test() {\r\n            console.log('---');\r\n        }"},1]},"@5",{"$type":"object","keys":[],"values":[]},{"$type":"object","keys":["handler"],"values":["@fail"]},{"$type":"object","keys":["pending"],"values":[[]]}]},"awaiting":{"$ref":"#18"},"resumeNext":{"$ref":"#5"},"resumeError":{"$ref":"#6"},"resolve":{"$ref":"#3"},"reject":{"$ref":"#4"},"id":"#7"}}],
+["#7", {"$slow":{"type":30,"asyncFunction":{"$ref":"a3e25a55d9828ca1cf16184b8ca1ed6d40711774"},"state":{"$type":"object","value":[["local",{"$type":"object","value":[["arguments",[300,30,{"$type":"function","value":"function test() {\r\n            console.log('---');\r\n        }"}]],["delay",300],["count",30],["cb",{"$type":"function","value":"function test() {\r\n            console.log('---');\r\n        }"}],["i",1]]}],["pos","@5"],["temp",{"$type":"object","value":[]}],["error",{"$type":"object","value":[["handler","@fail"]]}],["finalizers",{"$type":"object","value":[["pending",[]]]}]]},"awaiting":{"$ref":"#18"},"resumeNext":{"$ref":"#5"},"resumeError":{"$ref":"#6"},"resolve":{"$ref":"#3"},"reject":{"$ref":"#4"},"id":"#7"}}],
 
 
 ["#11", {"$slow":{"type":10,"isFateResolved":false,"state":1,"settledValue":{"$type":"undefined"},"handlers":[],"id":"#11"}}],
 
 
-["<EventLoop>", {"$slow":{"type":1,"id":"<EventLoop>","entries":[{"$type":"object","keys":["id","event","callback","arguments"],"values":[2,{"$type":"object","keys":["type","due"],"values":[0,1442407466235]},{"$type":"function","value":"function (resolve) { return resolve(); }"},[{"$ref":"#19"}]]}]}}],
+["<EventLoop>", {"$slow":{"type":1,"id":"<EventLoop>","entries":[{"$type":"object","value":[["id",2],["event",{"$type":"object","value":[["type",0],["due",1442458812637]]}],["callback",{"$type":"function","value":"function (resolve) { return resolve(); }"}],["arguments",[{"$ref":"#19"}]]]}]}}],
 
 
-["<EventLoop>", {"$slow":{"type":1,"id":"<EventLoop>","entries":[{"$type":"object","keys":["id","event","callback","arguments"],"values":[3,{"$type":"object","keys":["type","due"],"values":[0,1442407466637]},{"$type":"function","value":"function (resolve) { return resolve(); }"},[{"$ref":"#25"}]]}]}}],
+["<EventLoop>", {"$slow":{"type":1,"id":"<EventLoop>","entries":[{"$type":"object","value":[["id",3],["event",{"$type":"object","value":[["type",0],["due",1442458813037]]}],["callback",{"$type":"function","value":"function (resolve) { return resolve(); }"}],["arguments",[{"$ref":"#25"}]]]}]}}],
 
 
 ["#18", {"$slow":{"type":10,"isFateResolved":true,"state":1,"settledValue":{"$type":"undefined"},"handlers":[],"id":"#18"}}],
 
 
-["#24", {"$slow":{"type":10,"isFateResolved":false,"state":0,"settledValue":{"$type":"undefined"},"handlers":[{"$type":"object","keys":["onFulfilled","onRejected","deferred2"],"values":[{"$ref":"#5"},{"$ref":"#6"},{"$type":"object","keys":["promise","resolve","reject"],"values":[{"$ref":"#27"},{"$ref":"#28"},{"$ref":"#29"}]}]}],"id":"#24"}}],
+["#24", {"$slow":{"type":10,"isFateResolved":false,"state":0,"settledValue":{"$type":"undefined"},"handlers":[{"$type":"object","value":[["onFulfilled",{"$ref":"#5"}],["onRejected",{"$ref":"#6"}],["deferred2",{"$type":"object","value":[["promise",{"$ref":"#27"}],["resolve",{"$ref":"#28"}],["reject",{"$ref":"#29"}]]}]]}],"id":"#24"}}],
 
 
 ["#25", {"$slow":{"type":11,"promise":{"$ref":"#24"},"id":"#25"}}],
@@ -121,22 +121,22 @@
 ["#29", {"$slow":{"type":12,"promise":{"$ref":"#27"},"id":"#29"}}],
 
 
-["#7", {"$slow":{"type":30,"asyncFunction":{"$ref":"a3e25a55d9828ca1cf16184b8ca1ed6d40711774"},"state":{"$type":"object","keys":["local","pos","temp","error","finalizers"],"values":[{"$type":"object","keys":["arguments","delay","count","cb","i"],"values":[[300,30,{"$type":"function","value":"function test() {\r\n            console.log('---');\r\n        }"}],300,30,{"$type":"function","value":"function test() {\r\n            console.log('---');\r\n        }"},2]},"@5",{"$type":"object","keys":[],"values":[]},{"$type":"object","keys":["handler"],"values":["@fail"]},{"$type":"object","keys":["pending"],"values":[[]]}]},"awaiting":{"$ref":"#24"},"resumeNext":{"$ref":"#5"},"resumeError":{"$ref":"#6"},"resolve":{"$ref":"#3"},"reject":{"$ref":"#4"},"id":"#7"}}],
+["#7", {"$slow":{"type":30,"asyncFunction":{"$ref":"a3e25a55d9828ca1cf16184b8ca1ed6d40711774"},"state":{"$type":"object","value":[["local",{"$type":"object","value":[["arguments",[300,30,{"$type":"function","value":"function test() {\r\n            console.log('---');\r\n        }"}]],["delay",300],["count",30],["cb",{"$type":"function","value":"function test() {\r\n            console.log('---');\r\n        }"}],["i",2]]}],["pos","@5"],["temp",{"$type":"object","value":[]}],["error",{"$type":"object","value":[["handler","@fail"]]}],["finalizers",{"$type":"object","value":[["pending",[]]]}]]},"awaiting":{"$ref":"#24"},"resumeNext":{"$ref":"#5"},"resumeError":{"$ref":"#6"},"resolve":{"$ref":"#3"},"reject":{"$ref":"#4"},"id":"#7"}}],
 
 
 ["#21", {"$slow":{"type":10,"isFateResolved":false,"state":1,"settledValue":{"$type":"undefined"},"handlers":[],"id":"#21"}}],
 
 
-["<EventLoop>", {"$slow":{"type":1,"id":"<EventLoop>","entries":[{"$type":"object","keys":["id","event","callback","arguments"],"values":[3,{"$type":"object","keys":["type","due"],"values":[0,1442407466637]},{"$type":"function","value":"function (resolve) { return resolve(); }"},[{"$ref":"#25"}]]}]}}],
+["<EventLoop>", {"$slow":{"type":1,"id":"<EventLoop>","entries":[{"$type":"object","value":[["id",3],["event",{"$type":"object","value":[["type",0],["due",1442458813037]]}],["callback",{"$type":"function","value":"function (resolve) { return resolve(); }"}],["arguments",[{"$ref":"#25"}]]]}]}}],
 
 
-["<EventLoop>", {"$slow":{"type":1,"id":"<EventLoop>","entries":[{"$type":"object","keys":["id","event","callback","arguments"],"values":[4,{"$type":"object","keys":["type","due"],"values":[0,1442407467037]},{"$type":"function","value":"function (resolve) { return resolve(); }"},[{"$ref":"#31"}]]}]}}],
+["<EventLoop>", {"$slow":{"type":1,"id":"<EventLoop>","entries":[{"$type":"object","value":[["id",4],["event",{"$type":"object","value":[["type",0],["due",1442458813436]]}],["callback",{"$type":"function","value":"function (resolve) { return resolve(); }"}],["arguments",[{"$ref":"#31"}]]]}]}}],
 
 
 ["#24", {"$slow":{"type":10,"isFateResolved":true,"state":1,"settledValue":{"$type":"undefined"},"handlers":[],"id":"#24"}}],
 
 
-["#30", {"$slow":{"type":10,"isFateResolved":false,"state":0,"settledValue":{"$type":"undefined"},"handlers":[{"$type":"object","keys":["onFulfilled","onRejected","deferred2"],"values":[{"$ref":"#5"},{"$ref":"#6"},{"$type":"object","keys":["promise","resolve","reject"],"values":[{"$ref":"#33"},{"$ref":"#34"},{"$ref":"#35"}]}]}],"id":"#30"}}],
+["#30", {"$slow":{"type":10,"isFateResolved":false,"state":0,"settledValue":{"$type":"undefined"},"handlers":[{"$type":"object","value":[["onFulfilled",{"$ref":"#5"}],["onRejected",{"$ref":"#6"}],["deferred2",{"$type":"object","value":[["promise",{"$ref":"#33"}],["resolve",{"$ref":"#34"}],["reject",{"$ref":"#35"}]]}]]}],"id":"#30"}}],
 
 
 ["#31", {"$slow":{"type":11,"promise":{"$ref":"#30"},"id":"#31"}}],
@@ -154,22 +154,22 @@
 ["#35", {"$slow":{"type":12,"promise":{"$ref":"#33"},"id":"#35"}}],
 
 
-["#7", {"$slow":{"type":30,"asyncFunction":{"$ref":"a3e25a55d9828ca1cf16184b8ca1ed6d40711774"},"state":{"$type":"object","keys":["local","pos","temp","error","finalizers"],"values":[{"$type":"object","keys":["arguments","delay","count","cb","i"],"values":[[300,30,{"$type":"function","value":"function test() {\r\n            console.log('---');\r\n        }"}],300,30,{"$type":"function","value":"function test() {\r\n            console.log('---');\r\n        }"},3]},"@5",{"$type":"object","keys":[],"values":[]},{"$type":"object","keys":["handler"],"values":["@fail"]},{"$type":"object","keys":["pending"],"values":[[]]}]},"awaiting":{"$ref":"#30"},"resumeNext":{"$ref":"#5"},"resumeError":{"$ref":"#6"},"resolve":{"$ref":"#3"},"reject":{"$ref":"#4"},"id":"#7"}}],
+["#7", {"$slow":{"type":30,"asyncFunction":{"$ref":"a3e25a55d9828ca1cf16184b8ca1ed6d40711774"},"state":{"$type":"object","value":[["local",{"$type":"object","value":[["arguments",[300,30,{"$type":"function","value":"function test() {\r\n            console.log('---');\r\n        }"}]],["delay",300],["count",30],["cb",{"$type":"function","value":"function test() {\r\n            console.log('---');\r\n        }"}],["i",3]]}],["pos","@5"],["temp",{"$type":"object","value":[]}],["error",{"$type":"object","value":[["handler","@fail"]]}],["finalizers",{"$type":"object","value":[["pending",[]]]}]]},"awaiting":{"$ref":"#30"},"resumeNext":{"$ref":"#5"},"resumeError":{"$ref":"#6"},"resolve":{"$ref":"#3"},"reject":{"$ref":"#4"},"id":"#7"}}],
 
 
 ["#27", {"$slow":{"type":10,"isFateResolved":false,"state":1,"settledValue":{"$type":"undefined"},"handlers":[],"id":"#27"}}],
 
 
-["<EventLoop>", {"$slow":{"type":1,"id":"<EventLoop>","entries":[{"$type":"object","keys":["id","event","callback","arguments"],"values":[4,{"$type":"object","keys":["type","due"],"values":[0,1442407467037]},{"$type":"function","value":"function (resolve) { return resolve(); }"},[{"$ref":"#31"}]]}]}}],
+["<EventLoop>", {"$slow":{"type":1,"id":"<EventLoop>","entries":[{"$type":"object","value":[["id",4],["event",{"$type":"object","value":[["type",0],["due",1442458813436]]}],["callback",{"$type":"function","value":"function (resolve) { return resolve(); }"}],["arguments",[{"$ref":"#31"}]]]}]}}],
 
 
-["<EventLoop>", {"$slow":{"type":1,"id":"<EventLoop>","entries":[{"$type":"object","keys":["id","event","callback","arguments"],"values":[5,{"$type":"object","keys":["type","due"],"values":[0,1442407467439]},{"$type":"function","value":"function (resolve) { return resolve(); }"},[{"$ref":"#37"}]]}]}}],
+["<EventLoop>", {"$slow":{"type":1,"id":"<EventLoop>","entries":[{"$type":"object","value":[["id",5],["event",{"$type":"object","value":[["type",0],["due",1442458813836]]}],["callback",{"$type":"function","value":"function (resolve) { return resolve(); }"}],["arguments",[{"$ref":"#37"}]]]}]}}],
 
 
 ["#30", {"$slow":{"type":10,"isFateResolved":true,"state":1,"settledValue":{"$type":"undefined"},"handlers":[],"id":"#30"}}],
 
 
-["#36", {"$slow":{"type":10,"isFateResolved":false,"state":0,"settledValue":{"$type":"undefined"},"handlers":[{"$type":"object","keys":["onFulfilled","onRejected","deferred2"],"values":[{"$ref":"#5"},{"$ref":"#6"},{"$type":"object","keys":["promise","resolve","reject"],"values":[{"$ref":"#39"},{"$ref":"#40"},{"$ref":"#41"}]}]}],"id":"#36"}}],
+["#36", {"$slow":{"type":10,"isFateResolved":false,"state":0,"settledValue":{"$type":"undefined"},"handlers":[{"$type":"object","value":[["onFulfilled",{"$ref":"#5"}],["onRejected",{"$ref":"#6"}],["deferred2",{"$type":"object","value":[["promise",{"$ref":"#39"}],["resolve",{"$ref":"#40"}],["reject",{"$ref":"#41"}]]}]]}],"id":"#36"}}],
 
 
 ["#37", {"$slow":{"type":11,"promise":{"$ref":"#36"},"id":"#37"}}],
@@ -187,22 +187,22 @@
 ["#41", {"$slow":{"type":12,"promise":{"$ref":"#39"},"id":"#41"}}],
 
 
-["#7", {"$slow":{"type":30,"asyncFunction":{"$ref":"a3e25a55d9828ca1cf16184b8ca1ed6d40711774"},"state":{"$type":"object","keys":["local","pos","temp","error","finalizers"],"values":[{"$type":"object","keys":["arguments","delay","count","cb","i"],"values":[[300,30,{"$type":"function","value":"function test() {\r\n            console.log('---');\r\n        }"}],300,30,{"$type":"function","value":"function test() {\r\n            console.log('---');\r\n        }"},4]},"@5",{"$type":"object","keys":[],"values":[]},{"$type":"object","keys":["handler"],"values":["@fail"]},{"$type":"object","keys":["pending"],"values":[[]]}]},"awaiting":{"$ref":"#36"},"resumeNext":{"$ref":"#5"},"resumeError":{"$ref":"#6"},"resolve":{"$ref":"#3"},"reject":{"$ref":"#4"},"id":"#7"}}],
+["#7", {"$slow":{"type":30,"asyncFunction":{"$ref":"a3e25a55d9828ca1cf16184b8ca1ed6d40711774"},"state":{"$type":"object","value":[["local",{"$type":"object","value":[["arguments",[300,30,{"$type":"function","value":"function test() {\r\n            console.log('---');\r\n        }"}]],["delay",300],["count",30],["cb",{"$type":"function","value":"function test() {\r\n            console.log('---');\r\n        }"}],["i",4]]}],["pos","@5"],["temp",{"$type":"object","value":[]}],["error",{"$type":"object","value":[["handler","@fail"]]}],["finalizers",{"$type":"object","value":[["pending",[]]]}]]},"awaiting":{"$ref":"#36"},"resumeNext":{"$ref":"#5"},"resumeError":{"$ref":"#6"},"resolve":{"$ref":"#3"},"reject":{"$ref":"#4"},"id":"#7"}}],
 
 
 ["#33", {"$slow":{"type":10,"isFateResolved":false,"state":1,"settledValue":{"$type":"undefined"},"handlers":[],"id":"#33"}}],
 
 
-["<EventLoop>", {"$slow":{"type":1,"id":"<EventLoop>","entries":[{"$type":"object","keys":["id","event","callback","arguments"],"values":[5,{"$type":"object","keys":["type","due"],"values":[0,1442407467439]},{"$type":"function","value":"function (resolve) { return resolve(); }"},[{"$ref":"#37"}]]}]}}],
+["<EventLoop>", {"$slow":{"type":1,"id":"<EventLoop>","entries":[{"$type":"object","value":[["id",5],["event",{"$type":"object","value":[["type",0],["due",1442458813836]]}],["callback",{"$type":"function","value":"function (resolve) { return resolve(); }"}],["arguments",[{"$ref":"#37"}]]]}]}}],
 
 
-["<EventLoop>", {"$slow":{"type":1,"id":"<EventLoop>","entries":[{"$type":"object","keys":["id","event","callback","arguments"],"values":[6,{"$type":"object","keys":["type","due"],"values":[0,1442407467836]},{"$type":"function","value":"function (resolve) { return resolve(); }"},[{"$ref":"#43"}]]}]}}],
+["<EventLoop>", {"$slow":{"type":1,"id":"<EventLoop>","entries":[{"$type":"object","value":[["id",6],["event",{"$type":"object","value":[["type",0],["due",1442458814237]]}],["callback",{"$type":"function","value":"function (resolve) { return resolve(); }"}],["arguments",[{"$ref":"#43"}]]]}]}}],
 
 
 ["#36", {"$slow":{"type":10,"isFateResolved":true,"state":1,"settledValue":{"$type":"undefined"},"handlers":[],"id":"#36"}}],
 
 
-["#42", {"$slow":{"type":10,"isFateResolved":false,"state":0,"settledValue":{"$type":"undefined"},"handlers":[{"$type":"object","keys":["onFulfilled","onRejected","deferred2"],"values":[{"$ref":"#5"},{"$ref":"#6"},{"$type":"object","keys":["promise","resolve","reject"],"values":[{"$ref":"#45"},{"$ref":"#46"},{"$ref":"#47"}]}]}],"id":"#42"}}],
+["#42", {"$slow":{"type":10,"isFateResolved":false,"state":0,"settledValue":{"$type":"undefined"},"handlers":[{"$type":"object","value":[["onFulfilled",{"$ref":"#5"}],["onRejected",{"$ref":"#6"}],["deferred2",{"$type":"object","value":[["promise",{"$ref":"#45"}],["resolve",{"$ref":"#46"}],["reject",{"$ref":"#47"}]]}]]}],"id":"#42"}}],
 
 
 ["#43", {"$slow":{"type":11,"promise":{"$ref":"#42"},"id":"#43"}}],
@@ -220,22 +220,22 @@
 ["#47", {"$slow":{"type":12,"promise":{"$ref":"#45"},"id":"#47"}}],
 
 
-["#7", {"$slow":{"type":30,"asyncFunction":{"$ref":"a3e25a55d9828ca1cf16184b8ca1ed6d40711774"},"state":{"$type":"object","keys":["local","pos","temp","error","finalizers"],"values":[{"$type":"object","keys":["arguments","delay","count","cb","i"],"values":[[300,30,{"$type":"function","value":"function test() {\r\n            console.log('---');\r\n        }"}],300,30,{"$type":"function","value":"function test() {\r\n            console.log('---');\r\n        }"},5]},"@5",{"$type":"object","keys":[],"values":[]},{"$type":"object","keys":["handler"],"values":["@fail"]},{"$type":"object","keys":["pending"],"values":[[]]}]},"awaiting":{"$ref":"#42"},"resumeNext":{"$ref":"#5"},"resumeError":{"$ref":"#6"},"resolve":{"$ref":"#3"},"reject":{"$ref":"#4"},"id":"#7"}}],
+["#7", {"$slow":{"type":30,"asyncFunction":{"$ref":"a3e25a55d9828ca1cf16184b8ca1ed6d40711774"},"state":{"$type":"object","value":[["local",{"$type":"object","value":[["arguments",[300,30,{"$type":"function","value":"function test() {\r\n            console.log('---');\r\n        }"}]],["delay",300],["count",30],["cb",{"$type":"function","value":"function test() {\r\n            console.log('---');\r\n        }"}],["i",5]]}],["pos","@5"],["temp",{"$type":"object","value":[]}],["error",{"$type":"object","value":[["handler","@fail"]]}],["finalizers",{"$type":"object","value":[["pending",[]]]}]]},"awaiting":{"$ref":"#42"},"resumeNext":{"$ref":"#5"},"resumeError":{"$ref":"#6"},"resolve":{"$ref":"#3"},"reject":{"$ref":"#4"},"id":"#7"}}],
 
 
 ["#39", {"$slow":{"type":10,"isFateResolved":false,"state":1,"settledValue":{"$type":"undefined"},"handlers":[],"id":"#39"}}],
 
 
-["<EventLoop>", {"$slow":{"type":1,"id":"<EventLoop>","entries":[{"$type":"object","keys":["id","event","callback","arguments"],"values":[6,{"$type":"object","keys":["type","due"],"values":[0,1442407467836]},{"$type":"function","value":"function (resolve) { return resolve(); }"},[{"$ref":"#43"}]]}]}}],
+["<EventLoop>", {"$slow":{"type":1,"id":"<EventLoop>","entries":[{"$type":"object","value":[["id",6],["event",{"$type":"object","value":[["type",0],["due",1442458814237]]}],["callback",{"$type":"function","value":"function (resolve) { return resolve(); }"}],["arguments",[{"$ref":"#43"}]]]}]}}],
 
 
-["<EventLoop>", {"$slow":{"type":1,"id":"<EventLoop>","entries":[{"$type":"object","keys":["id","event","callback","arguments"],"values":[7,{"$type":"object","keys":["type","due"],"values":[0,1442407468235]},{"$type":"function","value":"function (resolve) { return resolve(); }"},[{"$ref":"#49"}]]}]}}],
+["<EventLoop>", {"$slow":{"type":1,"id":"<EventLoop>","entries":[{"$type":"object","value":[["id",7],["event",{"$type":"object","value":[["type",0],["due",1442458814636]]}],["callback",{"$type":"function","value":"function (resolve) { return resolve(); }"}],["arguments",[{"$ref":"#49"}]]]}]}}],
 
 
 ["#42", {"$slow":{"type":10,"isFateResolved":true,"state":1,"settledValue":{"$type":"undefined"},"handlers":[],"id":"#42"}}],
 
 
-["#48", {"$slow":{"type":10,"isFateResolved":false,"state":0,"settledValue":{"$type":"undefined"},"handlers":[{"$type":"object","keys":["onFulfilled","onRejected","deferred2"],"values":[{"$ref":"#5"},{"$ref":"#6"},{"$type":"object","keys":["promise","resolve","reject"],"values":[{"$ref":"#51"},{"$ref":"#52"},{"$ref":"#53"}]}]}],"id":"#48"}}],
+["#48", {"$slow":{"type":10,"isFateResolved":false,"state":0,"settledValue":{"$type":"undefined"},"handlers":[{"$type":"object","value":[["onFulfilled",{"$ref":"#5"}],["onRejected",{"$ref":"#6"}],["deferred2",{"$type":"object","value":[["promise",{"$ref":"#51"}],["resolve",{"$ref":"#52"}],["reject",{"$ref":"#53"}]]}]]}],"id":"#48"}}],
 
 
 ["#49", {"$slow":{"type":11,"promise":{"$ref":"#48"},"id":"#49"}}],
@@ -253,9 +253,40 @@
 ["#53", {"$slow":{"type":12,"promise":{"$ref":"#51"},"id":"#53"}}],
 
 
-["#7", {"$slow":{"type":30,"asyncFunction":{"$ref":"a3e25a55d9828ca1cf16184b8ca1ed6d40711774"},"state":{"$type":"object","keys":["local","pos","temp","error","finalizers"],"values":[{"$type":"object","keys":["arguments","delay","count","cb","i"],"values":[[300,30,{"$type":"function","value":"function test() {\r\n            console.log('---');\r\n        }"}],300,30,{"$type":"function","value":"function test() {\r\n            console.log('---');\r\n        }"},6]},"@5",{"$type":"object","keys":[],"values":[]},{"$type":"object","keys":["handler"],"values":["@fail"]},{"$type":"object","keys":["pending"],"values":[[]]}]},"awaiting":{"$ref":"#48"},"resumeNext":{"$ref":"#5"},"resumeError":{"$ref":"#6"},"resolve":{"$ref":"#3"},"reject":{"$ref":"#4"},"id":"#7"}}],
+["#7", {"$slow":{"type":30,"asyncFunction":{"$ref":"a3e25a55d9828ca1cf16184b8ca1ed6d40711774"},"state":{"$type":"object","value":[["local",{"$type":"object","value":[["arguments",[300,30,{"$type":"function","value":"function test() {\r\n            console.log('---');\r\n        }"}]],["delay",300],["count",30],["cb",{"$type":"function","value":"function test() {\r\n            console.log('---');\r\n        }"}],["i",6]]}],["pos","@5"],["temp",{"$type":"object","value":[]}],["error",{"$type":"object","value":[["handler","@fail"]]}],["finalizers",{"$type":"object","value":[["pending",[]]]}]]},"awaiting":{"$ref":"#48"},"resumeNext":{"$ref":"#5"},"resumeError":{"$ref":"#6"},"resolve":{"$ref":"#3"},"reject":{"$ref":"#4"},"id":"#7"}}],
 
 
 ["#45", {"$slow":{"type":10,"isFateResolved":false,"state":1,"settledValue":{"$type":"undefined"},"handlers":[],"id":"#45"}}],
 
 
+["<EventLoop>", {"$slow":{"type":1,"id":"<EventLoop>","entries":[{"$type":"object","value":[["id",7],["event",{"$type":"object","value":[["type",0],["due",1442458814636]]}],["callback",{"$type":"function","value":"function (resolve) { return resolve(); }"}],["arguments",[{"$ref":"#49"}]]]}]}}],
+
+
+["<EventLoop>", {"$slow":{"type":1,"id":"<EventLoop>","entries":[{"$type":"object","value":[["id",8],["event",{"$type":"object","value":[["type",0],["due",1442458815036]]}],["callback",{"$type":"function","value":"function (resolve) { return resolve(); }"}],["arguments",[{"$ref":"#55"}]]]}]}}],
+
+
+["#48", {"$slow":{"type":10,"isFateResolved":true,"state":1,"settledValue":{"$type":"undefined"},"handlers":[],"id":"#48"}}],
+
+
+["#54", {"$slow":{"type":10,"isFateResolved":false,"state":0,"settledValue":{"$type":"undefined"},"handlers":[{"$type":"object","value":[["onFulfilled",{"$ref":"#5"}],["onRejected",{"$ref":"#6"}],["deferred2",{"$type":"object","value":[["promise",{"$ref":"#57"}],["resolve",{"$ref":"#58"}],["reject",{"$ref":"#59"}]]}]]}],"id":"#54"}}],
+
+
+["#55", {"$slow":{"type":11,"promise":{"$ref":"#54"},"id":"#55"}}],
+
+
+["#56", {"$slow":{"type":12,"promise":{"$ref":"#54"},"id":"#56"}}],
+
+
+["#57", {"$slow":{"type":10,"isFateResolved":false,"state":0,"settledValue":{"$type":"undefined"},"handlers":[],"id":"#57"}}],
+
+
+["#58", {"$slow":{"type":11,"promise":{"$ref":"#57"},"id":"#58"}}],
+
+
+["#59", {"$slow":{"type":12,"promise":{"$ref":"#57"},"id":"#59"}}],
+
+
+["#7", {"$slow":{"type":30,"asyncFunction":{"$ref":"a3e25a55d9828ca1cf16184b8ca1ed6d40711774"},"state":{"$type":"object","value":[["local",{"$type":"object","value":[["arguments",[300,30,{"$type":"function","value":"function test() {\r\n            console.log('---');\r\n        }"}]],["delay",300],["count",30],["cb",{"$type":"function","value":"function test() {\r\n            console.log('---');\r\n        }"}],["i",7]]}],["pos","@5"],["temp",{"$type":"object","value":[]}],["error",{"$type":"object","value":[["handler","@fail"]]}],["finalizers",{"$type":"object","value":[["pending",[]]]}]]},"awaiting":{"$ref":"#54"},"resumeNext":{"$ref":"#5"},"resumeError":{"$ref":"#6"},"resolve":{"$ref":"#3"},"reject":{"$ref":"#4"},"id":"#7"}}],
+
+
+["#51", {"$slow":{"type":10,"isFateResolved":false,"state":1,"settledValue":{"$type":"undefined"},"handlers":[],"id":"#51"}}],
