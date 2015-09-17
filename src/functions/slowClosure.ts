@@ -12,9 +12,9 @@ export = SlowClosure;
 var SlowClosure: types.SlowClosureStatic = <any> makeCallableClass({
 
     // TODO: doc...
-    constructor: function (fn: Function|string, env: { [name: string]: any; }) {
+    constructor: function (env: { [name: string]: any; }, fn: Function|string) {
 
-        // Ensure `fn` is relocatable with the exception of names in env
+        // TODO: Ensure `fn` is relocatable with the exception of names in env
 
         // TODO: this won't work in strict mode. Will need to do it another way eventually (ie via eval)...
         var functionSource = fn.toString();
@@ -42,6 +42,6 @@ var SlowClosure: types.SlowClosureStatic = <any> makeCallableClass({
 
 // Tell storage how to create a SlowPromiseReject instance.
 storage.registerSlowObjectFactory(SlowType.SlowClosure, ($slow: any) => {
-    var closure = new SlowClosure($slow.functionSource, $slow.environment);
+    var closure = new SlowClosure($slow.environment, $slow.functionSource);
     return closure;
 });

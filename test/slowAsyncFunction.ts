@@ -14,19 +14,12 @@ process.on('SIGINT', () => {
 
 describe('The async(...) function', function () {
 
-    it('aaa', done => {
-        slow;
-        setTimeout(done, 3000);
-    });
+    //it('aaa', done => {
+    //    slow;
+    //    setTimeout(done, 3000);
+    //});
 
     it('works', (done) => {
-
-        // TODO: hacky hacky... satisfy dehydrator (but NOT rehydrator!)
-        // TODO: Better to use some option where dehydration rules are relaxed (so closures allowed in then() calls)
-        //global['done'] = err => {
-        //    delete global['done'];
-        //    done(err);
-        //};
 
         var fn = slow.async((delay: number, count: number, cb) => {
             const SlowPromise: typeof slow.Promise = __const(require('slownode').SlowPromise);
@@ -40,24 +33,19 @@ describe('The async(...) function', function () {
         });
 
         function test() {
-            console.log('---');
+            //console.log('---');
         }
 
         slow.makeWeakRef(done);
 
         fn(300, 30, test)
-        .then(slow.Closure(result => {
+        .then(slow.Closure({done}, result => {
             console.log(result);
-            if (done) {
-                done(); // TODO: isRelocatableFunction sees this as global.done due to above hack and says its ok
-            }
-            else {
-                console.log('NB: done weak ref is null');
-            }
-        }, { done }))
-        //.catch(error => {
-        //    console.log('ERROR: ' + error.message);
-        //    done(error); // TODO: isRelocatableFunction sees this as global.done due to above hack and says its ok
-        //});
+            if (done) done();
+        }))
+        .catch(slow.Closure({done}, error => {
+            console.log('ERROR: ' + error.message);
+            if (done) done(error);
+        }));
     });
 });

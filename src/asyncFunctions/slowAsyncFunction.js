@@ -4,7 +4,6 @@ var shasum = require('../util/shasum');
 var SteppableFunction = require('../functions/steppableFunction');
 var SlowPromise = require('../promises/slowPromise');
 var SlowAsyncFunctionActivation = require('./slowAsyncFunctionActivation');
-var runToCompletion = require('./runToCompletion');
 var storage = require('../storage/storage');
 /** Creates a slow async function instance. */
 var SlowAsyncFunction = makeCallableClass({
@@ -43,7 +42,7 @@ var SlowAsyncFunction = makeCallableClass({
         // Create a new SlowAsyncFunctionActivation instance to run the async operation.
         var safa = new SlowAsyncFunctionActivation(this, deferred.resolve, deferred.reject, args);
         // Run the async operation to completion, and return a promise of the outcome.
-        runToCompletion(safa);
+        safa.runToCompletion(safa);
         return deferred.promise;
     }
 });

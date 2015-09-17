@@ -73,12 +73,12 @@ export function saveChanges(callback?: (err?) => void) {
 
 
 // TODO: temp testing for DEBUGGING only...
-log(`======================================== SAVE CHANGES ========================================\n`);
-var debug = {
-    all: setToArray(allTrackedObjects),
-    deleted: setToArray(deletedTrackedObjects),
-    updated: setToArray(updatedTrackedObjects)
-};
+//log(`======================================== SAVE CHANGES ========================================\n`);
+//var debug = {
+//    all: setToArray(allTrackedObjects),
+//    deleted: setToArray(deletedTrackedObjects),
+//    updated: setToArray(updatedTrackedObjects)
+//};
 
 
         // For each deleted object, mark it as deleted in the log, and remove it from the set of tracked objects.
@@ -109,9 +109,9 @@ export function loadState() {
 
     // Read and parse the whole log file into an object.
     // TODO: temp testing...
-    var json = `[${fs.readFileSync(path.join(__dirname, '../../slowlog.bak.txt'), 'utf8')} 0]`;
+    //var json = `[${fs.readFileSync(path.join(__dirname, '../../slowlog.bak.txt'), 'utf8')} 0]`;
     //TODO: was restore...
-    //var json = exists() ? `[${fs.readFileSync(storageLocation, 'utf8')} 0]` : `[0]`;
+    var json = exists() ? `[${fs.readFileSync(storageLocation, 'utf8')} 0]` : `[0]`;
     var log: Array<[string,SlowObject]> = JSON.parse(json);
     log.pop();
 

@@ -10,8 +10,8 @@ declare module "slownode" {
     export var Closure: SlowClosureStatic;
 
     interface SlowClosureStatic {
-        new(fn: Function, env: { [name: string]: any; }): SlowClosure;
-        (fn: Function, env: { [name: string]: any; }): SlowClosure;
+        new(env: { [name: string]: any; }, fn: Function): SlowClosure;
+        (env: { [name: string]: any; }, fn: Function): SlowClosure;
     }
 
     interface SlowClosure {

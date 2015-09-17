@@ -8,8 +8,8 @@
 
 
     interface SlowClosureStatic extends slow.SlowClosureStatic {
-        new(fn: Function, env: { [name: string]: any; }): SlowClosure;
-        (fn: Function, env: { [name: string]: any; }): SlowClosure;
+        new(env: { [name: string]: any; }, fn: Function): SlowClosure;
+        (env: { [name: string]: any; }, fn: Function): SlowClosure;
     }
 
     interface SlowClosure extends slow.SlowClosure {
@@ -248,8 +248,6 @@
             SlowPromiseReject = 12,
             SlowAsyncFunction = 20,
             SlowAsyncFunctionActivation = 30,
-            SlowAsyncFunctionActivationResumeNext = 31,
-            SlowAsyncFunctionActivationResumeError = 32,
             SlowClosure = 50,
             SlowWeakRef = 60
         }

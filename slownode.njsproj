@@ -31,8 +31,6 @@
     <Content Include="tsconfig.json" />
     <Compile Include="scripts\runPromisesAPlusTestSuite.js" />
     <Compile Include="scripts\runSlownodeTestSuite.js" />
-    <TypeScriptCompile Include="src\asyncFunctions\slowAsyncFunctionActivationResumeNext.ts" />
-    <TypeScriptCompile Include="src\asyncFunctions\slowAsyncFunctionActivationResumeError.ts" />
     <TypeScriptCompile Include="src\asyncFunctions\slowAsyncFunctionActivation.ts" />
     <TypeScriptCompile Include="src\eventLoop\slowEventLoop.ts" />
     <TypeScriptCompile Include="src\functions\astOperations\funcExpr\classifyIdentifiers.ts" />
@@ -56,7 +54,6 @@
     <TypeScriptCompile Include="src\index.ts" />
     <TypeScriptCompile Include="src\storage\storage.ts" />
     <TypeScriptCompile Include="src\storage\dehydrateSlowObject.ts" />
-    <TypeScriptCompile Include="src\asyncFunctions\runToCompletion.ts" />
     <TypeScriptCompile Include="src\asyncFunctions\slowAsyncFunction.ts" />
     <TypeScriptCompile Include="src\promises\slowPromise.ts" />
     <TypeScriptCompile Include="src\functions\astOperations\funcExpr\transformToStateMachine.ts" />

@@ -1,6 +1,5 @@
 var assert = require('assert');
 var fs = require('fs');
-var path = require('path');
 var _ = require('lodash');
 var storageLocation = require('./storageLocation');
 var dehydrateSlowObject = require('./dehydrateSlowObject');
@@ -47,12 +46,12 @@ function saveChanges(callback) {
     // TODO: ... why async here?
     setImmediate(function () {
         // TODO: temp testing for DEBUGGING only...
-        log("======================================== SAVE CHANGES ========================================\n");
-        var debug = {
-            all: setToArray(allTrackedObjects),
-            deleted: setToArray(deletedTrackedObjects),
-            updated: setToArray(updatedTrackedObjects)
-        };
+        //log(`======================================== SAVE CHANGES ========================================\n`);
+        //var debug = {
+        //    all: setToArray(allTrackedObjects),
+        //    deleted: setToArray(deletedTrackedObjects),
+        //    updated: setToArray(updatedTrackedObjects)
+        //};
         // For each deleted object, mark it as deleted in the log, and remove it from the set of tracked objects.
         deletedTrackedObjects.forEach(function (obj) {
             log("[\"" + obj.$slow.id + "\", null],\n\n\n");
@@ -77,9 +76,9 @@ function loadState() {
     isLoadingState = true;
     // Read and parse the whole log file into an object.
     // TODO: temp testing...
-    var json = "[" + fs.readFileSync(path.join(__dirname, '../../slowlog.bak.txt'), 'utf8') + " 0]";
+    //var json = `[${fs.readFileSync(path.join(__dirname, '../../slowlog.bak.txt'), 'utf8')} 0]`;
     //TODO: was restore...
-    //var json = exists() ? `[${fs.readFileSync(storageLocation, 'utf8')} 0]` : `[0]`;
+    var json = exists() ? "[" + fs.readFileSync(storageLocation, 'utf8') + " 0]" : "[0]";
     var log = JSON.parse(json);
     log.pop();
     // TODO: at this point we can start the new log file.
