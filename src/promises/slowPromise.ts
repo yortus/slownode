@@ -55,7 +55,7 @@ class SlowPromise implements types.SlowPromise {
     }
 
     /** Returns an object containing a new SlowPromise instance, along with a resolve function and a reject function to control its fate. */
-    static deferred() {
+    static deferred(): types.SlowPromise.Deferred {
         var promise = new SlowPromise(null);
         var resolve = new SlowPromiseResolve(promise);
         var reject = new SlowPromiseReject(promise);
