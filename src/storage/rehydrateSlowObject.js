@@ -1,7 +1,7 @@
 var assert = require('assert');
 var _ = require('lodash');
 /**
- * TODO: Recursively converts the given dehydrated slow object back to a normal slow object.
+ * Recursively converts the given dehydrated slow object back to a normal slow object.
  * Throws an error if any part of the value cannot be converted.
  */
 function rehydrateSlowObject(dehydrated, allSlowObjects, factories) {
@@ -15,7 +15,7 @@ function rehydrateSlowObject(dehydrated, allSlowObjects, factories) {
     return rehydratedSlowObject;
 }
 /**
- * TODO: Recursively converts the given json-safe value back to a normal value.
+ * Recursively converts the given json-safe value back to a normal value.
  * Throws an error if any part of the value cannot be converted.
  */
 function rehydrateInPlace(val, key, obj, allSlowObjects) {
@@ -24,7 +24,6 @@ function rehydrateInPlace(val, key, obj, allSlowObjects) {
     }
     else if (val && val.$ref) {
         var $ref = val.$ref;
-        delete obj[key]; // TODO: needed? test...
         Object.defineProperty(obj, key, { get: function () { return allSlowObjects[$ref]; }, configurable: true, enumerable: true });
     }
     else if (_.isArray(val)) {

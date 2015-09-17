@@ -5,7 +5,7 @@ export = rehydrateSlowObject;
 
 
 /**
- * TODO: Recursively converts the given dehydrated slow object back to a normal slow object.
+ * Recursively converts the given dehydrated slow object back to a normal slow object.
  * Throws an error if any part of the value cannot be converted.
  */
 function rehydrateSlowObject(dehydrated: types.SlowObject, allSlowObjects: {[id: string]: types.SlowObject}, factories: types.SlowObject.Factories): types.SlowObject {
@@ -23,7 +23,7 @@ function rehydrateSlowObject(dehydrated: types.SlowObject, allSlowObjects: {[id:
 
 
 /**
- * TODO: Recursively converts the given json-safe value back to a normal value.
+ * Recursively converts the given json-safe value back to a normal value.
  * Throws an error if any part of the value cannot be converted.
  */
 function rehydrateInPlace(val: any, key: any, obj: any, allSlowObjects: {[id: string]: types.SlowObject}) {
@@ -33,10 +33,9 @@ function rehydrateInPlace(val: any, key: any, obj: any, allSlowObjects: {[id: st
         // No-op.
     }
 
-    // Map a shorthand $ref object to getter returning the object it references
+    // Map a shorthand $ref object to getter returning the slow object it references
     else if (val && val.$ref) {
         var $ref = val.$ref;
-        delete obj[key]; // TODO: needed? test...
         Object.defineProperty(obj, key, { get: () => allSlowObjects[$ref], configurable: true, enumerable: true });
     }
 
@@ -57,18 +56,15 @@ function rehydrateInPlace(val: any, key: any, obj: any, allSlowObjects: {[id: st
         obj[key] = void 0;
     }
 
-    // TODO: doc...
+    // Map a json-safe 'function' back to an actual (relocatable) function.
     else if (val && val.$type === 'function') {
         obj[key] = eval('(' + val.value + ')');
     }
 
-    // TODO: doc...
+    // Map a json-safe 'error' back to a plain Error instance.
     else if (val && val.$type === 'error') {
         obj[key] = new Error(val.value);
     }
-
-    // TODO: temp testing... else return as-is (already processed)
-    //else return jsonSafe;
 
     // If we get to here, the value is not recognised. Throw an error.
     else {

@@ -38,10 +38,6 @@ function dehydrate(value, allSlowObjects) {
     else if (value && value.constructor === Error) {
         return { $type: 'error', value: value.message };
     }
-    // TODO: temp testing... remove this...
-    //else {
-    //    return { $type: 'ERROR - UNKNOWN?!' };
-    //}
     // If we get to here, the value is not recognised. Throw an error.
     throw new Error("dehydration not supported for value : " + value);
 }

@@ -46,21 +46,16 @@ function dehydrate(value: any, allSlowObjects: Set<types.SlowObject>) {
         return { $type: 'undefined' };
     }
 
-    // TODO: doc...
+    // Map a function to a json-safe form, but only if the function is relocatable.
     else if (_.isFunction(value)) {
         if (isRelocatableFunction(value)) return { $type: 'function', value: value.toString() };
         throw new Error(`dehydration not supported for non-relocatable function: ${value}`);
     }
 
-    // TODO: doc...
+    // Map a plain Error instance to a json-safe form.
     else if (value && value.constructor === Error) {
         return { $type: 'error', value: value.message };
     }
-
-    // TODO: temp testing... remove this...
-    //else {
-    //    return { $type: 'ERROR - UNKNOWN?!' };
-    //}
 
     // If we get to here, the value is not recognised. Throw an error.
     throw new Error(`dehydration not supported for value : ${value}`);
