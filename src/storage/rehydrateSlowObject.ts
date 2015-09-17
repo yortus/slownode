@@ -47,8 +47,8 @@ function rehydrateInPlace(val: any, key: any, obj: any, allSlowObjects: {[id: st
 
     // Map a plain (and non-special) object to an equivalent object whose property values have been rehydrated.
     else if (val && val.$type === 'object') {
-        var keys = val.keys, vals = val.values;
-        val = obj[key] = _.zipObject(keys, vals);
+        var pairs: [string, any][] = val.value;
+        val = obj[key] = _.zipObject(pairs);
         _.forEach(val, (propValue, propName) => rehydrateInPlace(propValue, propName, val, allSlowObjects));
     }
 

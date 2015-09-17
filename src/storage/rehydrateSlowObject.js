@@ -4,7 +4,7 @@ var _ = require('lodash');
  * TODO: Recursively converts the given dehydrated slow object back to a normal slow object.
  * Throws an error if any part of the value cannot be converted.
  */
-function rehydrateSlowObject(dehydrated, factories, allSlowObjects) {
+function rehydrateSlowObject(dehydrated, allSlowObjects, factories) {
     // Rehydrate all the constituent parts in-place.
     var $slow = dehydrated.$slow;
     _.mapValues(dehydrated.$slow, function (val, key, obj) { return rehydrateInPlace(val, key, obj, allSlowObjects); });
@@ -25,14 +25,14 @@ function rehydrateInPlace(val, key, obj, allSlowObjects) {
     else if (val && val.$ref) {
         var $ref = val.$ref;
         delete obj[key]; // TODO: needed? test...
-        Object.defineProperty(obj, key, { get: function () { return allSlowObjects[$ref]; } });
+        Object.defineProperty(obj, key, { get: function () { return allSlowObjects[$ref]; }, configurable: true, enumerable: true });
     }
     else if (_.isArray(val)) {
         val.forEach(function (elem, index) { return rehydrateInPlace(elem, index, val, allSlowObjects); });
     }
     else if (val && val.$type === 'object') {
-        var keys = val.keys, vals = val.values;
-        val = obj[key] = _.zipObject(keys, vals);
+        var pairs = val.value;
+        val = obj[key] = _.zipObject(pairs);
         _.forEach(val, function (propValue, propName) { return rehydrateInPlace(propValue, propName, val, allSlowObjects); });
     }
     else if (val && val.$type === 'undefined') {

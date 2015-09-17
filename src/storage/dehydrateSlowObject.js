@@ -25,7 +25,7 @@ function dehydrate(value, allSlowObjects) {
         return value.map(function (v) { return dehydrate(v, allSlowObjects); });
     }
     else if (_.isPlainObject(value)) {
-        return { $type: 'object', keys: _.keys(value), values: _.map(value, function (v) { return dehydrate(v, allSlowObjects); }) };
+        return { $type: 'object', value: _.pairs(value).map(function (pair) { return [pair[0], dehydrate(pair[1], allSlowObjects)]; }) };
     }
     else if (_.isUndefined(value)) {
         return { $type: 'undefined' };
