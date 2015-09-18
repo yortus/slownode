@@ -5,8 +5,9 @@
  * both is desirable in situations where you want to be able to create
  * callable instances (ie functions) with a particular prototype, so they
  * work with instanceof etc.
- * Performance warning: this uses ES5's Object.setPrototypeOf(), so the
- * instances created via this mechanism may not be optimizable by V8.
+ * Performance warning: this function uses ES6's Object.setPrototypeOf()
+ * by necessity, so instances created this way may not be optimizable by V8.
+ * More info at: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/setPrototypeOf
  */
 function makeCallableClass(options) {
     return function CallableConstructor() {
