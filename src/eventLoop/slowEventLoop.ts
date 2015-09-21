@@ -87,22 +87,14 @@ var nextId = 0;
 // TODO: doc...
 function runLoop() {
 
-//// TODO: temp testing...
-//process.stdout.write(`==================== EVENT LOOP FLUSH `);
-
-    // TODO: if finished?... exit?
+    // TODO: this will effectively stop pumping the loop when its empty. If's effectively dead and ended. Is this correct?
     if (entries.length === 0) {
-//        console.log(`==================== EVENT LOOP EMPTY =========================`);
-//        process.exit(0);
+        return;
     }
 
     // TODO: traverse all entries once...
     var remaining = entries.length;
     while (--remaining >= 0) {
-
-//// TODO: temp testing...
-//process.stdout.write(`.`);
-
         var entry = entries.shift();
 
         // Synchronise with the persistent object graph.
@@ -125,11 +117,6 @@ function runLoop() {
                 throw new Error(`Unhandled event type in entry: ${JSON.stringify(entry)}`);
         }
     }
-
-//// TODO: temp testing...
-//process.stdout.write(`\n`);
-
-
 
     // TODO: temp testing...
     storage.saveChanges();
