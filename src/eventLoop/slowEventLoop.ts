@@ -105,6 +105,7 @@ function runLoop() {
 
     // TODO: this will effectively stop pumping the loop when its empty. If's effectively dead and ended. Is this correct?
     if (entries.length === 0) {
+        storage.saveChanges();
         return;
     }
 
@@ -134,7 +135,18 @@ function runLoop() {
         }
     }
 
-    // TODO: temp testing...
+    // TODO: review this policy. Good enough? Pros/cons of more/less frequent persisting:
+    // - could persist on every created/updated/deleted, but then it must be a sync operation.
+    // - only persisting just before yielding means that saveChanges can be made an async operation.
+    // - more frequent means less chance of invalid/stale persisted state
+    // - less frequent means going back to state before current tick was processed. Implications?
+    // - a bug-related crash will most likely occur during tick processing
+    // - an unrelated shutdown/restart will most likely occur during a sleep between ticks (statistically)
+    // Now is a good time to ensure that the persistent object graph has been flushed to storage.
+    // At this point, we know we are about to yield to node's event loop. We want to be sure that
+    // the persistent object graph has been safely flushed to storage, in case the process dies
+    // between now and the next slow tick. In that case, then when the process is restarted we,
+    // can pick up where we left off by reloading the persisted state.
     storage.saveChanges();
 
     // TODO: prep for next run

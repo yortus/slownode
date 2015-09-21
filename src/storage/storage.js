@@ -46,7 +46,7 @@ function saveChanges(callback) {
     // TODO: ... why async here?
     setImmediate(function () {
         // TODO: temp testing for DEBUGGING only...
-        //log(`======================================== SAVE CHANGES ========================================\n`);
+        //console.log(`======================================== SAVE CHANGES ========================================\n`);
         //var debug = {
         //    all: setToArray(allTrackedObjects),
         //    deleted: setToArray(deletedTrackedObjects),
@@ -148,9 +148,6 @@ function loadState() {
             return;
         created(obj);
     });
-    saveChanges();
-    //// TODO: temp testing
-    //process.exit(1);
 }
 exports.loadState = loadState;
 function registerSlowObjectFactory(type, factory) {

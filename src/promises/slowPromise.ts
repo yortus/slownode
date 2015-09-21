@@ -30,10 +30,6 @@ class SlowPromise implements types.SlowPromise {
         var resolve = new SlowPromiseResolve(this);
         var reject = new SlowPromiseReject(this);
 
-        // Ensure the persistent object graph is safely stored before potentially yielding to the event loop
-        // TODO: probably doesn't belong here? investigate...
-        storage.saveChanges();
-
         // Call the given resolver. This kicks off the asynchronous operation whose outcome the Promise represents.
         try { resolver(resolve, reject); } catch (ex) { reject(ex); }
     }

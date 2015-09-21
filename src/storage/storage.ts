@@ -73,7 +73,7 @@ export function saveChanges(callback?: (err?) => void) {
 
 
 // TODO: temp testing for DEBUGGING only...
-//log(`======================================== SAVE CHANGES ========================================\n`);
+//console.log(`======================================== SAVE CHANGES ========================================\n`);
 //var debug = {
 //    all: setToArray(allTrackedObjects),
 //    deleted: setToArray(deletedTrackedObjects),
@@ -184,20 +184,7 @@ export function loadState() {
 
         created(obj);
     });
-    saveChanges();
-
-
-
-
-
-
-//// TODO: temp testing
-//process.exit(1);
-
 }
-
-
-
 
 
 
