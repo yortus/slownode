@@ -1,4 +1,6 @@
+var _ = require('lodash');
 var makeCallableClass = require('../util/makeCallableClass');
+var isRelocatableFunction = require('./isRelocatableFunction');
 var storage = require('../storage/storage');
 /**
  * Create a SlowPromiseReject callable instance.
@@ -7,7 +9,10 @@ var storage = require('../storage/storage');
 var SlowClosure = makeCallableClass({
     // TODO: doc...
     constructor: function (env, fn) {
-        // TODO: Ensure `fn` is relocatable with the exception of names in env
+        // Ensure `fn` is relocatable with the exception of names in env
+        if (!isRelocatableFunction(fn, _.keys(env))) {
+            throw new Error("slowClosure: function is not relocatable: " + fn);
+        }
         // TODO: this won't work in strict mode. Will need to do it another way eventually (ie via eval)...
         var functionSource = fn.toString();
         eval("with (env) fn = " + fn.toString() + ";");

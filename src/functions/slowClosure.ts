@@ -1,6 +1,8 @@
-﻿import types = require('types');
+﻿import _ = require('lodash');
+import types = require('types');
 import SlowType = types.SlowObject.Type;
 import makeCallableClass = require('../util/makeCallableClass');
+import isRelocatableFunction = require('./isRelocatableFunction');
 import storage = require('../storage/storage');
 export = SlowClosure;
 
@@ -14,7 +16,10 @@ var SlowClosure: types.SlowClosureStatic = <any> makeCallableClass({
     // TODO: doc...
     constructor: function (env: { [name: string]: any; }, fn: Function|string) {
 
-        // TODO: Ensure `fn` is relocatable with the exception of names in env
+        // Ensure `fn` is relocatable with the exception of names in env
+        if (!isRelocatableFunction(fn, _.keys(env))) {
+            throw new Error(`slowClosure: function is not relocatable: ${fn}`);
+        }
 
         // TODO: this won't work in strict mode. Will need to do it another way eventually (ie via eval)...
         var functionSource = fn.toString();

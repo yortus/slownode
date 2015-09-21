@@ -1,4 +1,5 @@
 ﻿import _ = require('lodash');
+import types = require('types');
 import matchNode = require('../matchNode');
 import traverseTree = require('../traverseTree');
 import containsInnerFunctions = require('./containsInnerFunctions');
@@ -17,7 +18,7 @@ export = classifyIdentifiers;
  * and classify them by scope. The results are memoized on the _id key.
  * NB: Duplicates are *not* removed.
  */
-function classifyIdentifiers(funcExpr: ESTree.FunctionExpression) {
+function classifyIdentifiers(funcExpr: ESTree.FunctionExpression): ClassifiedIdentifiers {
 
     // Return the previously computed result, if available.
     if (funcExpr._ids) return funcExpr._ids;

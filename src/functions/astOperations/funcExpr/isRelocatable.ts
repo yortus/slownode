@@ -9,20 +9,24 @@ export = isRelocatable;
  * Traverses the AST to determine whether the function is relocatable. A relocatable function is one
  * whose meaning remains the same after being converted to a string (via toString()) then converted
  * back to a function (via eval()). Constructs that prevent a function being relocatable are:
- * - references to free variables other than globals, __dirname, __filename or require.
+ * - references to free variables other than globals, `safeIds`, __dirname, __filename, or require.
  * - references to __dirname, __filename or require where the function's base location is unknown.
+ * @param funcExpr the AST representing the function body.
+ * @param safeIds closed-over identifiers that are known to be relocatable.
+ * @param baseLocation absolute file system location of the function definition, if known.
  */
-function isRelocatable(funcExpr: ESTree.FunctionExpression, baseLocation?: string): boolean {
+function isRelocatable(funcExpr: ESTree.FunctionExpression, safeIds?: string[], baseLocation?: string): boolean {
 
     // Classify all identifiers referenced by the function.
     var ids = classifyIdentifiers(funcExpr);
+    var moduleIds = _.difference(ids.module, safeIds || []);
 
     // Check for unconditionally non-relocatable constructs.
-    if (ids.scoped.length > 0) return false;
-    if (_.without(ids.module, '__dirname', '__filename', 'require').length > 0) return false;
+    if (_.difference(ids.scoped, safeIds || []).length > 0) return false;
+    if (_.without(moduleIds, '__dirname', '__filename', 'require').length > 0) return false;
 
     // Check the conditionally relocatable constructs.
-    if (_.intersection(ids.module, '__dirname', '__filename', 'require').length > 0) {
+    if (_.intersection(moduleIds, '__dirname', '__filename', 'require').length > 0) {
         if (!baseLocation) return false;
     }
 
