@@ -19,6 +19,8 @@ function setTimeout(callback, delay) {
     // Synchronise with the persistent object graph.
     storage.updated(persistedEventLoop);
     // TODO: and save changes?
+    // TODO: pump may have stopped; revive it if so...
+    startOrContinuePumping();
     return entry.id;
 }
 exports.setTimeout = setTimeout;
@@ -61,16 +63,25 @@ var persistedEventLoop = {
         entries: entries
     }
 };
-// TODO: temp testing needs work...
-// Synchronise with the persistent object graph.
-storage.created(persistedEventLoop);
-global.setTimeout(runLoop, 200);
 // TODO: doc...
 var slowPollInterval = 200;
 // TODO: doc... need to set this appropriately high after rehydrating the event loop
 var nextId = 0;
 // TODO: doc...
+var isPumping = false;
+// TODO: temp testing needs work...
+// Synchronise with the persistent object graph.
+storage.created(persistedEventLoop);
+startOrContinuePumping();
+function startOrContinuePumping() {
+    if (!isPumping) {
+        isPumping = true;
+        global.setTimeout(runLoop, slowPollInterval);
+    }
+}
+// TODO: doc...
 function runLoop() {
+    isPumping = false;
     // TODO: this will effectively stop pumping the loop when its empty. If's effectively dead and ended. Is this correct?
     if (entries.length === 0) {
         return;
@@ -100,7 +111,7 @@ function runLoop() {
     // TODO: temp testing...
     storage.saveChanges();
     // TODO: prep for next run
-    global.setTimeout(runLoop, slowPollInterval);
+    startOrContinuePumping();
 }
 // Tell storage how to restore the slow event loop.
 storage.registerSlowObjectFactory(1 /* SlowEventLoop */, function ($slow) {

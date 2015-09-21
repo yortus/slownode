@@ -9,10 +9,6 @@ process.on('SIGINT', function () {
     process.exit();
 });
 describe('The async(...) function', function () {
-    //it('aaa', done => {
-    //    slow;
-    //    setTimeout(done, 3000);
-    //});
     it('works', function (done) {
         var fn = slow.async(function (delay, count, cb) {
             var SlowPromise = __const(require('slownode').SlowPromise);

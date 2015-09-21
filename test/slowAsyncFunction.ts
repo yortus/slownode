@@ -14,11 +14,6 @@ process.on('SIGINT', () => {
 
 describe('The async(...) function', function () {
 
-    //it('aaa', done => {
-    //    slow;
-    //    setTimeout(done, 3000);
-    //});
-
     it('works', (done) => {
 
         var fn = slow.async((delay: number, count: number, cb) => {
