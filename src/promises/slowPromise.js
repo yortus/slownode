@@ -1,6 +1,5 @@
 var assert = require('assert');
 var _ = require('lodash');
-var types = require('./types');
 var SlowPromiseResolve = require('./slowPromiseResolve');
 var SlowPromiseReject = require('./slowPromiseReject');
 var standardResolutionProcedure = require('./standardResolutionProcedure');

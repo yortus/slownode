@@ -1,6 +1,5 @@
 import assert = require('assert');
 import _ = require('lodash');
-import types = require('./types');
 import SlowType = require('../slowType');
 import SlowObject = require('../slowObject');
 import SlowPromiseResolve = require('./slowPromiseResolve');
@@ -11,11 +10,25 @@ import storage = require('../storage/storage');
 export = SlowPromise;
 
 
+const enum State {
+    Pending,
+    Fulfilled,
+    Rejected
+}
+
+
+interface Deferred {
+    promise: SlowPromise;
+    resolve: SlowPromiseResolve;
+    reject: SlowPromiseReject;
+}
+
+
 /** Promises A+ compliant Promise implementation with persistence. */
 class SlowPromise {
 
     /** Constructs a SlowPromise instance. */
-    constructor(resolver: (resolve: (value?: any) => void, reject: (reason?: any) => void) => void) {
+    constructor(resolver: (resolve: SlowPromiseResolve, reject: SlowPromiseReject) => void) {
 
         // Validate arguments.
         assert(!resolver || _.isFunction(resolver));
@@ -52,7 +65,7 @@ class SlowPromise {
 
     /** Returns an object containing a new SlowPromise instance, along with a resolve function and a reject function to control its fate. */
     // TODO: improve typing...
-    static deferred(): types.SlowPromise.Deferred {
+    static deferred(): Deferred {
         var promise = new SlowPromise(null);
         var resolve = new SlowPromiseResolve(promise);
         var reject = new SlowPromiseReject(promise);
@@ -87,7 +100,7 @@ class SlowPromise {
         storage.updated(this);
 
         // If the promise is already settled, invoke the given handlers now (asynchronously).
-        if (this.$slow.state !== types.SlowPromise.State.Pending) process.nextTick(() => processAllHandlers(this));
+        if (this.$slow.state !== State.Pending) process.nextTick(() => processAllHandlers(this));
 
         // Return the chained promise.
         return deferred2.promise;
@@ -106,20 +119,20 @@ class SlowPromise {
     $slow = {
         type: SlowType.SlowPromise,
         isFateResolved: false,
-        state: types.SlowPromise.State.Pending,
+        state: State.Pending,
         settledValue: void 0,
         handlers: <Array<{
             onFulfilled: (value) => any,
             onRejected: (reason) => any,
-            deferred2: types.SlowPromise.Deferred
+            deferred2: Deferred
         }>> []
     };
 
     _fulfil(value: any) {
 
         // Update the promise state.
-        if (this.$slow.state !== types.SlowPromise.State.Pending) return;
-        [this.$slow.state, this.$slow.settledValue] = [types.SlowPromise.State.Fulfilled, value];
+        if (this.$slow.state !== State.Pending) return;
+        [this.$slow.state, this.$slow.settledValue] = [State.Fulfilled, value];
 
         // Synchronise with the persistent object graph.
         storage.updated(this);
@@ -131,8 +144,8 @@ class SlowPromise {
     _reject(reason: any) {
 
         // Update the promise state.
-        if (this.$slow.state !== types.SlowPromise.State.Pending) return;
-        [this.$slow.state, this.$slow.settledValue] = [types.SlowPromise.State.Rejected, reason];
+        if (this.$slow.state !== State.Pending) return;
+        [this.$slow.state, this.$slow.settledValue] = [State.Rejected, reason];
 
         // Synchronise with the persistent object graph.
         storage.updated(this);
@@ -158,7 +171,7 @@ function processAllHandlers(p: SlowPromise) {
         storage.updated(p);
 
         // Fulfilled case.
-        if (p.$slow.state === types.SlowPromise.State.Fulfilled) {
+        if (p.$slow.state === State.Fulfilled) {
             if (_.isFunction(handler.onFulfilled)) {
                 try {
                     var ret = handler.onFulfilled.apply(void 0, [p.$slow.settledValue]);
@@ -174,7 +187,7 @@ function processAllHandlers(p: SlowPromise) {
         }
 
         // Rejected case.
-        else if (p.$slow.state === types.SlowPromise.State.Rejected) {
+        else if (p.$slow.state === State.Rejected) {
             if (_.isFunction(handler.onRejected)) {
                 try {
                     var ret = handler.onRejected.apply(void 0, [p.$slow.settledValue]);

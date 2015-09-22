@@ -1,10 +1,7 @@
 var makeCallableClass = require('../util/makeCallableClass');
 var storage = require('../storage/storage');
-/**
- * Create a SlowPromiseReject callable instance.
- * It may be called to reject the given promise with a reason.
- */
-var SlowPromiseReject = makeCallableClass({
+var SlowPromiseReject;
+SlowPromiseReject = makeCallableClass({
     // TODO: doc...
     constructor: function (promise) {
         // Add slow metadata to the resolve function.

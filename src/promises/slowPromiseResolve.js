@@ -1,11 +1,8 @@
 var makeCallableClass = require('../util/makeCallableClass');
 var standardResolutionProcedure = require('./standardResolutionProcedure');
 var storage = require('../storage/storage');
-/**
- * Create a SlowPromiseResolve callable instance.
- * It may be called to resolve the given promise with a value.
- */
-var SlowPromiseResolve = makeCallableClass({
+var SlowPromiseResolve;
+SlowPromiseResolve = makeCallableClass({
     // TODO: doc...
     constructor: function (promise) {
         // Add slow metadata to the resolve function.

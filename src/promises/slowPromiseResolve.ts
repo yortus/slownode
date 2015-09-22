@@ -1,23 +1,31 @@
-import types = require('./types');
 import SlowType = require('../slowType');
+import SlowPromise = require('./slowPromise'); // NB: elided circular ref (for types only)
 import makeCallableClass = require('../util/makeCallableClass');
 import standardResolutionProcedure = require('./standardResolutionProcedure');
 import storage = require('../storage/storage');
 export = SlowPromiseResolve;
 
 
-// TODO: temp testing...
-type SlowPromiseResolve  = types.SlowPromiseResolve;
+var SlowPromiseResolve: {
+    new(promise: SlowPromise): SlowPromiseResolve;
+    (promise: SlowPromise): SlowPromiseResolve;
+}
 
 
-/**
- * Create a SlowPromiseResolve callable instance.
- * It may be called to resolve the given promise with a value.
- */
-var SlowPromiseResolve = <types.SlowPromiseResolveStatic> makeCallableClass({
+interface SlowPromiseResolve {
+    (value?: any): void;
+    $slow: {
+        type: SlowType;
+        id?: string;
+        promise: SlowPromise;
+    };
+}
+
+
+SlowPromiseResolve = <any> makeCallableClass({
 
     // TODO: doc...
-    constructor: function (promise: types.SlowPromise) {
+    constructor: function (promise: SlowPromise) {
 
         // Add slow metadata to the resolve function.
         this.$slow = { type: SlowType.SlowPromiseResolve, promise };
@@ -30,7 +38,7 @@ var SlowPromiseResolve = <types.SlowPromiseResolveStatic> makeCallableClass({
     call: function (value?: any) {
 
         // As per spec, do nothing if promise's fate is already resolved.
-        var promise: types.SlowPromise = this.$slow.promise;
+        var promise: SlowPromise = this.$slow.promise;
         if (promise.$slow.isFateResolved) return;
 
         // Indicate the promise's fate is now resolved.

@@ -1,5 +1,5 @@
 ﻿import _ = require('lodash');
-import types = require('./types');
+import SlowPromise = require('./slowPromise'); // NB: elided circular ref (for types only)
 export = standardResolutionProcedure;
 
 
@@ -7,7 +7,7 @@ export = standardResolutionProcedure;
  * This is a transliteration of the [[Resolve]](promise, x) pseudocode in the Promises A+ Spec.
  * See: https://github.com/promises-aplus/promises-spec
  */
-function standardResolutionProcedure(p: types.SlowPromise, x: any) {
+function standardResolutionProcedure(p: SlowPromise, x: any) {
     if (x === p) {
         p._reject(new TypeError(`slownode: cannot resolve promise with itself`));
     }
