@@ -1,5 +1,5 @@
 ﻿import _ = require('lodash');
-import types = require('types');
+import types = require('./types');
 export = standardResolutionProcedure;
 
 

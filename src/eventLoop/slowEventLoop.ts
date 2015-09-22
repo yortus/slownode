@@ -1,10 +1,47 @@
-﻿import types = require('types');
-import Timer = types.EventLoop.Timer;
-import Entry = types.EventLoop.Entry;
-import TimerEvent = types.EventLoop.TimerEvent;
-import EventType = types.EventLoop.EventType;
-import SlowType = require('../slowType');
+﻿import SlowType = require('../slowType');
 import storage = require('../storage/storage');
+
+
+// TODO: temp testing...
+interface EventLoop {
+    $slow: {
+        type: SlowType;
+        id?: string;
+        entries: Entry[];
+    };
+}
+
+type Timer = number;
+
+// TODO: doc...
+interface Entry {
+    id: number;
+    event: Event;
+    callback: Function;
+    arguments: any[];
+}
+
+// TODO: doc...
+interface Event {
+    type: EventType;
+    [other: string]: any;
+}
+
+// TODO: doc...
+const enum EventType {
+    TimerEvent
+}
+
+// TODO: doc...
+interface TimerEvent extends Event {
+
+    /** UNIX timestamp */
+    due: number;
+}
+
+
+
+
 
 
 // TODO: doc...

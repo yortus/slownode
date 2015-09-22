@@ -1,5 +1,6 @@
 var assert = require('assert');
 var _ = require('lodash');
+var types = require('./types');
 var SlowPromiseResolve = require('./slowPromiseResolve');
 var SlowPromiseReject = require('./slowPromiseReject');
 var standardResolutionProcedure = require('./standardResolutionProcedure');
@@ -50,6 +51,7 @@ var SlowPromise = (function () {
         return promise;
     };
     /** Returns an object containing a new SlowPromise instance, along with a resolve function and a reject function to control its fate. */
+    // TODO: improve typing...
     SlowPromise.deferred = function () {
         var promise = new SlowPromise(null);
         var resolve = new SlowPromiseResolve(promise);

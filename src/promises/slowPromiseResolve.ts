@@ -1,4 +1,4 @@
-import types = require('types');
+import types = require('./types');
 import SlowType = require('../slowType');
 import makeCallableClass = require('../util/makeCallableClass');
 import standardResolutionProcedure = require('./standardResolutionProcedure');
@@ -6,12 +6,15 @@ import storage = require('../storage/storage');
 export = SlowPromiseResolve;
 
 
+// TODO: temp testing...
+type SlowPromiseResolve  = types.SlowPromiseResolve;
+
 
 /**
  * Create a SlowPromiseResolve callable instance.
  * It may be called to resolve the given promise with a value.
  */
-var SlowPromiseResolve = <{ new(promise: types.SlowPromise): types.SlowPromise.Resolve; }> makeCallableClass({
+var SlowPromiseResolve = <types.SlowPromiseResolveStatic> makeCallableClass({
 
     // TODO: doc...
     constructor: function (promise: types.SlowPromise) {

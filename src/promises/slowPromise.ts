@@ -1,7 +1,6 @@
 import assert = require('assert');
 import _ = require('lodash');
-import types = require('types');
-import State = types.SlowPromise.State;
+import types = require('./types');
 import SlowType = require('../slowType');
 import SlowObject = require('../slowObject');
 import SlowPromiseResolve = require('./slowPromiseResolve');
@@ -13,7 +12,7 @@ export = SlowPromise;
 
 
 /** Promises A+ compliant Promise implementation with persistence. */
-class SlowPromise implements types.SlowPromise {
+class SlowPromise {
 
     /** Constructs a SlowPromise instance. */
     constructor(resolver: (resolve: (value?: any) => void, reject: (reason?: any) => void) => void) {
@@ -52,6 +51,7 @@ class SlowPromise implements types.SlowPromise {
     }
 
     /** Returns an object containing a new SlowPromise instance, along with a resolve function and a reject function to control its fate. */
+    // TODO: improve typing...
     static deferred(): types.SlowPromise.Deferred {
         var promise = new SlowPromise(null);
         var resolve = new SlowPromiseResolve(promise);
@@ -87,7 +87,7 @@ class SlowPromise implements types.SlowPromise {
         storage.updated(this);
 
         // If the promise is already settled, invoke the given handlers now (asynchronously).
-        if (this.$slow.state !== State.Pending) process.nextTick(() => processAllHandlers(this));
+        if (this.$slow.state !== types.SlowPromise.State.Pending) process.nextTick(() => processAllHandlers(this));
 
         // Return the chained promise.
         return deferred2.promise;
@@ -106,7 +106,7 @@ class SlowPromise implements types.SlowPromise {
     $slow = {
         type: SlowType.SlowPromise,
         isFateResolved: false,
-        state: State.Pending,
+        state: types.SlowPromise.State.Pending,
         settledValue: void 0,
         handlers: <Array<{
             onFulfilled: (value) => any,
@@ -118,8 +118,8 @@ class SlowPromise implements types.SlowPromise {
     _fulfil(value: any) {
 
         // Update the promise state.
-        if (this.$slow.state !== State.Pending) return;
-        [this.$slow.state, this.$slow.settledValue] = [State.Fulfilled, value];
+        if (this.$slow.state !== types.SlowPromise.State.Pending) return;
+        [this.$slow.state, this.$slow.settledValue] = [types.SlowPromise.State.Fulfilled, value];
 
         // Synchronise with the persistent object graph.
         storage.updated(this);
@@ -131,8 +131,8 @@ class SlowPromise implements types.SlowPromise {
     _reject(reason: any) {
 
         // Update the promise state.
-        if (this.$slow.state !== State.Pending) return;
-        [this.$slow.state, this.$slow.settledValue] = [State.Rejected, reason];
+        if (this.$slow.state !== types.SlowPromise.State.Pending) return;
+        [this.$slow.state, this.$slow.settledValue] = [types.SlowPromise.State.Rejected, reason];
 
         // Synchronise with the persistent object graph.
         storage.updated(this);
@@ -158,7 +158,7 @@ function processAllHandlers(p: SlowPromise) {
         storage.updated(p);
 
         // Fulfilled case.
-        if (p.$slow.state === State.Fulfilled) {
+        if (p.$slow.state === types.SlowPromise.State.Fulfilled) {
             if (_.isFunction(handler.onFulfilled)) {
                 try {
                     var ret = handler.onFulfilled.apply(void 0, [p.$slow.settledValue]);
@@ -174,7 +174,7 @@ function processAllHandlers(p: SlowPromise) {
         }
 
         // Rejected case.
-        else if (p.$slow.state === State.Rejected) {
+        else if (p.$slow.state === types.SlowPromise.State.Rejected) {
             if (_.isFunction(handler.onRejected)) {
                 try {
                     var ret = handler.onRejected.apply(void 0, [p.$slow.settledValue]);

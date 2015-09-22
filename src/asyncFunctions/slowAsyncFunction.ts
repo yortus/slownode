@@ -30,7 +30,7 @@ interface SlowAsyncFunction {
 
 
 /** Creates a slow async function instance. */
-var SlowAsyncFunction: types.SlowAsyncFunctionStatic = <any> makeCallableClass({
+var SlowAsyncFunction: SlowAsyncFunctionStatic = <any> makeCallableClass({
 
     constructor: function (bodyFunc: Function) {
 
@@ -63,7 +63,7 @@ var SlowAsyncFunction: types.SlowAsyncFunctionStatic = <any> makeCallableClass({
         storage.created(this);
     },
 
-    call: function (...args: any[]): types.SlowPromise {
+    call: function (...args: any[]): SlowPromise {
 
         // Create a new SlowPromise to represent the eventual result of the slow async operation.
         var deferred = SlowPromise.deferred();
@@ -79,7 +79,7 @@ var SlowAsyncFunction: types.SlowAsyncFunctionStatic = <any> makeCallableClass({
 
 
 /** Supports memoization of SlowAsyncFunction instances, which are immutable and expensive to compute. */
-var asyncFunctionCache: { [afid: string]: types.SlowAsyncFunction; } = {};
+var asyncFunctionCache: { [afid: string]: SlowAsyncFunction; } = {};
 
 
 // Tell storage how to create a SlowAsyncFunction instance.

@@ -1,15 +1,19 @@
-import types = require('types');
+import types = require('./types');
 import SlowType = require('../slowType');
 import makeCallableClass = require('../util/makeCallableClass');
 import storage = require('../storage/storage');
 export = SlowPromiseReject;
 
 
+// TODO: temp testing...
+type SlowPromiseReject  = types.SlowPromiseReject;
+
+
 /**
  * Create a SlowPromiseReject callable instance.
  * It may be called to reject the given promise with a reason.
  */
-var SlowPromiseReject = <{ new(promise: types.SlowPromise): types.SlowPromise.Reject; }> makeCallableClass({
+var SlowPromiseReject = <types.SlowPromiseRejectStatic> makeCallableClass({
 
     // TODO: doc...
     constructor: function (promise: types.SlowPromise) {

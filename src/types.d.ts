@@ -7,63 +7,6 @@
     // - They are put here because (1) it forms a shared reference for internal code and (2) the public .d.ts should not contain provate stuff
 
 
-    //interface SlowClosureStatic extends slow.SlowClosureStatic {
-    //    new(env: { [name: string]: any; }, fn: Function): SlowClosure;
-    //    (env: { [name: string]: any; }, fn: Function): SlowClosure;
-    //}
-
-    //interface SlowClosure extends slow.SlowClosure {
-    //    function: Function;
-    //    $slow: {
-    //        type: SlowType;
-    //        id?: string;
-    //        functionSource: string;
-    //        environment: { [name: string]: any; };
-    //    }
-    //}
-
-
-
-
-
-    interface EventLoop {
-        $slow: {
-            type: SlowType;
-            id?: string;
-            entries: EventLoop.Entry[];
-        };
-    }
-
-    namespace EventLoop {
-
-        type Timer = slow.EventLoop.Timer;
-
-        // TODO: doc...
-        interface Entry {
-            id: number;
-            event: Event;
-            callback: Function;
-            arguments: any[];
-        }
-
-        // TODO: doc...
-        interface Event {
-            type: EventType;
-            [other: string]: any;
-        }
-
-        // TODO: doc...
-        const enum EventType {
-            TimerEvent
-        }
-
-        // TODO: doc...
-        interface TimerEvent extends Event {
-
-            /** UNIX timestamp */
-            due: number;
-        }
-    }
 
 
 

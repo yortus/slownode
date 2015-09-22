@@ -1,6 +1,8 @@
 ﻿import assert = require('assert');
 import path = require('path');
 import types = require('types');
+import SlowPromiseResolve = require('../promises/slowPromiseResolve');
+import SlowPromiseReject = require('../promises/slowPromiseReject');
 import SlowType = require('../slowType');
 import SteppableObject = require('../functions/steppableObject');
 import SlowClosure = require('../functions/slowClosure');
@@ -12,7 +14,7 @@ export = SlowAsyncFunctionActivation;
 class SlowAsyncFunctionActivation extends SteppableObject implements types.SlowAsyncFunction.Activation {
 
     /** Create a new SlowAsyncFunctionActivation instance. */
-    constructor(asyncFunction: types.SlowAsyncFunction, resolve: types.SlowPromise.Resolve, reject: types.SlowPromise.Reject, args: any[]) {
+    constructor(asyncFunction: types.SlowAsyncFunction, resolve: SlowPromiseResolve, reject: SlowPromiseReject, args: any[]) {
         super(asyncFunction.stateMachine);
         this.state = this.$slow.state = { local: { arguments: args } };
         this.$slow.asyncFunction = asyncFunction;

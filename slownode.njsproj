@@ -49,6 +49,7 @@
     <TypeScriptCompile Include="src\promises\slowPromiseResolve.ts" />
     <TypeScriptCompile Include="src\promises\slowPromiseReject.ts" />
     <TypeScriptCompile Include="src\promises\standardResolutionProcedure.ts" />
+    <TypeScriptCompile Include="src\promises\types.ts" />
     <TypeScriptCompile Include="src\slowObject.ts" />
     <TypeScriptCompile Include="src\slowType.ts" />
     <TypeScriptCompile Include="src\storage\rehydrateSlowObject.ts" />
