@@ -1,5 +1,5 @@
 import types = require('types');
-import SlowType = types.SlowObject.Type;
+import SlowType = require('../slowType');
 import makeCallableClass = require('../util/makeCallableClass');
 import standardResolutionProcedure = require('./standardResolutionProcedure');
 import storage = require('../storage/storage');

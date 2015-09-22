@@ -3,7 +3,7 @@ import Timer = types.EventLoop.Timer;
 import Entry = types.EventLoop.Entry;
 import TimerEvent = types.EventLoop.TimerEvent;
 import EventType = types.EventLoop.EventType;
-import SlowType = types.SlowObject.Type;
+import SlowType = require('../slowType');
 import storage = require('../storage/storage');
 
 

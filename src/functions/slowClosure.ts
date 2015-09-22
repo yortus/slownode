@@ -1,6 +1,6 @@
 ﻿import _ = require('lodash');
 import types = require('types');
-import SlowType = types.SlowObject.Type;
+import SlowType = require('../slowType');
 import makeCallableClass = require('../util/makeCallableClass');
 import isRelocatableFunction = require('./isRelocatableFunction');
 import storage = require('../storage/storage');

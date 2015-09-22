@@ -15,7 +15,7 @@
     interface SlowClosure extends slow.SlowClosure {
         function: Function;
         $slow: {
-            type: SlowObject.Type;
+            type: SlowType;
             id?: string;
             functionSource: string;
             environment: { [name: string]: any; };
@@ -28,7 +28,7 @@
 
     interface EventLoop {
         $slow: {
-            type: SlowObject.Type;
+            type: SlowType;
             id?: string;
             entries: EventLoop.Entry[];
         };
@@ -78,7 +78,7 @@
         (...args): SlowPromise;
         stateMachine: Steppable.StateMachine;
         $slow: {
-            type: SlowObject.Type;
+            type: SlowType;
             id?: string;
             stateMachineSource: string;
             originalSource: string; // TODO: not needed in operation, but preserve for future debugging/sourcemap needs?
@@ -89,7 +89,7 @@
 
         interface Activation extends SteppableObject {
             $slow: {
-                type: SlowObject.Type;
+                type: SlowType;
                 id?: string;
 
                 /** The body of code being executed by this activation. */
@@ -129,7 +129,7 @@
 
     interface SlowPromise extends slow.SlowPromise<any> {
         $slow: {
-            type: SlowObject.Type;
+            type: SlowType;
             id?: string;
             isFateResolved: boolean;
             state: SlowPromise.State;
@@ -150,7 +150,7 @@
 
         interface Resolve extends slow.SlowPromise.Resolve<any> {
             $slow: {
-                type: SlowObject.Type;
+                type: SlowType;
                 id?: string;
                 promise: SlowPromise;
             };
@@ -158,7 +158,7 @@
 
         interface Reject extends slow.SlowPromise.Reject {
             $slow: {
-                type: SlowObject.Type;
+                type: SlowType;
                 id?: string;
                 promise: SlowPromise;
             };
@@ -232,30 +232,32 @@
     // TODO: ...
     interface SlowObject {
         $slow: {
-            type: SlowObject.Type;
+            type: number;
             id?: string;
             [other: string]: any;
         }
         [other: string]: any;
     }
 
-    namespace SlowObject {
+    type SlowType = number;
 
-        const enum Type {
-            SlowEventLoop = 1,
-            SlowPromise = 10,
-            SlowPromiseResolve = 11,
-            SlowPromiseReject = 12,
-            SlowAsyncFunction = 20,
-            SlowAsyncFunctionActivation = 30,
-            SlowClosure = 50,
-            SlowWeakRef = 60
-        }
+    //namespace SlowObject {
 
-        interface Factories {
-            [type: number]: ($slow: { type: Type, id?: string }) => SlowObject;
-        }
-    }
+    //    const enum Type {
+    //        SlowEventLoop = 1,
+    //        SlowPromise = 10,
+    //        SlowPromiseResolve = 11,
+    //        SlowPromiseReject = 12,
+    //        SlowAsyncFunction = 20,
+    //        SlowAsyncFunctionActivation = 30,
+    //        SlowClosure = 50,
+    //        SlowWeakRef = 60
+    //    }
+
+    //    interface Factories {
+    //        [type: number]: ($slow: { type: Type, id?: string }) => SlowObject;
+    //    }
+    //}
 }
 
 

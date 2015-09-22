@@ -1,14 +1,19 @@
 ﻿import assert = require('assert');
 import _ = require('lodash');
-import types = require('types');
+import SlowType = require('../slowType');
+import SlowObject = require('../slowObject');
 export = rehydrateSlowObject;
+
+
+// TODO: temp testing...
+type SlowObjectFactories = { [type: number]: ($slow: { type: SlowType, id?: string }) => SlowObject; };
 
 
 /**
  * Recursively converts the given dehydrated slow object back to a normal slow object.
  * Throws an error if any part of the value cannot be converted.
  */
-function rehydrateSlowObject(dehydrated: types.SlowObject, allSlowObjects: {[id: string]: types.SlowObject}, factories: types.SlowObject.Factories): types.SlowObject {
+function rehydrateSlowObject(dehydrated: SlowObject, allSlowObjects: {[id: string]: SlowObject}, factories: SlowObjectFactories): SlowObject {
 
     // Rehydrate all the constituent parts in-place.
     var $slow = dehydrated.$slow;
@@ -26,7 +31,7 @@ function rehydrateSlowObject(dehydrated: types.SlowObject, allSlowObjects: {[id:
  * Recursively converts the given json-safe value back to a normal value.
  * Throws an error if any part of the value cannot be converted.
  */
-function rehydrateInPlace(val: any, key: any, obj: any, allSlowObjects: {[id: string]: types.SlowObject}) {
+function rehydrateInPlace(val: any, key: any, obj: any, allSlowObjects: {[id: string]: SlowObject}) {
 
     // Some primitives map to themselves. Return them as-is.
     if (_.isString(val) || _.isNumber(val) || _.isBoolean(val) || _.isNull(val)) {

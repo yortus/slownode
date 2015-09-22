@@ -1,7 +1,7 @@
 ﻿import assert = require('assert');
 import _ = require('lodash');
 import types = require('types');
-import SlowType = types.SlowObject.Type;
+import SlowType = require('../slowType');
 import makeCallableClass = require('../util/makeCallableClass');
 import shasum = require('../util/shasum');
 import SteppableFunction = require('../functions/steppableFunction');
@@ -10,6 +10,23 @@ import SlowAsyncFunctionActivation = require('./slowAsyncFunctionActivation');
 import storage = require('../storage/storage');
 export = SlowAsyncFunction;
 
+
+// TODO: temp testing...
+interface SlowAsyncFunctionStatic {
+    (bodyFunc: Function): SlowAsyncFunction;
+    new(bodyFunc: Function): SlowAsyncFunction;
+}
+
+interface SlowAsyncFunction {
+    (...args): SlowPromise;
+    stateMachine: types.Steppable.StateMachine;
+    $slow: {
+        type: SlowType;
+        id?: string;
+        stateMachineSource: string;
+        originalSource: string; // TODO: not needed in operation, but preserve for future debugging/sourcemap needs?
+    };
+}
 
 
 /** Creates a slow async function instance. */

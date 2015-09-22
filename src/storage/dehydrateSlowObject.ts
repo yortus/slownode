@@ -1,6 +1,6 @@
 ﻿import assert = require('assert');
 import _ = require('lodash');
-import types = require('types');
+import SlowObject = require('../slowObject');
 import isRelocatableFunction = require('../functions/isRelocatableFunction');
 export = dehydrateSlowObject;
 
@@ -9,7 +9,7 @@ export = dehydrateSlowObject;
  * Recursively converts the given slow object into an object that can be safely converted to JSON.
  * Throws an error if any part of the value cannot be converted.
  */
-function dehydrateSlowObject(slowObject: types.SlowObject, allSlowObjects: Set<types.SlowObject>): types.SlowObject {
+function dehydrateSlowObject(slowObject: SlowObject, allSlowObjects: Set<SlowObject>): SlowObject {
     assert(allSlowObjects.has(slowObject));
     return <any> { $slow: _.mapValues(slowObject.$slow, v => dehydrate(v, allSlowObjects)) };
 }
@@ -19,7 +19,7 @@ function dehydrateSlowObject(slowObject: types.SlowObject, allSlowObjects: Set<t
  * Recursively converts the given value into an object that can be safely converted to JSON.
  * Throws an error if any part of the value cannot be converted.
  */
-function dehydrate(value: any, allSlowObjects: Set<types.SlowObject>) {
+function dehydrate(value: any, allSlowObjects: Set<SlowObject>) {
 
     // Some primitives map to themselves. Return them as-is.
     if (_.isString(value) || _.isNumber(value) || _.isBoolean(value) || _.isNull(value)) {

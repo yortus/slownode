@@ -3,11 +3,15 @@ import fs = require('fs');
 import path = require('path');
 import _ = require('lodash');
 import types = require('types');
-import SlowType = types.SlowObject.Type;
-import SlowObject = types.SlowObject;
+import SlowType = require('../slowType');
+import SlowObject = require('../slowObject');
 import storageLocation = require('./storageLocation');
 import dehydrateSlowObject = require('./dehydrateSlowObject');
 import rehydrateSlowObject = require('./rehydrateSlowObject');
+
+
+// TODO: temp testing...
+type SlowObjectFactories = { [type: number]: ($slow: { type: SlowType, id?: string }) => SlowObject; };
 
 
 interface StorageAPI {
@@ -59,7 +63,7 @@ var updatedTrackedObjects = new Set<SlowObject>();
 var deletedTrackedObjects = new Set<SlowObject>();
 var nextId = 0;
 var isLoadingState = false;
-var slowObjectFactories: SlowObject.Factories = {};
+var slowObjectFactories: SlowObjectFactories = {};
 
 
 export function saveChanges(callback?: (err?) => void) {
