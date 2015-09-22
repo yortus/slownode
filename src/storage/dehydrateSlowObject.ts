@@ -1,7 +1,7 @@
 ﻿import assert = require('assert');
 import _ = require('lodash');
 import SlowObject = require('../slowObject');
-import isRelocatableFunction = require('../functions/isRelocatableFunction');
+import isRelocatableFunction = require('../util/isRelocatableFunction');
 export = dehydrateSlowObject;
 
 

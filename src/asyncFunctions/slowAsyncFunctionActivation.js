@@ -4,8 +4,8 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var assert = require('assert');
-var SteppableObject = require('../functions/steppableObject');
-var SlowClosure = require('../functions/slowClosure');
+var SteppableObject = require('../steppables/steppableObject');
+var SlowClosure = require('../slowClosure');
 var storage = require('../storage/storage');
 /** A SlowAsyncFunctionActivation is a SteppableObject with additional properties. */
 var SlowAsyncFunctionActivation = (function (_super) {

@@ -1,9 +1,9 @@
 var assert = require('assert');
 var esprima = require('esprima');
-var isRelocatable = require('./astOperations/funcExpr/isRelocatable');
+var isRelocatable = require('./estree/funcExpr/isRelocatable');
 // TODO: memoize results (use shasum and cache)
 /**
- * Determines whether the function is relocatable. A relocatable function is one whose
+ * Determines whether the given function is relocatable. A relocatable function is one whose
  * meaning remains the same after being converted to a string (via toString()) then converted
  * back to a function (via eval()). Constructs that prevent a function being relocatable are:
  * - references to free variables other than globals, `safeIds`, __dirname, __filename, or require.

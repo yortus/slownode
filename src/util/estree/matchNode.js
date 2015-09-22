@@ -3,7 +3,7 @@ function matchNode(node, cases) {
     var func = cases[node.type] || cases.Otherwise;
     if (func)
         return func(node);
-    throw new Error("match: no handler for node type '" + node.type + "'");
+    throw new Error("matchNode: no handler for node type '" + node.type + "'");
 }
 module.exports = matchNode;
 //# sourceMappingURL=matchNode.js.map

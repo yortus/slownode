@@ -175,7 +175,7 @@ function traverseTree(rootNode: ESTree.Node, action: (node: ESTree.Node) => any)
         Literal: (expr) => {},
 
         Otherwise: (node) => {
-            throw new Error(`slowfunc: unsupported node type: '${node.type}'`);
+            throw new Error(`traverseTree: unsupported node type: '${node.type}'`);
         }
     });
 }

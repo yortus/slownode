@@ -1,8 +1,8 @@
 ﻿import _ = require('lodash');
-import SlowType = require('../slowType');
-import makeCallableClass = require('../util/makeCallableClass');
-import isRelocatableFunction = require('./isRelocatableFunction');
-import storage = require('../storage/storage');
+import SlowType = require('./slowType');
+import makeCallableClass = require('./util/makeCallableClass');
+import isRelocatableFunction = require('./util/isRelocatableFunction');
+import storage = require('./storage/storage');
 export = SlowClosure;
 
 

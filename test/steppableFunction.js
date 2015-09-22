@@ -1,5 +1,5 @@
 var async = require('asyncawait/async');
-var SteppableFunction = require('../src/functions/steppableFunction');
+var SteppableFunction = require('../src/steppables/steppableFunction'); // TODO: expose this through public API?
 var chai = require("chai");
 chai.use(require('chai-as-promised'));
 var expect = chai.expect;

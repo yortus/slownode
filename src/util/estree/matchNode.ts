@@ -5,7 +5,7 @@
 function matchNode<TReturn>(node: ESTree.Node, cases: PatternMatch<TReturn>) {
     var func = cases[node.type] || cases.Otherwise;
     if (func) return <TReturn> func(node);
-    throw new Error("match: no handler for node type '" + node.type + "'");
+    throw new Error("matchNode: no handler for node type '" + node.type + "'");
 }
 
 

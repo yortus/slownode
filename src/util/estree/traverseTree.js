@@ -142,7 +142,7 @@ function traverseTree(rootNode, action) {
         TemplateLiteral: function (expr) { return expr.expressions.forEach(function (expr) { return traverseTree(expr, action); }); },
         Literal: function (expr) { },
         Otherwise: function (node) {
-            throw new Error("slowfunc: unsupported node type: '" + node.type + "'");
+            throw new Error("traverseTree: unsupported node type: '" + node.type + "'");
         }
     });
 }

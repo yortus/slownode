@@ -3,12 +3,12 @@ var esprima = require('esprima');
 var escodegen = require('escodegen');
 var makeCallableClass = require('../util/makeCallableClass');
 var SteppableObject = require('./steppableObject');
-var replacePseudoYieldCallsWithYieldExpressions = require('./astOperations/funcExpr/replacePseudoYieldCallsWithYieldExpressions');
-var replacePseudoConstCallsWithConstDeclarations = require('./astOperations/funcExpr/replacePseudoConstCallsWithConstDeclarations');
-var ensureNodesAreLegalForSteppableBody = require('./astOperations/funcExpr/ensureNodesAreLegalForSteppableBody');
-var ensureIdentifiersAreLegalForSteppableBody = require('./astOperations/funcExpr/ensureIdentifiersAreLegalForSteppableBody');
-var ensureMutatingOperationsAreLegalForSteppableBody = require('./astOperations/funcExpr/ensureMutatingOperationsAreLegalForSteppableBody');
-var transformToStateMachine = require('./astOperations/funcExpr/transformToStateMachine');
+var replacePseudoYieldCallsWithYieldExpressions = require('../util/estree/funcExpr/replacePseudoYieldCallsWithYieldExpressions');
+var replacePseudoConstCallsWithConstDeclarations = require('../util/estree/funcExpr/replacePseudoConstCallsWithConstDeclarations');
+var ensureNodesAreLegalForSteppableBody = require('../util/estree/funcExpr/ensureNodesAreLegalForSteppableBody');
+var ensureIdentifiersAreLegalForSteppableBody = require('../util/estree/funcExpr/ensureIdentifiersAreLegalForSteppableBody');
+var ensureMutatingOperationsAreLegalForSteppableBody = require('../util/estree/funcExpr/ensureMutatingOperationsAreLegalForSteppableBody');
+var transformToStateMachine = require('../util/estree/funcExpr/transformToStateMachine');
 // TODO: memoize results (use shasum and cache)
 // TODO: another valid 'local' identifier is the function's own name
 // TODO: disallow id refs to: '__dirname', '__filename', 'module', 'exports'

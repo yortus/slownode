@@ -1,5 +1,5 @@
 var makeWeakRef = require('./makeWeakRef');
-var SlowClosure = require('./functions/slowClosure');
+var SlowClosure = require('./slowClosure');
 var slowEventLoop = require('./eventLoop/slowEventLoop');
 var SlowAsyncFunction = require('./asyncFunctions/slowAsyncFunction');
 var SlowPromise = require('./promises/slowPromise');

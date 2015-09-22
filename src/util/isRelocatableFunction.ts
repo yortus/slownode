@@ -1,8 +1,6 @@
 ﻿import assert = require('assert');
-import _ = require('lodash');
 import esprima = require('esprima');
-import escodegen = require('escodegen');
-import isRelocatable = require('./astOperations/funcExpr/isRelocatable');
+import isRelocatable = require('./estree/funcExpr/isRelocatable');
 export = isRelocatableFunction;
 
 
@@ -10,7 +8,7 @@ export = isRelocatableFunction;
 
 
 /**
- * Determines whether the function is relocatable. A relocatable function is one whose
+ * Determines whether the given function is relocatable. A relocatable function is one whose
  * meaning remains the same after being converted to a string (via toString()) then converted
  * back to a function (via eval()). Constructs that prevent a function being relocatable are:
  * - references to free variables other than globals, `safeIds`, __dirname, __filename, or require.

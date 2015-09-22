@@ -1,6 +1,6 @@
 ﻿import API = require('slownode');
 import makeWeakRef = require('./makeWeakRef');
-import SlowClosure = require('./functions/slowClosure');
+import SlowClosure = require('./slowClosure');
 import slowEventLoop = require('./eventLoop/slowEventLoop');
 import SlowAsyncFunction = require('./asyncFunctions/slowAsyncFunction');
 import SlowPromise = require('./promises/slowPromise');

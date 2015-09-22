@@ -1,18 +1,11 @@
 ﻿
 
-// TODO: move below ambients elsewhere...
-
-
-
-
+// Augment ESTree.FunctionExpression with cached identifier metadata.
 declare module ESTree {
     export interface FunctionExpression {
         _ids: ClassifiedIdentifiers;
     }
 }
-
-
-
 
 
 /** All identifiers referenced in a function body, grouped into categories. */

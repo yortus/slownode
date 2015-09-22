@@ -1,6 +1,6 @@
 var assert = require('assert');
 var _ = require('lodash');
-var isRelocatableFunction = require('../functions/isRelocatableFunction');
+var isRelocatableFunction = require('../util/isRelocatableFunction');
 /**
  * Recursively converts the given slow object into an object that can be safely converted to JSON.
  * Throws an error if any part of the value cannot be converted.
