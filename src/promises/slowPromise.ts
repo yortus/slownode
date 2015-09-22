@@ -8,138 +8,136 @@ import SlowPromiseReject = require('./slowPromiseReject');
 import standardResolutionProcedure = require('./standardResolutionProcedure');
 import slowEventLoop = require('../eventLoop/slowEventLoop');
 import storage = require('../storage/storage');
+export = SlowPromise;
 
 
-export function createClass(log: types.SlowLog) {
+/** Promises A+ compliant Promise implementation with persistence. */
+class SlowPromise implements types.SlowPromise {
 
-    /** Promises A+ compliant Promise implementation with persistence. */
-    return class SlowPromise implements types.SlowPromise {
+    /** Constructs a SlowPromise instance. */
+    constructor(resolver: (resolve: (value?: any) => void, reject: (reason?: any) => void) => void) {
 
-        /** Constructs a SlowPromise instance. */
-        constructor(resolver: (resolve: (value?: any) => void, reject: (reason?: any) => void) => void) {
+        // Validate arguments.
+        assert(!resolver || _.isFunction(resolver));
 
-            // Validate arguments.
-            assert(!resolver || _.isFunction(resolver));
+        // Synchronise with the persistent object graph.
+        storage.created(this);
 
-            // Synchronise with the persistent object graph.
-            storage.created(this);
+        // If no resolver was given, just return now. This is an internal use of the constructor.
+        if (!resolver) return this;
 
-            // If no resolver was given, just return now. This is an internal use of the constructor.
-            if (!resolver) return this;
+        // Construct resolve and reject functions to be passed to the resolver.
+        var resolve = new SlowPromiseResolve(this);
+        var reject = new SlowPromiseReject(this);
 
-            // Construct resolve and reject functions to be passed to the resolver.
-            var resolve = new SlowPromiseResolve(this);
-            var reject = new SlowPromiseReject(this);
+        // Call the given resolver. This kicks off the asynchronous operation whose outcome the Promise represents.
+        try { resolver(resolve, reject); } catch (ex) { reject(ex); }
+    }
 
-            // Call the given resolver. This kicks off the asynchronous operation whose outcome the Promise represents.
-            try { resolver(resolve, reject); } catch (ex) { reject(ex); }
-        }
+    /** Returns a new SlowPromise instance that is already resolved with the given value. */
+    static resolved(value?: any) {
+        var promise = new SlowPromise(null);
+        var resolve = new SlowPromiseResolve(promise);
+        resolve(value);
+        return promise;
+    }
 
-        /** Returns a new SlowPromise instance that is already resolved with the given value. */
-        static resolved(value?: any) {
-            var promise = new SlowPromise(null);
-            var resolve = new SlowPromiseResolve(promise);
-            resolve(value);
-            return promise;
-        }
+    /** Returns a new SlowPromise instance that is already rejected with the given reason. */
+    static rejected(reason: any) {
+        var promise = new SlowPromise(null);
+        var reject = new SlowPromiseReject(promise);
+        reject(reason);
+        return promise;
+    }
 
-        /** Returns a new SlowPromise instance that is already rejected with the given reason. */
-        static rejected(reason: any) {
-            var promise = new SlowPromise(null);
-            var reject = new SlowPromiseReject(promise);
-            reject(reason);
-            return promise;
-        }
-
-        /** Returns an object containing a new SlowPromise instance, along with a resolve function and a reject function to control its fate. */
-        static deferred(): types.SlowPromise.Deferred {
-            var promise = new SlowPromise(null);
-            var resolve = new SlowPromiseResolve(promise);
-            var reject = new SlowPromiseReject(promise);
-            return { promise, resolve, reject };
-        }
+    /** Returns an object containing a new SlowPromise instance, along with a resolve function and a reject function to control its fate. */
+    static deferred(): types.SlowPromise.Deferred {
+        var promise = new SlowPromise(null);
+        var resolve = new SlowPromiseResolve(promise);
+        var reject = new SlowPromiseReject(promise);
+        return { promise, resolve, reject };
+    }
 
 
-        /** Returns a new SlowPromise instance that resolves after `ms` milliseconds. */
-        static delay(ms: number) {
-            return new SlowPromise(resolve => {
-                slowEventLoop.setTimeout(resolve => resolve(), ms, resolve);
-            });
-        }
+    /** Returns a new SlowPromise instance that resolves after `ms` milliseconds. */
+    static delay(ms: number) {
+        return new SlowPromise(resolve => {
+            slowEventLoop.setTimeout(resolve => resolve(), ms, resolve);
+        });
+    }
 
 
-	    /**
-	     * onFulfilled is called when the promise resolves. onRejected is called when the promise rejects.
-	     * Both callbacks have a single parameter , the fulfillment value or rejection reason.
-	     * "then" returns a new promise equivalent to the value you return from onFulfilled/onRejected after being passed through Promise.resolve.
-	     * If an error is thrown in the callback, the returned promise rejects with that error.
-	     *
-	     * @param onFulfilled called when/if "promise" resolves
-	     * @param onRejected called when/if "promise" rejects
-	     */
-        then(onFulfilled?: (value) => any, onRejected?: (error) => any) {
+	/**
+	    * onFulfilled is called when the promise resolves. onRejected is called when the promise rejects.
+	    * Both callbacks have a single parameter , the fulfillment value or rejection reason.
+	    * "then" returns a new promise equivalent to the value you return from onFulfilled/onRejected after being passed through Promise.resolve.
+	    * If an error is thrown in the callback, the returned promise rejects with that error.
+	    *
+	    * @param onFulfilled called when/if "promise" resolves
+	    * @param onRejected called when/if "promise" rejects
+	    */
+    then(onFulfilled?: (value) => any, onRejected?: (error) => any) {
 
-            // Create the new promise to be returned by this .then() call.
-            var deferred2 = SlowPromise.deferred();
-            this.$slow.handlers.push({ onFulfilled, onRejected, deferred2 });
+        // Create the new promise to be returned by this .then() call.
+        var deferred2 = SlowPromise.deferred();
+        this.$slow.handlers.push({ onFulfilled, onRejected, deferred2 });
 
-            // Synchronise with the persistent object graph.
-            storage.updated(this);
+        // Synchronise with the persistent object graph.
+        storage.updated(this);
 
-            // If the promise is already settled, invoke the given handlers now (asynchronously).
-            if (this.$slow.state !== State.Pending) process.nextTick(() => processAllHandlers(this));
+        // If the promise is already settled, invoke the given handlers now (asynchronously).
+        if (this.$slow.state !== State.Pending) process.nextTick(() => processAllHandlers(this));
 
-            // Return the chained promise.
-            return deferred2.promise;
-        }
+        // Return the chained promise.
+        return deferred2.promise;
+    }
 
-        /**
-         * Sugar for promise.then(undefined, onRejected)
-         *
-         * @param onRejected called when/if "promise" rejects
-         */
-        catch(onRejected?: (error) => any) {
-            return this.then(void 0, onRejected);
-        }
+    /**
+        * Sugar for promise.then(undefined, onRejected)
+        *
+        * @param onRejected called when/if "promise" rejects
+        */
+    catch(onRejected?: (error) => any) {
+        return this.then(void 0, onRejected);
+    }
 
-        // -------------- Private implementation details from here down --------------
-        $slow = {
-            type: SlowType.SlowPromise,
-            isFateResolved: false,
-            state: State.Pending,
-            settledValue: void 0,
-            handlers: <Array<{
-                onFulfilled: (value) => any,
-                onRejected: (reason) => any,
-                deferred2: types.SlowPromise.Deferred
-            }>> []
-        };
+    // -------------- Private implementation details from here down --------------
+    $slow = {
+        type: SlowType.SlowPromise,
+        isFateResolved: false,
+        state: State.Pending,
+        settledValue: void 0,
+        handlers: <Array<{
+            onFulfilled: (value) => any,
+            onRejected: (reason) => any,
+            deferred2: types.SlowPromise.Deferred
+        }>> []
+    };
 
-        _fulfil(value: any) {
+    _fulfil(value: any) {
 
-            // Update the promise state.
-            if (this.$slow.state !== State.Pending) return;
-            [this.$slow.state, this.$slow.settledValue] = [State.Fulfilled, value];
+        // Update the promise state.
+        if (this.$slow.state !== State.Pending) return;
+        [this.$slow.state, this.$slow.settledValue] = [State.Fulfilled, value];
 
-            // Synchronise with the persistent object graph.
-            storage.updated(this);
+        // Synchronise with the persistent object graph.
+        storage.updated(this);
 
-            // Invoke any already-attached handlers now (asynchronously).
-            process.nextTick(() => processAllHandlers(this));
-        }
+        // Invoke any already-attached handlers now (asynchronously).
+        process.nextTick(() => processAllHandlers(this));
+    }
 
-        _reject(reason: any) {
+    _reject(reason: any) {
 
-            // Update the promise state.
-            if (this.$slow.state !== State.Pending) return;
-            [this.$slow.state, this.$slow.settledValue] = [State.Rejected, reason];
+        // Update the promise state.
+        if (this.$slow.state !== State.Pending) return;
+        [this.$slow.state, this.$slow.settledValue] = [State.Rejected, reason];
 
-            // Synchronise with the persistent object graph.
-            storage.updated(this);
+        // Synchronise with the persistent object graph.
+        storage.updated(this);
 
-            // Invoke any already-attached handlers now (asynchronously).
-            process.nextTick(() => processAllHandlers(this));
-        }
+        // Invoke any already-attached handlers now (asynchronously).
+        process.nextTick(() => processAllHandlers(this));
     }
 }
 
