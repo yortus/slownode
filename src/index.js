@@ -4,6 +4,21 @@ var slowEventLoop = require('./eventLoop/slowEventLoop');
 var SlowAsyncFunction = require('./asyncFunctions/slowAsyncFunction');
 var SlowPromise = require('./promises/slowPromise');
 var storage = require('./storage/storage');
+// TODO: temp testing... Build the API for export...
+var api = {
+    makeWeakRef: makeWeakRef,
+    Closure: SlowClosure,
+    setTimeout: slowEventLoop.setTimeout,
+    clearTimeout: slowEventLoop.clearTimeout,
+    setImmediate: slowEventLoop.setImmediate,
+    clearImmediate: slowEventLoop.clearImmediate,
+    async: SlowAsyncFunction,
+    Promise: SlowPromise,
+    SlowPromise: SlowPromise
+};
+// TODO: temp testing...
+storage.loadState();
+module.exports = api;
 //// TODO: Experiment with node-weak and global.gc to work out when to delete persistent slow objects. Works OK!
 //// NB: must run node with the --expose-gc flag for this to work... eg node --expose-gc ./debug
 //var weak = require('weak');
@@ -39,18 +54,4 @@ var storage = require('./storage/storage');
 // TODO: temp testing... rehydrate any running async functions...
 // TODO: we can't wait for completion here, just get it started... implications? Eg sqlite serialisation needed?
 //rehydrate();
-// TODO: temp testing... Build the API for export...
-var api = {};
-api.makeWeakRef = makeWeakRef;
-api.Closure = SlowClosure;
-api.setTimeout = slowEventLoop.setTimeout;
-api.clearTimeout = slowEventLoop.clearTimeout;
-api.setImmediate = slowEventLoop.setImmediate;
-api.clearImmediate = slowEventLoop.clearImmediate;
-api.async = SlowAsyncFunction;
-api.Promise = SlowPromise;
-api.SlowPromise = SlowPromise;
-// TODO: temp testing...
-storage.loadState();
-module.exports = api;
 //# sourceMappingURL=index.js.map

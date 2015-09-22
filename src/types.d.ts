@@ -7,20 +7,20 @@
     // - They are put here because (1) it forms a shared reference for internal code and (2) the public .d.ts should not contain provate stuff
 
 
-    interface SlowClosureStatic extends slow.SlowClosureStatic {
-        new(env: { [name: string]: any; }, fn: Function): SlowClosure;
-        (env: { [name: string]: any; }, fn: Function): SlowClosure;
-    }
+    //interface SlowClosureStatic extends slow.SlowClosureStatic {
+    //    new(env: { [name: string]: any; }, fn: Function): SlowClosure;
+    //    (env: { [name: string]: any; }, fn: Function): SlowClosure;
+    //}
 
-    interface SlowClosure extends slow.SlowClosure {
-        function: Function;
-        $slow: {
-            type: SlowType;
-            id?: string;
-            functionSource: string;
-            environment: { [name: string]: any; };
-        }
-    }
+    //interface SlowClosure extends slow.SlowClosure {
+    //    function: Function;
+    //    $slow: {
+    //        type: SlowType;
+    //        id?: string;
+    //        functionSource: string;
+    //        environment: { [name: string]: any; };
+    //    }
+    //}
 
 
 

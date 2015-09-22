@@ -7,11 +7,29 @@ import storage = require('../storage/storage');
 export = SlowClosure;
 
 
+// TODO: temp testing...
+interface SlowClosureStatic {
+    new(env: { [name: string]: any; }, fn: Function): SlowClosure;
+    (env: { [name: string]: any; }, fn: Function): SlowClosure;
+}
+
+interface SlowClosure {
+    (...args): any;
+    function: Function;
+    $slow: {
+        type: SlowType;
+        id?: string;
+        functionSource: string;
+        environment: { [name: string]: any; };
+    }
+}
+
+
 /**
  * Create a SlowPromiseReject callable instance.
  * It may be called to reject the given promise with a reason.
  */
-var SlowClosure: types.SlowClosureStatic = <any> makeCallableClass({
+var SlowClosure: SlowClosureStatic = <any> makeCallableClass({
 
     // TODO: doc...
     constructor: function (env: { [name: string]: any; }, fn: Function|string) {

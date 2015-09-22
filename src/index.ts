@@ -9,6 +9,23 @@ import storage = require('./storage/storage');
 export = api;
 
 
+// TODO: temp testing... Build the API for export...
+var api = {
+    makeWeakRef: makeWeakRef,
+    Closure: SlowClosure,
+    setTimeout: slowEventLoop.setTimeout,
+    clearTimeout: slowEventLoop.clearTimeout,
+    setImmediate: slowEventLoop.setImmediate,
+    clearImmediate: slowEventLoop.clearImmediate,
+    async: SlowAsyncFunction,
+    Promise: SlowPromise,
+    SlowPromise: SlowPromise
+};
+
+// TODO: temp testing...
+storage.loadState();
+
+
 
 
 
@@ -58,20 +75,3 @@ export = api;
 // TODO: temp testing... rehydrate any running async functions...
 // TODO: we can't wait for completion here, just get it started... implications? Eg sqlite serialisation needed?
 //rehydrate();
-
-
-// TODO: temp testing... Build the API for export...
-var api: typeof API = <any> {};
-api.makeWeakRef = makeWeakRef;
-api.Closure = SlowClosure;
-api.setTimeout = slowEventLoop.setTimeout;
-api.clearTimeout = slowEventLoop.clearTimeout;
-api.setImmediate = slowEventLoop.setImmediate;
-api.clearImmediate = slowEventLoop.clearImmediate;
-api.async = <any> SlowAsyncFunction;
-api.Promise = <any> SlowPromise;
-api.SlowPromise = SlowPromise;
-
-
-// TODO: temp testing...
-storage.loadState();
