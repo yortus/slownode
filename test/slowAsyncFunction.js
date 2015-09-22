@@ -23,7 +23,7 @@ describe('The async(...) function', function () {
             //console.log('---');
         }
         slow.makeWeakRef(done);
-        fn(300, 30, test)
+        fn(30, 5, test)
             .then(slow.Closure({ done: done }, function (result) {
             console.log(result);
             if (done)

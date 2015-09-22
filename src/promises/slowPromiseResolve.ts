@@ -6,12 +6,14 @@ import storage = require('../storage/storage');
 export = SlowPromiseResolve;
 
 
+/**
+ * Creates a SlowPromiseResolve instance. It may be called with or without `new`.
+ * The SlowPromiseResolve instance may be used to resolve the given promise with a value.
+ */
 var SlowPromiseResolve: {
     new(promise: SlowPromise): SlowPromiseResolve;
     (promise: SlowPromise): SlowPromiseResolve;
 }
-
-
 interface SlowPromiseResolve {
     (value?: any): void;
     $slow: {
@@ -22,9 +24,10 @@ interface SlowPromiseResolve {
 }
 
 
+// Create a constructor function whose instances (a) are callable and (b) work with instanceof.
 SlowPromiseResolve = <any> makeCallableClass({
 
-    // TODO: doc...
+    // Create a new SlowPromiseResolve instance, tied to the given SlowPromise.
     constructor: function (promise: SlowPromise) {
 
         // Add slow metadata to the resolve function.
@@ -34,7 +37,7 @@ SlowPromiseResolve = <any> makeCallableClass({
         storage.created(this);
     },
 
-    // TODO: doc...
+    // Calling the instance resolves the promise passed to the constructor, with `value` as the resolved value.
     call: function (value?: any) {
 
         // As per spec, do nothing if promise's fate is already resolved.

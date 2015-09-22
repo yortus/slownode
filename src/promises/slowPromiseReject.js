@@ -1,15 +1,20 @@
 var makeCallableClass = require('../util/makeCallableClass');
 var storage = require('../storage/storage');
+/**
+ * Creates a SlowPromiseReject instance. It may be called with or without `new`.
+ * The SlowPromiseReject instance may be used to reject the given promise with a reason.
+ */
 var SlowPromiseReject;
+// Create a constructor function whose instances (a) are callable and (b) work with instanceof.
 SlowPromiseReject = makeCallableClass({
-    // TODO: doc...
+    // Create a new SlowPromiseReject instance, tied to the given SlowPromise.
     constructor: function (promise) {
         // Add slow metadata to the resolve function.
         this.$slow = { type: 12 /* SlowPromiseReject */, promise: promise };
         // Synchronise with the persistent object graph.
         storage.created(this);
     },
-    // TODO: doc...
+    // Calling the instance rejects the promise passed to the constructor, with `reason` as the rejection reason.
     call: function (reason) {
         // As per spec, do nothing if promise's fate is already resolved.
         var promise = this.$slow.promise;
@@ -20,7 +25,7 @@ SlowPromiseReject = makeCallableClass({
         // Synchronise with the persistent object graph.
         storage.updated(promise);
         // Finally, reject the promise using its own private _reject method.
-        promise._reject(reason);
+        promise.reject(reason);
     }
 });
 // Tell storage how to create a SlowPromiseReject instance.

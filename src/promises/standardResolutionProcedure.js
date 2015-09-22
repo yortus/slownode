@@ -5,14 +5,14 @@ var _ = require('lodash');
  */
 function standardResolutionProcedure(p, x) {
     if (x === p) {
-        p._reject(new TypeError("slownode: cannot resolve promise with itself"));
+        p.reject(new TypeError("slownode: cannot resolve promise with itself"));
     }
     else if (_.isObject(x) || _.isFunction(x)) {
         try {
             var then = x.then;
         }
         catch (ex) {
-            p._reject(ex);
+            p.reject(ex);
             return;
         }
         if (_.isFunction(then)) {
@@ -29,22 +29,22 @@ function standardResolutionProcedure(p, x) {
                         if (ignoreFurtherCalls)
                             return;
                         ignoreFurtherCalls = true;
-                        p._reject(r);
+                        p.reject(r);
                     },
                 ]);
             }
             catch (ex) {
                 if (ignoreFurtherCalls)
                     return;
-                p._reject(ex);
+                p.reject(ex);
             }
         }
         else {
-            p._fulfil(x);
+            p.fulfil(x);
         }
     }
     else {
-        p._fulfil(x);
+        p.fulfil(x);
     }
 }
 module.exports = standardResolutionProcedure;

@@ -50,7 +50,6 @@ var SlowPromise = (function () {
         return promise;
     };
     /** Returns an object containing a new SlowPromise instance, along with a resolve function and a reject function to control its fate. */
-    // TODO: improve typing...
     SlowPromise.deferred = function () {
         var promise = new SlowPromise(null);
         var resolve = new SlowPromiseResolve(promise);
@@ -64,14 +63,13 @@ var SlowPromise = (function () {
         });
     };
     /**
-        * onFulfilled is called when the promise resolves. onRejected is called when the promise rejects.
-        * Both callbacks have a single parameter , the fulfillment value or rejection reason.
-        * "then" returns a new promise equivalent to the value you return from onFulfilled/onRejected after being passed through Promise.resolve.
-        * If an error is thrown in the callback, the returned promise rejects with that error.
-        *
-        * @param onFulfilled called when/if "promise" resolves
-        * @param onRejected called when/if "promise" rejects
-        */
+     * onFulfilled is called when the promise resolves. onRejected is called when the promise rejects.
+     * Both callbacks have a single parameter , the fulfillment value or rejection reason.
+     * "then" returns a new promise equivalent to the value you return from onFulfilled/onRejected after being passed through Promise.resolve.
+     * If an error is thrown in the callback, the returned promise rejects with that error.
+     * @param onFulfilled called when/if "promise" resolves
+     * @param onRejected called when/if "promise" rejects
+     */
     SlowPromise.prototype.then = function (onFulfilled, onRejected) {
         var _this = this;
         // Create the new promise to be returned by this .then() call.
@@ -86,14 +84,13 @@ var SlowPromise = (function () {
         return deferred2.promise;
     };
     /**
-        * Sugar for promise.then(undefined, onRejected)
-        *
-        * @param onRejected called when/if "promise" rejects
-        */
+     * Sugar for promise.then(undefined, onRejected)
+     * @param onRejected called when/if "promise" rejects
+     */
     SlowPromise.prototype.catch = function (onRejected) {
         return this.then(void 0, onRejected);
     };
-    SlowPromise.prototype._fulfil = function (value) {
+    SlowPromise.prototype.fulfil = function (value) {
         var _this = this;
         // Update the promise state.
         if (this.$slow.state !== 0 /* Pending */)
@@ -105,7 +102,7 @@ var SlowPromise = (function () {
         process.nextTick(function () { return processAllHandlers(_this); });
         var _a;
     };
-    SlowPromise.prototype._reject = function (reason) {
+    SlowPromise.prototype.reject = function (reason) {
         var _this = this;
         // Update the promise state.
         if (this.$slow.state !== 0 /* Pending */)

@@ -1,27 +1,12 @@
 import assert = require('assert');
 import _ = require('lodash');
 import SlowType = require('../slowType');
-import SlowObject = require('../slowObject');
 import SlowPromiseResolve = require('./slowPromiseResolve');
 import SlowPromiseReject = require('./slowPromiseReject');
 import standardResolutionProcedure = require('./standardResolutionProcedure');
 import slowEventLoop = require('../eventLoop/slowEventLoop');
 import storage = require('../storage/storage');
 export = SlowPromise;
-
-
-const enum State {
-    Pending,
-    Fulfilled,
-    Rejected
-}
-
-
-interface Deferred {
-    promise: SlowPromise;
-    resolve: SlowPromiseResolve;
-    reject: SlowPromiseReject;
-}
 
 
 /** Promises A+ compliant Promise implementation with persistence. */
@@ -64,7 +49,6 @@ class SlowPromise {
     }
 
     /** Returns an object containing a new SlowPromise instance, along with a resolve function and a reject function to control its fate. */
-    // TODO: improve typing...
     static deferred(): Deferred {
         var promise = new SlowPromise(null);
         var resolve = new SlowPromiseResolve(promise);
@@ -82,14 +66,13 @@ class SlowPromise {
 
 
 	/**
-	    * onFulfilled is called when the promise resolves. onRejected is called when the promise rejects.
-	    * Both callbacks have a single parameter , the fulfillment value or rejection reason.
-	    * "then" returns a new promise equivalent to the value you return from onFulfilled/onRejected after being passed through Promise.resolve.
-	    * If an error is thrown in the callback, the returned promise rejects with that error.
-	    *
-	    * @param onFulfilled called when/if "promise" resolves
-	    * @param onRejected called when/if "promise" rejects
-	    */
+     * onFulfilled is called when the promise resolves. onRejected is called when the promise rejects.
+     * Both callbacks have a single parameter , the fulfillment value or rejection reason.
+     * "then" returns a new promise equivalent to the value you return from onFulfilled/onRejected after being passed through Promise.resolve.
+     * If an error is thrown in the callback, the returned promise rejects with that error.
+     * @param onFulfilled called when/if "promise" resolves
+     * @param onRejected called when/if "promise" rejects
+     */
     then(onFulfilled?: (value) => any, onRejected?: (error) => any) {
 
         // Create the new promise to be returned by this .then() call.
@@ -107,10 +90,9 @@ class SlowPromise {
     }
 
     /**
-        * Sugar for promise.then(undefined, onRejected)
-        *
-        * @param onRejected called when/if "promise" rejects
-        */
+     * Sugar for promise.then(undefined, onRejected)
+     * @param onRejected called when/if "promise" rejects
+     */
     catch(onRejected?: (error) => any) {
         return this.then(void 0, onRejected);
     }
@@ -128,7 +110,7 @@ class SlowPromise {
         }>> []
     };
 
-    _fulfil(value: any) {
+    fulfil(value: any) {
 
         // Update the promise state.
         if (this.$slow.state !== State.Pending) return;
@@ -141,7 +123,7 @@ class SlowPromise {
         process.nextTick(() => processAllHandlers(this));
     }
 
-    _reject(reason: any) {
+    reject(reason: any) {
 
         // Update the promise state.
         if (this.$slow.state !== State.Pending) return;
@@ -202,6 +184,22 @@ function processAllHandlers(p: SlowPromise) {
             }
         }
     }
+}
+
+
+/** The plurality of states which may be assumed by a SlowPromise instance. */
+const enum State {
+    Pending,
+    Fulfilled,
+    Rejected
+}
+
+
+/** The type of object returned by the SlowPromise.deferred static method. */
+interface Deferred {
+    promise: SlowPromise;
+    resolve: SlowPromiseResolve;
+    reject: SlowPromiseReject;
 }
 
 
