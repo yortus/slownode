@@ -1,6 +1,7 @@
 ﻿export = SlowType;
 
 
+/** The plurality of supported SlowObject types. */
 const enum SlowType {
     SlowEventLoop = 1,
     SlowPromise = 10,

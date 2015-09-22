@@ -1,11 +1,10 @@
-﻿import API = require('slownode');
+﻿//import API = require('slownode');
 import makeWeakRef = require('./makeWeakRef');
 import SlowClosure = require('./slowClosure');
 import slowEventLoop = require('./eventLoop/slowEventLoop');
 import SlowAsyncFunction = require('./asyncFunctions/slowAsyncFunction');
 import SlowPromise = require('./promises/slowPromise');
 import storage = require('./storage/storage');
-//import rehydrate = require('./slowAsyncFunction/rehydrate');
 export = api;
 
 
@@ -17,15 +16,15 @@ var api = {
     clearTimeout: slowEventLoop.clearTimeout,
     setImmediate: slowEventLoop.setImmediate,
     clearImmediate: slowEventLoop.clearImmediate,
-    async: SlowAsyncFunction,
+
     Promise: SlowPromise,
-    SlowPromise: SlowPromise
+
+    async: SlowAsyncFunction
 };
+
 
 // TODO: temp testing...
 storage.loadState();
-
-
 
 
 

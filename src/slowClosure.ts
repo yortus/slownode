@@ -8,7 +8,9 @@ export = SlowClosure;
 
 /**
  * Creates a SlowClosure instance. It may be called with or without `new`.
- * A slow async function is analogous to an ES7 async function.
+ * A slow closure combines a function and a referencing environment. Calling
+ * a slow closure causes its function to be executed with its environment
+ * bindings added to its scope chain.
  */
 var SlowClosure: {
 

@@ -4,6 +4,7 @@
   "description": "slownode",
   "readmeFilename": "README.md",
   "main": "src/index",
+  "typings": "src/index.d.ts",
   "scripts": {
     "build": "tsc",
     "prepublish": "npm run build && require-self",

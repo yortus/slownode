@@ -1,4 +1,5 @@
-var slow = require('../src'); // TODO: fix this!!
+//import slow = require('../src'); // TODO: fix this!!
+var slow = require('slownode');
 var chai = require("chai");
 chai.use(require('chai-as-promised'));
 var expect = chai.expect;

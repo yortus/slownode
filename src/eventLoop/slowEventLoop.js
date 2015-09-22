@@ -1,11 +1,17 @@
 var storage = require('../storage/storage');
-// TODO: doc...
-// TODO: should return a token for use with clearTimeout
+/**
+ * Schedules `callback` to be called with the given `args` (if any) after `delay` milliseconds.
+ * Returns an opaque Timer object that may be passed to clearTimeout() to cancel the scheduled call.
+ * @param callback the function to execute after the timeout.
+ * @param delay the number of milliseconds to wait before calling the callback.
+ * @param args the optional arguments to pass to the callback.
+ */
 function setTimeout(callback, delay) {
     var args = [];
     for (var _i = 2; _i < arguments.length; _i++) {
         args[_i - 2] = arguments[_i];
     }
+    // TODO: ...
     var entry = {
         id: ++nextId,
         event: {
@@ -24,7 +30,10 @@ function setTimeout(callback, delay) {
     return entry.id;
 }
 exports.setTimeout = setTimeout;
-// TODO: doc...
+/**
+ * Cancels an event previously scheduled with setTimeout.
+ * @param timeoutObject an opaque Timer object that was returned by a prior call to setTimeout.
+ */
 function clearTimeout(timeoutObject) {
     for (var i = 0; i < entries.length; ++i) {
         if (entries[i].id !== timeoutObject)
@@ -37,8 +46,12 @@ function clearTimeout(timeoutObject) {
     }
 }
 exports.clearTimeout = clearTimeout;
-// TODO: doc...
-// TODO: should return a token for use with clearTimeout
+/**
+ * Schedules `callback` to be called with the given `args` (if any) on the next tick of the slow event loop.
+ * Returns an opaque Timer object that may be passed to clearImmediate() to cancel the scheduled call.
+ * @param callback the function to execute on the next tick of the slow event loop.
+ * @param args the optional arguments to pass to the callback.
+ */
 function setImmediate(callback) {
     var args = [];
     for (var _i = 1; _i < arguments.length; _i++) {
@@ -47,7 +60,10 @@ function setImmediate(callback) {
     return setTimeout(callback, 0, args);
 }
 exports.setImmediate = setImmediate;
-// TODO: doc...
+/**
+ * Cancels an event previously scheduled with setImmediate.
+ * @param timeoutObject an opaque Timer object that was returned by a prior call to setImmediate.
+ */
 function clearImmediate(immediateObject) {
     return clearTimeout(immediateObject);
 }

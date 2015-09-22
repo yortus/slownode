@@ -10,11 +10,19 @@ export = SlowPromiseReject;
  * The SlowPromiseReject instance may be used to reject the given promise with a reason.
  */
 var SlowPromiseReject: {
+
+    /** Creates a SlowPromiseReject instance. */
     new(promise: SlowPromise): SlowPromiseReject;
+
+    /** Creates a SlowPromiseReject instance. */
     (promise: SlowPromise): SlowPromiseReject;
 }
 interface SlowPromiseReject {
-    (value?: any): void;
+
+    /** Calling the instance rejects the promise passed to the constructor, with `reason` as the rejection reason. */
+    (reason?: any): void;
+
+    /** Holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
     $slow: {
         type: SlowType;
         id?: string;

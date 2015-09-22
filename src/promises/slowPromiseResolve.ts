@@ -11,11 +11,19 @@ export = SlowPromiseResolve;
  * The SlowPromiseResolve instance may be used to resolve the given promise with a value.
  */
 var SlowPromiseResolve: {
+
+    /** Creates a SlowPromiseResolve instance. */
     new(promise: SlowPromise): SlowPromiseResolve;
+
+    /** Creates a SlowPromiseResolve instance. */
     (promise: SlowPromise): SlowPromiseResolve;
 }
 interface SlowPromiseResolve {
+
+    /** Calling the instance resolves the promise passed to the constructor, with `value` as the resolved value. */
     (value?: any): void;
+
+    /** Holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
     $slow: {
         type: SlowType;
         id?: string;

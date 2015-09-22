@@ -1,3 +1,4 @@
+//import API = require('slownode');
 var makeWeakRef = require('./makeWeakRef');
 var SlowClosure = require('./slowClosure');
 var slowEventLoop = require('./eventLoop/slowEventLoop');
@@ -12,9 +13,8 @@ var api = {
     clearTimeout: slowEventLoop.clearTimeout,
     setImmediate: slowEventLoop.setImmediate,
     clearImmediate: slowEventLoop.clearImmediate,
-    async: SlowAsyncFunction,
     Promise: SlowPromise,
-    SlowPromise: SlowPromise
+    async: SlowAsyncFunction
 };
 // TODO: temp testing...
 storage.loadState();

@@ -40,13 +40,16 @@ interface TimerEvent extends Event {
 }
 
 
-
-
-
-
-// TODO: doc...
-// TODO: should return a token for use with clearTimeout
+/**
+ * Schedules `callback` to be called with the given `args` (if any) after `delay` milliseconds.
+ * Returns an opaque Timer object that may be passed to clearTimeout() to cancel the scheduled call.
+ * @param callback the function to execute after the timeout.
+ * @param delay the number of milliseconds to wait before calling the callback.
+ * @param args the optional arguments to pass to the callback.
+ */
 export function setTimeout(callback: Function, delay: number, ...args: any[]): Timer {
+
+    // TODO: ...
     var entry: Entry = {
         id: ++nextId,
         event: <TimerEvent> {
@@ -69,7 +72,10 @@ export function setTimeout(callback: Function, delay: number, ...args: any[]): T
 }
 
 
-// TODO: doc...
+/**
+ * Cancels an event previously scheduled with setTimeout.
+ * @param timeoutObject an opaque Timer object that was returned by a prior call to setTimeout.
+ */
 export function clearTimeout(timeoutObject: Timer) {
     for (var i = 0; i < entries.length; ++i) {
         if (entries[i].id !== timeoutObject) continue;
@@ -84,14 +90,21 @@ export function clearTimeout(timeoutObject: Timer) {
 }
 
 
-// TODO: doc...
-// TODO: should return a token for use with clearTimeout
+/**
+ * Schedules `callback` to be called with the given `args` (if any) on the next tick of the slow event loop.
+ * Returns an opaque Timer object that may be passed to clearImmediate() to cancel the scheduled call.
+ * @param callback the function to execute on the next tick of the slow event loop.
+ * @param args the optional arguments to pass to the callback.
+ */
 export function setImmediate(callback: Function, ...args: any[]): Timer {
     return setTimeout(callback, 0, args);
 }
 
 
-// TODO: doc...
+/**
+ * Cancels an event previously scheduled with setImmediate.
+ * @param timeoutObject an opaque Timer object that was returned by a prior call to setImmediate.
+ */
 export function clearImmediate(immediateObject: Timer) {
     return clearTimeout(immediateObject);
 }

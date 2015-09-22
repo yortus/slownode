@@ -9,7 +9,10 @@ import storage = require('../storage/storage');
 export = SlowPromise;
 
 
-/** Promises A+ compliant Promise implementation with persistence. */
+// TODO: add all(), race()... (see https://github.com/borisyankov/DefinitelyTyped/blob/master/es6-promise/es6-promise.d.ts)
+
+
+/** Promises A+ compliant slow promise implementation. */
 class SlowPromise {
 
     /** Constructs a SlowPromise instance. */

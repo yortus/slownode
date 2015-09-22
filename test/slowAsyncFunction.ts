@@ -1,7 +1,17 @@
-import slow = require('../src'); // TODO: fix this!!
+//import slow = require('../src'); // TODO: fix this!!
+import slow = require('slownode');
 import chai = require("chai");
 chai.use(require('chai-as-promised'));
 var expect = chai.expect;
+
+
+//slow.
+
+
+// TODO: these were in original typings. Where to put them now?
+// The await and __const pseudo-keywords are global.
+declare var await: <T>(arg: Promise<T>) => T;
+declare var __const: <T>(init: T) => T;
 
 
 // TODO: temp testing... make CTRL+C force node.js to exit immediately
@@ -21,7 +31,7 @@ describe('The async(...) function', function () {
             for (var i = 0; i < count; ++i) {
                 console.log(`waiting...${i}`);
                 cb();
-                await (SlowPromise.delay(delay));
+                await(SlowPromise.delay(delay));
                 //if (i > 4) throw new Error('herp derp');
             }
             return 'done';
