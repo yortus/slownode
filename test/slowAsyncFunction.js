@@ -1,8 +1,9 @@
-//import slow = require('../src'); // TODO: fix this!!
-var slow = require('slownode');
+var slow = require('../src'); // TODO: fix this!!
+//import slow = require('slownode');
 var chai = require("chai");
 chai.use(require('chai-as-promised'));
 var expect = chai.expect;
+debugger;
 // TODO: temp testing... make CTRL+C force node.js to exit immediately
 // TODO: put this in its own file inside a before() function
 process.on('SIGINT', function () {
@@ -12,7 +13,7 @@ process.on('SIGINT', function () {
 describe('The async(...) function', function () {
     it('works', function (done) {
         var fn = slow.async(function (delay, count, cb) {
-            var SlowPromise = __const(require('slownode').SlowPromise);
+            var SlowPromise = __const(require('slownode').Promise);
             for (var i = 0; i < count; ++i) {
                 console.log("waiting..." + i);
                 cb();

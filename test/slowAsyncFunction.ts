@@ -1,9 +1,11 @@
-//import slow = require('../src'); // TODO: fix this!!
-import slow = require('slownode');
+import slow = require('../src'); // TODO: fix this!!
+//import slow = require('slownode');
 import chai = require("chai");
 chai.use(require('chai-as-promised'));
 var expect = chai.expect;
 
+
+debugger;
 
 //slow.
 
@@ -27,7 +29,7 @@ describe('The async(...) function', function () {
     it('works', (done) => {
 
         var fn = slow.async((delay: number, count: number, cb) => {
-            const SlowPromise: typeof slow.Promise = __const(require('slownode').SlowPromise);
+            const SlowPromise: typeof slow.Promise = __const(require('slownode').Promise);
             for (var i = 0; i < count; ++i) {
                 console.log(`waiting...${i}`);
                 cb();

@@ -16,9 +16,7 @@ var api = {
     clearTimeout: slowEventLoop.clearTimeout,
     setImmediate: slowEventLoop.setImmediate,
     clearImmediate: slowEventLoop.clearImmediate,
-
     Promise: SlowPromise,
-
     async: SlowAsyncFunction
 };
 
