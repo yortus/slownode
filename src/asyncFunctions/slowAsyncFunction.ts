@@ -11,27 +11,40 @@ import storage = require('../storage/storage');
 export = SlowAsyncFunction;
 
 
-// TODO: temp testing...
-interface SlowAsyncFunctionStatic {
-    (bodyFunc: Function): SlowAsyncFunction;
-    new(bodyFunc: Function): SlowAsyncFunction;
-}
+/**
+ * Creates a SlowAsyncFunction instance. It may be called with or without `new`.
+ * A slow async function is analogous to an ES7 async function.
+ */
+var SlowAsyncFunction: {
 
+    /** Creates a new SlowAsyncFunction instance. */
+    new(bodyFunc: Function): SlowAsyncFunction;
+
+    /** Creates a new SlowAsyncFunction instance. */
+    (bodyFunc: Function): SlowAsyncFunction;
+}
 interface SlowAsyncFunction {
+
+    /** Calling the instance begins execution of the body function, and returns a promise of its outcome. */
     (...args): SlowPromise;
-    stateMachine: SteppableStateMachine;
+
+    /** Holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
     $slow: {
         type: SlowType;
         id?: string;
         stateMachineSource: string;
         originalSource: string; // TODO: not needed in operation, but preserve for future debugging/sourcemap needs?
     };
+
+    /** PRIVATE property holding the state machine that is equivalent to the body function passed to the constructor. */
+    stateMachine: SteppableStateMachine;
 }
 
 
-/** Creates a slow async function instance. */
-var SlowAsyncFunction: SlowAsyncFunctionStatic = <any> makeCallableClass({
+// Create a constructor function whose instances (a) are callable and (b) work with instanceof.
+SlowAsyncFunction = <any> makeCallableClass({
 
+    // Create a new SlowAsyncFunction instance that runs the given body function.
     constructor: function (bodyFunc: Function) {
 
         // Validate arguments.
@@ -63,6 +76,7 @@ var SlowAsyncFunction: SlowAsyncFunctionStatic = <any> makeCallableClass({
         storage.created(this);
     },
 
+    // Calling the instance begins execution of the body function, and returns a promise of its outcome.
     call: function (...args: any[]): SlowPromise {
 
         // Create a new SlowPromise to represent the eventual result of the slow async operation.

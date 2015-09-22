@@ -10,6 +10,7 @@ var SlowPromise = (function () {
     /** Constructs a SlowPromise instance. */
     function SlowPromise(resolver) {
         // -------------- Private implementation details from here down --------------
+        /** Holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
         this.$slow = {
             type: 10 /* SlowPromise */,
             isFateResolved: false,
@@ -90,6 +91,7 @@ var SlowPromise = (function () {
     SlowPromise.prototype.catch = function (onRejected) {
         return this.then(void 0, onRejected);
     };
+    /** PRIVATE method to fulfil the promise. */
     SlowPromise.prototype.fulfil = function (value) {
         var _this = this;
         // Update the promise state.
@@ -102,6 +104,7 @@ var SlowPromise = (function () {
         process.nextTick(function () { return processAllHandlers(_this); });
         var _a;
     };
+    /** PRIVATE method to reject the promise. */
     SlowPromise.prototype.reject = function (reason) {
         var _this = this;
         // Update the promise state.

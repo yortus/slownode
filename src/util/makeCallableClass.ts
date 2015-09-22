@@ -2,7 +2,7 @@
 
 
 /**
- * TODO: Creates a constructor function whose instances (1) are callable
+ * Creates a constructor function whose instances (1) are callable
  * and (2) have the constructor function as their prototype. Normally JS
  * allows only one or the other of these properties but not both. Having
  * both is desirable in situations where you want to be able to create

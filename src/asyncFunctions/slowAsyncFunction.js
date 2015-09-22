@@ -5,8 +5,14 @@ var SteppableFunction = require('../steppables/steppableFunction');
 var SlowPromise = require('../promises/slowPromise');
 var SlowAsyncFunctionActivation = require('./slowAsyncFunctionActivation');
 var storage = require('../storage/storage');
-/** Creates a slow async function instance. */
-var SlowAsyncFunction = makeCallableClass({
+/**
+ * Creates a SlowAsyncFunction instance. It may be called with or without `new`.
+ * A slow async function is analogous to an ES7 async function.
+ */
+var SlowAsyncFunction;
+// Create a constructor function whose instances (a) are callable and (b) work with instanceof.
+SlowAsyncFunction = makeCallableClass({
+    // Create a new SlowAsyncFunction instance that runs the given body function.
     constructor: function (bodyFunc) {
         // Validate arguments.
         assert(typeof bodyFunc === 'function');
@@ -32,6 +38,7 @@ var SlowAsyncFunction = makeCallableClass({
         // Synchronise with the persistent object graph.
         storage.created(this);
     },
+    // Calling the instance begins execution of the body function, and returns a promise of its outcome.
     call: function () {
         var args = [];
         for (var _i = 0; _i < arguments.length; _i++) {

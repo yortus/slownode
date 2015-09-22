@@ -3,10 +3,14 @@
  * A Steppable object is analogous to an ES6 generator object.
  */
 var SteppableObject = (function () {
+    /** Creates a new SteppableObject instance. */
     function SteppableObject(stateMachine) {
         this.stateMachine = stateMachine;
+        /** Resumes the steppable object with the given value. */
         this.next = makeResumeMethod('yield', this);
+        /** Resumes the steppable object, throwing the given value at the current point of execution. */
         this.throw = makeResumeMethod('throw', this);
+        /** Resumes the steppable object, returning the given value at the current point of execution. */
         this.return = makeResumeMethod('return', this);
     }
     return SteppableObject;

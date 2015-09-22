@@ -7,10 +7,20 @@ export = SteppableObject;
  * A Steppable object is analogous to an ES6 generator object.
  */
 class SteppableObject {
+
+    /** Creates a new SteppableObject instance. */
     constructor(public stateMachine: SteppableStateMachine) { }
+
+    /** Resumes the steppable object with the given value. */
     next = makeResumeMethod('yield', this);
+
+    /** Resumes the steppable object, throwing the given value at the current point of execution. */
     throw = makeResumeMethod('throw', this);
+
+    /** Resumes the steppable object, returning the given value at the current point of execution. */
     return = makeResumeMethod('return', this);
+
+    /** State of all locals at the current point of execution. */
     state: SteppableStateMachine.State
 }
 

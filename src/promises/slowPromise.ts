@@ -56,14 +56,12 @@ class SlowPromise {
         return { promise, resolve, reject };
     }
 
-
     /** Returns a new SlowPromise instance that resolves after `ms` milliseconds. */
     static delay(ms: number) {
         return new SlowPromise(resolve => {
             slowEventLoop.setTimeout(resolve => resolve(), ms, resolve);
         });
     }
-
 
 	/**
      * onFulfilled is called when the promise resolves. onRejected is called when the promise rejects.
@@ -98,6 +96,8 @@ class SlowPromise {
     }
 
     // -------------- Private implementation details from here down --------------
+
+    /** Holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
     $slow = {
         type: SlowType.SlowPromise,
         isFateResolved: false,
@@ -110,6 +110,7 @@ class SlowPromise {
         }>> []
     };
 
+    /** PRIVATE method to fulfil the promise. */
     fulfil(value: any) {
 
         // Update the promise state.
@@ -123,6 +124,7 @@ class SlowPromise {
         process.nextTick(() => processAllHandlers(this));
     }
 
+    /** PRIVATE method to reject the promise. */
     reject(reason: any) {
 
         // Update the promise state.

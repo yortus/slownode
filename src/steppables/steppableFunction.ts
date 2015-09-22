@@ -47,18 +47,46 @@ export = SteppableFunction;
  * A steppable function is analogous to an ES6 generator function.
  */
 var SteppableFunction: {
+
+    /** Creates a new SteppableFunction instance. */
     new(bodyFunc: Function, options?: Options): SteppableFunction;
+
+    /** Creates a new SteppableFunction instance. */
     (bodyFunc: Function, options?: Options): SteppableFunction;
+
+    /** Creates a new SteppableFunction instance from the given `stateMachine`. */
     fromStateMachine(stateMachine: SteppableStateMachine): SteppableFunction;
 };
 interface SteppableFunction {
+
+    /** Calling the instance creates and returns a new steppable object. */
     (...args: any[]): SteppableObject;
+
+    /** PRIVATE property holding the state machine that is equivalent to the body function passed to the constructor. */
     stateMachine: SteppableStateMachine;
 }
 
 
+/** Options that may be used when creating a SteppableFunction instance. */
 interface Options {
+
+    /**
+     * An optional identifier that provides an alternative means to express 'yield'
+     * statements within the body function (for instance it they would otherwise be
+     * a syntax error on a given runtime/IDE). If the identifier is encountered in
+     * the body function in a function call position, then the call expression is
+     * treated as a 'yield' expression.
+     */
     pseudoYield?: string;
+
+    /**
+     * An optional identifier that provides an alternative means to express 'const'
+     * declarations within the body function (for instance it they would otherwise
+     * be a syntax error on a given runtime/IDE). If the identifier is encountered
+     * in the body function in a function call position on the RHS of a variable
+     * declarator, then the entire variable declaration is treated as a 'const'
+     * declaration with the function argument as its initializer expression.
+     */
     pseudoConst?: string;
 }
 

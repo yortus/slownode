@@ -7,12 +7,17 @@ var assert = require('assert');
 var SteppableObject = require('../steppables/steppableObject');
 var SlowClosure = require('../slowClosure');
 var storage = require('../storage/storage');
-/** A SlowAsyncFunctionActivation is a SteppableObject with additional properties. */
+/**
+ * A SlowAsyncFunctionActivation is a 'slow' extension of SteppableObject.
+ * Instances of SlowAsyncFunctionActivation are used internally to manage
+ * calls to SlowAsyncFunction instances.
+ */
 var SlowAsyncFunctionActivation = (function (_super) {
     __extends(SlowAsyncFunctionActivation, _super);
     /** Create a new SlowAsyncFunctionActivation instance. */
     function SlowAsyncFunctionActivation(asyncFunction, resolve, reject, args) {
         _super.call(this, asyncFunction.stateMachine);
+        /** Holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
         this.$slow = {
             type: 30 /* SlowAsyncFunctionActivation */,
             id: null,

@@ -13,7 +13,11 @@ import storage = require('../storage/storage');
 export = SlowAsyncFunctionActivation;
 
 
-/** A SlowAsyncFunctionActivation is a SteppableObject with additional properties. */
+/**
+ * A SlowAsyncFunctionActivation is a 'slow' extension of SteppableObject.
+ * Instances of SlowAsyncFunctionActivation are used internally to manage
+ * calls to SlowAsyncFunction instances.
+ */
 class SlowAsyncFunctionActivation extends SteppableObject {
 
     /** Create a new SlowAsyncFunctionActivation instance. */
@@ -29,6 +33,7 @@ class SlowAsyncFunctionActivation extends SteppableObject {
         storage.created(this);
     }
 
+    /** Holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
     $slow = {
         type: SlowType.SlowAsyncFunctionActivation,
         id: <string> null,
