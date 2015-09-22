@@ -1,29 +1,29 @@
-//import slow = require('slownode');
-//import chai = require("chai");
-//chai.use(require('chai-as-promised'));
-//var expect = chai.expect;
+import slow = require('../src'); // TODO: fix this!!
+import chai = require("chai");
+chai.use(require('chai-as-promised'));
+var expect = chai.expect;
 
 
-//// NB: For full Promise A+ testing use: npm run test-promises-aplus
+// NB: For full Promise A+ testing use: npm run test-promises-aplus
 
 
-//describe('SlowPromise', function () {
+describe('SlowPromise', function () {
 
-//    it('works', (done) => {
+    it('works', (done) => {
 
-//        slow.makeWeakRef(done);
+        slow.makeWeakRef(done);
 
-//        var p = slow.Promise.delay(500);
+        var p = slow.Promise.delay(500);
 
-//        console.log('AAA');
-//        p.then(value => {
-//            console.log(value);
-//            throw new Error('BAR');
-//        })
-//        .catch(slow.Closure({done}, error => {
-//            console.log(error);
-//            if (done) done();
-//        }));
-//        console.log('BBB');
-//    });
-//});
+        console.log('AAA');
+        p.then(value => {
+            console.log(value);
+            throw new Error('BAR');
+        })
+        .catch(slow.Closure({done}, error => {
+            console.log(error);
+            if (done) done();
+        }));
+        console.log('BBB');
+    });
+});

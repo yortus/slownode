@@ -7,17 +7,17 @@
 declare module "slownode" {
 
     // ==================== Slow Primitives ====================
-    export var Closure: SlowClosureStatic;
+    //export var Closure: SlowClosureStatic;
 
-    interface SlowClosureStatic {
-        new(env: { [name: string]: any; }, fn: Function): SlowClosure;
-        (env: { [name: string]: any; }, fn: Function): SlowClosure;
-    }
+    //interface SlowClosureStatic {
+    //    new(env: { [name: string]: any; }, fn: Function): SlowClosure;
+    //    (env: { [name: string]: any; }, fn: Function): SlowClosure;
+    //}
 
-    interface SlowClosure {
-        // TODO: allow args?
-        (...args): any;
-    }
+    //interface SlowClosure {
+    //    // TODO: allow args?
+    //    (...args): any;
+    //}
 
     export function makeWeakRef(obj: any): void;
 
