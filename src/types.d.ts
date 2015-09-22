@@ -30,40 +30,13 @@
 
     namespace SlowAsyncFunction {
 
-        interface Activation extends SteppableObject {
-            $slow: {
-                type: SlowType;
-                id?: string;
 
-                /** The body of code being executed by this activation. */
-                asyncFunction: SlowAsyncFunction;
+        //namespace Activation {
 
-                /** State of all locals at the current point of suspended execution. */
-                state: Steppable.StateMachine.State;
+        //    type ResumeNext = SlowObject & ((value) => void);
 
-                /** The awaitable (ie slow promise) that must resolve before execution may resume. */
-                awaiting: any;
-
-                /** Resumes execution with a value. */
-                resumeNext: Activation.ResumeNext;
-
-                /** Resumes execution with an error. */
-                resumeError: Activation.ResumeError;
-
-                /** Signals that the activation returned a result. */
-                resolve: SlowPromise.Resolve;
-
-                /** Signals that the activation threw an error. */
-                reject: SlowPromise.Reject;
-            };
-        }
-
-        namespace Activation {
-
-            type ResumeNext = SlowObject & ((value) => void);
-
-            type ResumeError = SlowObject & ((error) => void);
-        }
+        //    type ResumeError = SlowObject & ((error) => void);
+        //}
     }
 
 
@@ -118,23 +91,23 @@
 
 
 
-    interface SteppableFunction {
-        (...args: any[]): SteppableObject;
-        stateMachine: Steppable.StateMachine;
-    }
+    //interface SteppableFunction {
+    //    (...args: any[]): SteppableObject;
+    //    stateMachine: Steppable.StateMachine;
+    //}
 
-    export var SteppableFunction: {
-        new(bodyFunc: Function, options?: Steppable.Options): SteppableFunction;
-        (bodyFunc: Function, options?: Steppable.Options): SteppableFunction;
-        fromStateMachine(stateMachine: Steppable.StateMachine): SteppableFunction;
-    };
+    //export var SteppableFunction: {
+    //    new(bodyFunc: Function, options?: Steppable.Options): SteppableFunction;
+    //    (bodyFunc: Function, options?: Steppable.Options): SteppableFunction;
+    //    fromStateMachine(stateMachine: Steppable.StateMachine): SteppableFunction;
+    //};
 
-    interface SteppableObject {
-        next(value?: any): { done: boolean; value: any; };
-        throw(value?: any): { done: boolean; value: any; };
-        return(value?: any): { done: boolean; value: any; };
-        state: Steppable.StateMachine.State;
-    }
+    //interface SteppableObject {
+    //    next(value?: any): { done: boolean; value: any; };
+    //    throw(value?: any): { done: boolean; value: any; };
+    //    return(value?: any): { done: boolean; value: any; };
+    //    state: Steppable.StateMachine.State;
+    //}
 
     namespace Steppable {
 

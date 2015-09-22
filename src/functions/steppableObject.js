@@ -1,4 +1,7 @@
-/** Defines the Steppable object returned by a call to SteppableFunction#[[call]]. */
+/**
+ * Defines the Steppable object returned by a call to SteppableFunction#[[call]].
+ * A Steppable object is analogous to an ES6 generator object.
+ */
 var SteppableObject = (function () {
     function SteppableObject(stateMachine) {
         this.stateMachine = stateMachine;

@@ -2,8 +2,11 @@
 export = SteppableObject;
 
 
-/** Defines the Steppable object returned by a call to SteppableFunction#[[call]]. */
-class SteppableObject implements types.SteppableObject {
+/**
+ * Defines the Steppable object returned by a call to SteppableFunction#[[call]].
+ * A Steppable object is analogous to an ES6 generator object.
+ */
+class SteppableObject {
     constructor(public stateMachine: types.Steppable.StateMachine) { }
     next = makeResumeMethod('yield', this);
     throw = makeResumeMethod('throw', this);

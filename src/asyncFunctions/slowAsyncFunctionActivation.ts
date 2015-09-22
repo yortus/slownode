@@ -1,6 +1,8 @@
 ﻿import assert = require('assert');
 import path = require('path');
 import types = require('types');
+import SlowObject = require('../slowObject');
+import SlowPromise = require('../promises/slowPromise');
 import SlowPromiseResolve = require('../promises/slowPromiseResolve');
 import SlowPromiseReject = require('../promises/slowPromiseReject');
 import SlowType = require('../slowType');
@@ -11,7 +13,7 @@ export = SlowAsyncFunctionActivation;
 
 
 /** A SlowAsyncFunctionActivation is a SteppableObject with additional properties. */
-class SlowAsyncFunctionActivation extends SteppableObject implements types.SlowAsyncFunction.Activation {
+class SlowAsyncFunctionActivation extends SteppableObject {
 
     /** Create a new SlowAsyncFunctionActivation instance. */
     constructor(asyncFunction: types.SlowAsyncFunction, resolve: SlowPromiseResolve, reject: SlowPromiseReject, args: any[]) {
@@ -28,13 +30,28 @@ class SlowAsyncFunctionActivation extends SteppableObject implements types.SlowA
 
     $slow = {
         type: SlowType.SlowAsyncFunctionActivation,
-        asyncFunction: null,
-        state: null,
-        awaiting: null,
-        resumeNext: null,
-        resumeError: null,
-        resolve: null,
-        reject: null
+        id: <string> null,
+
+        /** The body of code being executed by this activation. */
+        asyncFunction: <types.SlowAsyncFunction> null,
+
+        /** State of all locals at the current point of suspended execution. */
+        state: <types.Steppable.StateMachine.State> null,
+
+        /** The awaitable (ie slow promise) that must resolve before execution may resume. */
+        awaiting: <SlowPromise> null,
+
+        /** Resumes execution with a value. */
+        resumeNext: <SlowObject & ((value) => void)> null,
+
+        /** Resumes execution with an error. */
+        resumeError: <SlowObject & ((error) => void)> null,
+
+        /** Signals that the activation returned a result. */
+        resolve: <SlowPromiseResolve> null,
+
+        /** Signals that the activation threw an error. */
+        reject: <SlowPromiseReject> null
     };
 
     /**
@@ -47,9 +64,6 @@ class SlowAsyncFunctionActivation extends SteppableObject implements types.SlowA
      * be an awaitable value. A recursive call to runToCompletion() is scheduled for when the
      * awaitable value is settled. Thus an asynchronous 'loop' is executed until the activation
      * either returns or throws.
-     * @param safa the SlowAsyncFunctionActivation instance
-     * @param type 'next'|'error'
-     * @param value the next or error value to pass in to the activation
      */
     runToCompletion(error?: any, next?: any) {
 
@@ -99,7 +113,7 @@ storage.registerSlowObjectFactory(SlowType.SlowAsyncFunctionActivation, ($slow: 
     // (1) the safa constructor doesn't care about the passed values for resolve/reject/args,
     //     so these can be fixed up after construction (by re-assigning the $slow property).
     // (2) the given $slow already has a valid `asyncFunction` property because that will
-    //     always appear in the storage log before any activations using it.
+    //     always appear in the storage log before any activations which use it.
     var safa = new SlowAsyncFunctionActivation($slow.asyncFunction, null, null, null);
     safa.$slow = <any> $slow;
     safa.state = safa.$slow.state;

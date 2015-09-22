@@ -30,20 +30,24 @@ var transformToStateMachine = require('./astOperations/funcExpr/transformToState
 //     - whitelisted globals and 'ambients' ('arguments', 'require', 'Infinity', 'parseInt', what else...?)
 //     - locally declared 'const' identifiers whose rhs is considered 'safe and idempotent' (as in the HTTP-method sense)
 //       - TODO: rules for 'safe and idempotent'...
-// NB: no need to check for syntactic validity, since the function must be syntactically valid to have been passed in here.
+// NB: no need to check for general syntactic validity, since the function must be syntactically valid to have been passed in here.
 // NB: either a normal function or generator function can be passed in - it makes no difference (doc why to do this (hint: yield keyword available in gens))
 //---------------------------------------------
 /**
  * Creates a SteppableFunction instance, calls to which return a SteppableObject instance.
- * This is analogous to the ES6 generator function / generator object distinction.
+ * A steppable function is analogous to an ES6 generator function.
  */
-var SteppableFunction = makeCallableClass({
+var SteppableFunction;
+// Create a constructor function whose instances (a) are callable and (b) work with instanceof.
+SteppableFunction = makeCallableClass({
+    // Create a new SteppableFunction instance.
     constructor: function (bodyFunc, options) {
         assert(typeof bodyFunc === 'function');
         var pseudoYield = options ? options.pseudoYield : null;
         var pseudoConst = options ? options.pseudoConst : null;
         this.stateMachine = makeStateMachine(bodyFunc, options.pseudoYield, options.pseudoConst);
     },
+    // Calling the instance creates and returns a new steppable object.
     call: function () {
         var args = [];
         for (var _i = 0; _i < arguments.length; _i++) {

@@ -37,17 +37,30 @@ export = SteppableFunction;
 //     - whitelisted globals and 'ambients' ('arguments', 'require', 'Infinity', 'parseInt', what else...?)
 //     - locally declared 'const' identifiers whose rhs is considered 'safe and idempotent' (as in the HTTP-method sense)
 //       - TODO: rules for 'safe and idempotent'...
-// NB: no need to check for syntactic validity, since the function must be syntactically valid to have been passed in here.
+// NB: no need to check for general syntactic validity, since the function must be syntactically valid to have been passed in here.
 // NB: either a normal function or generator function can be passed in - it makes no difference (doc why to do this (hint: yield keyword available in gens))
 //---------------------------------------------
 
 
 /**
  * Creates a SteppableFunction instance, calls to which return a SteppableObject instance.
- * This is analogous to the ES6 generator function / generator object distinction.
+ * A steppable function is analogous to an ES6 generator function.
  */
-var SteppableFunction: typeof types.SteppableFunction = <any> makeCallableClass({
+var SteppableFunction: {
+    new(bodyFunc: Function, options?: types.Steppable.Options): SteppableFunction;
+    (bodyFunc: Function, options?: types.Steppable.Options): SteppableFunction;
+    fromStateMachine(stateMachine: types.Steppable.StateMachine): SteppableFunction;
+};
+interface SteppableFunction {
+    (...args: any[]): SteppableObject;
+    stateMachine: types.Steppable.StateMachine;
+}
 
+
+// Create a constructor function whose instances (a) are callable and (b) work with instanceof.
+SteppableFunction = <any> makeCallableClass({
+
+    // Create a new SteppableFunction instance.
     constructor: function (bodyFunc: Function, options?: types.Steppable.Options) {
         assert(typeof bodyFunc === 'function');
         var pseudoYield = options ? options.pseudoYield : null;
@@ -55,7 +68,8 @@ var SteppableFunction: typeof types.SteppableFunction = <any> makeCallableClass(
         this.stateMachine = makeStateMachine(bodyFunc, options.pseudoYield, options.pseudoConst);
     },
 
-    call: function (...args: any[]): types.SteppableObject {
+    // Calling the instance creates and returns a new steppable object.
+    call: function (...args: any[]): SteppableObject {
         var steppable = new SteppableObject(this.stateMachine);
         steppable.state = { local: { arguments: args } };
         return steppable;
