@@ -44,6 +44,7 @@
     <TypeScriptCompile Include="src\functions\isRelocatableFunction.ts" />
     <TypeScriptCompile Include="src\functions\slowClosure.ts" />
     <TypeScriptCompile Include="src\functions\steppableObject.ts" />
+    <TypeScriptCompile Include="src\functions\steppableStateMachine.ts" />
     <TypeScriptCompile Include="src\mainInfo.ts" />
     <TypeScriptCompile Include="src\makeWeakRef.ts" />
     <TypeScriptCompile Include="src\promises\slowPromiseResolve.ts" />

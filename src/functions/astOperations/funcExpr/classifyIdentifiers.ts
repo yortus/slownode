@@ -1,5 +1,4 @@
 ﻿import _ = require('lodash');
-import types = require('types');
 import matchNode = require('../matchNode');
 import traverseTree = require('../traverseTree');
 import containsInnerFunctions = require('./containsInnerFunctions');

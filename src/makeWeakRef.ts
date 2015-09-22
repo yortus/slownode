@@ -1,5 +1,4 @@
 ﻿export = makeWeakRef;
-import types = require('types');
 import SlowType = require('./slowType');
 import storage = require('./storage/storage');
 

@@ -1,9 +1,9 @@
 ﻿import assert = require('assert');
 import _ = require('lodash');
-import types = require('types');
 import esprima = require('esprima');
 import escodegen = require('escodegen');
 import makeCallableClass = require('../util/makeCallableClass');
+import SteppableStateMachine = require('./steppableStateMachine');
 import SteppableObject = require('./steppableObject');
 import replacePseudoYieldCallsWithYieldExpressions = require('./astOperations/funcExpr/replacePseudoYieldCallsWithYieldExpressions');
 import replacePseudoConstCallsWithConstDeclarations = require('./astOperations/funcExpr/replacePseudoConstCallsWithConstDeclarations');
@@ -47,21 +47,28 @@ export = SteppableFunction;
  * A steppable function is analogous to an ES6 generator function.
  */
 var SteppableFunction: {
-    new(bodyFunc: Function, options?: types.Steppable.Options): SteppableFunction;
-    (bodyFunc: Function, options?: types.Steppable.Options): SteppableFunction;
-    fromStateMachine(stateMachine: types.Steppable.StateMachine): SteppableFunction;
+    new(bodyFunc: Function, options?: Options): SteppableFunction;
+    (bodyFunc: Function, options?: Options): SteppableFunction;
+    fromStateMachine(stateMachine: SteppableStateMachine): SteppableFunction;
 };
 interface SteppableFunction {
     (...args: any[]): SteppableObject;
-    stateMachine: types.Steppable.StateMachine;
+    stateMachine: SteppableStateMachine;
 }
+
+
+interface Options {
+    pseudoYield?: string;
+    pseudoConst?: string;
+}
+
 
 
 // Create a constructor function whose instances (a) are callable and (b) work with instanceof.
 SteppableFunction = <any> makeCallableClass({
 
     // Create a new SteppableFunction instance.
-    constructor: function (bodyFunc: Function, options?: types.Steppable.Options) {
+    constructor: function (bodyFunc: Function, options?: Options) {
         assert(typeof bodyFunc === 'function');
         var pseudoYield = options ? options.pseudoYield : null;
         var pseudoConst = options ? options.pseudoConst : null;
@@ -78,7 +85,7 @@ SteppableFunction = <any> makeCallableClass({
 
 
 // Define the static `fromStateMachine` method on the SteppableFunction callable class.
-SteppableFunction.fromStateMachine = (stateMachine: types.Steppable.StateMachine) => {
+SteppableFunction.fromStateMachine = (stateMachine: SteppableStateMachine) => {
     var instance = new SteppableFunction(() => {});
     instance.stateMachine = stateMachine;
     return instance;
@@ -86,7 +93,7 @@ SteppableFunction.fromStateMachine = (stateMachine: types.Steppable.StateMachine
 
 
 /** Helper function for validating a function body and transforming it into a state machine. */
-function makeStateMachine(bodyFunc: Function, pseudoYield: string, pseudoConst: string): types.Steppable.StateMachine {
+function makeStateMachine(bodyFunc: Function, pseudoYield: string, pseudoConst: string): SteppableStateMachine {
 
     // Transform original body function --> source code --> AST.
     var originalFunction = bodyFunc;
@@ -111,7 +118,7 @@ function makeStateMachine(bodyFunc: Function, pseudoYield: string, pseudoConst: 
 
     // Transform modified AST --> source code --> function.
     var stateMachineSource = '(' + escodegen.generate(stateMachineAST) + ')';
-    var stateMachine: types.Steppable.StateMachine = eval(stateMachineSource);
+    var stateMachine: SteppableStateMachine = eval(stateMachineSource);
 
     // All done.
     return stateMachine;

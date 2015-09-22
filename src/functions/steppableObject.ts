@@ -1,4 +1,4 @@
-﻿import types = require('types');
+﻿import SteppableStateMachine = require('./steppableStateMachine');
 export = SteppableObject;
 
 
@@ -7,11 +7,11 @@ export = SteppableObject;
  * A Steppable object is analogous to an ES6 generator object.
  */
 class SteppableObject {
-    constructor(public stateMachine: types.Steppable.StateMachine) { }
+    constructor(public stateMachine: SteppableStateMachine) { }
     next = makeResumeMethod('yield', this);
     throw = makeResumeMethod('throw', this);
     return = makeResumeMethod('return', this);
-    state: types.Steppable.StateMachine.State
+    state: SteppableStateMachine.State
 }
 
 

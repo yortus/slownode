@@ -1,9 +1,9 @@
 ﻿import assert = require('assert');
 import _ = require('lodash');
-import types = require('types');
 import SlowType = require('../slowType');
 import makeCallableClass = require('../util/makeCallableClass');
 import shasum = require('../util/shasum');
+import SteppableStateMachine = require('../functions/steppableStateMachine');
 import SteppableFunction = require('../functions/steppableFunction');
 import SlowPromise = require('../promises/slowPromise');
 import SlowAsyncFunctionActivation = require('./slowAsyncFunctionActivation');
@@ -19,7 +19,7 @@ interface SlowAsyncFunctionStatic {
 
 interface SlowAsyncFunction {
     (...args): SlowPromise;
-    stateMachine: types.Steppable.StateMachine;
+    stateMachine: SteppableStateMachine;
     $slow: {
         type: SlowType;
         id?: string;

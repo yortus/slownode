@@ -2,7 +2,6 @@
 import fs = require('fs');
 import path = require('path');
 import _ = require('lodash');
-import types = require('types');
 import SlowType = require('../slowType');
 import SlowObject = require('../slowObject');
 import storageLocation = require('./storageLocation');

@@ -1,6 +1,5 @@
 ﻿import assert = require('assert');
 import _ = require('lodash');
-import types = require('types');
 import esprima = require('esprima');
 import escodegen = require('escodegen');
 import isRelocatable = require('./astOperations/funcExpr/isRelocatable');

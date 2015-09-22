@@ -1,13 +1,14 @@
 ﻿import assert = require('assert');
 import path = require('path');
-import types = require('types');
 import SlowObject = require('../slowObject');
 import SlowPromise = require('../promises/slowPromise');
 import SlowPromiseResolve = require('../promises/slowPromiseResolve');
 import SlowPromiseReject = require('../promises/slowPromiseReject');
 import SlowType = require('../slowType');
+import SteppableStateMachine = require('../functions/steppableStateMachine');
 import SteppableObject = require('../functions/steppableObject');
 import SlowClosure = require('../functions/slowClosure');
+import SlowAsyncFunction = require('./slowAsyncFunction'); // NB: elided circular ref (for types only)
 import storage = require('../storage/storage');
 export = SlowAsyncFunctionActivation;
 
@@ -16,7 +17,7 @@ export = SlowAsyncFunctionActivation;
 class SlowAsyncFunctionActivation extends SteppableObject {
 
     /** Create a new SlowAsyncFunctionActivation instance. */
-    constructor(asyncFunction: types.SlowAsyncFunction, resolve: SlowPromiseResolve, reject: SlowPromiseReject, args: any[]) {
+    constructor(asyncFunction: SlowAsyncFunction, resolve: SlowPromiseResolve, reject: SlowPromiseReject, args: any[]) {
         super(asyncFunction.stateMachine);
         this.state = this.$slow.state = { local: { arguments: args } };
         this.$slow.asyncFunction = asyncFunction;
@@ -33,10 +34,10 @@ class SlowAsyncFunctionActivation extends SteppableObject {
         id: <string> null,
 
         /** The body of code being executed by this activation. */
-        asyncFunction: <types.SlowAsyncFunction> null,
+        asyncFunction: <SlowAsyncFunction> null,
 
         /** State of all locals at the current point of suspended execution. */
-        state: <types.Steppable.StateMachine.State> null,
+        state: <SteppableStateMachine.State> null,
 
         /** The awaitable (ie slow promise) that must resolve before execution may resume. */
         awaiting: <SlowPromise> null,
@@ -94,7 +95,7 @@ class SlowAsyncFunctionActivation extends SteppableObject {
 
         // The Steppable yielded. Ensure the yielded value is awaitable.
         // TODO: review awaitability checks, supported values/types, and error handling
-        var awaiting: types.SlowPromise = this.$slow.awaiting = yielded.value;
+        var awaiting: SlowPromise = this.$slow.awaiting = yielded.value;
         assert(awaiting && typeof awaiting.then === 'function', 'await: expected argument to be a Promise');
 
         // Attach fulfilled/rejected handlers to the awaitable, which resume the steppable.
