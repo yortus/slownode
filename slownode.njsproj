@@ -75,7 +75,6 @@
     <TypeScriptCompile Include="src\typings\fs-ext\fs-ext.d.ts" />
     <TypeScriptCompile Include="src\typings\lodash\lodash.d.ts" />
     <Content Include="test\fixtures\slowfuncs\1.ts" />
-    <TypeScriptCompile Include="src\util\makeSubclass.ts" />
     <TypeScriptCompile Include="src\util\makeCallableClass.ts" />
     <TypeScriptCompile Include="src\util\shasum.ts" />
     <TypeScriptCompile Include="test\fixtures\slowfuncs\3.ts" />
