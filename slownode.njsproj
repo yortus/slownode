@@ -85,7 +85,6 @@
     <TypeScriptCompile Include="src\typings\chai\chai.d.ts" />
     <TypeScriptCompile Include="src\typings\mocha\mocha.d.ts" />
     <TypeScriptCompile Include="src\typings\node\node.d.ts" />
-    <TypeScriptCompile Include="src\typings\slownode\slownode.d.ts" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="scripts\" />
