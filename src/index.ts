@@ -21,7 +21,7 @@ var api = {
     setImmediate: slowEventLoop.setImmediate,
     clearImmediate: slowEventLoop.clearImmediate,
     Promise: SlowPromise.logged(slowLog),
-    async: SlowAsyncFunction
+    async: SlowAsyncFunction.logged(slowLog)
 };
 
 

@@ -1,6 +1,7 @@
 ﻿import assert = require('assert');
 import _ = require('lodash');
 import SlowKind = require('../slowKind');
+import SlowLog = require('../slowLog');
 import makeCallableClass = require('../util/makeCallableClass');
 import shasum = require('../util/shasum');
 import SteppableStateMachine = require('../steppables/steppableStateMachine');
@@ -22,6 +23,12 @@ var SlowAsyncFunction: {
 
     /** Creates a new SlowAsyncFunction instance. */
     (bodyFunc: Function): SlowAsyncFunction;
+
+    /** INTERNAL the SlowLog used by all instances created by this constructor. */
+    $slowLog: SlowLog;
+
+    /** INTERNAL returns a SlowAsyncFunction constructor function whose instances are bound to the given SlowLog. */
+    logged(log: SlowLog): typeof SlowAsyncFunction;
 }
 interface SlowAsyncFunction {
 
@@ -83,13 +90,37 @@ SlowAsyncFunction = <any> makeCallableClass({
         var deferred = SlowPromise.deferred();
 
         // Create a new SlowAsyncFunctionActivation instance to run the async operation.
-        var safa = new SlowAsyncFunctionActivation(this, deferred.resolve, deferred.reject, args);
+        var safa = new SlowAsyncFunctionActivation(this, deferred.resolve, deferred.reject, args); // TODO: must be log-bound SAFA!
 
         // Run the async operation to completion, and return a promise of the outcome.
         safa.runToCompletion(safa);
         return deferred.promise;
     }
 });
+
+
+// Set the static '$slowLog' property on the SlowAsyncFunction callable class.
+SlowAsyncFunction.$slowLog = SlowLog.none;
+
+
+// Define the static `logged` method on the SlowAsyncFunction callable class.
+SlowAsyncFunction.logged = (log: SlowLog) => {
+
+    // Return the cached constructor if one has already been created.
+    var cached = log['_SlowAsyncFunction'];
+    if (cached) return cached;
+
+    // Derive a new subclass of SlowPromise that is bound to the given slow log.
+    class SlowAsyncFunctionLogged extends SlowAsyncFunction {
+        constructor(bodyFunc) { return <any> super(bodyFunc); }
+        static $slowLog = log;
+        static logged = SlowAsyncFunction.logged;
+    };
+
+    // Cache and return the constructor function.
+    log['_SlowAsyncFunction'] = SlowAsyncFunctionLogged;
+    return SlowAsyncFunctionLogged;
+};
 
 
 /** Supports memoization of SlowAsyncFunction instances, which are immutable and expensive to compute. */
