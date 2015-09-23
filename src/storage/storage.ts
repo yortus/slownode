@@ -2,7 +2,7 @@
 import fs = require('fs');
 import path = require('path');
 import _ = require('lodash');
-import SlowType = require('../slowType');
+import SlowKind = require('../slowKind');
 import SlowObject = require('../slowObject');
 import storageLocation = require('./storageLocation');
 import dehydrateSlowObject = require('./dehydrateSlowObject');
@@ -10,7 +10,7 @@ import rehydrateSlowObject = require('./rehydrateSlowObject');
 
 
 // TODO: temp testing...
-type SlowObjectFactories = { [type: number]: ($slow: { type: SlowType, id?: string }) => SlowObject; };
+type SlowObjectFactories = { [type: number]: ($slow: { kind: SlowKind, id?: string }) => SlowObject; };
 
 
 interface StorageAPI {
@@ -132,7 +132,7 @@ export function loadState() {
     // Further filter the slow objects to those that are transitively reachable from roots.
     // There is only one root slow object: the slow event loop.
     var rootSlowObjectIds = _.values<SlowObject>(dehydratedSlowObjects)
-        .filter(so => so.$slow.type === SlowType.SlowEventLoop)
+        .filter(so => so.$slow.kind === SlowKind.EventLoop)
         .map(so => so.$slow.id);
     var reachableSlowObjectIds = new Set(rootSlowObjectIds);
     var reachableObjects = rootSlowObjectIds.reduce((objs, id) => objs.concat(_.values(dehydratedSlowObjects[id].$slow)), []);
@@ -193,7 +193,7 @@ export function loadState() {
 
 
 
-export function registerSlowObjectFactory(type: SlowType, factory: ($slow: { type: SlowType, id: string }) => SlowObject) {
+export function registerSlowObjectFactory(type: SlowKind, factory: ($slow: { kind: SlowKind, id: string }) => SlowObject) {
     slowObjectFactories[type] = factory;
 }
 

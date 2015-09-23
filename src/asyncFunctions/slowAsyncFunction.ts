@@ -1,6 +1,6 @@
 ﻿import assert = require('assert');
 import _ = require('lodash');
-import SlowType = require('../slowType');
+import SlowKind = require('../slowKind');
 import makeCallableClass = require('../util/makeCallableClass');
 import shasum = require('../util/shasum');
 import SteppableStateMachine = require('../steppables/steppableStateMachine');
@@ -30,7 +30,7 @@ interface SlowAsyncFunction {
 
     /** Holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
     $slow: {
-        type: SlowType;
+        kind: SlowKind;
         id?: string;
         stateMachineSource: string;
         originalSource: string; // TODO: not needed in operation, but preserve for future debugging/sourcemap needs?
@@ -63,7 +63,7 @@ SlowAsyncFunction = <any> makeCallableClass({
         var steppableFunc = new SteppableFunction(bodyFunc, { pseudoYield: 'await', pseudoConst: '__const' });
         this.stateMachine = steppableFunc.stateMachine;
         this.$slow = {
-            type: SlowType.SlowAsyncFunction,
+            kind: SlowKind.AsyncFunction,
             id: safid,
             stateMachineSource: steppableFunc.stateMachine.toString(),
             originalSource
@@ -97,7 +97,7 @@ var asyncFunctionCache: { [afid: string]: SlowAsyncFunction; } = {};
 
 
 // Tell storage how to create a SlowAsyncFunction instance.
-storage.registerSlowObjectFactory(SlowType.SlowAsyncFunction, $slow => {
+storage.registerSlowObjectFactory(SlowKind.AsyncFunction, $slow => {
     var saf = new SlowAsyncFunction(() => {});
     saf.$slow = <any> $slow;
     saf.stateMachine = eval(`(${saf.$slow.stateMachineSource})`);

@@ -9,11 +9,11 @@ var storage = require('./storage/storage');
  * @param obj the object to mark as a weak-referenced slow object. It must be an object type.
  */
 function makeWeakRef(obj) {
-    obj.$slow = { type: 60 /* SlowWeakRef */ };
+    obj.$slow = { kind: 60 /* WeakRef */ };
     storage.created(obj);
 }
 // Tell storage how to create a SlowWeakRef instance.
-storage.registerSlowObjectFactory(60 /* SlowWeakRef */, function ($slow) {
+storage.registerSlowObjectFactory(60 /* WeakRef */, function ($slow) {
     return null;
 });
 module.exports = makeWeakRef;

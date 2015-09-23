@@ -19,7 +19,7 @@ var SlowAsyncFunctionActivation = (function (_super) {
         _super.call(this, asyncFunction.stateMachine);
         /** Holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
         this.$slow = {
-            type: 30 /* SlowAsyncFunctionActivation */,
+            kind: 30 /* AsyncFunctionActivation */,
             id: null,
             /** The body of code being executed by this activation. */
             asyncFunction: null,
@@ -89,7 +89,7 @@ var SlowAsyncFunctionActivation = (function (_super) {
     return SlowAsyncFunctionActivation;
 })(SteppableObject);
 // Tell storage how to create a SlowAsyncFunctionActivation instance.
-storage.registerSlowObjectFactory(30 /* SlowAsyncFunctionActivation */, function ($slow) {
+storage.registerSlowObjectFactory(30 /* AsyncFunctionActivation */, function ($slow) {
     // NB: The rehydration approach used here depends on two implementation details:
     // (1) the safa constructor doesn't care about the passed values for resolve/reject/args,
     //     so these can be fixed up after construction (by re-assigning the $slow property).

@@ -1,4 +1,4 @@
-﻿import SlowType = require('./slowType');
+﻿import SlowKind = require('./slowKind');
 export = SlowObject;
 
 
@@ -6,8 +6,8 @@ export = SlowObject;
 interface SlowObject {
     $slow: {
 
-        /** The type of this slow object. */
-        type: SlowType;
+        /** The kind of this slow object. */
+        kind: SlowKind;
 
         /** The epoch-unique identifier assigned to this slow object. */
         id?: string;

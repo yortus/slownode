@@ -13,7 +13,7 @@ var SlowPromise = (function () {
         // -------------- Private implementation details from here down --------------
         /** Holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
         this.$slow = {
-            type: 10 /* SlowPromise */,
+            kind: 10 /* Promise */,
             isFateResolved: false,
             state: 0 /* Pending */,
             settledValue: void 0,
@@ -163,7 +163,7 @@ function processAllHandlers(p) {
     }
 }
 // Tell storage how to create a SlowPromise instance.
-storage.registerSlowObjectFactory(10 /* SlowPromise */, function ($slow) {
+storage.registerSlowObjectFactory(10 /* Promise */, function ($slow) {
     var promise = new SlowPromise(null);
     promise.$slow = $slow;
     return promise;

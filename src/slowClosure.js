@@ -23,7 +23,7 @@ SlowClosure = makeCallableClass({
         eval("with (env) fn = " + fn.toString() + ";");
         this.function = fn;
         this.$slow = {
-            type: 50 /* SlowClosure */,
+            kind: 50 /* Closure */,
             functionSource: functionSource,
             environment: env
         };
@@ -42,7 +42,7 @@ SlowClosure = makeCallableClass({
     bindThis: true
 });
 // Tell storage how to create a SlowPromiseReject instance.
-storage.registerSlowObjectFactory(50 /* SlowClosure */, function ($slow) {
+storage.registerSlowObjectFactory(50 /* Closure */, function ($slow) {
     var closure = new SlowClosure($slow.environment, $slow.functionSource);
     return closure;
 });

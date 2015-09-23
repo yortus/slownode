@@ -28,7 +28,7 @@ describe('The async(...) function', function () {
     it('works', (done) => {
 
         var fn = slow.async((delay: number, count: number, cb) => {
-            const SlowPromise: typeof slow.Promise = __const(require('slownode').Promise);
+            const SlowPromise: typeof slow.Promise = __const(require('..').Promise); // TODO: flaky!! not relocatable...
             for (var i = 0; i < count; ++i) {
                 console.log(`waiting...${i}`);
                 cb();

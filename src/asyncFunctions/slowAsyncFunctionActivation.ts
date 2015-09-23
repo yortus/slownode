@@ -4,7 +4,7 @@ import SlowObject = require('../slowObject');
 import SlowPromise = require('../promises/slowPromise');
 import SlowPromiseResolve = require('../promises/slowPromiseResolve');
 import SlowPromiseReject = require('../promises/slowPromiseReject');
-import SlowType = require('../slowType');
+import SlowKind = require('../slowKind');
 import SteppableStateMachine = require('../steppables/steppableStateMachine');
 import SteppableObject = require('../steppables/steppableObject');
 import SlowClosure = require('../slowClosure');
@@ -35,7 +35,7 @@ class SlowAsyncFunctionActivation extends SteppableObject {
 
     /** Holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
     $slow = {
-        type: SlowType.SlowAsyncFunctionActivation,
+        kind: SlowKind.AsyncFunctionActivation,
         id: <string> null,
 
         /** The body of code being executed by this activation. */
@@ -113,7 +113,7 @@ class SlowAsyncFunctionActivation extends SteppableObject {
 
 
 // Tell storage how to create a SlowAsyncFunctionActivation instance.
-storage.registerSlowObjectFactory(SlowType.SlowAsyncFunctionActivation, ($slow: any) => {
+storage.registerSlowObjectFactory(SlowKind.AsyncFunctionActivation, ($slow: any) => {
 
     // NB: The rehydration approach used here depends on two implementation details:
     // (1) the safa constructor doesn't care about the passed values for resolve/reject/args,

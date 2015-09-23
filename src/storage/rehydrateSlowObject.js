@@ -9,7 +9,7 @@ function rehydrateSlowObject(dehydrated, allSlowObjects, factories) {
     var $slow = dehydrated.$slow;
     _.mapValues(dehydrated.$slow, function (val, key, obj) { return rehydrateInPlace(val, key, obj, allSlowObjects); });
     // Rehydrate the slow object using the appropriate factory function.
-    var factory = factories[$slow.type];
+    var factory = factories[$slow.kind];
     assert(factory);
     var rehydratedSlowObject = factory($slow);
     return rehydratedSlowObject;

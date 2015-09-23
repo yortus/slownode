@@ -68,13 +68,12 @@ function clearImmediate(immediateObject) {
     return clearTimeout(immediateObject);
 }
 exports.clearImmediate = clearImmediate;
-// TODO: doc...
-console.log("==================== EVENT LOOP INITS");
+// TODO: doc... fix...
 global['slowEventLoopEntries'] = global['slowEventLoopEntries'] || [];
 var entries = global['slowEventLoopEntries'];
 var persistedEventLoop = {
     $slow: {
-        type: 1 /* SlowEventLoop */,
+        kind: 1 /* EventLoop */,
         id: '<EventLoop>',
         entries: entries
     }
@@ -142,7 +141,7 @@ function runLoop() {
     startOrContinuePumping();
 }
 // Tell storage how to restore the slow event loop.
-storage.registerSlowObjectFactory(1 /* SlowEventLoop */, function ($slow) {
+storage.registerSlowObjectFactory(1 /* EventLoop */, function ($slow) {
     entries.push.apply(entries, $slow.entries);
     return persistedEventLoop;
 });

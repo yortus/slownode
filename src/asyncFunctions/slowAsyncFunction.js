@@ -28,7 +28,7 @@ SlowAsyncFunction = makeCallableClass({
         var steppableFunc = new SteppableFunction(bodyFunc, { pseudoYield: 'await', pseudoConst: '__const' });
         this.stateMachine = steppableFunc.stateMachine;
         this.$slow = {
-            type: 20 /* SlowAsyncFunction */,
+            kind: 20 /* AsyncFunction */,
             id: safid,
             stateMachineSource: steppableFunc.stateMachine.toString(),
             originalSource: originalSource
@@ -56,7 +56,7 @@ SlowAsyncFunction = makeCallableClass({
 /** Supports memoization of SlowAsyncFunction instances, which are immutable and expensive to compute. */
 var asyncFunctionCache = {};
 // Tell storage how to create a SlowAsyncFunction instance.
-storage.registerSlowObjectFactory(20 /* SlowAsyncFunction */, function ($slow) {
+storage.registerSlowObjectFactory(20 /* AsyncFunction */, function ($slow) {
     var saf = new SlowAsyncFunction(function () { });
     saf.$slow = $slow;
     saf.stateMachine = eval("(" + saf.$slow.stateMachineSource + ")");

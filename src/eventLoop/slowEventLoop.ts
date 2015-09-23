@@ -1,11 +1,11 @@
-﻿import SlowType = require('../slowType');
+﻿import SlowKind = require('../slowKind');
 import storage = require('../storage/storage');
 
 
 // TODO: temp testing...
 interface EventLoop {
     $slow: {
-        type: SlowType;
+        type: SlowKind;
         id?: string;
         entries: Entry[];
     };
@@ -110,13 +110,12 @@ export function clearImmediate(immediateObject: Timer) {
 }
 
 
-// TODO: doc...
-console.log(`==================== EVENT LOOP INITS`);
+// TODO: doc... fix...
 global['slowEventLoopEntries'] = global['slowEventLoopEntries'] || [];
 var entries: Entry[] = global['slowEventLoopEntries'];
 var persistedEventLoop = {
     $slow: {
-        type: SlowType.SlowEventLoop,
+        kind: SlowKind.EventLoop,
         id: '<EventLoop>',
         entries
     }
@@ -208,7 +207,7 @@ function runLoop() {
 
 
 // Tell storage how to restore the slow event loop.
-storage.registerSlowObjectFactory(SlowType.SlowEventLoop, ($slow: any) => {
+storage.registerSlowObjectFactory(SlowKind.EventLoop, ($slow: any) => {
     entries.push.apply(entries, $slow.entries);
     return persistedEventLoop;
 });

@@ -1,4 +1,4 @@
-import SlowType = require('../slowType');
+import SlowKind = require('../slowKind');
 import SlowPromise = require('./slowPromise'); // NB: elided circular ref (for types only)
 import makeCallableClass = require('../util/makeCallableClass');
 import standardResolutionProcedure = require('./standardResolutionProcedure');
@@ -25,7 +25,7 @@ interface SlowPromiseResolve {
 
     /** Holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
     $slow: {
-        type: SlowType;
+        kind: SlowKind;
         id?: string;
         promise: SlowPromise;
     };
@@ -39,7 +39,7 @@ SlowPromiseResolve = <any> makeCallableClass({
     constructor: function (promise: SlowPromise) {
 
         // Add slow metadata to the resolve function.
-        this.$slow = { type: SlowType.SlowPromiseResolve, promise };
+        this.$slow = { kind: SlowKind.PromiseResolve, promise };
 
         // Synchronise with the persistent object graph.
         storage.created(this);
@@ -65,7 +65,7 @@ SlowPromiseResolve = <any> makeCallableClass({
 
 
 // Tell storage how to create a SlowPromiseResolve instance.
-storage.registerSlowObjectFactory(SlowType.SlowPromiseResolve, $slow => {
+storage.registerSlowObjectFactory(SlowKind.PromiseResolve, $slow => {
     var resolve = new SlowPromiseResolve(null);
     resolve.$slow = <any> $slow;
     return resolve;

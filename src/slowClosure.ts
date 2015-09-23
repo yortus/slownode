@@ -1,5 +1,5 @@
 ﻿import _ = require('lodash');
-import SlowType = require('./slowType');
+import SlowKind = require('./slowKind');
 import makeCallableClass = require('./util/makeCallableClass');
 import isRelocatableFunction = require('./util/isRelocatableFunction');
 import storage = require('./storage/storage');
@@ -27,7 +27,7 @@ interface SlowClosure {
 
     /** Holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
     $slow: {
-        type: SlowType;
+        kind: SlowKind;
         id?: string;
         functionSource: string;
         environment: { [name: string]: any; };
@@ -56,7 +56,7 @@ SlowClosure = <any> makeCallableClass({
 
         this.function = fn;
         this.$slow = {
-            type: SlowType.SlowClosure,
+            kind: SlowKind.Closure,
             functionSource,
             environment: env
         };
@@ -76,7 +76,7 @@ SlowClosure = <any> makeCallableClass({
 
 
 // Tell storage how to create a SlowPromiseReject instance.
-storage.registerSlowObjectFactory(SlowType.SlowClosure, ($slow: any) => {
+storage.registerSlowObjectFactory(SlowKind.Closure, ($slow: any) => {
     var closure = new SlowClosure($slow.environment, $slow.functionSource);
     return closure;
 });

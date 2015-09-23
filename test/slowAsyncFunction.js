@@ -12,7 +12,7 @@ process.on('SIGINT', function () {
 describe('The async(...) function', function () {
     it('works', function (done) {
         var fn = slow.async(function (delay, count, cb) {
-            var SlowPromise = __const(require('slownode').Promise);
+            var SlowPromise = __const(require('..').Promise); // TODO: flaky!! not relocatable...
             for (var i = 0; i < count; ++i) {
                 console.log("waiting..." + i);
                 cb();

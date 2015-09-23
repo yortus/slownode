@@ -97,7 +97,7 @@ function loadState() {
     // Further filter the slow objects to those that are transitively reachable from roots.
     // There is only one root slow object: the slow event loop.
     var rootSlowObjectIds = _.values(dehydratedSlowObjects)
-        .filter(function (so) { return so.$slow.type === 1 /* SlowEventLoop */; })
+        .filter(function (so) { return so.$slow.kind === 1 /* EventLoop */; })
         .map(function (so) { return so.$slow.id; });
     var reachableSlowObjectIds = new Set(rootSlowObjectIds);
     var reachableObjects = rootSlowObjectIds.reduce(function (objs, id) { return objs.concat(_.values(dehydratedSlowObjects[id].$slow)); }, []);

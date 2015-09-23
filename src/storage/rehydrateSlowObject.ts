@@ -1,12 +1,12 @@
 ﻿import assert = require('assert');
 import _ = require('lodash');
-import SlowType = require('../slowType');
+import SlowKind = require('../slowKind');
 import SlowObject = require('../slowObject');
 export = rehydrateSlowObject;
 
 
 // TODO: temp testing...
-type SlowObjectFactories = { [type: number]: ($slow: { type: SlowType, id?: string }) => SlowObject; };
+type SlowObjectFactories = { [type: number]: ($slow: { kind: SlowKind, id?: string }) => SlowObject; };
 
 
 /**
@@ -20,7 +20,7 @@ function rehydrateSlowObject(dehydrated: SlowObject, allSlowObjects: {[id: strin
     _.mapValues(dehydrated.$slow, (val, key, obj) => rehydrateInPlace(val, key, obj, allSlowObjects));
 
     // Rehydrate the slow object using the appropriate factory function.
-    var factory = factories[$slow.type];
+    var factory = factories[$slow.kind];
     assert(factory);
     var rehydratedSlowObject = factory($slow);
     return rehydratedSlowObject;

@@ -1,6 +1,6 @@
 import assert = require('assert');
 import _ = require('lodash');
-import SlowType = require('../slowType');
+import SlowKind = require('../slowKind');
 import SlowPromiseResolve = require('./slowPromiseResolve');
 import SlowPromiseReject = require('./slowPromiseReject');
 import standardResolutionProcedure = require('./standardResolutionProcedure');
@@ -102,7 +102,7 @@ class SlowPromise {
 
     /** Holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
     $slow = {
-        type: SlowType.SlowPromise,
+        kind: SlowKind.Promise,
         isFateResolved: false,
         state: State.Pending,
         settledValue: void 0,
@@ -209,7 +209,7 @@ interface Deferred {
 
 
 // Tell storage how to create a SlowPromise instance.
-storage.registerSlowObjectFactory(SlowType.SlowPromise, $slow => {
+storage.registerSlowObjectFactory(SlowKind.Promise, $slow => {
     var promise = new SlowPromise(null);
     promise.$slow = <any> $slow;
     return promise;

@@ -1,5 +1,5 @@
 ﻿export = makeWeakRef;
-import SlowType = require('./slowType');
+import SlowKind = require('./slowKind');
 import storage = require('./storage/storage');
 
 
@@ -13,12 +13,12 @@ import storage = require('./storage/storage');
  * @param obj the object to mark as a weak-referenced slow object. It must be an object type.
  */
 function makeWeakRef(obj: any) {
-    obj.$slow = { type: SlowType.SlowWeakRef }
+    obj.$slow = { kind: SlowKind.WeakRef }
     storage.created(obj);
 }
 
 
 // Tell storage how to create a SlowWeakRef instance.
-storage.registerSlowObjectFactory(SlowType.SlowWeakRef, $slow => {
+storage.registerSlowObjectFactory(SlowKind.WeakRef, $slow => {
     return null;
 });
