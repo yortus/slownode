@@ -1,6 +1,5 @@
 import async = require('asyncawait/async');
 import await = require('asyncawait/await');
-import slow = require('../src'); // TODO: fix this!!
 import SteppableFunction = require('../src/steppables/steppableFunction'); // TODO: expose this through public API?
 import chai = require("chai");
 chai.use(require('chai-as-promised'));

@@ -111,7 +111,6 @@
     <Folder Include="src\typings\es6-collections\" />
     <Folder Include="src\typings\es6-promise\" />
     <Folder Include="src\typings\node\" />
-    <Folder Include="src\typings\slownode\" />
     <Folder Include="test" />
     <Folder Include="test\fixtures\" />
     <Folder Include="test\fixtures\slowfuncs\" />
