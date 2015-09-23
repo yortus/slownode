@@ -1,4 +1,5 @@
 ﻿import SlowKind = require('./slowKind');
+import SlowLog = require('./slowLog'); // NB: elided circular ref (for types only)
 export = SlowObject;
 
 
@@ -14,6 +15,9 @@ interface SlowObject {
 
         [other: string]: any;
     }
+
+    /** The SlowLog to which this instance is bound. */
+    $slowLog?: SlowLog;
 
     [other: string]: any;
 }

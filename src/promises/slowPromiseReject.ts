@@ -1,4 +1,5 @@
 import SlowKind = require('../slowKind');
+import SlowLog = require('../slowLog');
 import SlowPromise = require('./slowPromise'); // NB: elided circular ref (for types only)
 import makeCallableClass = require('../util/makeCallableClass');
 import storage = require('../storage/storage');
@@ -22,12 +23,15 @@ interface SlowPromiseReject {
     /** Calling the instance rejects the promise passed to the constructor, with `reason` as the rejection reason. */
     (reason?: any): void;
 
-    /** Holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
+    /** INTERNAL holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
     $slow: {
         kind: SlowKind;
         id?: string;
         promise: SlowPromise;
     };
+
+    /** INTERNAL the SlowLog to which this instance is bound. It matches that of the promise passed to the constructor. */
+    $slowLog: SlowLog;
 }
 
 
@@ -39,6 +43,7 @@ SlowPromiseReject = <any> makeCallableClass({
 
         // Add slow metadata to the resolve function.
         this.$slow = { kind: SlowKind.PromiseReject, promise };
+        this.$slowLog = promise ? promise.constructor['$slowLog'] : null;
 
         // Synchronise with the persistent object graph.
         storage.created(this);
@@ -64,8 +69,12 @@ SlowPromiseReject = <any> makeCallableClass({
 
 
 // Tell storage how to create a SlowPromiseReject instance.
-storage.registerSlowObjectFactory(SlowKind.PromiseReject, $slow => {
+storage.registerSlowObjectFactory(SlowKind.PromiseReject, ($slow: any) => {
+    // NB: The rehydration approach used here depends on an implementation detail:
+    //     that the given $slow already has a valid `promise` property because that
+    //     will always appear in the storage log before any rejectors which use it.
     var reject = new SlowPromiseReject(null);
-    reject.$slow = <any> $slow;
+    reject.$slow = $slow;
+    reject.$slowLog = $slow.promise.constructor.$slowLog;
     return reject;
 });

@@ -28,7 +28,7 @@ interface SlowAsyncFunction {
     /** Calling the instance begins execution of the body function, and returns a promise of its outcome. */
     (...args): SlowPromise;
 
-    /** Holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
+    /** INTERNAL holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
     $slow: {
         kind: SlowKind;
         id?: string;
@@ -36,7 +36,7 @@ interface SlowAsyncFunction {
         originalSource: string; // TODO: not needed in operation, but preserve for future debugging/sourcemap needs?
     };
 
-    /** PRIVATE property holding the state machine that is equivalent to the body function passed to the constructor. */
+    /** INTERNAL the state machine that is equivalent to the body function passed to the constructor. */
     stateMachine: SteppableStateMachine;
 }
 

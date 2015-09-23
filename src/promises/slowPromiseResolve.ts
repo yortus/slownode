@@ -1,4 +1,5 @@
 import SlowKind = require('../slowKind');
+import SlowLog = require('../slowLog');
 import SlowPromise = require('./slowPromise'); // NB: elided circular ref (for types only)
 import makeCallableClass = require('../util/makeCallableClass');
 import standardResolutionProcedure = require('./standardResolutionProcedure');
@@ -23,12 +24,15 @@ interface SlowPromiseResolve {
     /** Calling the instance resolves the promise passed to the constructor, with `value` as the resolved value. */
     (value?: any): void;
 
-    /** Holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
+    /** INTERNAL holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
     $slow: {
         kind: SlowKind;
         id?: string;
         promise: SlowPromise;
     };
+
+    /** INTERNAL the SlowLog to which this instance is bound. It matches that of the promise passed to the constructor. */
+    $slowLog: SlowLog;
 }
 
 
@@ -40,6 +44,7 @@ SlowPromiseResolve = <any> makeCallableClass({
 
         // Add slow metadata to the resolve function.
         this.$slow = { kind: SlowKind.PromiseResolve, promise };
+        this.$slowLog = promise ? promise.constructor['$slowLog'] : null;
 
         // Synchronise with the persistent object graph.
         storage.created(this);
@@ -65,8 +70,12 @@ SlowPromiseResolve = <any> makeCallableClass({
 
 
 // Tell storage how to create a SlowPromiseResolve instance.
-storage.registerSlowObjectFactory(SlowKind.PromiseResolve, $slow => {
+storage.registerSlowObjectFactory(SlowKind.PromiseResolve, ($slow: any) => {
+    // NB: The rehydration approach used here depends on an implementation detail:
+    //     that the given $slow already has a valid `promise` property because that
+    //     will always appear in the storage log before any resolvers which use it.
     var resolve = new SlowPromiseResolve(null);
-    resolve.$slow = <any> $slow;
+    resolve.$slow = $slow;
+    resolve.$slowLog = $slow.promise.constructor.$slowLog;
     return resolve;
 });

@@ -12,6 +12,7 @@ SlowPromiseResolve = makeCallableClass({
     constructor: function (promise) {
         // Add slow metadata to the resolve function.
         this.$slow = { kind: 11 /* PromiseResolve */, promise: promise };
+        this.$slowLog = promise ? promise.constructor['$slowLog'] : null;
         // Synchronise with the persistent object graph.
         storage.created(this);
     },
@@ -31,8 +32,12 @@ SlowPromiseResolve = makeCallableClass({
 });
 // Tell storage how to create a SlowPromiseResolve instance.
 storage.registerSlowObjectFactory(11 /* PromiseResolve */, function ($slow) {
+    // NB: The rehydration approach used here depends on an implementation detail:
+    //     that the given $slow already has a valid `promise` property because that
+    //     will always appear in the storage log before any resolvers which use it.
     var resolve = new SlowPromiseResolve(null);
     resolve.$slow = $slow;
+    resolve.$slowLog = $slow.promise.constructor.$slowLog;
     return resolve;
 });
 module.exports = SlowPromiseResolve;

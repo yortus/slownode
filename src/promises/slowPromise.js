@@ -21,7 +21,7 @@ var SlowPromise = (function () {
      */
     function SlowPromise(resolver) {
         /**
-         * PRIVATE Holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data.
+         * INTERNAL holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data.
          */
         this.$slow = {
             kind: 10 /* Promise */,
@@ -38,8 +38,8 @@ var SlowPromise = (function () {
         if (!resolver)
             return this;
         // Construct resolve and reject functions to be passed to the resolver.
-        var resolve = new SlowPromiseResolve(this); // TODO: need log-bound SlowPromiseResolve
-        var reject = new SlowPromiseReject(this); // TODO: need log-bound SlowPromiseReject
+        var resolve = new SlowPromiseResolve(this);
+        var reject = new SlowPromiseReject(this);
         // Call the given resolver. This kicks off the asynchronous operation whose outcome the Promise represents.
         try {
             resolver(resolve, reject);
@@ -78,7 +78,7 @@ var SlowPromise = (function () {
         return this.then(void 0, onRejected);
     };
     /**
-     * PRIVATE method to fulfil the promise.
+     * INTERNAL fulfils the promise.
      */
     SlowPromise.prototype.fulfil = function (value) {
         var _this = this;
@@ -93,7 +93,7 @@ var SlowPromise = (function () {
         var _a;
     };
     /**
-     * PRIVATE method to reject the promise.
+     * INTERNAL rejects the promise.
      */
     SlowPromise.prototype.reject = function (reason) {
         var _this = this;
@@ -107,14 +107,6 @@ var SlowPromise = (function () {
         process.nextTick(function () { return processAllHandlers(_this); });
         var _a;
     };
-    /**
-     * The SlowLog used by all instances created by this constructor.
-     */
-    SlowPromise.$slowLog = SlowLog.none;
-    /**
-     * Returns a SlowPromise constructor function whose instances are bound to the given SlowLog.
-     */
-    SlowPromise.logged = makeLoggedStaticMethod();
     /**
      * Returns a new SlowPromise instance that is already resolved with the given value.
      */
@@ -131,6 +123,14 @@ var SlowPromise = (function () {
      * Returns a new SlowPromise instance that resolves after `ms` milliseconds.
      */
     SlowPromise.delay = makeDelayStaticMethod(SlowPromise);
+    /**
+     * INTERNAL the SlowLog used by all instances created by this constructor.
+     */
+    SlowPromise.$slowLog = SlowLog.none;
+    /**
+     * INTERNAL returns a SlowPromise constructor function whose instances are bound to the given SlowLog.
+     */
+    SlowPromise.logged = makeLoggedStaticMethod();
     return SlowPromise;
 })();
 /**
@@ -168,7 +168,7 @@ function makeLoggedStaticMethod() {
 function makeResolvedStaticMethod(ctorFunc) {
     return function (value) {
         var promise = new ctorFunc(null);
-        var resolve = new SlowPromiseResolve(promise); // TODO: need log-bound SlowPromiseResolve
+        var resolve = new SlowPromiseResolve(promise);
         resolve(value);
         return promise;
     };
@@ -179,7 +179,7 @@ function makeResolvedStaticMethod(ctorFunc) {
 function makeRejectedStaticMethod(ctorFunc) {
     return function (reason) {
         var promise = new ctorFunc(null);
-        var reject = new SlowPromiseReject(promise); // TODO: need log-bound SlowPromiseReject
+        var reject = new SlowPromiseReject(promise);
         reject(reason);
         return promise;
     };
@@ -190,8 +190,8 @@ function makeRejectedStaticMethod(ctorFunc) {
 function makeDeferredStaticMethod(ctorFunc) {
     return function () {
         var promise = new ctorFunc(null);
-        var resolve = new SlowPromiseResolve(promise); // TODO: need log-bound SlowPromiseResolve
-        var reject = new SlowPromiseReject(promise); // TODO: need log-bound SlowPromiseReject
+        var resolve = new SlowPromiseResolve(promise);
+        var reject = new SlowPromiseReject(promise);
         return { promise: promise, resolve: resolve, reject: reject };
     };
 }

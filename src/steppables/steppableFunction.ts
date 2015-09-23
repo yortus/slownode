@@ -62,7 +62,7 @@ interface SteppableFunction {
     /** Calling the instance creates and returns a new steppable object. */
     (...args: any[]): SteppableObject;
 
-    /** PRIVATE property holding the state machine that is equivalent to the body function passed to the constructor. */
+    /** INTERNAL the state machine that is equivalent to the body function passed to the constructor. */
     stateMachine: SteppableStateMachine;
 }
 

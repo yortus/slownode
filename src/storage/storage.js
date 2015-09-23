@@ -5,10 +5,9 @@ var storageLocation = require('./storageLocation');
 var dehydrateSlowObject = require('./dehydrateSlowObject');
 var rehydrateSlowObject = require('./rehydrateSlowObject');
 function created(obj) {
-    // TODO: temp testing...
-    var log = obj.constructor['$slowLog'];
+    // TODO: temp testing... try instance prop then static prop
+    var log = obj.$slowLog || obj.constructor['$slowLog'];
     if (log) {
-        debugger;
     }
     // TODO: temp testing...
     if (isLoadingState)

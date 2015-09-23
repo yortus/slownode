@@ -23,10 +23,10 @@ interface StorageAPI {
 
 export function created(obj: SlowObject): StorageAPI {
 
-    // TODO: temp testing...
-    var log = obj.constructor['$slowLog'];
+    // TODO: temp testing... try instance prop then static prop
+    var log = obj.$slowLog || obj.constructor['$slowLog'];
     if (log) {
-        debugger;
+        //debugger;
     }
 
 

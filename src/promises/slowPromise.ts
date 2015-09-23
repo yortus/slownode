@@ -33,22 +33,12 @@ class SlowPromise {
         if (!resolver) return this;
 
         // Construct resolve and reject functions to be passed to the resolver.
-        var resolve = new SlowPromiseResolve(this); // TODO: need log-bound SlowPromiseResolve
-        var reject = new SlowPromiseReject(this); // TODO: need log-bound SlowPromiseReject
+        var resolve = new SlowPromiseResolve(this);
+        var reject = new SlowPromiseReject(this);
 
         // Call the given resolver. This kicks off the asynchronous operation whose outcome the Promise represents.
         try { resolver(resolve, reject); } catch (ex) { reject(ex); }
     }
-
-    /**
-     * The SlowLog used by all instances created by this constructor.
-     */
-    static $slowLog = SlowLog.none;
-
-    /**
-     * Returns a SlowPromise constructor function whose instances are bound to the given SlowLog.
-     */
-    static logged = makeLoggedStaticMethod();
 
     /**
      * Returns a new SlowPromise instance that is already resolved with the given value.
@@ -69,6 +59,16 @@ class SlowPromise {
      * Returns a new SlowPromise instance that resolves after `ms` milliseconds.
      */
     static delay = makeDelayStaticMethod(SlowPromise);
+
+    /**
+     * INTERNAL the SlowLog used by all instances created by this constructor.
+     */
+    static $slowLog = SlowLog.none;
+
+    /**
+     * INTERNAL returns a SlowPromise constructor function whose instances are bound to the given SlowLog.
+     */
+    static logged = makeLoggedStaticMethod();
 
 	/**
      * onFulfilled is called when the promise resolves. onRejected is called when the promise rejects.
@@ -104,7 +104,7 @@ class SlowPromise {
     }
 
     /**
-     * PRIVATE Holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. 
+     * INTERNAL holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. 
      */
     $slow = {
         kind: SlowKind.Promise,
@@ -119,7 +119,7 @@ class SlowPromise {
     };
 
     /**
-     * PRIVATE method to fulfil the promise.
+     * INTERNAL fulfils the promise.
      */
     fulfil(value: any) {
 
@@ -135,7 +135,7 @@ class SlowPromise {
     }
 
     /**
-     * PRIVATE method to reject the promise.
+     * INTERNAL rejects the promise.
      */
     reject(reason: any) {
 
@@ -186,7 +186,7 @@ function makeLoggedStaticMethod() {
 function makeResolvedStaticMethod(ctorFunc: typeof SlowPromise) {
     return (value?: any) => {
         var promise = new ctorFunc(null);
-        var resolve = new SlowPromiseResolve(promise); // TODO: need log-bound SlowPromiseResolve
+        var resolve = new SlowPromiseResolve(promise);
         resolve(value);
         return promise;
     };
@@ -199,7 +199,7 @@ function makeResolvedStaticMethod(ctorFunc: typeof SlowPromise) {
 function makeRejectedStaticMethod(ctorFunc: typeof SlowPromise) {
     return (reason: any) => {
         var promise = new ctorFunc(null);
-        var reject = new SlowPromiseReject(promise); // TODO: need log-bound SlowPromiseReject
+        var reject = new SlowPromiseReject(promise);
         reject(reason);
         return promise;
     };
@@ -212,8 +212,8 @@ function makeRejectedStaticMethod(ctorFunc: typeof SlowPromise) {
 function makeDeferredStaticMethod(ctorFunc: typeof SlowPromise) {
     return () => {
         var promise = new ctorFunc(null);
-        var resolve = new SlowPromiseResolve(promise); // TODO: need log-bound SlowPromiseResolve
-        var reject = new SlowPromiseReject(promise); // TODO: need log-bound SlowPromiseReject
+        var resolve = new SlowPromiseResolve(promise);
+        var reject = new SlowPromiseReject(promise);
         return { promise, resolve, reject };
     };
 }
