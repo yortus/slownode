@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{9d9eb3d2-039f-403c-b42b-bb2e1365bec5}</ProjectGuid>
     <ProjectHome />
-    <ProjectView>ProjectFiles</ProjectView>
+    <ProjectView>ShowAllFiles</ProjectView>
     <StartupFile>scripts\runSlownodeTestSuite.js</StartupFile>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -34,6 +34,7 @@
     <TypeScriptCompile Include="src\asyncFunctions\slowAsyncFunctionActivation.ts" />
     <TypeScriptCompile Include="src\eventLoop\slowEventLoop.ts" />
     <TypeScriptCompile Include="src\index.d.ts" />
+    <TypeScriptCompile Include="src\slowLog.ts" />
     <TypeScriptCompile Include="src\util\estree\funcExpr\classifyIdentifiers.ts" />
     <TypeScriptCompile Include="src\util\estree\funcExpr\containsInnerFunctions.ts" />
     <TypeScriptCompile Include="src\util\estree\funcExpr\isRelocatable.ts" />
@@ -74,6 +75,7 @@
     <TypeScriptCompile Include="src\typings\fs-ext\fs-ext.d.ts" />
     <TypeScriptCompile Include="src\typings\lodash\lodash.d.ts" />
     <Content Include="test\fixtures\slowfuncs\1.ts" />
+    <TypeScriptCompile Include="src\util\makeSubclass.ts" />
     <TypeScriptCompile Include="src\util\makeCallableClass.ts" />
     <TypeScriptCompile Include="src\util\shasum.ts" />
     <TypeScriptCompile Include="test\fixtures\slowfuncs\3.ts" />

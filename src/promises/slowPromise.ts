@@ -1,6 +1,7 @@
 import assert = require('assert');
 import _ = require('lodash');
 import SlowKind = require('../slowKind');
+import SlowLog = require('../slowLog');
 import SlowPromiseResolve = require('./slowPromiseResolve');
 import SlowPromiseReject = require('./slowPromiseReject');
 import standardResolutionProcedure = require('./standardResolutionProcedure');
@@ -12,10 +13,14 @@ export = SlowPromise;
 // TODO: add all(), race()... (see https://github.com/borisyankov/DefinitelyTyped/blob/master/es6-promise/es6-promise.d.ts)
 
 
-/** Promises A+ compliant slow promise implementation. */
+/**
+ * Promises A+ compliant slow promise implementation.
+ */
 class SlowPromise {
 
-    /** Constructs a SlowPromise instance. */
+    /**
+     * Constructs a SlowPromise instance.
+     */
     constructor(resolver: (resolve: SlowPromiseResolve, reject: SlowPromiseReject) => void) {
 
         // Validate arguments.
@@ -28,43 +33,42 @@ class SlowPromise {
         if (!resolver) return this;
 
         // Construct resolve and reject functions to be passed to the resolver.
-        var resolve = new SlowPromiseResolve(this);
-        var reject = new SlowPromiseReject(this);
+        var resolve = new SlowPromiseResolve(this); // TODO: need log-bound SlowPromiseResolve
+        var reject = new SlowPromiseReject(this); // TODO: need log-bound SlowPromiseReject
 
         // Call the given resolver. This kicks off the asynchronous operation whose outcome the Promise represents.
         try { resolver(resolve, reject); } catch (ex) { reject(ex); }
     }
 
-    /** Returns a new SlowPromise instance that is already resolved with the given value. */
-    static resolved(value?: any) {
-        var promise = new SlowPromise(null);
-        var resolve = new SlowPromiseResolve(promise);
-        resolve(value);
-        return promise;
-    }
+    /**
+     * The SlowLog used by all instances created by this constructor.
+     */
+    static $slowLog = SlowLog.none;
 
-    /** Returns a new SlowPromise instance that is already rejected with the given reason. */
-    static rejected(reason: any) {
-        var promise = new SlowPromise(null);
-        var reject = new SlowPromiseReject(promise);
-        reject(reason);
-        return promise;
-    }
+    /**
+     * Returns a SlowPromise constructor function whose instances are bound to the given SlowLog.
+     */
+    static logged = makeLoggedStaticMethod();
 
-    /** Returns an object containing a new SlowPromise instance, along with a resolve function and a reject function to control its fate. */
-    static deferred(): Deferred {
-        var promise = new SlowPromise(null);
-        var resolve = new SlowPromiseResolve(promise);
-        var reject = new SlowPromiseReject(promise);
-        return { promise, resolve, reject };
-    }
+    /**
+     * Returns a new SlowPromise instance that is already resolved with the given value.
+     */
+    static resolved = makeResolvedStaticMethod(SlowPromise);
 
-    /** Returns a new SlowPromise instance that resolves after `ms` milliseconds. */
-    static delay(ms: number) {
-        return new SlowPromise(resolve => {
-            slowEventLoop.setTimeout(resolve => resolve(), ms, resolve);
-        });
-    }
+    /**
+     * Returns a new SlowPromise instance that is already rejected with the given reason.
+     */
+    static rejected = makeRejectedStaticMethod(SlowPromise);
+
+    /**
+     * Returns an object containing a new SlowPromise instance, along with a resolve function and a reject function to control its fate.
+     */
+    static deferred = makeDeferredStaticMethod(SlowPromise);
+
+    /**
+     * Returns a new SlowPromise instance that resolves after `ms` milliseconds.
+     */
+    static delay = makeDelayStaticMethod(SlowPromise);
 
 	/**
      * onFulfilled is called when the promise resolves. onRejected is called when the promise rejects.
@@ -75,9 +79,10 @@ class SlowPromise {
      * @param onRejected called when/if "promise" rejects
      */
     then(onFulfilled?: (value) => any, onRejected?: (error) => any) {
+        var ctorFunc: typeof SlowPromise = <any> this.constructor;
 
         // Create the new promise to be returned by this .then() call.
-        var deferred2 = SlowPromise.deferred();
+        var deferred2 = ctorFunc.deferred();
         this.$slow.handlers.push({ onFulfilled, onRejected, deferred2 });
 
         // Synchronise with the persistent object graph.
@@ -98,9 +103,9 @@ class SlowPromise {
         return this.then(void 0, onRejected);
     }
 
-    // -------------- Private implementation details from here down --------------
-
-    /** Holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
+    /**
+     * PRIVATE Holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. 
+     */
     $slow = {
         kind: SlowKind.Promise,
         isFateResolved: false,
@@ -113,7 +118,9 @@ class SlowPromise {
         }>> []
     };
 
-    /** PRIVATE method to fulfil the promise. */
+    /**
+     * PRIVATE method to fulfil the promise.
+     */
     fulfil(value: any) {
 
         // Update the promise state.
@@ -127,7 +134,9 @@ class SlowPromise {
         process.nextTick(() => processAllHandlers(this));
     }
 
-    /** PRIVATE method to reject the promise. */
+    /**
+     * PRIVATE method to reject the promise.
+     */
     reject(reason: any) {
 
         // Update the promise state.
@@ -140,6 +149,85 @@ class SlowPromise {
         // Invoke any already-attached handlers now (asynchronously).
         process.nextTick(() => processAllHandlers(this));
     }
+}
+
+
+/**
+ * Helper function to create the SlowPromise.logged static method.
+ */
+function makeLoggedStaticMethod() {
+    return (log: SlowLog): typeof SlowPromise => {
+
+        // Return the cached constructor if one has already been created.
+        var cached = log['_SlowPromise'];
+        if (cached) return cached;
+
+        // Derive a new subclass of SlowPromise that is bound to the given slow log.
+        class SlowPromiseLogged extends SlowPromise {
+            constructor(resolver) { super(resolver); }
+            static $slowLog = log;
+            static logged = makeLoggedStaticMethod();
+            static resolved = makeResolvedStaticMethod(SlowPromiseLogged);
+            static rejected = makeRejectedStaticMethod(SlowPromiseLogged);
+            static deferred = makeDeferredStaticMethod(SlowPromiseLogged);
+            static delay = makeDelayStaticMethod(SlowPromiseLogged);
+        };
+
+        // Cache and return the constructor function.
+        log['_SlowPromise'] = SlowPromiseLogged;
+        return SlowPromiseLogged;
+    };
+}
+
+
+/**
+ * Helper function to create the SlowPromise.resolved static method.
+ */
+function makeResolvedStaticMethod(ctorFunc: typeof SlowPromise) {
+    return (value?: any) => {
+        var promise = new ctorFunc(null);
+        var resolve = new SlowPromiseResolve(promise); // TODO: need log-bound SlowPromiseResolve
+        resolve(value);
+        return promise;
+    };
+}
+
+
+/**
+ * Helper function to create the SlowPromise.rejected static method.
+ */
+function makeRejectedStaticMethod(ctorFunc: typeof SlowPromise) {
+    return (reason: any) => {
+        var promise = new ctorFunc(null);
+        var reject = new SlowPromiseReject(promise); // TODO: need log-bound SlowPromiseReject
+        reject(reason);
+        return promise;
+    };
+}
+
+
+/**
+ * Helper function to create the SlowPromise.deferred static method.
+ */
+function makeDeferredStaticMethod(ctorFunc: typeof SlowPromise) {
+    return () => {
+        var promise = new ctorFunc(null);
+        var resolve = new SlowPromiseResolve(promise); // TODO: need log-bound SlowPromiseResolve
+        var reject = new SlowPromiseReject(promise); // TODO: need log-bound SlowPromiseReject
+        return { promise, resolve, reject };
+    };
+}
+
+
+/**
+ * Helper function to create the SlowPromise.delay static method.
+ */
+function makeDelayStaticMethod(ctorFunc: typeof SlowPromise) {
+    return (ms: number) => {
+        return new ctorFunc(resolve => {
+            slowEventLoop.setTimeout(resolve => resolve(), ms, resolve); // TODO: need log-bound slowEventLoop
+        });
+    };
 }
 
 
@@ -192,7 +280,9 @@ function processAllHandlers(p: SlowPromise) {
 }
 
 
-/** The plurality of states which may be assumed by a SlowPromise instance. */
+/**
+ * The states that may be assumed by a SlowPromise instance.
+ */
 const enum State {
     Pending,
     Fulfilled,
@@ -200,7 +290,9 @@ const enum State {
 }
 
 
-/** The type of object returned by the SlowPromise.deferred static method. */
+/**
+ * The type of object returned by the SlowPromise.deferred static method.
+ */
 interface Deferred {
     promise: SlowPromise;
     resolve: SlowPromiseResolve;

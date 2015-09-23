@@ -24,6 +24,13 @@ interface StorageAPI {
 export function created(obj: SlowObject): StorageAPI {
 
     // TODO: temp testing...
+    var log = obj.constructor['$slowLog'];
+    if (log) {
+        debugger;
+    }
+
+
+    // TODO: temp testing...
     if (isLoadingState) return module.exports;
 
 

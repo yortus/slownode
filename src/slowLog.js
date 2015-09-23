@@ -23,11 +23,8 @@ var SlowLog = (function () {
         }
         objs.forEach(storage.deleted);
     };
-    // TODO: ...
-    // TODO: temp testing... how to handle this really?
     SlowLog.none = new SlowLog();
     return SlowLog;
 })();
-var slowLog = new SlowLog();
-module.exports = slowLog;
+module.exports = SlowLog;
 //# sourceMappingURL=slowLog.js.map
