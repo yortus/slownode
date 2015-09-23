@@ -4,11 +4,6 @@ chai.use(require('chai-as-promised'));
 var expect = chai.expect;
 
 
-debugger;
-
-//slow.
-
-
 // TODO: these were in original typings. Where to put them now?
 // The await and __const pseudo-keywords are global.
 declare var await: <T>(arg: Promise<T>) => T;
