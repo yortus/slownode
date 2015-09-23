@@ -1,10 +1,12 @@
-//import API = require('slownode');
+var SlowPool = require('./slowPool');
 var makeWeakRef = require('./makeWeakRef');
 var SlowClosure = require('./slowClosure');
 var slowEventLoop = require('./eventLoop/slowEventLoop');
 var SlowAsyncFunction = require('./asyncFunctions/slowAsyncFunction');
 var SlowPromise = require('./promises/slowPromise');
 var storage = require('./storage/storage');
+// TODO: temp testing...
+var slowPool = new SlowPool();
 // TODO: temp testing... Build the API for export...
 var api = {
     makeWeakRef: makeWeakRef,
@@ -13,7 +15,7 @@ var api = {
     clearTimeout: slowEventLoop.clearTimeout,
     setImmediate: slowEventLoop.setImmediate,
     clearImmediate: slowEventLoop.clearImmediate,
-    Promise: SlowPromise,
+    Promise: SlowPromise.pooled(slowPool),
     async: SlowAsyncFunction
 };
 // TODO: temp testing...
