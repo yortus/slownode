@@ -1,18 +1,15 @@
 var assert = require('assert');
 var _ = require('lodash');
-var SlowPool = require('../slowPool');
 var SlowPromiseResolve = require('./slowPromiseResolve');
 var SlowPromiseReject = require('./slowPromiseReject');
 var standardResolutionProcedure = require('./standardResolutionProcedure');
 var slowEventLoop = require('../eventLoop/slowEventLoop');
-var storage_1 = require('../storage/storage');
+var storage = require('../storage/storage');
 // TODO: add all(), race()... (see https://github.com/borisyankov/DefinitelyTyped/blob/master/es6-promise/es6-promise.d.ts)
 /** Promises A+ compliant slow promise implementation. */
 var SlowPromise = (function () {
     /** Constructs a SlowPromise instance. */
-    function SlowPromise(resolver, pool) {
-        if (pool === void 0) { pool = SlowPool.none; }
-        this.pool = pool;
+    function SlowPromise(resolver) {
         // -------------- Private implementation details from here down --------------
         /** Holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
         this.$slow = {
@@ -25,7 +22,7 @@ var SlowPromise = (function () {
         // Validate arguments.
         assert(!resolver || _.isFunction(resolver));
         // Synchronise with the persistent object graph.
-        pool.created(this);
+        storage.created(this);
         // If no resolver was given, just return now. This is an internal use of the constructor.
         if (!resolver)
             return this;
@@ -40,11 +37,6 @@ var SlowPromise = (function () {
             reject(ex);
         }
     }
-    /** Returns a SlowPromise constructor function whose instances are bound to the given SlowPool. */
-    SlowPromise.pooled = function (pool) {
-        // TODO: implement!!
-        return SlowPromise;
-    };
     /** Returns a new SlowPromise instance that is already resolved with the given value. */
     SlowPromise.resolved = function (value) {
         var promise = new SlowPromise(null);
@@ -86,10 +78,10 @@ var SlowPromise = (function () {
         var deferred2 = SlowPromise.deferred();
         this.$slow.handlers.push({ onFulfilled: onFulfilled, onRejected: onRejected, deferred2: deferred2 });
         // Synchronise with the persistent object graph.
-        this.pool.updated(this);
+        storage.updated(this);
         // If the promise is already settled, invoke the given handlers now (asynchronously).
         if (this.$slow.state !== 0 /* Pending */)
-            process.nextTick(function () { return processAllHandlers(_this, _this.pool); });
+            process.nextTick(function () { return processAllHandlers(_this); });
         // Return the chained promise.
         return deferred2.promise;
     };
@@ -108,9 +100,9 @@ var SlowPromise = (function () {
             return;
         _a = [1 /* Fulfilled */, value], this.$slow.state = _a[0], this.$slow.settledValue = _a[1];
         // Synchronise with the persistent object graph.
-        this.pool.updated(this);
+        storage.updated(this);
         // Invoke any already-attached handlers now (asynchronously).
-        process.nextTick(function () { return processAllHandlers(_this, _this.pool); });
+        process.nextTick(function () { return processAllHandlers(_this); });
         var _a;
     };
     /** PRIVATE method to reject the promise. */
@@ -121,9 +113,9 @@ var SlowPromise = (function () {
             return;
         _a = [2 /* Rejected */, reason], this.$slow.state = _a[0], this.$slow.settledValue = _a[1];
         // Synchronise with the persistent object graph.
-        this.pool.updated(this);
+        storage.updated(this);
         // Invoke any already-attached handlers now (asynchronously).
-        process.nextTick(function () { return processAllHandlers(_this, _this.pool); });
+        process.nextTick(function () { return processAllHandlers(_this); });
         var _a;
     };
     return SlowPromise;
@@ -133,12 +125,12 @@ var SlowPromise = (function () {
  * The SlowPromise implementation calls this when `p` becomes settled,
  * and then on each `then` call made after `p` is settled.
  */
-function processAllHandlers(p, pool) {
+function processAllHandlers(p) {
     // Dequeue each onResolved/onRejected handler in order.
     while (p.$slow.handlers.length > 0) {
         var handler = p.$slow.handlers.shift();
         // Synchronise with the persistent object graph.
-        pool.updated(p);
+        storage.updated(p);
         // Fulfilled case.
         if (p.$slow.state === 1 /* Fulfilled */) {
             if (_.isFunction(handler.onFulfilled)) {
@@ -171,7 +163,7 @@ function processAllHandlers(p, pool) {
     }
 }
 // Tell storage how to create a SlowPromise instance.
-storage_1.registerSlowObjectFactory(10 /* Promise */, function ($slow) {
+storage.registerSlowObjectFactory(10 /* Promise */, function ($slow) {
     var promise = new SlowPromise(null);
     promise.$slow = $slow;
     return promise;

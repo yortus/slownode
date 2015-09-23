@@ -1,12 +1,11 @@
 import assert = require('assert');
 import _ = require('lodash');
 import SlowKind = require('../slowKind');
-import SlowPool = require('../slowPool');
 import SlowPromiseResolve = require('./slowPromiseResolve');
 import SlowPromiseReject = require('./slowPromiseReject');
 import standardResolutionProcedure = require('./standardResolutionProcedure');
 import slowEventLoop = require('../eventLoop/slowEventLoop');
-import {registerSlowObjectFactory} from '../storage/storage';
+import storage = require('../storage/storage');
 export = SlowPromise;
 
 
@@ -17,13 +16,13 @@ export = SlowPromise;
 class SlowPromise {
 
     /** Constructs a SlowPromise instance. */
-    constructor(resolver: (resolve: SlowPromiseResolve, reject: SlowPromiseReject) => void, private pool = SlowPool.none) {
+    constructor(resolver: (resolve: SlowPromiseResolve, reject: SlowPromiseReject) => void) {
 
         // Validate arguments.
         assert(!resolver || _.isFunction(resolver));
 
         // Synchronise with the persistent object graph.
-        pool.created(this);
+        storage.created(this);
 
         // If no resolver was given, just return now. This is an internal use of the constructor.
         if (!resolver) return this;
@@ -34,12 +33,6 @@ class SlowPromise {
 
         // Call the given resolver. This kicks off the asynchronous operation whose outcome the Promise represents.
         try { resolver(resolve, reject); } catch (ex) { reject(ex); }
-    }
-
-    /** Returns a SlowPromise constructor function whose instances are bound to the given SlowPool. */
-    static pooled(pool: SlowPool): typeof SlowPromise {
-        // TODO: implement!!
-        return SlowPromise;
     }
 
     /** Returns a new SlowPromise instance that is already resolved with the given value. */
@@ -88,10 +81,10 @@ class SlowPromise {
         this.$slow.handlers.push({ onFulfilled, onRejected, deferred2 });
 
         // Synchronise with the persistent object graph.
-        this.pool.updated(this);
+        storage.updated(this);
 
         // If the promise is already settled, invoke the given handlers now (asynchronously).
-        if (this.$slow.state !== State.Pending) process.nextTick(() => processAllHandlers(this, this.pool));
+        if (this.$slow.state !== State.Pending) process.nextTick(() => processAllHandlers(this));
 
         // Return the chained promise.
         return deferred2.promise;
@@ -128,10 +121,10 @@ class SlowPromise {
         [this.$slow.state, this.$slow.settledValue] = [State.Fulfilled, value];
 
         // Synchronise with the persistent object graph.
-        this.pool.updated(this);
+        storage.updated(this);
 
         // Invoke any already-attached handlers now (asynchronously).
-        process.nextTick(() => processAllHandlers(this, this.pool));
+        process.nextTick(() => processAllHandlers(this));
     }
 
     /** PRIVATE method to reject the promise. */
@@ -142,10 +135,10 @@ class SlowPromise {
         [this.$slow.state, this.$slow.settledValue] = [State.Rejected, reason];
 
         // Synchronise with the persistent object graph.
-        this.pool.updated(this);
+        storage.updated(this);
 
         // Invoke any already-attached handlers now (asynchronously).
-        process.nextTick(() => processAllHandlers(this, this.pool));
+        process.nextTick(() => processAllHandlers(this));
     }
 }
 
@@ -155,14 +148,14 @@ class SlowPromise {
  * The SlowPromise implementation calls this when `p` becomes settled,
  * and then on each `then` call made after `p` is settled.
  */
-function processAllHandlers(p: SlowPromise, pool: SlowPool) {
+function processAllHandlers(p: SlowPromise) {
 
     // Dequeue each onResolved/onRejected handler in order.
     while (p.$slow.handlers.length > 0) {
         var handler = p.$slow.handlers.shift();
 
         // Synchronise with the persistent object graph.
-        pool.updated(p);
+        storage.updated(p);
 
         // Fulfilled case.
         if (p.$slow.state === State.Fulfilled) {
@@ -216,7 +209,7 @@ interface Deferred {
 
 
 // Tell storage how to create a SlowPromise instance.
-registerSlowObjectFactory(SlowKind.Promise, $slow => {
+storage.registerSlowObjectFactory(SlowKind.Promise, $slow => {
     var promise = new SlowPromise(null);
     promise.$slow = <any> $slow;
     return promise;
