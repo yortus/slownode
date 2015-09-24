@@ -1,3 +1,4 @@
+var SlowLog = require('./slowLog');
 var storage = require('./storage/storage');
 /**
  * Marks the given object as a weak-referenced slow object. WeakRefs are serializable
@@ -8,10 +9,31 @@ var storage = require('./storage/storage');
  * with rehydrated slow objects.
  * @param obj the object to mark as a weak-referenced slow object. It must be an object type.
  */
-function makeWeakRef(obj) {
+var makeWeakRef;
+// Define the callable part of makeWeakRef.
+makeWeakRef = (function (obj) {
     obj.$slow = { kind: 60 /* WeakRef */ };
     storage.created(obj);
-}
+});
+// Set the '$slowLog' property on the makeWeakRef function.
+makeWeakRef.$slowLog = SlowLog.none;
+// Define the `logged` method on the makeWeakRef function.
+makeWeakRef.logged = function (log) {
+    // Return the cached constructor if one has already been created.
+    var cached = log['_makeWeakRef'];
+    if (cached)
+        return cached;
+    // Derive a new makeWeakRef function that is bound to the given slow log.
+    var makeWeakRefLogged = (function (obj) {
+        obj.$slow = { kind: 60 /* WeakRef */ };
+        storage.created(obj);
+    });
+    makeWeakRefLogged.$slowLog = log;
+    makeWeakRefLogged.logged = makeWeakRef.logged;
+    // Cache and return the function.
+    log['_makeWeakRef'] = makeWeakRefLogged;
+    return makeWeakRefLogged;
+};
 // Tell storage how to create a SlowWeakRef instance.
 storage.registerSlowObjectFactory(60 /* WeakRef */, function ($slow) {
     return null;

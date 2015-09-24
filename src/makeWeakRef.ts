@@ -1,5 +1,6 @@
 ﻿export = makeWeakRef;
 import SlowKind = require('./slowKind');
+import SlowLog = require('./slowLog');
 import storage = require('./storage/storage');
 
 
@@ -12,10 +13,47 @@ import storage = require('./storage/storage');
  * with rehydrated slow objects.
  * @param obj the object to mark as a weak-referenced slow object. It must be an object type.
  */
-function makeWeakRef(obj: any) {
-    obj.$slow = { kind: SlowKind.WeakRef }
-    storage.created(obj);
+var makeWeakRef: {
+    (obj: any): void;
+
+    /** INTERNAL the SlowLog to which this function is bound. */
+    $slowLog: SlowLog;
+
+    /** INTERNAL returns a makeWeakRef function bound to the given SlowLog. */
+    logged(log: SlowLog): typeof makeWeakRef;
 }
+
+
+// Define the callable part of makeWeakRef.
+makeWeakRef = <any> ((obj: any) => {
+    obj.$slow = { kind: SlowKind.WeakRef };
+    storage.created(obj);
+});
+
+
+// Set the '$slowLog' property on the makeWeakRef function.
+makeWeakRef.$slowLog = SlowLog.none;
+
+
+// Define the `logged` method on the makeWeakRef function.
+makeWeakRef.logged = (log: SlowLog) => {
+
+    // Return the cached constructor if one has already been created.
+    var cached = log['_makeWeakRef'];
+    if (cached) return cached;
+
+    // Derive a new makeWeakRef function that is bound to the given slow log.
+    var makeWeakRefLogged: typeof makeWeakRef = <any> ((obj: any) => {
+        obj.$slow = { kind: SlowKind.WeakRef }
+        storage.created(obj);
+    });
+    makeWeakRefLogged.$slowLog = log;
+    makeWeakRefLogged.logged = makeWeakRef.logged;
+
+    // Cache and return the function.
+    log['_makeWeakRef'] = makeWeakRefLogged;
+    return makeWeakRefLogged;
+};
 
 
 // Tell storage how to create a SlowWeakRef instance.

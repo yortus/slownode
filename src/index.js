@@ -9,7 +9,7 @@ var storage = require('./storage/storage');
 var slowLog = new SlowLog();
 // TODO: temp testing... Build the API for export...
 var api = {
-    makeWeakRef: makeWeakRef,
+    makeWeakRef: makeWeakRef.logged(slowLog),
     Closure: SlowClosure.logged(slowLog),
     setTimeout: slowEventLoop.setTimeout,
     clearTimeout: slowEventLoop.clearTimeout,
