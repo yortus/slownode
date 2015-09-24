@@ -1,5 +1,6 @@
 ﻿import _ = require('lodash');
 import SlowKind = require('./slowKind');
+import SlowLog = require('./slowLog');
 import makeCallableClass = require('./util/makeCallableClass');
 import isRelocatableFunction = require('./util/isRelocatableFunction');
 import storage = require('./storage/storage');
@@ -19,6 +20,12 @@ var SlowClosure: {
 
     /** Creates a new SlowClosure instance. */
     (env: { [name: string]: any; }, fn: Function): SlowClosure;
+
+    /** INTERNAL the SlowLog used by all instances created by this constructor. */
+    $slowLog: SlowLog;
+
+    /** INTERNAL returns a SlowClosure constructor function whose instances are bound to the given SlowLog. */
+    logged(log: SlowLog): typeof SlowClosure;
 }
 interface SlowClosure {
 
@@ -73,6 +80,30 @@ SlowClosure = <any> makeCallableClass({
     // Ensure calls to apply() leave the `this` binding unchanged.
     bindThis: true
 });
+
+
+// Set the static '$slowLog' property on the SlowClosure callable class.
+SlowClosure.$slowLog = SlowLog.none;
+
+
+// Define the static `logged` method on the SlowClosure callable class.
+SlowClosure.logged = (log: SlowLog) => {
+
+    // Return the cached constructor if one has already been created.
+    var cached = log['_SlowClosure'];
+    if (cached) return cached;
+
+    // Derive a new subclass of SlowClosure that is bound to the given slow log.
+    class SlowClosureLogged extends SlowClosure {
+        constructor(env, fn) { return <any> super(env, fn); }
+        static $slowLog = log;
+        static logged = SlowClosure.logged;
+    };
+
+    // Cache and return the constructor function.
+    log['_SlowClosure'] = SlowClosureLogged;
+    return SlowClosureLogged;
+};
 
 
 // Tell storage how to create a SlowPromiseReject instance.

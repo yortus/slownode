@@ -110,7 +110,7 @@ SlowAsyncFunction.logged = (log: SlowLog) => {
     var cached = log['_SlowAsyncFunction'];
     if (cached) return cached;
 
-    // Derive a new subclass of SlowPromise that is bound to the given slow log.
+    // Derive a new subclass of SlowAsyncFunction that is bound to the given slow log.
     class SlowAsyncFunctionLogged extends SlowAsyncFunction {
         constructor(bodyFunc) { return <any> super(bodyFunc); }
         static $slowLog = log;

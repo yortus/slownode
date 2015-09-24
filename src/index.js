@@ -10,7 +10,7 @@ var slowLog = new SlowLog();
 // TODO: temp testing... Build the API for export...
 var api = {
     makeWeakRef: makeWeakRef,
-    Closure: SlowClosure,
+    Closure: SlowClosure.logged(slowLog),
     setTimeout: slowEventLoop.setTimeout,
     clearTimeout: slowEventLoop.clearTimeout,
     setImmediate: slowEventLoop.setImmediate,
