@@ -16,10 +16,12 @@ var slowLog = new SlowLog();
 var api = {
     makeWeakRef: makeWeakRef.logged(slowLog),
     Closure: SlowClosure.logged(slowLog),
+
     setTimeout: slowEventLoop.setTimeout,
     clearTimeout: slowEventLoop.clearTimeout,
     setImmediate: slowEventLoop.setImmediate,
     clearImmediate: slowEventLoop.clearImmediate,
+
     Promise: SlowPromise.logged(slowLog),
     async: SlowAsyncFunction.logged(slowLog)
 };

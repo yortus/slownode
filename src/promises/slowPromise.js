@@ -156,7 +156,6 @@ function makeLoggedStaticMethod() {
             SlowPromiseLogged.delay = makeDelayStaticMethod(SlowPromiseLogged);
             return SlowPromiseLogged;
         })(SlowPromise);
-        ;
         // Cache and return the constructor function.
         log['_SlowPromise'] = SlowPromiseLogged;
         return SlowPromiseLogged;

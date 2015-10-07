@@ -1,3 +1,4 @@
+var makeSubClass = require('./makeSubClass');
 /**
  * Creates a constructor function whose instances (1) are callable
  * and (2) have the constructor function as their prototype. Normally JS
@@ -10,7 +11,7 @@
  * More info at: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/setPrototypeOf
  */
 function makeCallableClass(options) {
-    return function CallableConstructor() {
+    function CallableClass() {
         var args = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i - 0] = arguments[_i];
@@ -22,11 +23,16 @@ function makeCallableClass(options) {
             }
             return options.call.apply(Callable, args);
         }
-        Object.setPrototypeOf(Callable, CallableConstructor.prototype);
+        Object.setPrototypeOf(Callable, CallableClass.prototype);
         Callable.apply = function (thisArg, argsArray) { return options.call.apply(options.bindThis ? Callable : thisArg, argsArray); };
         var instance = options.constructor.apply(Callable, args) || Callable;
         return instance;
-    };
+    }
+    ;
+    CallableClass['isCallableClass'] = true; // TODO: hacky sentinel checked by makeSubClass(). Improve... Use ES6 Symbol?
+    // TODO: temp testing...
+    var d = makeSubClass(CallableClass);
+    return CallableClass;
 }
 module.exports = makeCallableClass;
 //# sourceMappingURL=makeCallableClass.js.map

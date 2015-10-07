@@ -1,4 +1,5 @@
-﻿export = makeCallableClass;
+﻿import makeSubClass = require('./makeSubClass');
+export = makeCallableClass;
 
 
 /**
@@ -13,15 +14,23 @@
  * More info at: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/setPrototypeOf
  */
 function makeCallableClass<T extends Function>(options: CallableClassOptions<T>): { new(...args): T; } {
-    return <any> function CallableConstructor(...args) {
+    function CallableClass(...args) {
         function Callable(...args) {
             return options.call.apply(Callable, args);
         }
-        (<any> Object).setPrototypeOf(Callable, CallableConstructor.prototype);
+        (<any> Object).setPrototypeOf(Callable, CallableClass.prototype);
         Callable.apply = (thisArg, argsArray) => options.call.apply(options.bindThis ? Callable : thisArg, argsArray);
         var instance = options.constructor.apply(Callable, args) || Callable;
         return instance;
     };
+    CallableClass['isCallableClass'] = true; // TODO: hacky sentinel checked by makeSubClass(). Improve... Use ES6 Symbol?
+
+
+    // TODO: temp testing...
+    var d = makeSubClass(CallableClass);
+
+
+    return <any> CallableClass;
 }
 
 

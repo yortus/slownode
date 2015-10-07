@@ -171,7 +171,7 @@ function makeLoggedStaticMethod() {
             static rejected = makeRejectedStaticMethod(SlowPromiseLogged);
             static deferred = makeDeferredStaticMethod(SlowPromiseLogged);
             static delay = makeDelayStaticMethod(SlowPromiseLogged);
-        };
+        }
 
         // Cache and return the constructor function.
         log['_SlowPromise'] = SlowPromiseLogged;
