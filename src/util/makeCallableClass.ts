@@ -1,5 +1,4 @@
-﻿import makeSubClass = require('./makeSubClass');
-export = makeCallableClass;
+﻿export = makeCallableClass;
 
 
 /**
@@ -23,12 +22,6 @@ function makeCallableClass<T extends Function>(options: CallableClassOptions<T>)
         var instance = options.constructor.apply(Callable, args) || Callable;
         return instance;
     };
-    CallableClass['isCallableClass'] = true; // TODO: hacky sentinel checked by makeSubClass(). Improve... Use ES6 Symbol?
-
-
-    // TODO: temp testing...
-    var d = makeSubClass(CallableClass);
-
 
     return <any> CallableClass;
 }

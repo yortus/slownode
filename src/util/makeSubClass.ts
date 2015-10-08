@@ -1,64 +1,40 @@
-﻿export = makeSubClass;
-
-
-
-
-interface SomeClassStatic {
-    new(...args): SomeClass;
-}
-interface SomeClass {
-}
-
-
-function subclassTemp(SuperClass: SomeClassStatic) {
-
-    class SubClass extends SuperClass {
-    }
-
-    return SubClass;
-}
-
-
-
-
-
-
+﻿import SlowClass = require('../slowClass');
+import SlowLog = require('../slowLog');
+export = makeSubClass;
 
 
 // TODO: doc...
-function makeSubClass(SuperClass: Function) {
+function makeSubClass<T extends typeof SlowClass>(SuperClass: T, slowLog: SlowLog): T {
 
-    // TODO: hacky... see matching comment in makeCallableClass()
-    if (SuperClass['isCallableClass']) {
+    // TODO: temp testing... do we really need caching? See comment below...
+    var cache: Map<any, T> = slowLog['cache'] || (slowLog['cache'] = new Map<any, T>());
 
-
-        debugger;
-
-
-
+    // Return the cached constructor if one has already been created.
+    var cached = cache.get(SuperClass);
+    if (cached) {
+        // TODO: never entered so far. Really need caching?
+        return cached;
     }
-    //else {
 
-        // Normal subclass...
-        // TODO: see how TSC does it... __extends and all... 
+    // TODO: TS workaround, see https://github.com/Microsoft/TypeScript/issues/5163
+    var Super: typeof Dummy = SuperClass;
 
-        // TODO: eg...
-        var SubClass = (function (_super) {
-            __extends(SubClass, _super);
-            function SubClass(...args) {
-                return _super.apply(this, args) || this;
-            }
-            return SubClass;
-        })(SuperClass);
+    // TODO: 'normal' subclass but NB 'return super'...
+    var Sub: T = <any> class extends Super {
+        constructor(...args) {
+            return <any> super(...args);
+        }
+    }
 
-        return SubClass;
-    //}
+    // TODO: set slowLog...
+    Sub.$slowLog = slowLog;
+
+
+    // Cache and return the constructor function.
+    cache.set(SuperClass, Sub);
+    return Sub;
 }
 
 
-// TODO: from TSC1.6 emit
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+// TODO: TS workaround, see https://github.com/Microsoft/TypeScript/issues/5163
+declare class Dummy { constructor(...args); }

@@ -1,8 +1,3 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
 var assert = require('assert');
 var SlowLog = require('../slowLog');
 var makeCallableClass = require('../util/makeCallableClass');
@@ -61,27 +56,6 @@ SlowAsyncFunction = makeCallableClass({
 });
 // Set the static '$slowLog' property on the SlowAsyncFunction callable class.
 SlowAsyncFunction.$slowLog = SlowLog.none;
-// Define the static `logged` method on the SlowAsyncFunction callable class.
-SlowAsyncFunction.logged = function (log) {
-    // Return the cached constructor if one has already been created.
-    var cached = log['_SlowAsyncFunction'];
-    if (cached)
-        return cached;
-    // Derive a new subclass of SlowAsyncFunction that is bound to the given slow log.
-    var SlowAsyncFunctionLogged = (function (_super) {
-        __extends(SlowAsyncFunctionLogged, _super);
-        function SlowAsyncFunctionLogged(bodyFunc) {
-            return _super.call(this, bodyFunc);
-        }
-        SlowAsyncFunctionLogged.$slowLog = log;
-        SlowAsyncFunctionLogged.logged = SlowAsyncFunction.logged;
-        return SlowAsyncFunctionLogged;
-    })(SlowAsyncFunction);
-    ;
-    // Cache and return the constructor function.
-    log['_SlowAsyncFunction'] = SlowAsyncFunctionLogged;
-    return SlowAsyncFunctionLogged;
-};
 /** Supports memoization of SlowAsyncFunction instances, which are immutable and expensive to compute. */
 var asyncFunctionCache = {};
 // Tell storage how to create a SlowAsyncFunction instance.

@@ -5,18 +5,19 @@ var slowEventLoop = require('./eventLoop/slowEventLoop');
 var SlowAsyncFunction = require('./asyncFunctions/slowAsyncFunction');
 var SlowPromise = require('./promises/slowPromise');
 var storage = require('./storage/storage');
+var makeSubClass = require('./util/makeSubClass');
 // TODO: temp testing...
 var slowLog = new SlowLog();
 // TODO: temp testing... Build the API for export...
 var api = {
     makeWeakRef: makeWeakRef.logged(slowLog),
-    Closure: SlowClosure.logged(slowLog),
+    Closure: makeSubClass(SlowClosure, slowLog),
     setTimeout: slowEventLoop.setTimeout,
     clearTimeout: slowEventLoop.clearTimeout,
     setImmediate: slowEventLoop.setImmediate,
     clearImmediate: slowEventLoop.clearImmediate,
-    Promise: SlowPromise.logged(slowLog),
-    async: SlowAsyncFunction.logged(slowLog)
+    Promise: makeSubClass(SlowPromise, slowLog),
+    async: makeSubClass(SlowAsyncFunction, slowLog)
 };
 // TODO: temp testing...
 storage.loadState();

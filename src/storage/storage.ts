@@ -199,7 +199,7 @@ export function loadState() {
 
 
 
-
+// TODO: need to account for $slowLog too...
 export function registerSlowObjectFactory(type: SlowKind, factory: ($slow: { kind: SlowKind, id: string }) => SlowObject) {
     slowObjectFactories[type] = factory;
 }

@@ -43,32 +43,51 @@ class SlowPromise {
     /**
      * Returns a new SlowPromise instance that is already resolved with the given value.
      */
-    static resolved = makeResolvedStaticMethod(SlowPromise);
+    static resolved(value?: any) {
+        var CtorFunc = <typeof SlowPromise> this;
+        var promise = new CtorFunc(null);
+        var resolve = new SlowPromiseResolve(promise);
+        resolve(value);
+        return promise;
+    };
 
     /**
      * Returns a new SlowPromise instance that is already rejected with the given reason.
      */
-    static rejected = makeRejectedStaticMethod(SlowPromise);
+    static rejected(reason: any) {
+        var CtorFunc = <typeof SlowPromise> this;
+        var promise = new CtorFunc(null);
+        var reject = new SlowPromiseReject(promise);
+        reject(reason);
+        return promise;
+    };
 
     /**
      * Returns an object containing a new SlowPromise instance, along with a resolve function and a reject function to control its fate.
      */
-    static deferred = makeDeferredStaticMethod(SlowPromise);
+    static deferred() {
+        var CtorFunc = <typeof SlowPromise> this;
+        var promise = new CtorFunc(null);
+        var resolve = new SlowPromiseResolve(promise);
+        var reject = new SlowPromiseReject(promise);
+        return { promise, resolve, reject };
+    };
 
     /**
      * Returns a new SlowPromise instance that resolves after `ms` milliseconds.
      */
-    static delay = makeDelayStaticMethod(SlowPromise);
+    static delay(ms: number) {
+        var CtorFunc = <typeof SlowPromise> this;
+        return new CtorFunc(resolve => {
+            slowEventLoop.setTimeout(resolve => resolve(), ms, resolve); // TODO: need log-bound slowEventLoop
+        });
+    };
+
 
     /**
      * INTERNAL the SlowLog used by all instances created by this constructor.
      */
     static $slowLog = SlowLog.none;
-
-    /**
-     * INTERNAL returns a SlowPromise constructor function whose instances are bound to the given SlowLog.
-     */
-    static logged = makeLoggedStaticMethod();
 
 	/**
      * onFulfilled is called when the promise resolves. onRejected is called when the promise rejects.
@@ -149,85 +168,6 @@ class SlowPromise {
         // Invoke any already-attached handlers now (asynchronously).
         process.nextTick(() => processAllHandlers(this));
     }
-}
-
-
-/**
- * Helper function to create the SlowPromise.logged static method.
- */
-function makeLoggedStaticMethod() {
-    return (log: SlowLog): typeof SlowPromise => {
-
-        // Return the cached constructor if one has already been created.
-        var cached = log['_SlowPromise'];
-        if (cached) return cached;
-
-        // Derive a new subclass of SlowPromise that is bound to the given slow log.
-        class SlowPromiseLogged extends SlowPromise {
-            constructor(resolver) { super(resolver); }
-            static $slowLog = log;
-            static logged = makeLoggedStaticMethod();
-            static resolved = makeResolvedStaticMethod(SlowPromiseLogged);
-            static rejected = makeRejectedStaticMethod(SlowPromiseLogged);
-            static deferred = makeDeferredStaticMethod(SlowPromiseLogged);
-            static delay = makeDelayStaticMethod(SlowPromiseLogged);
-        }
-
-        // Cache and return the constructor function.
-        log['_SlowPromise'] = SlowPromiseLogged;
-        return SlowPromiseLogged;
-    };
-}
-
-
-/**
- * Helper function to create the SlowPromise.resolved static method.
- */
-function makeResolvedStaticMethod(ctorFunc: typeof SlowPromise) {
-    return (value?: any) => {
-        var promise = new ctorFunc(null);
-        var resolve = new SlowPromiseResolve(promise);
-        resolve(value);
-        return promise;
-    };
-}
-
-
-/**
- * Helper function to create the SlowPromise.rejected static method.
- */
-function makeRejectedStaticMethod(ctorFunc: typeof SlowPromise) {
-    return (reason: any) => {
-        var promise = new ctorFunc(null);
-        var reject = new SlowPromiseReject(promise);
-        reject(reason);
-        return promise;
-    };
-}
-
-
-/**
- * Helper function to create the SlowPromise.deferred static method.
- */
-function makeDeferredStaticMethod(ctorFunc: typeof SlowPromise) {
-    return () => {
-        var promise = new ctorFunc(null);
-        var resolve = new SlowPromiseResolve(promise);
-        var reject = new SlowPromiseReject(promise);
-        return { promise, resolve, reject };
-    };
-}
-
-
-/**
- * Helper function to create the SlowPromise.delay static method.
- */
-function makeDelayStaticMethod(ctorFunc: typeof SlowPromise) {
-    return (ms: number) => {
-        return new ctorFunc(resolve => {
-            slowEventLoop.setTimeout(resolve => resolve(), ms, resolve); // TODO: need log-bound slowEventLoop
-        });
-    };
 }
 
 

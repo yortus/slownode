@@ -26,9 +26,6 @@ var SlowAsyncFunction: {
 
     /** INTERNAL the SlowLog used by all instances created by this constructor. */
     $slowLog: SlowLog;
-
-    /** INTERNAL returns a SlowAsyncFunction constructor function whose instances are bound to the given SlowLog. */
-    logged(log: SlowLog): typeof SlowAsyncFunction;
 }
 interface SlowAsyncFunction {
 
@@ -101,26 +98,6 @@ SlowAsyncFunction = <any> makeCallableClass({
 
 // Set the static '$slowLog' property on the SlowAsyncFunction callable class.
 SlowAsyncFunction.$slowLog = SlowLog.none;
-
-
-// Define the static `logged` method on the SlowAsyncFunction callable class.
-SlowAsyncFunction.logged = (log: SlowLog) => {
-
-    // Return the cached constructor if one has already been created.
-    var cached = log['_SlowAsyncFunction'];
-    if (cached) return cached;
-
-    // Derive a new subclass of SlowAsyncFunction that is bound to the given slow log.
-    class SlowAsyncFunctionLogged extends SlowAsyncFunction {
-        constructor(bodyFunc) { return <any> super(bodyFunc); }
-        static $slowLog = log;
-        static logged = SlowAsyncFunction.logged;
-    };
-
-    // Cache and return the constructor function.
-    log['_SlowAsyncFunction'] = SlowAsyncFunctionLogged;
-    return SlowAsyncFunctionLogged;
-};
 
 
 /** Supports memoization of SlowAsyncFunction instances, which are immutable and expensive to compute. */

@@ -1,4 +1,3 @@
-var makeSubClass = require('./makeSubClass');
 /**
  * Creates a constructor function whose instances (1) are callable
  * and (2) have the constructor function as their prototype. Normally JS
@@ -29,9 +28,6 @@ function makeCallableClass(options) {
         return instance;
     }
     ;
-    CallableClass['isCallableClass'] = true; // TODO: hacky sentinel checked by makeSubClass(). Improve... Use ES6 Symbol?
-    // TODO: temp testing...
-    var d = makeSubClass(CallableClass);
     return CallableClass;
 }
 module.exports = makeCallableClass;

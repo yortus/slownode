@@ -5,6 +5,7 @@ import slowEventLoop = require('./eventLoop/slowEventLoop');
 import SlowAsyncFunction = require('./asyncFunctions/slowAsyncFunction');
 import SlowPromise = require('./promises/slowPromise');
 import storage = require('./storage/storage');
+import makeSubClass = require('./util/makeSubClass');
 export = api;
 
 
@@ -15,15 +16,15 @@ var slowLog = new SlowLog();
 // TODO: temp testing... Build the API for export...
 var api = {
     makeWeakRef: makeWeakRef.logged(slowLog),
-    Closure: SlowClosure.logged(slowLog),
+    Closure: makeSubClass(SlowClosure, slowLog),
 
     setTimeout: slowEventLoop.setTimeout,
     clearTimeout: slowEventLoop.clearTimeout,
     setImmediate: slowEventLoop.setImmediate,
     clearImmediate: slowEventLoop.clearImmediate,
 
-    Promise: SlowPromise.logged(slowLog),
-    async: SlowAsyncFunction.logged(slowLog)
+    Promise: makeSubClass(SlowPromise, slowLog),
+    async: makeSubClass(SlowAsyncFunction, slowLog)
 };
 
 

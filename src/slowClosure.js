@@ -1,8 +1,3 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
 var _ = require('lodash');
 var SlowLog = require('./slowLog');
 var makeCallableClass = require('./util/makeCallableClass');
@@ -49,28 +44,7 @@ SlowClosure = makeCallableClass({
 });
 // Set the static '$slowLog' property on the SlowClosure callable class.
 SlowClosure.$slowLog = SlowLog.none;
-// Define the static `logged` method on the SlowClosure callable class.
-SlowClosure.logged = function (log) {
-    // Return the cached constructor if one has already been created.
-    var cached = log['_SlowClosure'];
-    if (cached)
-        return cached;
-    // Derive a new subclass of SlowClosure that is bound to the given slow log.
-    var SlowClosureLogged = (function (_super) {
-        __extends(SlowClosureLogged, _super);
-        function SlowClosureLogged(env, fn) {
-            return _super.call(this, env, fn);
-        }
-        SlowClosureLogged.$slowLog = log;
-        SlowClosureLogged.logged = SlowClosure.logged;
-        return SlowClosureLogged;
-    })(SlowClosure);
-    ;
-    // Cache and return the constructor function.
-    log['_SlowClosure'] = SlowClosureLogged;
-    return SlowClosureLogged;
-};
-// Tell storage how to create a SlowPromiseReject instance.
+// Tell storage how to create a SlowClosure instance.
 storage.registerSlowObjectFactory(50 /* Closure */, function ($slow) {
     var closure = new SlowClosure($slow.environment, $slow.functionSource);
     return closure;

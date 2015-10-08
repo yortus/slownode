@@ -1,8 +1,3 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
 var assert = require('assert');
 var _ = require('lodash');
 var SlowLog = require('../slowLog');
@@ -48,6 +43,49 @@ var SlowPromise = (function () {
             reject(ex);
         }
     }
+    /**
+     * Returns a new SlowPromise instance that is already resolved with the given value.
+     */
+    SlowPromise.resolved = function (value) {
+        var CtorFunc = this;
+        var promise = new CtorFunc(null);
+        var resolve = new SlowPromiseResolve(promise);
+        resolve(value);
+        return promise;
+    };
+    ;
+    /**
+     * Returns a new SlowPromise instance that is already rejected with the given reason.
+     */
+    SlowPromise.rejected = function (reason) {
+        var CtorFunc = this;
+        var promise = new CtorFunc(null);
+        var reject = new SlowPromiseReject(promise);
+        reject(reason);
+        return promise;
+    };
+    ;
+    /**
+     * Returns an object containing a new SlowPromise instance, along with a resolve function and a reject function to control its fate.
+     */
+    SlowPromise.deferred = function () {
+        var CtorFunc = this;
+        var promise = new CtorFunc(null);
+        var resolve = new SlowPromiseResolve(promise);
+        var reject = new SlowPromiseReject(promise);
+        return { promise: promise, resolve: resolve, reject: reject };
+    };
+    ;
+    /**
+     * Returns a new SlowPromise instance that resolves after `ms` milliseconds.
+     */
+    SlowPromise.delay = function (ms) {
+        var CtorFunc = this;
+        return new CtorFunc(function (resolve) {
+            slowEventLoop.setTimeout(function (resolve) { return resolve(); }, ms, resolve); // TODO: need log-bound slowEventLoop
+        });
+    };
+    ;
     /**
      * onFulfilled is called when the promise resolves. onRejected is called when the promise rejects.
      * Both callbacks have a single parameter , the fulfillment value or rejection reason.
@@ -108,102 +146,11 @@ var SlowPromise = (function () {
         var _a;
     };
     /**
-     * Returns a new SlowPromise instance that is already resolved with the given value.
-     */
-    SlowPromise.resolved = makeResolvedStaticMethod(SlowPromise);
-    /**
-     * Returns a new SlowPromise instance that is already rejected with the given reason.
-     */
-    SlowPromise.rejected = makeRejectedStaticMethod(SlowPromise);
-    /**
-     * Returns an object containing a new SlowPromise instance, along with a resolve function and a reject function to control its fate.
-     */
-    SlowPromise.deferred = makeDeferredStaticMethod(SlowPromise);
-    /**
-     * Returns a new SlowPromise instance that resolves after `ms` milliseconds.
-     */
-    SlowPromise.delay = makeDelayStaticMethod(SlowPromise);
-    /**
      * INTERNAL the SlowLog used by all instances created by this constructor.
      */
     SlowPromise.$slowLog = SlowLog.none;
-    /**
-     * INTERNAL returns a SlowPromise constructor function whose instances are bound to the given SlowLog.
-     */
-    SlowPromise.logged = makeLoggedStaticMethod();
     return SlowPromise;
 })();
-/**
- * Helper function to create the SlowPromise.logged static method.
- */
-function makeLoggedStaticMethod() {
-    return function (log) {
-        // Return the cached constructor if one has already been created.
-        var cached = log['_SlowPromise'];
-        if (cached)
-            return cached;
-        // Derive a new subclass of SlowPromise that is bound to the given slow log.
-        var SlowPromiseLogged = (function (_super) {
-            __extends(SlowPromiseLogged, _super);
-            function SlowPromiseLogged(resolver) {
-                _super.call(this, resolver);
-            }
-            SlowPromiseLogged.$slowLog = log;
-            SlowPromiseLogged.logged = makeLoggedStaticMethod();
-            SlowPromiseLogged.resolved = makeResolvedStaticMethod(SlowPromiseLogged);
-            SlowPromiseLogged.rejected = makeRejectedStaticMethod(SlowPromiseLogged);
-            SlowPromiseLogged.deferred = makeDeferredStaticMethod(SlowPromiseLogged);
-            SlowPromiseLogged.delay = makeDelayStaticMethod(SlowPromiseLogged);
-            return SlowPromiseLogged;
-        })(SlowPromise);
-        // Cache and return the constructor function.
-        log['_SlowPromise'] = SlowPromiseLogged;
-        return SlowPromiseLogged;
-    };
-}
-/**
- * Helper function to create the SlowPromise.resolved static method.
- */
-function makeResolvedStaticMethod(ctorFunc) {
-    return function (value) {
-        var promise = new ctorFunc(null);
-        var resolve = new SlowPromiseResolve(promise);
-        resolve(value);
-        return promise;
-    };
-}
-/**
- * Helper function to create the SlowPromise.rejected static method.
- */
-function makeRejectedStaticMethod(ctorFunc) {
-    return function (reason) {
-        var promise = new ctorFunc(null);
-        var reject = new SlowPromiseReject(promise);
-        reject(reason);
-        return promise;
-    };
-}
-/**
- * Helper function to create the SlowPromise.deferred static method.
- */
-function makeDeferredStaticMethod(ctorFunc) {
-    return function () {
-        var promise = new ctorFunc(null);
-        var resolve = new SlowPromiseResolve(promise);
-        var reject = new SlowPromiseReject(promise);
-        return { promise: promise, resolve: resolve, reject: reject };
-    };
-}
-/**
- * Helper function to create the SlowPromise.delay static method.
- */
-function makeDelayStaticMethod(ctorFunc) {
-    return function (ms) {
-        return new ctorFunc(function (resolve) {
-            slowEventLoop.setTimeout(function (resolve) { return resolve(); }, ms, resolve); // TODO: need log-bound slowEventLoop
-        });
-    };
-}
 /**
  * Dequeues and processes all enqueued onFulfilled/onRejected handlers.
  * The SlowPromise implementation calls this when `p` becomes settled,

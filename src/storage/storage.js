@@ -154,6 +154,7 @@ function loadState() {
     });
 }
 exports.loadState = loadState;
+// TODO: need to account for $slowLog too...
 function registerSlowObjectFactory(type, factory) {
     slowObjectFactories[type] = factory;
 }
