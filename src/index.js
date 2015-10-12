@@ -7,7 +7,8 @@ var SlowPromise = require('./promises/slowPromise');
 var storage = require('./storage/storage');
 var makeSubClass = require('./util/makeSubClass');
 // TODO: temp testing...
-var slowLog = new SlowLog();
+//var slowLog = new SlowLog(); // TODO: crashes after rehydration because registerSlowObjectFactory() calls aren't fixed up yet
+var slowLog = SlowLog.none;
 // TODO: temp testing... Build the API for export...
 var api = {
     makeWeakRef: makeWeakRef.logged(slowLog),
