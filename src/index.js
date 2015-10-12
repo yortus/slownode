@@ -11,7 +11,7 @@ var makeSubClass = require('./util/makeSubClass');
 var slowLog = SlowLog.none;
 // TODO: temp testing... Build the API for export...
 var api = {
-    makeWeakRef: makeWeakRef.logged(slowLog),
+    makeWeakRef: makeWeakRef,
     Closure: makeSubClass(SlowClosure, slowLog),
     setTimeout: slowEventLoop.setTimeout,
     clearTimeout: slowEventLoop.clearTimeout,
