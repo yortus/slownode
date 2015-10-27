@@ -36,6 +36,8 @@
     <TypeScriptCompile Include="src\eventLoop\slowEventLoop.ts" />
     <TypeScriptCompile Include="src\index.d.ts" />
     <TypeScriptCompile Include="src\slowLog.ts" />
+    <TypeScriptCompile Include="src\storage\registerSlowObjectFactory.ts" />
+    <TypeScriptCompile Include="src\storage\slowObjectFactories.ts" />
     <TypeScriptCompile Include="src\util\estree\funcExpr\classifyIdentifiers.ts" />
     <TypeScriptCompile Include="src\util\estree\funcExpr\containsInnerFunctions.ts" />
     <TypeScriptCompile Include="src\util\estree\funcExpr\isRelocatable.ts" />

@@ -4,6 +4,7 @@ import SlowPromise = require('./slowPromise'); // NB: elided circular ref (for t
 import makeCallableClass = require('../util/makeCallableClass');
 import standardResolutionProcedure = require('./standardResolutionProcedure');
 import storage = require('../storage/storage');
+import registerSlowObjectFactory = require('../storage/registerSlowObjectFactory');
 export = SlowPromiseResolve;
 
 
@@ -70,7 +71,7 @@ SlowPromiseResolve = <any> makeCallableClass({
 
 
 // Tell storage how to create a SlowPromiseResolve instance.
-storage.registerSlowObjectFactory(SlowKind.PromiseResolve, ($slow: any) => {
+registerSlowObjectFactory(SlowKind.PromiseResolve, ($slow: any) => {
     // NB: The rehydration approach used here depends on an implementation detail:
     //     that the given $slow already has a valid `promise` property because that
     //     will always appear in the storage log before any resolvers which use it.

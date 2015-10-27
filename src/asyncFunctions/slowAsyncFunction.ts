@@ -9,6 +9,7 @@ import SteppableFunction = require('../steppables/steppableFunction');
 import SlowPromise = require('../promises/slowPromise');
 import SlowAsyncFunctionActivation = require('./slowAsyncFunctionActivation');
 import storage = require('../storage/storage');
+import registerSlowObjectFactory = require('../storage/registerSlowObjectFactory');
 export = SlowAsyncFunction;
 
 
@@ -105,7 +106,7 @@ var asyncFunctionCache: { [afid: string]: SlowAsyncFunction; } = {};
 
 
 // Tell storage how to create a SlowAsyncFunction instance.
-storage.registerSlowObjectFactory(SlowKind.AsyncFunction, $slow => {
+registerSlowObjectFactory(SlowKind.AsyncFunction, $slow => {
     var saf = new SlowAsyncFunction(() => {});
     saf.$slow = <any> $slow;
     saf.stateMachine = eval(`(${saf.$slow.stateMachineSource})`);

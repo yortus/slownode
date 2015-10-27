@@ -4,6 +4,7 @@ import SlowLog = require('./slowLog');
 import makeCallableClass = require('./util/makeCallableClass');
 import isRelocatableFunction = require('./util/isRelocatableFunction');
 import storage = require('./storage/storage');
+import registerSlowObjectFactory = require('./storage/registerSlowObjectFactory');
 export = SlowClosure;
 
 
@@ -84,7 +85,7 @@ SlowClosure.$slowLog = SlowLog.none;
 
 
 // Tell storage how to create a SlowClosure instance.
-storage.registerSlowObjectFactory(SlowKind.Closure, ($slow: any) => {
+registerSlowObjectFactory(SlowKind.Closure, ($slow: any) => {
     var closure = new SlowClosure($slow.environment, $slow.functionSource);
     return closure;
 });

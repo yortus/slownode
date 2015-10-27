@@ -1,6 +1,7 @@
 var makeCallableClass = require('../util/makeCallableClass');
 var standardResolutionProcedure = require('./standardResolutionProcedure');
 var storage = require('../storage/storage');
+var registerSlowObjectFactory = require('../storage/registerSlowObjectFactory');
 /**
  * Creates a SlowPromiseResolve instance. It may be called with or without `new`.
  * The SlowPromiseResolve instance may be used to resolve the given promise with a value.
@@ -31,7 +32,7 @@ SlowPromiseResolve = makeCallableClass({
     }
 });
 // Tell storage how to create a SlowPromiseResolve instance.
-storage.registerSlowObjectFactory(11 /* PromiseResolve */, function ($slow) {
+registerSlowObjectFactory(11 /* PromiseResolve */, function ($slow) {
     // NB: The rehydration approach used here depends on an implementation detail:
     //     that the given $slow already has a valid `promise` property because that
     //     will always appear in the storage log before any resolvers which use it.

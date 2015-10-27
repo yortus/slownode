@@ -1,5 +1,6 @@
 var makeCallableClass = require('../util/makeCallableClass');
 var storage = require('../storage/storage');
+var registerSlowObjectFactory = require('../storage/registerSlowObjectFactory');
 /**
  * Creates a SlowPromiseReject instance. It may be called with or without `new`.
  * The SlowPromiseReject instance may be used to reject the given promise with a reason.
@@ -30,7 +31,7 @@ SlowPromiseReject = makeCallableClass({
     }
 });
 // Tell storage how to create a SlowPromiseReject instance.
-storage.registerSlowObjectFactory(12 /* PromiseReject */, function ($slow) {
+registerSlowObjectFactory(12 /* PromiseReject */, function ($slow) {
     // NB: The rehydration approach used here depends on an implementation detail:
     //     that the given $slow already has a valid `promise` property because that
     //     will always appear in the storage log before any rejectors which use it.

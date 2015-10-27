@@ -10,6 +10,7 @@ import SteppableObject = require('../steppables/steppableObject');
 import SlowClosure = require('../slowClosure');
 import SlowAsyncFunction = require('./slowAsyncFunction'); // NB: elided circular ref (for types only)
 import storage = require('../storage/storage');
+import registerSlowObjectFactory = require('../storage/registerSlowObjectFactory');
 export = SlowAsyncFunctionActivation;
 
 
@@ -113,7 +114,7 @@ class SlowAsyncFunctionActivation extends SteppableObject {
 
 
 // Tell storage how to create a SlowAsyncFunctionActivation instance.
-storage.registerSlowObjectFactory(SlowKind.AsyncFunctionActivation, ($slow: any) => {
+registerSlowObjectFactory(SlowKind.AsyncFunctionActivation, ($slow: any) => {
 
     // NB: The rehydration approach used here depends on two implementation details:
     // (1) the safa constructor doesn't care about the passed values for resolve/reject/args,

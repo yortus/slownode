@@ -2,6 +2,7 @@
 import SlowKind = require('./slowKind');
 import SlowLog = require('./slowLog');
 import storage = require('./storage/storage');
+import registerSlowObjectFactory = require('./storage/registerSlowObjectFactory');
 
 
 /**
@@ -26,6 +27,6 @@ makeWeakRef = <any> ((obj: any) => {
 
 
 // Tell storage how to create a SlowWeakRef instance.
-storage.registerSlowObjectFactory(SlowKind.WeakRef, $slow => {
+registerSlowObjectFactory(SlowKind.WeakRef, $slow => {
     return null;
 });

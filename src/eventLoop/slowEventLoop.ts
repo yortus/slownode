@@ -1,5 +1,6 @@
 ﻿import SlowKind = require('../slowKind');
 import storage = require('../storage/storage');
+import registerSlowObjectFactory = require('../storage/registerSlowObjectFactory');
 
 
 // TODO: temp testing...
@@ -207,7 +208,7 @@ function runLoop() {
 
 
 // Tell storage how to restore the slow event loop.
-storage.registerSlowObjectFactory(SlowKind.EventLoop, ($slow: any) => {
+registerSlowObjectFactory(SlowKind.EventLoop, ($slow: any) => {
     entries.push.apply(entries, $slow.entries);
     return persistedEventLoop;
 });

@@ -7,6 +7,7 @@ import SlowPromiseReject = require('./slowPromiseReject');
 import standardResolutionProcedure = require('./standardResolutionProcedure');
 import slowEventLoop = require('../eventLoop/slowEventLoop');
 import storage = require('../storage/storage');
+import registerSlowObjectFactory = require('../storage/registerSlowObjectFactory');
 export = SlowPromise;
 
 
@@ -241,7 +242,7 @@ interface Deferred {
 
 
 // Tell storage how to create a SlowPromise instance.
-storage.registerSlowObjectFactory(SlowKind.Promise, $slow => {
+registerSlowObjectFactory(SlowKind.Promise, $slow => {
     var promise = new SlowPromise(null);
     promise.$slow = <any> $slow;
     return promise;

@@ -7,6 +7,7 @@ var assert = require('assert');
 var SteppableObject = require('../steppables/steppableObject');
 var SlowClosure = require('../slowClosure');
 var storage = require('../storage/storage');
+var registerSlowObjectFactory = require('../storage/registerSlowObjectFactory');
 /**
  * A SlowAsyncFunctionActivation is a 'slow' extension of SteppableObject.
  * Instances of SlowAsyncFunctionActivation are used internally to manage
@@ -89,7 +90,7 @@ var SlowAsyncFunctionActivation = (function (_super) {
     return SlowAsyncFunctionActivation;
 })(SteppableObject);
 // Tell storage how to create a SlowAsyncFunctionActivation instance.
-storage.registerSlowObjectFactory(30 /* AsyncFunctionActivation */, function ($slow) {
+registerSlowObjectFactory(30 /* AsyncFunctionActivation */, function ($slow) {
     // NB: The rehydration approach used here depends on two implementation details:
     // (1) the safa constructor doesn't care about the passed values for resolve/reject/args,
     //     so these can be fixed up after construction (by re-assigning the $slow property).

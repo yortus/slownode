@@ -3,6 +3,7 @@ import SlowLog = require('../slowLog');
 import SlowPromise = require('./slowPromise'); // NB: elided circular ref (for types only)
 import makeCallableClass = require('../util/makeCallableClass');
 import storage = require('../storage/storage');
+import registerSlowObjectFactory = require('../storage/registerSlowObjectFactory');
 export = SlowPromiseReject;
 
 
@@ -69,7 +70,7 @@ SlowPromiseReject = <any> makeCallableClass({
 
 
 // Tell storage how to create a SlowPromiseReject instance.
-storage.registerSlowObjectFactory(SlowKind.PromiseReject, ($slow: any) => {
+registerSlowObjectFactory(SlowKind.PromiseReject, ($slow: any) => {
     // NB: The rehydration approach used here depends on an implementation detail:
     //     that the given $slow already has a valid `promise` property because that
     //     will always appear in the storage log before any rejectors which use it.

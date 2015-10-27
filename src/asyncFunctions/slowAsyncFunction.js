@@ -6,6 +6,7 @@ var SteppableFunction = require('../steppables/steppableFunction');
 var SlowPromise = require('../promises/slowPromise');
 var SlowAsyncFunctionActivation = require('./slowAsyncFunctionActivation');
 var storage = require('../storage/storage');
+var registerSlowObjectFactory = require('../storage/registerSlowObjectFactory');
 /**
  * Creates a SlowAsyncFunction instance. It may be called with or without `new`.
  * A slow async function is analogous to an ES7 async function.
@@ -59,7 +60,7 @@ SlowAsyncFunction.$slowLog = SlowLog.none;
 /** Supports memoization of SlowAsyncFunction instances, which are immutable and expensive to compute. */
 var asyncFunctionCache = {};
 // Tell storage how to create a SlowAsyncFunction instance.
-storage.registerSlowObjectFactory(20 /* AsyncFunction */, function ($slow) {
+registerSlowObjectFactory(20 /* AsyncFunction */, function ($slow) {
     var saf = new SlowAsyncFunction(function () { });
     saf.$slow = $slow;
     saf.stateMachine = eval("(" + saf.$slow.stateMachineSource + ")");

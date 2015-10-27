@@ -1,4 +1,5 @@
 var storage = require('./storage/storage');
+var registerSlowObjectFactory = require('./storage/registerSlowObjectFactory');
 /**
  * Marks the given object as a weak-referenced slow object. WeakRefs are serializable
  * regardless of what they contain, however they are effectively serialized as `null`.
@@ -15,7 +16,7 @@ makeWeakRef = (function (obj) {
     storage.created(obj);
 });
 // Tell storage how to create a SlowWeakRef instance.
-storage.registerSlowObjectFactory(60 /* WeakRef */, function ($slow) {
+registerSlowObjectFactory(60 /* WeakRef */, function ($slow) {
     return null;
 });
 module.exports = makeWeakRef;

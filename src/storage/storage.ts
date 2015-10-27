@@ -7,10 +7,7 @@ import SlowObject = require('../slowObject');
 import storageLocation = require('./storageLocation');
 import dehydrateSlowObject = require('./dehydrateSlowObject');
 import rehydrateSlowObject = require('./rehydrateSlowObject');
-
-
-// TODO: temp testing...
-type SlowObjectFactories = { [type: number]: ($slow: { kind: SlowKind, id?: string }) => SlowObject; };
+import slowObjectFactories = require('./slowObjectFactories');
 
 
 interface StorageAPI {
@@ -69,7 +66,6 @@ var updatedTrackedObjects = new Set<SlowObject>();
 var deletedTrackedObjects = new Set<SlowObject>();
 var nextId = 0;
 var isLoadingState = false;
-var slowObjectFactories: SlowObjectFactories = {};
 
 
 export function saveChanges(callback?: (err?) => void) {
@@ -195,16 +191,6 @@ export function loadState() {
         created(obj);
     });
 }
-
-
-
-
-// TODO: need to account for $slowLog too...
-export function registerSlowObjectFactory(type: SlowKind, factory: ($slow: { kind: SlowKind, id: string }) => SlowObject) {
-    slowObjectFactories[type] = factory;
-}
-
-
 
 
 

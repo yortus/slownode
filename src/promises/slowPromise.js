@@ -6,6 +6,7 @@ var SlowPromiseReject = require('./slowPromiseReject');
 var standardResolutionProcedure = require('./standardResolutionProcedure');
 var slowEventLoop = require('../eventLoop/slowEventLoop');
 var storage = require('../storage/storage');
+var registerSlowObjectFactory = require('../storage/registerSlowObjectFactory');
 // TODO: add all(), race()... (see https://github.com/borisyankov/DefinitelyTyped/blob/master/es6-promise/es6-promise.d.ts)
 /**
  * Promises A+ compliant slow promise implementation.
@@ -194,7 +195,7 @@ function processAllHandlers(p) {
     }
 }
 // Tell storage how to create a SlowPromise instance.
-storage.registerSlowObjectFactory(10 /* Promise */, function ($slow) {
+registerSlowObjectFactory(10 /* Promise */, function ($slow) {
     var promise = new SlowPromise(null);
     promise.$slow = $slow;
     return promise;

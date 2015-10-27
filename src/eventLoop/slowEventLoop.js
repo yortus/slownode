@@ -1,4 +1,5 @@
 var storage = require('../storage/storage');
+var registerSlowObjectFactory = require('../storage/registerSlowObjectFactory');
 /**
  * Schedules `callback` to be called with the given `args` (if any) after `delay` milliseconds.
  * Returns an opaque Timer object that may be passed to clearTimeout() to cancel the scheduled call.
@@ -141,7 +142,7 @@ function runLoop() {
     startOrContinuePumping();
 }
 // Tell storage how to restore the slow event loop.
-storage.registerSlowObjectFactory(1 /* EventLoop */, function ($slow) {
+registerSlowObjectFactory(1 /* EventLoop */, function ($slow) {
     entries.push.apply(entries, $slow.entries);
     return persistedEventLoop;
 });

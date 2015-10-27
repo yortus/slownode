@@ -3,6 +3,7 @@ var SlowLog = require('./slowLog');
 var makeCallableClass = require('./util/makeCallableClass');
 var isRelocatableFunction = require('./util/isRelocatableFunction');
 var storage = require('./storage/storage');
+var registerSlowObjectFactory = require('./storage/registerSlowObjectFactory');
 /**
  * Creates a SlowClosure instance. It may be called with or without `new`.
  * A slow closure combines a function and a referencing environment. Calling
@@ -45,7 +46,7 @@ SlowClosure = makeCallableClass({
 // Set the static '$slowLog' property on the SlowClosure callable class.
 SlowClosure.$slowLog = SlowLog.none;
 // Tell storage how to create a SlowClosure instance.
-storage.registerSlowObjectFactory(50 /* Closure */, function ($slow) {
+registerSlowObjectFactory(50 /* Closure */, function ($slow) {
     var closure = new SlowClosure($slow.environment, $slow.functionSource);
     return closure;
 });

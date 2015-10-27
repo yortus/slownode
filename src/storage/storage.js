@@ -4,6 +4,7 @@ var _ = require('lodash');
 var storageLocation = require('./storageLocation');
 var dehydrateSlowObject = require('./dehydrateSlowObject');
 var rehydrateSlowObject = require('./rehydrateSlowObject');
+var slowObjectFactories = require('./slowObjectFactories');
 function created(obj) {
     // TODO: temp testing... try instance prop then static prop
     var log = obj.$slowLog || obj.constructor['$slowLog'];
@@ -42,7 +43,6 @@ var updatedTrackedObjects = new Set();
 var deletedTrackedObjects = new Set();
 var nextId = 0;
 var isLoadingState = false;
-var slowObjectFactories = {};
 function saveChanges(callback) {
     // TODO: temp testing...
     if (isLoadingState)
@@ -154,11 +154,6 @@ function loadState() {
     });
 }
 exports.loadState = loadState;
-// TODO: need to account for $slowLog too...
-function registerSlowObjectFactory(type, factory) {
-    slowObjectFactories[type] = factory;
-}
-exports.registerSlowObjectFactory = registerSlowObjectFactory;
 function ensureSlowObjectHasUniqueId(obj) {
     obj.$slow.id = obj.$slow.id || "#" + ++nextId;
 }
