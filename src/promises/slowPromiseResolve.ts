@@ -48,7 +48,7 @@ SlowPromiseResolve = <any> makeCallableClass({
         this.$slowLog = promise ? promise.constructor['$slowLog'] : null;
 
         // Synchronise with the persistent object graph.
-        storage.created(this);
+        if (this.$slowLog) this.$slowLog.created(this); // TODO: temp testing...
     },
 
     // Calling the instance resolves the promise passed to the constructor, with `value` as the resolved value.
@@ -62,7 +62,7 @@ SlowPromiseResolve = <any> makeCallableClass({
         promise.$slow.isFateResolved = true;
 
         // Synchronise with the persistent object graph.
-        storage.updated(promise);
+        this.$slowLog.updated(promise); // TODO: temp testing...
 
         // Finally, resolve the promise using the standard resolution procedure.
         standardResolutionProcedure(promise, value);

@@ -1,5 +1,5 @@
 var SlowLog = require('./slowLog');
-var makeWeakRef = require('./makeWeakRef');
+var makeMakeWeakRef = require('./makeMakeWeakRef');
 var SlowClosure = require('./slowClosure');
 var slowEventLoop = require('./eventLoop/slowEventLoop');
 var SlowAsyncFunction = require('./asyncFunctions/slowAsyncFunction');
@@ -11,7 +11,7 @@ var makeSubClass = require('./util/makeSubClass');
 var slowLog = SlowLog.none;
 // TODO: temp testing... Build the API for export...
 var api = {
-    makeWeakRef: makeWeakRef,
+    makeWeakRef: makeMakeWeakRef(slowLog),
     Closure: makeSubClass(SlowClosure, slowLog),
     setTimeout: slowEventLoop.setTimeout,
     clearTimeout: slowEventLoop.clearTimeout,

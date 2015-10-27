@@ -1,4 +1,3 @@
-var storage = require('./storage/storage');
 var registerSlowObjectFactory = require('./storage/registerSlowObjectFactory');
 /**
  * Marks the given object as a weak-referenced slow object. WeakRefs are serializable
@@ -9,15 +8,16 @@ var registerSlowObjectFactory = require('./storage/registerSlowObjectFactory');
  * with rehydrated slow objects.
  * @param obj the object to mark as a weak-referenced slow object. It must be an object type.
  */
-var makeWeakRef;
-// Define the callable part of makeWeakRef.
-makeWeakRef = (function (obj) {
-    obj.$slow = { kind: 60 /* WeakRef */ };
-    storage.created(obj);
-});
+var makeMakeWeakRef = function (slowLog) {
+    var makeWeakRef = function (obj) {
+        obj.$slow = { kind: 60 /* WeakRef */ };
+        slowLog.created(obj);
+    };
+    return makeWeakRef;
+};
 // Tell storage how to create a SlowWeakRef instance.
 registerSlowObjectFactory(60 /* WeakRef */, function ($slow) {
     return null;
 });
-module.exports = makeWeakRef;
-//# sourceMappingURL=makeWeakRef.js.map
+module.exports = makeMakeWeakRef;
+//# sourceMappingURL=makeMakeWeakRef.js.map

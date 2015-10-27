@@ -2,7 +2,6 @@ var _ = require('lodash');
 var SlowLog = require('./slowLog');
 var makeCallableClass = require('./util/makeCallableClass');
 var isRelocatableFunction = require('./util/isRelocatableFunction');
-var storage = require('./storage/storage');
 var registerSlowObjectFactory = require('./storage/registerSlowObjectFactory');
 /**
  * Creates a SlowClosure instance. It may be called with or without `new`.
@@ -30,7 +29,7 @@ SlowClosure = makeCallableClass({
             environment: env
         };
         // Synchronise with the persistent object graph.
-        storage.created(this);
+        SlowClosure.$slowLog.created(this); // TODO: temp testing...
     },
     // Calling the SlowClosure executes the function passed to the constructor in the environment passed to the constructor.
     call: function () {

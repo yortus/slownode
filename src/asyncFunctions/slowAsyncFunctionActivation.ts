@@ -9,7 +9,6 @@ import SteppableStateMachine = require('../steppables/steppableStateMachine');
 import SteppableObject = require('../steppables/steppableObject');
 import SlowClosure = require('../slowClosure');
 import SlowAsyncFunction = require('./slowAsyncFunction'); // NB: elided circular ref (for types only)
-import storage = require('../storage/storage');
 import registerSlowObjectFactory = require('../storage/registerSlowObjectFactory');
 export = SlowAsyncFunctionActivation;
 
@@ -31,7 +30,7 @@ class SlowAsyncFunctionActivation extends SteppableObject {
         var safa = this;
         this.$slow.resumeNext = new SlowClosure({safa}, value => { safa.runToCompletion(null, value); }),
         this.$slow.resumeError = new SlowClosure({safa}, error => { safa.runToCompletion(error); }),
-        storage.created(this);
+        this.$slow.asyncFunction.constructor['$slowLog'].created(this); // TODO: temp testing...
     }
 
     /** Holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
@@ -85,7 +84,8 @@ class SlowAsyncFunctionActivation extends SteppableObject {
             s.reject(ex);
 
             // Synchronise with the persistent object graph.
-            storage.deleted(s.resolve).deleted(s.reject).deleted(s.resumeNext).deleted(s.resumeError).deleted(this);
+            // TODO: temp testing...
+            this.$slow.asyncFunction.constructor['$slowLog'].deleted(s.resolve, s.reject, s.resumeNext, s.resumeError, this);
             return;
         }
 
@@ -95,7 +95,8 @@ class SlowAsyncFunctionActivation extends SteppableObject {
             s.resolve(yielded.value);
 
             // Synchronise with the persistent object graph.
-            storage.deleted(s.resolve).deleted(s.reject).deleted(s.resumeNext).deleted(s.resumeError).deleted(this);
+            // TODO: temp testing...
+            this.$slow.asyncFunction.constructor['$slowLog'].deleted(s.resolve, s.reject, s.resumeNext, s.resumeError, this);
             return;
         }
 
@@ -108,7 +109,8 @@ class SlowAsyncFunctionActivation extends SteppableObject {
         awaiting.then(this.$slow.resumeNext, this.$slow.resumeError);
 
         // Synchronise with the persistent object graph.
-        storage.updated(this);
+        // TODO: temp testing...
+        this.$slow.asyncFunction.constructor['$slowLog'].updated(this);
     }
 }
 

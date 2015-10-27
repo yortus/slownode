@@ -5,7 +5,6 @@ var shasum = require('../util/shasum');
 var SteppableFunction = require('../steppables/steppableFunction');
 var SlowPromise = require('../promises/slowPromise');
 var SlowAsyncFunctionActivation = require('./slowAsyncFunctionActivation');
-var storage = require('../storage/storage');
 var registerSlowObjectFactory = require('../storage/registerSlowObjectFactory');
 /**
  * Creates a SlowAsyncFunction instance. It may be called with or without `new`.
@@ -38,7 +37,7 @@ SlowAsyncFunction = makeCallableClass({
         // Cache this SlowAsyncFunction instance to save re-computing it again.
         asyncFunctionCache[safid] = this;
         // Synchronise with the persistent object graph.
-        storage.created(this);
+        SlowAsyncFunction.$slowLog.created(this);
     },
     // Calling the instance begins execution of the body function, and returns a promise of its outcome.
     call: function () {

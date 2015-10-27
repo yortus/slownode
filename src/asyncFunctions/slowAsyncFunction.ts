@@ -8,7 +8,6 @@ import SteppableStateMachine = require('../steppables/steppableStateMachine');
 import SteppableFunction = require('../steppables/steppableFunction');
 import SlowPromise = require('../promises/slowPromise');
 import SlowAsyncFunctionActivation = require('./slowAsyncFunctionActivation');
-import storage = require('../storage/storage');
 import registerSlowObjectFactory = require('../storage/registerSlowObjectFactory');
 export = SlowAsyncFunction;
 
@@ -78,7 +77,7 @@ SlowAsyncFunction = <any> makeCallableClass({
         asyncFunctionCache[safid] = this;
 
         // Synchronise with the persistent object graph.
-        storage.created(this);
+        SlowAsyncFunction.$slowLog.created(this);
     },
 
     // Calling the instance begins execution of the body function, and returns a promise of its outcome.

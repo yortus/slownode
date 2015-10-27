@@ -1,5 +1,4 @@
 var makeCallableClass = require('../util/makeCallableClass');
-var storage = require('../storage/storage');
 var registerSlowObjectFactory = require('../storage/registerSlowObjectFactory');
 /**
  * Creates a SlowPromiseReject instance. It may be called with or without `new`.
@@ -14,7 +13,8 @@ SlowPromiseReject = makeCallableClass({
         this.$slow = { kind: 12 /* PromiseReject */, promise: promise };
         this.$slowLog = promise ? promise.constructor['$slowLog'] : null;
         // Synchronise with the persistent object graph.
-        storage.created(this);
+        if (this.$slowLog)
+            this.$slowLog.created(this); // TODO: temp testing...
     },
     // Calling the instance rejects the promise passed to the constructor, with `reason` as the rejection reason.
     call: function (reason) {
@@ -25,7 +25,7 @@ SlowPromiseReject = makeCallableClass({
         // Indicate the promise's fate is now resolved.
         promise.$slow.isFateResolved = true;
         // Synchronise with the persistent object graph.
-        storage.updated(promise);
+        this.$slowLog.updated(promise); // TODO: temp testing...
         // Finally, reject the promise using its own private _reject method.
         promise.reject(reason);
     }

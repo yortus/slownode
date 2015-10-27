@@ -2,7 +2,6 @@ import SlowKind = require('../slowKind');
 import SlowLog = require('../slowLog');
 import SlowPromise = require('./slowPromise'); // NB: elided circular ref (for types only)
 import makeCallableClass = require('../util/makeCallableClass');
-import storage = require('../storage/storage');
 import registerSlowObjectFactory = require('../storage/registerSlowObjectFactory');
 export = SlowPromiseReject;
 
@@ -47,7 +46,7 @@ SlowPromiseReject = <any> makeCallableClass({
         this.$slowLog = promise ? promise.constructor['$slowLog'] : null;
 
         // Synchronise with the persistent object graph.
-        storage.created(this);
+        if (this.$slowLog) this.$slowLog.created(this); // TODO: temp testing...
     },
 
     // Calling the instance rejects the promise passed to the constructor, with `reason` as the rejection reason.
@@ -61,7 +60,7 @@ SlowPromiseReject = <any> makeCallableClass({
         promise.$slow.isFateResolved = true;
 
         // Synchronise with the persistent object graph.
-        storage.updated(promise);
+        this.$slowLog.updated(promise); // TODO: temp testing...
 
         // Finally, reject the promise using its own private _reject method.
         promise.reject(reason);

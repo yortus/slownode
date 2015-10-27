@@ -3,7 +3,6 @@ import SlowKind = require('./slowKind');
 import SlowLog = require('./slowLog');
 import makeCallableClass = require('./util/makeCallableClass');
 import isRelocatableFunction = require('./util/isRelocatableFunction');
-import storage = require('./storage/storage');
 import registerSlowObjectFactory = require('./storage/registerSlowObjectFactory');
 export = SlowClosure;
 
@@ -67,7 +66,7 @@ SlowClosure = <any> makeCallableClass({
         };
 
         // Synchronise with the persistent object graph.
-        storage.created(this);
+        SlowClosure.$slowLog.created(this); // TODO: temp testing...
     },
 
     // Calling the SlowClosure executes the function passed to the constructor in the environment passed to the constructor.
