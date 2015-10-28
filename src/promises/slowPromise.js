@@ -4,7 +4,6 @@ var SlowLog = require('../slowLog');
 var SlowPromiseResolve = require('./slowPromiseResolve');
 var SlowPromiseReject = require('./slowPromiseReject');
 var standardResolutionProcedure = require('./standardResolutionProcedure');
-var slowEventLoop = require('../eventLoop/slowEventLoop');
 var registerSlowObjectFactory = require('../storage/registerSlowObjectFactory');
 // TODO: add all(), race()... (see https://github.com/borisyankov/DefinitelyTyped/blob/master/es6-promise/es6-promise.d.ts)
 /**
@@ -82,7 +81,10 @@ var SlowPromise = (function () {
     SlowPromise.delay = function (ms) {
         var CtorFunc = this;
         return new CtorFunc(function (resolve) {
-            slowEventLoop.setTimeout(function (resolve) { return resolve(); }, ms, resolve); // TODO: need log-bound slowEventLoop
+            // TODO: temp testing...
+            setTimeout(function (resolve) { return resolve(); }, ms, resolve);
+            // TODO: was... fix!!!
+            //slowEventLoop.setTimeout(resolve => resolve(), ms, resolve); // TODO: need log-bound slowEventLoop
         });
     };
     ;

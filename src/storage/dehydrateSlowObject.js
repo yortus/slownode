@@ -6,6 +6,10 @@ var isRelocatableFunction = require('../util/isRelocatableFunction');
  * Throws an error if any part of the value cannot be converted.
  */
 function dehydrateSlowObject(slowObject, allSlowObjects) {
+    // TODO: temp testing...
+    if (!allSlowObjects.has(slowObject)) {
+        debugger;
+    }
     assert(allSlowObjects.has(slowObject));
     return { $slow: _.mapValues(slowObject.$slow, function (v) { return dehydrate(v, allSlowObjects); }) };
 }

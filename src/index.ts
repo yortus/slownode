@@ -14,15 +14,19 @@ export = api;
 var slowLog = SlowLog.none;
 
 
+// TODO: temp testing...
+var eventLoop = new slowEventLoop.EventLoop();
+
+
 // TODO: temp testing... Build the API for export...
 var api = {
     makeWeakRef: makeMakeWeakRef(slowLog),
     Closure: makeSubClass(SlowClosure, slowLog),
 
-    setTimeout: slowEventLoop.setTimeout,
-    clearTimeout: slowEventLoop.clearTimeout,
-    setImmediate: slowEventLoop.setImmediate,
-    clearImmediate: slowEventLoop.clearImmediate,
+    setTimeout: eventLoop.setTimeout.bind(eventLoop),
+    clearTimeout: eventLoop.clearTimeout.bind(eventLoop),
+    setImmediate: eventLoop.setImmediate.bind(eventLoop),
+    clearImmediate: eventLoop.clearImmediate.bind(eventLoop),
 
     Promise: makeSubClass(SlowPromise, slowLog),
     async: makeSubClass(SlowAsyncFunction, slowLog)

@@ -79,10 +79,14 @@ class SlowPromise {
     static delay(ms: number) {
         var CtorFunc = <typeof SlowPromise> this;
         return new CtorFunc(resolve => {
-            slowEventLoop.setTimeout(resolve => resolve(), ms, resolve); // TODO: need log-bound slowEventLoop
+
+            // TODO: temp testing...
+            setTimeout(resolve => resolve(), ms, resolve);
+
+            // TODO: was... fix!!!
+            //slowEventLoop.setTimeout(resolve => resolve(), ms, resolve); // TODO: need log-bound slowEventLoop
         });
     };
-
 
     /**
      * INTERNAL the SlowLog used by all instances created by this constructor.
