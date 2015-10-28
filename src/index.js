@@ -4,7 +4,6 @@ var SlowClosure = require('./slowClosure');
 var slowEventLoop = require('./eventLoop/slowEventLoop');
 var SlowAsyncFunction = require('./asyncFunctions/slowAsyncFunction');
 var SlowPromise = require('./promises/slowPromise');
-var storage = require('./storage/storage');
 var makeSubClass = require('./util/makeSubClass');
 // TODO: temp testing...
 //var slowLog = new SlowLog(); // TODO: crashes after rehydration because registerSlowObjectFactory() calls aren't fixed up yet
@@ -23,7 +22,7 @@ var api = {
     async: makeSubClass(SlowAsyncFunction, slowLog)
 };
 // TODO: temp testing...
-storage.loadState();
+slowLog.loadState();
 module.exports = api;
 //// TODO: Experiment with node-weak and global.gc to work out when to delete persistent slow objects. Works OK!
 //// NB: must run node with the --expose-gc flag for this to work... eg node --expose-gc ./debug

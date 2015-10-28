@@ -4,7 +4,6 @@ import SlowClosure = require('./slowClosure');
 import slowEventLoop = require('./eventLoop/slowEventLoop');
 import SlowAsyncFunction = require('./asyncFunctions/slowAsyncFunction');
 import SlowPromise = require('./promises/slowPromise');
-import storage = require('./storage/storage');
 import makeSubClass = require('./util/makeSubClass');
 export = api;
 
@@ -34,7 +33,7 @@ var api = {
 
 
 // TODO: temp testing...
-storage.loadState();
+slowLog.loadState();
 
 
 

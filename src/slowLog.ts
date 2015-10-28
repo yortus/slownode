@@ -25,4 +25,10 @@ console.log('SAVE CHANGES');
         storage.saveChanges();
     }
 
+    loadState() {
+// TODO: temp testing...
+console.log('LOAD STATE');
+        storage.loadState();
+    }
+
 }

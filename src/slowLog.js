@@ -28,6 +28,11 @@ var SlowLog = (function () {
         console.log('SAVE CHANGES');
         storage.saveChanges();
     };
+    SlowLog.prototype.loadState = function () {
+        // TODO: temp testing...
+        console.log('LOAD STATE');
+        storage.loadState();
+    };
     SlowLog.none = new SlowLog();
     return SlowLog;
 })();
