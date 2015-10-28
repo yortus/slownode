@@ -3,7 +3,6 @@ import SlowLog = require('../slowLog');
 import SlowPromise = require('./slowPromise'); // NB: elided circular ref (for types only)
 import makeCallableClass = require('../util/makeCallableClass');
 import standardResolutionProcedure = require('./standardResolutionProcedure');
-import storage = require('../storage/storage');
 import registerSlowObjectFactory = require('../storage/registerSlowObjectFactory');
 export = SlowPromiseResolve;
 
@@ -45,7 +44,7 @@ SlowPromiseResolve = <any> makeCallableClass({
 
         // Add slow metadata to the resolve function.
         this.$slow = { kind: SlowKind.PromiseResolve, promise };
-        this.$slowLog = promise ? promise.constructor['$slowLog'] : null;
+        this.$slowLog = promise ? promise.$slowLog : null;
 
         // Synchronise with the persistent object graph.
         if (this.$slowLog) this.$slowLog.created(this); // TODO: temp testing...
@@ -77,6 +76,6 @@ registerSlowObjectFactory(SlowKind.PromiseResolve, ($slow: any) => {
     //     will always appear in the storage log before any resolvers which use it.
     var resolve = new SlowPromiseResolve(null);
     resolve.$slow = $slow;
-    resolve.$slowLog = $slow.promise.constructor.$slowLog;
+    resolve.$slowLog = $slow.promise.$slowLog;
     return resolve;
 });

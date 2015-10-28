@@ -7,7 +7,7 @@ var rehydrateSlowObject = require('./rehydrateSlowObject');
 var slowObjectFactories = require('./slowObjectFactories');
 function created(obj) {
     // TODO: temp testing... try instance prop then static prop
-    var log = obj.$slowLog || obj.constructor['$slowLog'];
+    var log = obj.$slowLog;
     if (log) {
     }
     // TODO: temp testing...

@@ -12,7 +12,7 @@ SlowPromiseResolve = makeCallableClass({
     constructor: function (promise) {
         // Add slow metadata to the resolve function.
         this.$slow = { kind: 11 /* PromiseResolve */, promise: promise };
-        this.$slowLog = promise ? promise.constructor['$slowLog'] : null;
+        this.$slowLog = promise ? promise.$slowLog : null;
         // Synchronise with the persistent object graph.
         if (this.$slowLog)
             this.$slowLog.created(this); // TODO: temp testing...
@@ -38,7 +38,7 @@ registerSlowObjectFactory(11 /* PromiseResolve */, function ($slow) {
     //     will always appear in the storage log before any resolvers which use it.
     var resolve = new SlowPromiseResolve(null);
     resolve.$slow = $slow;
-    resolve.$slowLog = $slow.promise.constructor.$slowLog;
+    resolve.$slowLog = $slow.promise.$slowLog;
     return resolve;
 });
 module.exports = SlowPromiseResolve;

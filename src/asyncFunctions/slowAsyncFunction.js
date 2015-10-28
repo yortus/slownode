@@ -37,7 +37,7 @@ SlowAsyncFunction = makeCallableClass({
         // Cache this SlowAsyncFunction instance to save re-computing it again.
         asyncFunctionCache[safid] = this;
         // Synchronise with the persistent object graph.
-        SlowAsyncFunction.$slowLog.created(this);
+        this.$slowLog.created(this);
     },
     // Calling the instance begins execution of the body function, and returns a promise of its outcome.
     call: function () {
@@ -55,7 +55,7 @@ SlowAsyncFunction = makeCallableClass({
     }
 });
 // Set the static '$slowLog' property on the SlowAsyncFunction callable class.
-SlowAsyncFunction.$slowLog = SlowLog.none;
+SlowAsyncFunction.prototype.$slowLog = SlowLog.none;
 /** Supports memoization of SlowAsyncFunction instances, which are immutable and expensive to compute. */
 var asyncFunctionCache = {};
 // Tell storage how to create a SlowAsyncFunction instance.

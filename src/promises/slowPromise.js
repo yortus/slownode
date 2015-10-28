@@ -28,7 +28,7 @@ var SlowPromise = (function () {
         // Validate arguments.
         assert(!resolver || _.isFunction(resolver));
         // Synchronise with the persistent object graph.
-        SlowPromise.$slowLog.created(this); // TODO: temp testing...
+        this.$slowLog.created(this); // TODO: temp testing...
         // If no resolver was given, just return now. This is an internal use of the constructor.
         if (!resolver)
             return this;
@@ -96,12 +96,12 @@ var SlowPromise = (function () {
      */
     SlowPromise.prototype.then = function (onFulfilled, onRejected) {
         var _this = this;
-        var ctorFunc = this.constructor;
         // Create the new promise to be returned by this .then() call.
+        var ctorFunc = this.constructor;
         var deferred2 = ctorFunc.deferred();
         this.$slow.handlers.push({ onFulfilled: onFulfilled, onRejected: onRejected, deferred2: deferred2 });
         // Synchronise with the persistent object graph.
-        SlowPromise.$slowLog.updated(this); // TODO: temp testing...
+        this.$slowLog.updated(this); // TODO: temp testing...
         // If the promise is already settled, invoke the given handlers now (asynchronously).
         if (this.$slow.state !== 0 /* Pending */)
             process.nextTick(function () { return processAllHandlers(_this); });
@@ -125,7 +125,7 @@ var SlowPromise = (function () {
             return;
         _a = [1 /* Fulfilled */, value], this.$slow.state = _a[0], this.$slow.settledValue = _a[1];
         // Synchronise with the persistent object graph.
-        SlowPromise.$slowLog.updated(this); // TODO: temp testing...
+        this.$slowLog.updated(this); // TODO: temp testing...
         // Invoke any already-attached handlers now (asynchronously).
         process.nextTick(function () { return processAllHandlers(_this); });
         var _a;
@@ -140,17 +140,14 @@ var SlowPromise = (function () {
             return;
         _a = [2 /* Rejected */, reason], this.$slow.state = _a[0], this.$slow.settledValue = _a[1];
         // Synchronise with the persistent object graph.
-        SlowPromise.$slowLog.updated(this); // TODO: temp testing...
+        this.$slowLog.updated(this); // TODO: temp testing...
         // Invoke any already-attached handlers now (asynchronously).
         process.nextTick(function () { return processAllHandlers(_this); });
         var _a;
     };
-    /**
-     * INTERNAL the SlowLog used by all instances created by this constructor.
-     */
-    SlowPromise.$slowLog = SlowLog.none;
     return SlowPromise;
 })();
+SlowPromise.prototype.$slowLog = SlowLog.none;
 /**
  * Dequeues and processes all enqueued onFulfilled/onRejected handlers.
  * The SlowPromise implementation calls this when `p` becomes settled,
@@ -161,7 +158,7 @@ function processAllHandlers(p) {
     while (p.$slow.handlers.length > 0) {
         var handler = p.$slow.handlers.shift();
         // Synchronise with the persistent object graph.
-        p.constructor['$slowLog'].updated(p); // TODO: temp testing...
+        p.$slowLog.updated(p); // TODO: temp testing...
         // Fulfilled case.
         if (p.$slow.state === 1 /* Fulfilled */) {
             if (_.isFunction(handler.onFulfilled)) {

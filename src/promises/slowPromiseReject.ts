@@ -43,7 +43,7 @@ SlowPromiseReject = <any> makeCallableClass({
 
         // Add slow metadata to the resolve function.
         this.$slow = { kind: SlowKind.PromiseReject, promise };
-        this.$slowLog = promise ? promise.constructor['$slowLog'] : null;
+        this.$slowLog = promise ? promise.$slowLog : null;
 
         // Synchronise with the persistent object graph.
         if (this.$slowLog) this.$slowLog.created(this); // TODO: temp testing...
@@ -75,6 +75,6 @@ registerSlowObjectFactory(SlowKind.PromiseReject, ($slow: any) => {
     //     will always appear in the storage log before any rejectors which use it.
     var reject = new SlowPromiseReject(null);
     reject.$slow = $slow;
-    reject.$slowLog = $slow.promise.constructor.$slowLog;
+    reject.$slowLog = $slow.promise.$slowLog;
     return reject;
 });

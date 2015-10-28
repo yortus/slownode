@@ -30,7 +30,7 @@ class SlowAsyncFunctionActivation extends SteppableObject {
         var safa = this;
         this.$slow.resumeNext = new SlowClosure({safa}, value => { safa.runToCompletion(null, value); }),
         this.$slow.resumeError = new SlowClosure({safa}, error => { safa.runToCompletion(error); }),
-        this.$slow.asyncFunction.constructor['$slowLog'].created(this); // TODO: temp testing...
+        this.$slow.asyncFunction.$slowLog.created(this); // TODO: temp testing...
     }
 
     /** Holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
@@ -85,7 +85,7 @@ class SlowAsyncFunctionActivation extends SteppableObject {
 
             // Synchronise with the persistent object graph.
             // TODO: temp testing...
-            this.$slow.asyncFunction.constructor['$slowLog'].deleted(s.resolve, s.reject, s.resumeNext, s.resumeError, this);
+            this.$slow.asyncFunction.$slowLog.deleted(s.resolve, s.reject, s.resumeNext, s.resumeError, this);
             return;
         }
 
@@ -96,7 +96,7 @@ class SlowAsyncFunctionActivation extends SteppableObject {
 
             // Synchronise with the persistent object graph.
             // TODO: temp testing...
-            this.$slow.asyncFunction.constructor['$slowLog'].deleted(s.resolve, s.reject, s.resumeNext, s.resumeError, this);
+            this.$slow.asyncFunction.$slowLog.deleted(s.resolve, s.reject, s.resumeNext, s.resumeError, this);
             return;
         }
 
@@ -110,7 +110,7 @@ class SlowAsyncFunctionActivation extends SteppableObject {
 
         // Synchronise with the persistent object graph.
         // TODO: temp testing...
-        this.$slow.asyncFunction.constructor['$slowLog'].updated(this);
+        this.$slow.asyncFunction.$slowLog.updated(this);
     }
 }
 

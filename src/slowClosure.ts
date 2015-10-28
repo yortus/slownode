@@ -20,9 +20,6 @@ var SlowClosure: {
 
     /** Creates a new SlowClosure instance. */
     (env: { [name: string]: any; }, fn: Function): SlowClosure;
-
-    /** INTERNAL the SlowLog used by all instances created by this constructor. */
-    $slowLog: SlowLog;
 }
 interface SlowClosure {
 
@@ -36,6 +33,9 @@ interface SlowClosure {
         functionSource: string;
         environment: { [name: string]: any; };
     }
+
+    /** INTERNAL the SlowLog used by all instances created by this constructor. */
+    $slowLog: SlowLog;
 
     /** PRIVATE property holding the function that is executed when the closure instance is invoked. */
     function: Function;
@@ -66,7 +66,7 @@ SlowClosure = <any> makeCallableClass({
         };
 
         // Synchronise with the persistent object graph.
-        SlowClosure.$slowLog.created(this); // TODO: temp testing...
+        this.$slowLog.created(this); // TODO: temp testing...
     },
 
     // Calling the SlowClosure executes the function passed to the constructor in the environment passed to the constructor.
@@ -80,7 +80,7 @@ SlowClosure = <any> makeCallableClass({
 
 
 // Set the static '$slowLog' property on the SlowClosure callable class.
-SlowClosure.$slowLog = SlowLog.none;
+SlowClosure.prototype.$slowLog = SlowLog.none;
 
 
 // Tell storage how to create a SlowClosure instance.

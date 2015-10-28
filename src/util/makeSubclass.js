@@ -28,7 +28,7 @@ function makeSubClass(SuperClass, slowLog) {
         return class_1;
     })(Super);
     // TODO: set slowLog...
-    Sub.$slowLog = slowLog;
+    Sub.prototype.$slowLog = slowLog;
     // Cache and return the constructor function.
     cache.set(SuperClass, Sub);
     return Sub;

@@ -43,7 +43,7 @@ var SlowAsyncFunctionActivation = (function (_super) {
         var safa = this;
         this.$slow.resumeNext = new SlowClosure({ safa: safa }, function (value) { safa.runToCompletion(null, value); }),
             this.$slow.resumeError = new SlowClosure({ safa: safa }, function (error) { safa.runToCompletion(error); }),
-            this.$slow.asyncFunction.constructor['$slowLog'].created(this); // TODO: temp testing...
+            this.$slow.asyncFunction.$slowLog.created(this); // TODO: temp testing...
     }
     /**
      * Runs the SlowAsyncFunctionActivation instance to completion. First, the activation (which
@@ -67,7 +67,7 @@ var SlowAsyncFunctionActivation = (function (_super) {
             s.reject(ex);
             // Synchronise with the persistent object graph.
             // TODO: temp testing...
-            this.$slow.asyncFunction.constructor['$slowLog'].deleted(s.resolve, s.reject, s.resumeNext, s.resumeError, this);
+            this.$slow.asyncFunction.$slowLog.deleted(s.resolve, s.reject, s.resumeNext, s.resumeError, this);
             return;
         }
         // The Steppable returned. Finalize and resolve the SlowAsyncFunctionActivation.
@@ -76,7 +76,7 @@ var SlowAsyncFunctionActivation = (function (_super) {
             s.resolve(yielded.value);
             // Synchronise with the persistent object graph.
             // TODO: temp testing...
-            this.$slow.asyncFunction.constructor['$slowLog'].deleted(s.resolve, s.reject, s.resumeNext, s.resumeError, this);
+            this.$slow.asyncFunction.$slowLog.deleted(s.resolve, s.reject, s.resumeNext, s.resumeError, this);
             return;
         }
         // The Steppable yielded. Ensure the yielded value is awaitable.
@@ -87,7 +87,7 @@ var SlowAsyncFunctionActivation = (function (_super) {
         awaiting.then(this.$slow.resumeNext, this.$slow.resumeError);
         // Synchronise with the persistent object graph.
         // TODO: temp testing...
-        this.$slow.asyncFunction.constructor['$slowLog'].updated(this);
+        this.$slow.asyncFunction.$slowLog.updated(this);
     };
     return SlowAsyncFunctionActivation;
 })(SteppableObject);

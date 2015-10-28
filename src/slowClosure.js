@@ -29,7 +29,7 @@ SlowClosure = makeCallableClass({
             environment: env
         };
         // Synchronise with the persistent object graph.
-        SlowClosure.$slowLog.created(this); // TODO: temp testing...
+        this.$slowLog.created(this); // TODO: temp testing...
     },
     // Calling the SlowClosure executes the function passed to the constructor in the environment passed to the constructor.
     call: function () {
@@ -43,7 +43,7 @@ SlowClosure = makeCallableClass({
     bindThis: true
 });
 // Set the static '$slowLog' property on the SlowClosure callable class.
-SlowClosure.$slowLog = SlowLog.none;
+SlowClosure.prototype.$slowLog = SlowLog.none;
 // Tell storage how to create a SlowClosure instance.
 registerSlowObjectFactory(50 /* Closure */, function ($slow) {
     var closure = new SlowClosure($slow.environment, $slow.functionSource);

@@ -27,7 +27,7 @@ function makeSubClass<T extends typeof SlowClass>(SuperClass: T, slowLog: SlowLo
     }
 
     // TODO: set slowLog...
-    Sub.$slowLog = slowLog;
+    Sub.prototype.$slowLog = slowLog;
 
 
     // Cache and return the constructor function.

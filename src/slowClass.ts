@@ -7,6 +7,6 @@ declare class SlowClass {
 
     constructor(...args);
 
-    static $slowLog: SlowLog;
+    $slowLog: SlowLog;
 
 }

@@ -23,9 +23,6 @@ var SlowAsyncFunction: {
 
     /** Creates a new SlowAsyncFunction instance. */
     (bodyFunc: Function): SlowAsyncFunction;
-
-    /** INTERNAL the SlowLog used by all instances created by this constructor. */
-    $slowLog: SlowLog;
 }
 interface SlowAsyncFunction {
 
@@ -39,6 +36,9 @@ interface SlowAsyncFunction {
         stateMachineSource: string;
         originalSource: string; // TODO: not needed in operation, but preserve for future debugging/sourcemap needs?
     };
+
+    /** INTERNAL the SlowLog used by all instances created by this constructor. */
+    $slowLog: SlowLog;
 
     /** INTERNAL the state machine that is equivalent to the body function passed to the constructor. */
     stateMachine: SteppableStateMachine;
@@ -77,7 +77,7 @@ SlowAsyncFunction = <any> makeCallableClass({
         asyncFunctionCache[safid] = this;
 
         // Synchronise with the persistent object graph.
-        SlowAsyncFunction.$slowLog.created(this);
+        this.$slowLog.created(this);
     },
 
     // Calling the instance begins execution of the body function, and returns a promise of its outcome.
@@ -97,7 +97,7 @@ SlowAsyncFunction = <any> makeCallableClass({
 
 
 // Set the static '$slowLog' property on the SlowAsyncFunction callable class.
-SlowAsyncFunction.$slowLog = SlowLog.none;
+SlowAsyncFunction.prototype.$slowLog = SlowLog.none;
 
 
 /** Supports memoization of SlowAsyncFunction instances, which are immutable and expensive to compute. */
