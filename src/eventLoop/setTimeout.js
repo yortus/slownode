@@ -14,10 +14,13 @@ function setTimeout(callback, delay) {
     // Encode the given details in an event loop entry.
     var entry = {
         $slow: {
+            kind: 1 /* EventLoopEntry */,
+            id: null,
             due: Date.now() + delay,
             callback: callback,
             arguments: args
-        }
+        },
+        $slowLog: null
     };
     // Enqueue the entry into the event loop.
     eventLoop.enqueue(entry);

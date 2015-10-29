@@ -4,5 +4,5 @@
 function flushLogs() {
 
     // TODO: implement...
-    console.log('FLUSH LOGS');
+    console.log('----FLUSH LOGS');
 }

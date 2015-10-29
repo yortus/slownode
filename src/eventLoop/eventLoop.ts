@@ -74,6 +74,7 @@ function traverseAllEntries() {
         else {
 
             // Entry is due! Log the state change, and run the callback in the entry.
+            if (entry.$slowLog) entry.$slowLog.release(entry);
             entry.$slow.callback.apply(void 0, entry.$slow.arguments);
         }
     }

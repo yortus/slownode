@@ -1,6 +1,6 @@
 ﻿import EventLoopEntry = require('./eventLoopEntry');
 import eventLoop = require('./eventLoop');
-export = setTimeout;
+export = clearTimeout;
 
 
 /**

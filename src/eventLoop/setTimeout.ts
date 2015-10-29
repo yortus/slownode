@@ -1,4 +1,6 @@
-﻿import EventLoopEntry = require('./eventLoopEntry');
+﻿import SlowKind = require('../slowKind');
+import SlowLog = require('../slowLog');
+import EventLoopEntry = require('./eventLoopEntry');
 import eventLoop = require('./eventLoop');
 export = setTimeout;
 
@@ -15,10 +17,13 @@ function setTimeout(callback: Function, delay: number, ...args: any[]): EventLoo
     // Encode the given details in an event loop entry.
     var entry: EventLoopEntry = {
         $slow: {
+            kind: SlowKind.EventLoopEntry,
+            id: null,
             due: Date.now() + delay,
             callback: callback,
             arguments: args
-        }
+        },
+        $slowLog: null
     };
 
     // Enqueue the entry into the event loop.

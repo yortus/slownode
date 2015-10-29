@@ -1,3 +1,2 @@
-exports.setTimeout = require('./eventLoop/setTimeout');
-exports.clearTimeout = require('./eventLoop/clearTimeout');
+exports.Epoch = require('./epoch');
 //# sourceMappingURL=index.js.map

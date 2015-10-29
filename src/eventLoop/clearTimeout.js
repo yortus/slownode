@@ -6,5 +6,5 @@ var eventLoop = require('./eventLoop');
 function clearTimeout(timeoutObject) {
     eventLoop.remove(timeoutObject);
 }
-module.exports = setTimeout;
+module.exports = clearTimeout;
 //# sourceMappingURL=clearTimeout.js.map
