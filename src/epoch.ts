@@ -14,6 +14,7 @@ class Epoch {
 
     setTimeout(callback: Function, delay: number, ...args: any[]) {
         var timeoutObject = setTimeout(callback, delay, ...args);
+        timeoutObject.$slowLog = 
         this.slowLog.capture(timeoutObject);
         return timeoutObject;
     }

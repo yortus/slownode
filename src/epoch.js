@@ -11,7 +11,8 @@ var Epoch = (function () {
             args[_i - 2] = arguments[_i];
         }
         var timeoutObject = setTimeout.apply(void 0, [callback, delay].concat(args));
-        this.slowLog.capture(timeoutObject);
+        timeoutObject.$slowLog =
+            this.slowLog.capture(timeoutObject);
         return timeoutObject;
     };
     Epoch.prototype.clearTimeout = function (timeoutObject) {

@@ -51,16 +51,16 @@ function traverseAllEntries() {
     while (--remaining >= 0) {
         var entry = entries.shift();
         // TODO: we only handle a single event type so far.... May need a 'type' property later?
-        if (entry.$slow.due >= Date.now()) {
-            // Not due yet - add it back to the queue and continue...
+        if (entry.isBlocked()) {
+            // Still blocked - add it back to the queue and slip to the next entry...
             entries.push(entry);
             continue;
         }
         else {
-            // Entry is due! Log the state change, and run the callback in the entry.
+            // Entry is runnable! Log the state change, and dispatch the entry.
             if (entry.$slowLog)
                 entry.$slowLog.release(entry);
-            entry.$slow.callback.apply(void 0, entry.$slow.arguments);
+            entry.dispatch();
         }
     }
 }

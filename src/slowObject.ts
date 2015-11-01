@@ -16,8 +16,8 @@ interface SlowObject {
         [other: string]: any;
     }
 
-    /** The SlowLog to which this instance is bound. */
-    $slowLog: SlowLog;
+    $slowLogAttach(): void;
+    $slowLogDetach(): void;
 
     [other: string]: any;
 }

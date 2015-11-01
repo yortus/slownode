@@ -1,17 +1,16 @@
-﻿import SlowKind = require('../slowKind');
-import SlowLog = require('../slowLog');
+﻿import SlowObject = require('../slowObject');
 export = EventLoopEntry;
 
 
-interface EventLoopEntry {
+interface EventLoopEntry extends SlowObject {
 
-    $slow: {
-        kind: SlowKind;
-        id: string;
-        due: number;
-        callback: Function;
-        arguments: any[];
-    };
+    // TODO: doc...
+    isBlocked(): boolean;
 
-    $slowLog: SlowLog;
+    // TODO: doc...
+    dispatch(): void;
+
+    // TODO: doc...
+    cancel(): void;
+
 }

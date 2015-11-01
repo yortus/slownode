@@ -11,21 +11,33 @@ function setTimeout(callback, delay) {
     for (var _i = 2; _i < arguments.length; _i++) {
         args[_i - 2] = arguments[_i];
     }
-    // Encode the given details in an event loop entry.
-    var entry = {
-        $slow: {
+    var entry = new TimerEvent(delay, callback, args);
+    eventLoop.enqueue(entry);
+    return entry;
+}
+// TODO: doc...
+var TimerEvent = (function () {
+    function TimerEvent(delay, callback, args) {
+        this.$slow = {
             kind: 1 /* EventLoopEntry */,
             id: null,
             due: Date.now() + delay,
             callback: callback,
             arguments: args
-        },
-        $slowLog: null
+        };
+    }
+    TimerEvent.prototype.isBlocked = function () {
+        return this.$slow.due > Date.now();
     };
-    // Enqueue the entry into the event loop.
-    eventLoop.enqueue(entry);
-    // Return the entry.
-    return entry;
-}
+    TimerEvent.prototype.dispatch = function () {
+        this.$slowLog.release(this);
+        this.$slow.callback.apply(void 0, this.$slow.arguments);
+    };
+    TimerEvent.prototype.cancel = function () {
+        this.$slowLog.release(this);
+        eventLoop.remove(this);
+    };
+    return TimerEvent;
+})();
 module.exports = setTimeout;
 //# sourceMappingURL=setTimeout.js.map

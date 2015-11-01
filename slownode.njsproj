@@ -32,9 +32,13 @@
     <Compile Include="scripts\runPromisesAPlusTestSuite.js" />
     <Compile Include="scripts\runSlownodeTestSuite.js" />
     <TypeScriptCompile Include="src\epoch.ts" />
+    <TypeScriptCompile Include="src\epochJournal.ts" />
     <TypeScriptCompile Include="src\eventLoop\eventLoop.ts" />
     <TypeScriptCompile Include="src\eventLoop\eventLoopEntry.ts" />
+    <TypeScriptCompile Include="src\eventLoop\slowEventLoop.ts" />
+    <TypeScriptCompile Include="src\eventLoop\slowTimers.ts" />
     <TypeScriptCompile Include="src\flushLogs.ts" />
+    <TypeScriptCompile Include="src\promises\slowPromise.ts" />
     <TypeScriptCompile Include="src\slowKind.ts" />
     <TypeScriptCompile Include="src\slowLog.ts" />
     <TypeScriptCompile Include="src\slowObject.ts" />

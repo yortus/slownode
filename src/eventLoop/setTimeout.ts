@@ -12,23 +12,47 @@ export = setTimeout;
  * @param delay the number of milliseconds to wait before calling the callback.
  * @param args the optional arguments to pass to the callback.
  */
-function setTimeout(callback: Function, delay: number, ...args: any[]): EventLoopEntry {
+function setTimeout(callback: Function, delay: number, ...args: any[]) {
+    var entry = new TimerEvent(delay, callback, args);
+    eventLoop.enqueue(entry);
+    return entry;
+}
 
-    // Encode the given details in an event loop entry.
-    var entry: EventLoopEntry = {
-        $slow: {
+
+// TODO: doc...
+class TimerEvent implements EventLoopEntry {
+
+    constructor(delay: number, callback: Function, args: any[]) {
+        this.$slow = {
             kind: SlowKind.EventLoopEntry,
             id: null,
             due: Date.now() + delay,
             callback: callback,
             arguments: args
-        },
-        $slowLog: null
+        };
+    }
+
+    isBlocked() {
+        return this.$slow.due > Date.now();
+    }
+
+    dispatch() {
+        this.$slowLog.release(this);
+        this.$slow.callback.apply(void 0, this.$slow.arguments);
+    }
+
+    cancel() {
+        this.$slowLog.release(this);
+        eventLoop.remove(this);
+    }
+
+    $slow: {
+        kind: SlowKind;
+        id: string;
+        due: number;
+        callback: Function;
+        arguments: any[];
     };
 
-    // Enqueue the entry into the event loop.
-    eventLoop.enqueue(entry);
-
-    // Return the entry.
-    return entry;
+    $slowLog: SlowLog;
 }

@@ -1,0 +1,7 @@
+﻿export = EpochJournal;
+
+
+class EpochJournal {
+
+
+}
