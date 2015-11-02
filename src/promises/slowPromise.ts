@@ -152,7 +152,6 @@ class SlowPromise {
     $slow = {
         kind: SlowKind.Promise,
         id: <string> null,
-        isFateResolved: false,
         state: State.Pending,
         settledValue: void 0,
         handlers: <Array<{

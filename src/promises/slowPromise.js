@@ -24,7 +24,6 @@ var SlowPromise = (function () {
         this.$slow = {
             kind: 10 /* Promise */,
             id: null,
-            isFateResolved: false,
             state: 0 /* Pending */,
             settledValue: void 0,
             handlers: []

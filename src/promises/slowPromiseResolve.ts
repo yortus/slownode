@@ -36,10 +36,9 @@ SlowPromiseResolve = <any> makeCallableClass({
 
     // Create a new SlowPromiseResolve instance, tied to the given SlowPromise.
     constructor: function (promise: SlowPromise) {
-        var self = <SlowPromiseResolve> this;
 
         // Add slow metadata to the resolve function.
-        self.$slow = { kind: SlowKind.PromiseResolve, promise };
+        (<SlowPromiseResolve> this).$slow = { kind: SlowKind.PromiseResolve, promise };
 
         // Synchronise with the persistent object graph.
         (<typeof SlowPromise> promise.constructor).epochLog.created(this); // TODO: temp testing...
@@ -47,19 +46,9 @@ SlowPromiseResolve = <any> makeCallableClass({
 
     // Calling the instance resolves the promise passed to the constructor, with `value` as the resolved value.
     call: function (value?: any) {
-        var self = <SlowPromiseResolve> this;
 
-        // As per spec, do nothing if promise's fate is already resolved.
-        var promise = self.$slow.promise;
-        if (promise.$slow.isFateResolved) return;
-
-        // Indicate the promise's fate is now resolved.
-        promise.$slow.isFateResolved = true;
-
-        // Synchronise with the persistent object graph.
-        (<typeof SlowPromise> promise.constructor).epochLog.updated(promise); // TODO: temp testing...
-
-        // Finally, resolve the promise using the standard resolution procedure.
+        // Resolve the promise using the standard resolution procedure.
+        var promise = (<SlowPromiseResolve> this).$slow.promise;
         standardResolutionProcedure(promise, value);
     }
 });

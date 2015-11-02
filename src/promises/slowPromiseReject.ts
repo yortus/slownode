@@ -35,10 +35,9 @@ SlowPromiseReject = <any> makeCallableClass({
 
     // Create a new SlowPromiseReject instance, tied to the given SlowPromise.
     constructor: function (promise: SlowPromise) {
-        var self = <SlowPromiseReject> this;
 
         // Add slow metadata to the resolve function.
-        self.$slow = { kind: SlowKind.PromiseReject, promise };
+        (<SlowPromiseReject> this).$slow = { kind: SlowKind.PromiseReject, promise };
 
         // Synchronise with the persistent object graph.
         (<typeof SlowPromise> promise.constructor).epochLog.created(this); // TODO: temp testing...
@@ -46,19 +45,9 @@ SlowPromiseReject = <any> makeCallableClass({
 
     // Calling the instance rejects the promise passed to the constructor, with `reason` as the rejection reason.
     call: function (reason?: any) {
-        var self = <SlowPromiseReject> this;
 
-        // As per spec, do nothing if promise's fate is already resolved.
-        var promise = self.$slow.promise;
-        if (promise.$slow.isFateResolved) return;
-
-        // Indicate the promise's fate is now resolved.
-        promise.$slow.isFateResolved = true;
-
-        // Synchronise with the persistent object graph.
-        (<typeof SlowPromise> promise.constructor).epochLog.updated(promise); // TODO: temp testing...
-
-        // Finally, reject the promise using its own private _reject method.
+        // Reject the promise using its internal reject method.
+        var promise = (<SlowPromiseReject> this).$slow.promise;
         promise.reject(reason);
     }
 });
