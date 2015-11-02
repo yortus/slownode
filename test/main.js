@@ -2,8 +2,22 @@ var Epoch = require('../src/epoch');
 var chai = require("chai");
 chai.use(require('chai-as-promised'));
 var expect = chai.expect;
-describe('it', function () {
-    it('works', function (done) {
+describe('Within an Epoch instance', function () {
+    //it('setTimeout works', (done) => {
+    //    // Create an epoch
+    //    var slow = new Epoch();
+    //    // Iterate until done
+    //    var countDown = 5;
+    //    loop();
+    //    // Function to process a single iteration
+    //    function loop() {
+    //        console.log('tick');
+    //        --countDown;
+    //        if (!countDown) return done();
+    //        slow.setTimeout(loop, 500);
+    //    }
+    //});
+    it('Promise works', function (done) {
         // Create an epoch
         var slow = new Epoch();
         // Iterate until done
@@ -15,7 +29,7 @@ describe('it', function () {
             --countDown;
             if (!countDown)
                 return done();
-            slow.setTimeout(loop, 500);
+            slow.Promise.delay(500).then(loop);
         }
     });
 });

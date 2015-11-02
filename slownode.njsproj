@@ -36,6 +36,10 @@
     <TypeScriptCompile Include="src\eventLoop\slowEventLoop.ts" />
     <TypeScriptCompile Include="src\eventLoop\slowTimers.ts" />
     <TypeScriptCompile Include="src\flushLogs.ts" />
+    <TypeScriptCompile Include="src\promises\slowPromise.ts" />
+    <TypeScriptCompile Include="src\promises\slowPromiseReject.ts" />
+    <TypeScriptCompile Include="src\promises\slowPromiseResolve.ts" />
+    <TypeScriptCompile Include="src\promises\standardResolutionProcedure.ts" />
     <TypeScriptCompile Include="src\slowKind.ts" />
     <TypeScriptCompile Include="src\slowObject.ts" />
     <TypeScriptCompile Include="src\typings\chai-as-promised\chai-as-promised.d.ts" />

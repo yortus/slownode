@@ -1,7 +1,8 @@
 ﻿import assert = require('assert');
 import EpochLog = require('./epochLog');
-import slowTimers = require('./eventLoop/slowTimers');
 import slowEventLoop = require('./eventLoop/slowEventLoop');
+import slowTimers = require('./eventLoop/slowTimers');
+import SlowPromise = require('./promises/slowPromise');
 export = Epoch;
 
 
@@ -30,4 +31,5 @@ class Epoch {
     clearTimeout = slowTimers.clearTimeout;
 
     // TODO: temp testing...
+    Promise = SlowPromise.forEpoch(this.log);
 }
