@@ -1,24 +1,23 @@
-var SlowLog = require('./slowLog');
-var setTimeout = require('./eventLoop/setTimeout');
-var clearTimeout = require('./eventLoop/clearTimeout');
+var EpochLog = require('./epochLog');
+var slowTimers = require('./eventLoop/slowTimers');
+var slowEventLoop = require('./eventLoop/slowEventLoop');
 var Epoch = (function () {
+    // TODO: take a filename
     function Epoch() {
-        this.slowLog = new SlowLog();
+        var _this = this;
+        // TODO: explicit disposal...
+        // TODO: temp testing...
+        this.log = new EpochLog();
+        // TODO: temp testing...
+        this.setTimeout = slowTimers.setTimeout.forEpoch(this.log);
+        // TODO: temp testing...
+        this.clearTimeout = slowTimers.clearTimeout;
+        // TODO: need orderly attach/detach in pairs. This will never be detached!! And will keep ref to epoch/log alive!
+        slowEventLoop.beforeNextTick.attach(function () {
+            _this.log.flush();
+            return Promise.resolve();
+        });
     }
-    Epoch.prototype.setTimeout = function (callback, delay) {
-        var args = [];
-        for (var _i = 2; _i < arguments.length; _i++) {
-            args[_i - 2] = arguments[_i];
-        }
-        var timeoutObject = setTimeout.apply(void 0, [callback, delay].concat(args));
-        timeoutObject.$slowLog =
-            this.slowLog.capture(timeoutObject);
-        return timeoutObject;
-    };
-    Epoch.prototype.clearTimeout = function (timeoutObject) {
-        this.slowLog.release(timeoutObject);
-        clearTimeout(timeoutObject);
-    };
     return Epoch;
 })();
 module.exports = Epoch;

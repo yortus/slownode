@@ -7,7 +7,7 @@ describe('it', function () {
         // Create an epoch
         var slow = new Epoch();
         // Iterate until done
-        var countDown = 4;
+        var countDown = 5;
         loop();
         // Function to process a single iteration
         function loop() {

@@ -1,28 +1,33 @@
 ﻿import assert = require('assert');
-import SlowLog = require('./slowLog');
-import setTimeout = require('./eventLoop/setTimeout');
-import clearTimeout = require('./eventLoop/clearTimeout');
-import EventLoopEntry = require('./eventLoop/eventLoopEntry');
+import EpochLog = require('./epochLog');
+import slowTimers = require('./eventLoop/slowTimers');
+import slowEventLoop = require('./eventLoop/slowEventLoop');
 export = Epoch;
 
 
 class Epoch {
 
+    // TODO: take a filename
     constructor() {
-        this.slowLog = new SlowLog();
+
+
+        // TODO: need orderly attach/detach in pairs. This will never be detached!! And will keep ref to epoch/log alive!
+        slowEventLoop.beforeNextTick.attach(() => {
+            this.log.flush();
+            return Promise.resolve<void>();
+        });
     }
 
-    setTimeout(callback: Function, delay: number, ...args: any[]) {
-        var timeoutObject = setTimeout(callback, delay, ...args);
-        timeoutObject.$slowLog = 
-        this.slowLog.capture(timeoutObject);
-        return timeoutObject;
-    }
+    // TODO: explicit disposal...
 
-    clearTimeout(timeoutObject: EventLoopEntry) {
-        this.slowLog.release(timeoutObject);
-        clearTimeout(timeoutObject);
-    }
+    // TODO: temp testing...
+    private log = new EpochLog();
 
-    private slowLog: SlowLog;
+    // TODO: temp testing...
+    setTimeout = slowTimers.setTimeout.forEpoch(this.log);
+
+    // TODO: temp testing...
+    clearTimeout = slowTimers.clearTimeout;
+
+    // TODO: temp testing...
 }

@@ -12,7 +12,7 @@ describe('it', function () {
         var slow = new Epoch();
         
         // Iterate until done
-        var countDown = 4;
+        var countDown = 5;
         loop();
 
         // Function to process a single iteration
