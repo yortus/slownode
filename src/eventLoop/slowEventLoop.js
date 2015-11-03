@@ -2,6 +2,7 @@
 // TODO: doc...
 function add(entry) {
     entries.push(entry);
+    runUntilEmpty();
 }
 exports.add = add;
 // TODO: doc...
@@ -28,11 +29,15 @@ var tickHandlers = [];
 // TODO: doc...
 var entries = [];
 // TODO: doc...
-runUntilEmpty();
-// TODO: doc...
+var isRunning = false;
+// TODO: doc... need error handling everywhere...
 function runUntilEmpty() {
+    if (isRunning)
+        return;
+    isRunning = true;
     setTimeout(function () {
         processOneTick().then(function () {
+            isRunning = false;
             if (entries.length > 0)
                 runUntilEmpty();
         });

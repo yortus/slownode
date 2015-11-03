@@ -18,6 +18,7 @@ export interface Entry {
 // TODO: doc...
 export function add(entry: Entry) {
     entries.push(entry);
+    runUntilEmpty();
 }
 
 
@@ -48,13 +49,16 @@ var entries: Entry[] = [];
 
 
 // TODO: doc...
-runUntilEmpty();
+var isRunning = false;
 
 
-// TODO: doc...
+// TODO: doc... need error handling everywhere...
 function runUntilEmpty() {
+    if (isRunning) return;
+    isRunning = true;
     setTimeout(() => {
         processOneTick().then(() => {
+            isRunning = false;
             if (entries.length > 0) runUntilEmpty();
         });
     }, 200);

@@ -1,6 +1,8 @@
 var assert = require('assert');
 var EpochLog = (function () {
     function EpochLog() {
+        // TODO: temp testing... remove this...
+        this.id = String.fromCharCode(++ix);
         // TODO: temp testing...
         this.allTrackedObjects = new Set();
         this.updatedTrackedObjects = new Set();
@@ -10,7 +12,7 @@ var EpochLog = (function () {
     EpochLog.prototype.created = function (slowObj) {
         assert(!this.allTrackedObjects.has(slowObj));
         this.ensureSlowObjectHasUniqueId(slowObj);
-        console.log('----CREATED ' + slowObj.$slow.kind + ':' + slowObj.$slow.id);
+        console.log('----CREATED ' + this.id + ':' + slowObj.$slow.kind + ':' + slowObj.$slow.id);
         this.allTrackedObjects.add(slowObj);
         this.updatedTrackedObjects.add(slowObj);
     };
@@ -18,12 +20,12 @@ var EpochLog = (function () {
         // TODO: implement...
     };
     EpochLog.prototype.deleted = function (slowObj) {
-        console.log('----DELETED ' + slowObj.$slow.kind + ':' + slowObj.$slow.id);
+        console.log('----DELETED ' + this.id + ':' + slowObj.$slow.kind + ':' + slowObj.$slow.id);
         // TODO: implement...
     };
     EpochLog.prototype.flush = function () {
         // TODO: temp testing...
-        console.log('TODO: FLUSH LOG');
+        console.log('TODO: (' + this.id + ') FLUSH LOG');
     };
     // TODO: ...
     EpochLog.prototype.ensureSlowObjectHasUniqueId = function (obj) {
@@ -31,5 +33,7 @@ var EpochLog = (function () {
     };
     return EpochLog;
 })();
+// TODO: temp testing... remove this...
+var ix = 'A'.charCodeAt(0) - 1;
 module.exports = EpochLog;
 //# sourceMappingURL=epochLog.js.map

@@ -5,10 +5,13 @@ export = EpochLog;
 
 class EpochLog {
 
+    // TODO: temp testing... remove this...
+    id = String.fromCharCode(++ix);
+
     created(slowObj: SlowObject) {
         assert(!this.allTrackedObjects.has(slowObj));
         this.ensureSlowObjectHasUniqueId(slowObj);
-console.log('----CREATED ' + slowObj.$slow.kind + ':' + slowObj.$slow.id);
+console.log('----CREATED ' + this.id + ':' + slowObj.$slow.kind + ':' + slowObj.$slow.id);
         this.allTrackedObjects.add(slowObj);
         this.updatedTrackedObjects.add(slowObj);
     }
@@ -18,13 +21,13 @@ console.log('----CREATED ' + slowObj.$slow.kind + ':' + slowObj.$slow.id);
     }
 
     deleted(slowObj: SlowObject) {
-console.log('----DELETED ' + slowObj.$slow.kind + ':' + slowObj.$slow.id);
+console.log('----DELETED ' + this.id + ':' + slowObj.$slow.kind + ':' + slowObj.$slow.id);
         // TODO: implement...
     }
 
     flush() {
         // TODO: temp testing...
-        console.log('TODO: FLUSH LOG');
+        console.log('TODO: (' + this.id + ') FLUSH LOG');
     }
 
     // TODO: ...
@@ -38,3 +41,7 @@ console.log('----DELETED ' + slowObj.$slow.kind + ':' + slowObj.$slow.id);
     private deletedTrackedObjects = new Set<SlowObject>();
     private nextId = 0;
 }
+
+
+// TODO: temp testing... remove this...
+var ix = 'A'.charCodeAt(0) - 1;

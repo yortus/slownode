@@ -6,23 +6,23 @@ var expect = chai.expect;
 
 describe('Within an Epoch instance', function () {
 
-    //it('setTimeout works', (done) => {
+    it('setTimeout works', (done) => {
 
-    //    // Create an epoch
-    //    var slow = new Epoch();
+        // Create an epoch
+        var slow = new Epoch();
         
-    //    // Iterate until done
-    //    var countDown = 5;
-    //    loop();
+        // Iterate until done
+        var countDown = 5;
+        loop();
 
-    //    // Function to process a single iteration
-    //    function loop() {
-    //        console.log('tick');
-    //        --countDown;
-    //        if (!countDown) return done();
-    //        slow.setTimeout(loop, 500);
-    //    }
-    //});
+        // Function to process a single iteration
+        function loop() {
+            console.log('tick');
+            --countDown;
+            if (!countDown) return done();
+            slow.setTimeout(loop, 500);
+        }
+    });
 
 
     it('Promise works', (done) => {
