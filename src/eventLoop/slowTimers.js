@@ -1,21 +1,6 @@
 var slowEventLoop = require('./slowEventLoop');
 // TODO: doc...
 exports.setTimeout = setTimeoutForEpoch(null);
-function setTimeoutForEpoch(epochLog) {
-    var result;
-    result = (function (callback, delay) {
-        var args = [];
-        for (var _i = 2; _i < arguments.length; _i++) {
-            args[_i - 2] = arguments[_i];
-        }
-        var timer = new Timer(epochLog, delay, callback, args);
-        epochLog.created(timer);
-        slowEventLoop.add(timer);
-        return timer;
-    });
-    result.forEpoch = setTimeoutForEpoch;
-    return result;
-}
 // TODO: doc...
 function clearTimeout(timeoutObject) {
     timeoutObject.cancel();
@@ -47,4 +32,19 @@ var Timer = (function () {
     return Timer;
 })();
 exports.Timer = Timer;
+// TODO: doc...
+function setTimeoutForEpoch(epochLog) {
+    var result = (function (callback, delay) {
+        var args = [];
+        for (var _i = 2; _i < arguments.length; _i++) {
+            args[_i - 2] = arguments[_i];
+        }
+        var timer = new Timer(epochLog, delay, callback, args);
+        epochLog.created(timer);
+        slowEventLoop.add(timer);
+        return timer;
+    });
+    result.forEpoch = setTimeoutForEpoch;
+    return result;
+}
 //# sourceMappingURL=slowTimers.js.map

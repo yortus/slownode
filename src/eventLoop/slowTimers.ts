@@ -5,20 +5,6 @@ import slowEventLoop = require('./slowEventLoop');
 
 // TODO: doc...
 export var setTimeout = setTimeoutForEpoch(null);
-function setTimeoutForEpoch(epochLog: EpochLog) {
-    var result: {
-        (callback: Function, delay: number, ...args: any[]): Timer;
-        forEpoch(epochLog: EpochLog): (callback: Function, delay: number, ...args: any[]) => Timer;
-    };
-    result = <any> ((callback: Function, delay: number, ...args: any[]) => {
-        var timer = new Timer(epochLog, delay, callback, args);
-        epochLog.created(timer);
-        slowEventLoop.add(timer);
-        return timer;
-    });
-    result.forEpoch = setTimeoutForEpoch;
-    return result;
-}
 
 
 // TODO: doc...
@@ -61,4 +47,24 @@ export class Timer implements slowEventLoop.Entry {
         callback: Function;
         arguments: any[];
     };
+}
+
+
+// TODO: doc...
+interface SetTimeoutFunction {
+    (callback: Function, delay: number, ...args: any[]): Timer;
+    forEpoch(epochLog: EpochLog): (callback: Function, delay: number, ...args: any[]) => Timer;
+}
+
+
+// TODO: doc...
+function setTimeoutForEpoch(epochLog: EpochLog) {
+    var result: SetTimeoutFunction = <any> ((callback: Function, delay: number, ...args: any[]) => {
+        var timer = new Timer(epochLog, delay, callback, args);
+        epochLog.created(timer);
+        slowEventLoop.add(timer);
+        return timer;
+    });
+    result.forEpoch = setTimeoutForEpoch;
+    return result;
 }

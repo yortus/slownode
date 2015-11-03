@@ -2,6 +2,7 @@ var EpochLog = require('./epochLog');
 var slowEventLoop = require('./eventLoop/slowEventLoop');
 var slowTimers = require('./eventLoop/slowTimers');
 var SlowPromise = require('./promises/slowPromise');
+var SlowClosure = require('./closures/slowClosure');
 var Epoch = (function () {
     // TODO: take a filename
     function Epoch() {
@@ -15,6 +16,8 @@ var Epoch = (function () {
         this.clearTimeout = slowTimers.clearTimeout;
         // TODO: temp testing...
         this.Promise = SlowPromise.forEpoch(this.log);
+        // TODO: temp testing...
+        this.closure = SlowClosure.forEpoch(this.log);
         // TODO: need orderly attach/detach in pairs. This will never be detached!! And will keep ref to epoch/log alive!
         slowEventLoop.beforeNextTick.attach(function () {
             _this.log.flush();

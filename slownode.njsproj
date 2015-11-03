@@ -35,11 +35,11 @@
     <TypeScriptCompile Include="src\epochLog.ts" />
     <TypeScriptCompile Include="src\eventLoop\slowEventLoop.ts" />
     <TypeScriptCompile Include="src\eventLoop\slowTimers.ts" />
-    <TypeScriptCompile Include="src\flushLogs.ts" />
     <TypeScriptCompile Include="src\promises\slowPromise.ts" />
     <TypeScriptCompile Include="src\promises\slowPromiseReject.ts" />
     <TypeScriptCompile Include="src\promises\slowPromiseResolve.ts" />
     <TypeScriptCompile Include="src\promises\standardResolutionProcedure.ts" />
+    <TypeScriptCompile Include="src\closures\slowClosure.ts" />
     <TypeScriptCompile Include="src\slowKind.ts" />
     <TypeScriptCompile Include="src\slowObject.ts" />
     <TypeScriptCompile Include="src\steppables\steppableFunction.ts" />
@@ -68,10 +68,10 @@
     <TypeScriptCompile Include="src\util\estree\matchNode.ts" />
     <TypeScriptCompile Include="src\util\estree\traverseTree.ts" />
     <TypeScriptCompile Include="src\util\estree\types.d.ts" />
+    <TypeScriptCompile Include="src\util\isRelocatableFunction.ts" />
     <TypeScriptCompile Include="src\util\makeCallableClass.ts" />
     <TypeScriptCompile Include="test\main.ts" />
     <TypeScriptCompile Include="zzzsrc\slowClass.ts" />
-    <TypeScriptCompile Include="zzzsrc\asyncFunctions\slowAsyncFunctionActivation.ts" />
     <TypeScriptCompile Include="zzzsrc\eventLoop\slowEventLoop.ts" />
     <TypeScriptCompile Include="zzzsrc\index.d.ts" />
     <TypeScriptCompile Include="zzzsrc\slowLog.ts" />
@@ -101,7 +101,6 @@
     <TypeScriptCompile Include="zzzsrc\index.ts" />
     <TypeScriptCompile Include="zzzsrc\storage\storage.ts" />
     <TypeScriptCompile Include="zzzsrc\storage\dehydrateSlowObject.ts" />
-    <TypeScriptCompile Include="zzzsrc\asyncFunctions\slowAsyncFunction.ts" />
     <TypeScriptCompile Include="zzzsrc\promises\slowPromise.ts" />
     <TypeScriptCompile Include="zzzsrc\util\estree\funcExpr\transformToStateMachine.ts" />
     <TypeScriptCompile Include="zzzsrc\util\estree\matchNode.ts" />
@@ -133,6 +132,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\eventLoop\" />
+    <Folder Include="src\asyncFunctions\" />
+    <Folder Include="src\closures\" />
     <Folder Include="src\steppables\" />
     <Folder Include="src\util\" />
     <Folder Include="src\promises\" />

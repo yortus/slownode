@@ -42,4 +42,17 @@ describe('Within an Epoch instance', function () {
             slow.Promise.delay(500).then(loop);
         }
     });
+
+
+    it('closure works', (done) => {
+
+        // Create an epoch
+        var slow = new Epoch();
+
+        var bar: string;
+        var foo = slow.closure({ bar: 'baz' }, (arg: string) => bar + arg);
+        console.log(foo('555'));
+        setTimeout(done, 300);
+    });
+
 });

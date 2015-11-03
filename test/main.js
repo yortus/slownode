@@ -33,5 +33,13 @@ describe('Within an Epoch instance', function () {
             slow.Promise.delay(500).then(loop);
         }
     });
+    it('closure works', function (done) {
+        // Create an epoch
+        var slow = new Epoch();
+        var bar;
+        var foo = slow.closure({ bar: 'baz' }, function (arg) { return bar + arg; });
+        console.log(foo('555'));
+        setTimeout(done, 300);
+    });
 });
 //# sourceMappingURL=main.js.map
