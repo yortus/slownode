@@ -59,6 +59,12 @@ interface SetTimeoutFunction {
 
 // TODO: doc...
 function setTimeoutForEpoch(epochLog: EpochLog) {
+
+    // TODO: caching...
+    cache = cache || <any> new Map();
+    if (cache.has(epochLog)) return cache.get(epochLog);
+
+    // TODO: ...
     var result: SetTimeoutFunction = <any> ((callback: Function, delay: number, ...args: any[]) => {
         var timer = new Timer(epochLog, delay, callback, args);
         epochLog.created(timer);
@@ -66,5 +72,12 @@ function setTimeoutForEpoch(epochLog: EpochLog) {
         return timer;
     });
     result.forEpoch = setTimeoutForEpoch;
+
+    // TODO: caching...
+    cache.set(epochLog, result);
     return result;
 }
+
+
+// TODO: ...
+var cache: Map<EpochLog, SetTimeoutFunction>;

@@ -51,6 +51,10 @@ interface SlowClosure {
 // TODO: doc...
 function slowClosureForEpoch(epochLog: EpochLog) {
 
+    // TODO: caching...
+    cache = cache || <any> new Map();
+    if (cache.has(epochLog)) return cache.get(epochLog);
+
     // Create a constructor function whose instances (a) are callable and (b) work with instanceof.
     var result: SlowClosureStatic = <any> makeCallableClass({
 
@@ -90,6 +94,11 @@ function slowClosureForEpoch(epochLog: EpochLog) {
     // TODO: ...
     result.forEpoch = slowClosureForEpoch;
 
-    // TODO: ...
+    // TODO: caching...
+    cache.set(epochLog, result);
     return result;
 }
+
+
+// TODO: ...
+var cache: Map<EpochLog, SlowClosureStatic>;

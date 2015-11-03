@@ -10,6 +10,10 @@ var isRelocatableFunction = require('../util/isRelocatableFunction');
 var SlowClosure = slowClosureForEpoch(null);
 // TODO: doc...
 function slowClosureForEpoch(epochLog) {
+    // TODO: caching...
+    cache = cache || new Map();
+    if (cache.has(epochLog))
+        return cache.get(epochLog);
     // Create a constructor function whose instances (a) are callable and (b) work with instanceof.
     var result = makeCallableClass({
         // Creates a new SlowClosure instance.
@@ -44,8 +48,11 @@ function slowClosureForEpoch(epochLog) {
     });
     // TODO: ...
     result.forEpoch = slowClosureForEpoch;
-    // TODO: ...
+    // TODO: caching...
+    cache.set(epochLog, result);
     return result;
 }
+// TODO: ...
+var cache;
 module.exports = SlowClosure;
 //# sourceMappingURL=slowClosure.js.map

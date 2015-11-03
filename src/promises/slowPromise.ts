@@ -92,6 +92,11 @@ class SlowPromise {
      * TODO: INTERNAL...
      */
     static forEpoch(epochLog: EpochLog): typeof SlowPromise {
+
+        // TODO: caching...
+        cache = cache || <any> new Map();
+        if (cache.has(epochLog)) return cache.get(epochLog);
+
         var Subclass = class SlowPromise extends this {
             constructor(resolver) {
                 super(resolver);
@@ -106,6 +111,8 @@ class SlowPromise {
             Subclass[staticProperty] = Subclass[staticProperty].bind(Subclass);
         }
 
+        // TODO: caching...
+        cache.set(epochLog, Subclass);
         return Subclass;
     }
 
@@ -262,3 +269,7 @@ interface Deferred {
     resolve: SlowPromiseResolve;
     reject: SlowPromiseReject;
 }
+
+
+// TODO: ...
+var cache: Map<EpochLog, typeof SlowPromise>;

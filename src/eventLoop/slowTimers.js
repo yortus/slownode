@@ -34,6 +34,11 @@ var Timer = (function () {
 exports.Timer = Timer;
 // TODO: doc...
 function setTimeoutForEpoch(epochLog) {
+    // TODO: caching...
+    cache = cache || new Map();
+    if (cache.has(epochLog))
+        return cache.get(epochLog);
+    // TODO: ...
     var result = (function (callback, delay) {
         var args = [];
         for (var _i = 2; _i < arguments.length; _i++) {
@@ -45,6 +50,10 @@ function setTimeoutForEpoch(epochLog) {
         return timer;
     });
     result.forEpoch = setTimeoutForEpoch;
+    // TODO: caching...
+    cache.set(epochLog, result);
     return result;
 }
+// TODO: ...
+var cache;
 //# sourceMappingURL=slowTimers.js.map

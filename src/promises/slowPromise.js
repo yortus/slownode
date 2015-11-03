@@ -95,6 +95,10 @@ var SlowPromise = (function () {
      * TODO: INTERNAL...
      */
     SlowPromise.forEpoch = function (epochLog) {
+        // TODO: caching...
+        cache = cache || new Map();
+        if (cache.has(epochLog))
+            return cache.get(epochLog);
         var Subclass = (function (_super) {
             __extends(SlowPromise, _super);
             function SlowPromise(resolver) {
@@ -111,6 +115,8 @@ var SlowPromise = (function () {
                 continue;
             Subclass[staticProperty] = Subclass[staticProperty].bind(Subclass);
         }
+        // TODO: caching...
+        cache.set(epochLog, Subclass);
         return Subclass;
     };
     /**
@@ -215,5 +221,7 @@ function processAllHandlers(p) {
         }
     }
 }
+// TODO: ...
+var cache;
 module.exports = SlowPromise;
 //# sourceMappingURL=slowPromise.js.map
