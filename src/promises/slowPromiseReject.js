@@ -9,7 +9,7 @@ SlowPromiseReject = makeCallableClass({
     // Create a new SlowPromiseReject instance, tied to the given SlowPromise.
     constructor: function (promise) {
         // Add slow metadata to the resolve function.
-        this.$slow = { kind: 12 /* PromiseReject */, promise: promise };
+        this.$slow = { kind: 12 /* PromiseReject */, id: null, promise: promise };
         // Synchronise with the persistent object graph.
         promise.constructor.epochLog.created(this); // TODO: temp testing...
     },

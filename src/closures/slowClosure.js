@@ -18,6 +18,7 @@ function slowClosureForEpoch(epochLog) {
     var result = makeCallableClass({
         // Creates a new SlowClosure instance.
         constructor: function (env, fn) {
+            var self = this;
             // Ensure `fn` is relocatable with the exception of names in `env`.
             if (!isRelocatableFunction(fn, _.keys(env))) {
                 throw new Error("SlowClosure: function is not relocatable: " + fn);
@@ -26,14 +27,15 @@ function slowClosureForEpoch(epochLog) {
             // TODO: use 'vm' module
             var functionSource = fn.toString();
             eval("with (env) fn = " + fn.toString() + ";");
-            this.function = fn;
-            this.$slow = {
+            self.function = fn;
+            self.$slow = {
                 kind: 50 /* Closure */,
+                id: null,
                 functionSource: functionSource,
                 environment: env
             };
             // Synchronise with the persistent object graph.
-            epochLog.created(this); // TODO: temp testing...
+            epochLog.created(self); // TODO: temp testing...
         },
         // Calling the SlowClosure executes the function passed to the constructor in the environment passed to the constructor.
         call: function () {
@@ -41,7 +43,8 @@ function slowClosureForEpoch(epochLog) {
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i - 0] = arguments[_i];
             }
-            return this.function.apply(void 0, args);
+            var self = this;
+            return self.function.apply(void 0, args);
         },
         // Ensure calls to apply() leave the `this` binding unchanged.
         bindThis: true

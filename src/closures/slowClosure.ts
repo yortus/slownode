@@ -38,7 +38,7 @@ interface SlowClosure {
     /** INTERNAL holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
     $slow: {
         kind: SlowKind;
-        id?: string;
+        id: string;
         functionSource: string;
         environment: { [name: string]: any; };
     }
@@ -60,6 +60,7 @@ function slowClosureForEpoch(epochLog: EpochLog) {
 
         // Creates a new SlowClosure instance.
         constructor: function (env: { [name: string]: any; }, fn: Function|string) {
+            var self: SlowClosure = this;
 
             // Ensure `fn` is relocatable with the exception of names in `env`.
             if (!isRelocatableFunction(fn, _.keys(env))) {
@@ -71,20 +72,22 @@ function slowClosureForEpoch(epochLog: EpochLog) {
             var functionSource = fn.toString();
             eval(`with (env) fn = ${fn.toString()};`);
 
-            this.function = fn;
-            this.$slow = {
+            self.function = <Function> fn;
+            self.$slow = {
                 kind: SlowKind.Closure,
+                id: null,
                 functionSource,
                 environment: env
             };
 
             // Synchronise with the persistent object graph.
-            epochLog.created(this); // TODO: temp testing...
+            epochLog.created(self); // TODO: temp testing...
         },
 
         // Calling the SlowClosure executes the function passed to the constructor in the environment passed to the constructor.
         call: function (...args: any[]) {
-            return this.function.apply(void 0, args);
+            var self: SlowClosure = this;
+            return self.function.apply(void 0, args);
         },
 
         // Ensure calls to apply() leave the `this` binding unchanged.

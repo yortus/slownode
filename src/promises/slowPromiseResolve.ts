@@ -25,7 +25,7 @@ interface SlowPromiseResolve {
     /** INTERNAL holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
     $slow: {
         kind: SlowKind;
-        id?: string;
+        id: string;
         promise: SlowPromise;
     };
 }
@@ -38,7 +38,7 @@ SlowPromiseResolve = <any> makeCallableClass({
     constructor: function (promise: SlowPromise) {
 
         // Add slow metadata to the resolve function.
-        (<SlowPromiseResolve> this).$slow = { kind: SlowKind.PromiseResolve, promise };
+        (<SlowPromiseResolve> this).$slow = { kind: SlowKind.PromiseResolve, id: null, promise };
 
         // Synchronise with the persistent object graph.
         (<typeof SlowPromise> promise.constructor).epochLog.created(this); // TODO: temp testing...

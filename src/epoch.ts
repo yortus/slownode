@@ -4,6 +4,7 @@ import slowEventLoop = require('./eventLoop/slowEventLoop');
 import slowTimers = require('./eventLoop/slowTimers');
 import SlowPromise = require('./promises/slowPromise');
 import SlowClosure = require('./closures/slowClosure');
+import SlowAsyncFuncttion = require('./asyncFunctions/slowAsyncFunction');
 export = Epoch;
 
 
@@ -37,4 +38,6 @@ class Epoch {
     // TODO: temp testing...
     closure = SlowClosure.forEpoch(this.log);
 
+    // TODO: temp testing...
+    async = SlowAsyncFuncttion.forEpoch(this.log);
 }
