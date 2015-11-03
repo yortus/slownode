@@ -3,7 +3,6 @@
 // TODO: doc... no knowledge of epochs/logs in here... Entry impls handle that
 
 
-
 export interface Entry {
 
     // TODO: doc...
@@ -12,7 +11,6 @@ export interface Entry {
     // TODO: doc...
     dispatch(): void;
 }
-
 
 
 // TODO: doc...
