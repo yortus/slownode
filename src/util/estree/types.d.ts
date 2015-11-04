@@ -14,6 +14,9 @@ interface ClassifiedIdentifiers {
     /** Identifiers which are declared locally inside the function body. */
     local: {
 
+        /** Identifier of the function being executed, if any. */
+        self: string[];
+
         /** Identifiers declared with the 'var' keyword. */
         var: string[];
 

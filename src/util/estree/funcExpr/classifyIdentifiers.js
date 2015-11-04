@@ -20,6 +20,7 @@ function classifyIdentifiers(funcExpr) {
     if (containsInnerFunctions(funcExpr))
         throw new Error("Steppable: function delcarations, function expressions and arrow functions are not allowed within the steppable body");
     // Find all locally-declared IDs, and all locally-referenced IDs.
+    var selfIds = funcExpr.id && funcExpr.id.name ? [funcExpr.id.name] : [];
     var varIds = funcExpr.params.map(function (p) { return p['name']; });
     var letIds = [];
     var constIds = [];
@@ -66,7 +67,7 @@ function classifyIdentifiers(funcExpr) {
     var moduleIds = [];
     var scopedIds = [];
     var globalIds = [];
-    var allLocalIds = [].concat(varIds, letIds, constIds, catchIds);
+    var allLocalIds = [].concat(selfIds, varIds, letIds, constIds, catchIds);
     var allModuleIds = ['require', 'module', 'exports', '__filename', '__dirname'];
     refIds.forEach(function (refId) {
         if (allLocalIds.indexOf(refId) !== -1)
@@ -76,11 +77,12 @@ function classifyIdentifiers(funcExpr) {
     // Memoize and return the classified identifiers.
     return funcExpr._ids = {
         local: {
+            self: selfIds,
             var: varIds,
             let: letIds,
             const: constIds,
             catch: catchIds,
-            all: _.unique([].concat(varIds, letIds, constIds, catchIds))
+            all: _.unique([].concat(selfIds, varIds, letIds, constIds, catchIds))
         },
         module: moduleIds,
         scoped: scopedIds,

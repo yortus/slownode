@@ -31,12 +31,14 @@
     <Content Include="tsconfig.json" />
     <Compile Include="scripts\runPromisesAPlusTestSuite.js" />
     <Compile Include="scripts\runSlownodeTestSuite.js" />
+    <TypeScriptCompile Include="src\epochs\dehydrateSlowObject.ts" />
     <TypeScriptCompile Include="src\epochs\epoch.ts" />
     <TypeScriptCompile Include="src\epochs\epochLog.ts" />
     <TypeScriptCompile Include="src\functions\slowAsyncFunction.ts" />
     <TypeScriptCompile Include="src\functions\slowAsyncFunctionActivation.ts" />
     <TypeScriptCompile Include="src\eventLoop\slowEventLoop.ts" />
     <TypeScriptCompile Include="src\eventLoop\slowTimers.ts" />
+    <TypeScriptCompile Include="src\index.d.ts" />
     <TypeScriptCompile Include="src\promises\slowPromise.ts" />
     <TypeScriptCompile Include="src\promises\slowPromiseReject.ts" />
     <TypeScriptCompile Include="src\promises\slowPromiseResolve.ts" />

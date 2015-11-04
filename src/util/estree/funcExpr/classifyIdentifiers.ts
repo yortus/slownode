@@ -27,6 +27,7 @@ function classifyIdentifiers(funcExpr: ESTree.FunctionExpression): ClassifiedIde
     if (containsInnerFunctions(funcExpr)) throw new Error(`Steppable: function delcarations, function expressions and arrow functions are not allowed within the steppable body`);
 
     // Find all locally-declared IDs, and all locally-referenced IDs.
+    var selfIds = funcExpr.id && funcExpr.id.name ? [funcExpr.id.name] : [];
     var varIds = funcExpr.params.map(p => <string> p['name']);
     var letIds: string[] = [];
     var constIds: string[] = [];
@@ -72,7 +73,7 @@ function classifyIdentifiers(funcExpr: ESTree.FunctionExpression): ClassifiedIde
     var moduleIds: string[] = [];
     var scopedIds: string[] = [];
     var globalIds: string[] = [];
-    var allLocalIds = [].concat(varIds, letIds, constIds, catchIds);
+    var allLocalIds = [].concat(selfIds, varIds, letIds, constIds, catchIds);
     var allModuleIds = ['require', 'module', 'exports', '__filename', '__dirname'];
     refIds.forEach(refId => {
         if (allLocalIds.indexOf(refId) !== -1) return;
@@ -82,11 +83,12 @@ function classifyIdentifiers(funcExpr: ESTree.FunctionExpression): ClassifiedIde
     // Memoize and return the classified identifiers.
     return funcExpr._ids = {
         local: {
+            self: selfIds,
             var: varIds,
             let: letIds,
             const: constIds,
             catch: catchIds,
-            all: <string[]> _.unique([].concat(varIds, letIds, constIds, catchIds))
+            all: <string[]> _.unique([].concat(selfIds, varIds, letIds, constIds, catchIds))
         },
         module: moduleIds,
         scoped: scopedIds,

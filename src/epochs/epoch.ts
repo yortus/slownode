@@ -1,4 +1,5 @@
 ﻿import assert = require('assert');
+import API = require('../index.d.ts'); // NB: elided ref (for types only)
 import EpochLog = require('./epochLog');
 import SlowKind = require('../slowKind');
 import slowEventLoop = require('../eventLoop/slowEventLoop');
@@ -8,7 +9,7 @@ import SlowClosure = require('../functions/slowClosure');
 import SlowAsyncFunction = require('../functions/slowAsyncFunction');
 
 
-export function open(path: string) {
+export function open(path: string, flags: string): Epoch {
 
     // TODO: need orderly attach/detach in pairs. This will never be detached!! And will keep ref to epoch/log alive!
     slowEventLoop.beforeNextTick.attach(() => {
@@ -16,8 +17,28 @@ export function open(path: string) {
         return Promise.resolve<void>();
     });
 
-    var epochLog = new EpochLog();
+    var epochLog = new EpochLog(path, flags);
+    var epoch = createEpoch(epochLog);
+    return epoch;
+}
 
+
+export function close(epoch: Epoch) {
+
+    // TODO: explicit disposal...
+
+}
+
+
+export interface Epoch extends API.Epoch {
+
+    // TODO: doc... INTERNAL
+    log: EpochLog;
+}
+
+
+// TODO: temp testing...
+function createEpoch(epochLog: EpochLog): Epoch {
     var epoch = <Epoch> {
         setTimeout: slowTimers.setTimeout.forEpoch(epochLog),
         clearTimeout: slowTimers.clearTimeout,
@@ -32,47 +53,13 @@ export function open(path: string) {
         },
         log: epochLog
     };
-
-    epoch.async = makeAsyncFunctionForEpoch(epoch);
-
+    epoch.async = createAsyncFunctionForEpoch(epoch);
     return epoch;
 }
 
 
-export function close(epoch: Epoch) {
-
-    // TODO: explicit disposal...
-
-}
-
-
-export interface Epoch {
-
-    // TODO: doc...
-    setTimeout: (callback: Function, delay: number, ...args: any[]) => slowTimers.Timer;
-
-    // TODO: doc...
-    clearTimeout: (timeoutObject: slowTimers.Timer) => void;
-
-    // TODO: doc...
-    Promise: typeof SlowPromise;
-
-    // TODO: doc...
-    closure: typeof SlowClosure;
-
-    // TODO: doc...
-    async: (bodyFunc: Function) => SlowAsyncFunction;
-
-    // TODO: doc...
-    addWeakRef: (obj: any) => void;
-
-    // TODO: doc... INTERNAL
-    log: EpochLog;
-}
-
-
 // TODO: temp testing...
-function makeAsyncFunctionForEpoch(epoch: Epoch) {
+function createAsyncFunctionForEpoch(epoch: Epoch) {
     var async = SlowAsyncFunction.forEpoch(epoch.log);
     var options = { require };
     var result = (bodyFunc: Function) => async(bodyFunc, options);

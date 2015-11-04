@@ -5,13 +5,23 @@ var slowTimers = require('../eventLoop/slowTimers');
 var SlowPromise = require('../promises/slowPromise');
 var SlowClosure = require('../functions/slowClosure');
 var SlowAsyncFunction = require('../functions/slowAsyncFunction');
-function open(path) {
+function open(path, flags) {
     // TODO: need orderly attach/detach in pairs. This will never be detached!! And will keep ref to epoch/log alive!
     slowEventLoop.beforeNextTick.attach(function () {
         epochLog.flush();
         return Promise.resolve();
     });
-    var epochLog = new EpochLog();
+    var epochLog = new EpochLog(path, flags);
+    var epoch = createEpoch(epochLog);
+    return epoch;
+}
+exports.open = open;
+function close(epoch) {
+    // TODO: explicit disposal...
+}
+exports.close = close;
+// TODO: temp testing...
+function createEpoch(epochLog) {
     var epoch = {
         setTimeout: slowTimers.setTimeout.forEpoch(epochLog),
         clearTimeout: slowTimers.clearTimeout,
@@ -26,16 +36,11 @@ function open(path) {
         },
         log: epochLog
     };
-    epoch.async = makeAsyncFunctionForEpoch(epoch);
+    epoch.async = createAsyncFunctionForEpoch(epoch);
     return epoch;
 }
-exports.open = open;
-function close(epoch) {
-    // TODO: explicit disposal...
-}
-exports.close = close;
 // TODO: temp testing...
-function makeAsyncFunctionForEpoch(epoch) {
+function createAsyncFunctionForEpoch(epoch) {
     var async = SlowAsyncFunction.forEpoch(epoch.log);
     var options = { require: require };
     var result = function (bodyFunc) { return async(bodyFunc, options); };
