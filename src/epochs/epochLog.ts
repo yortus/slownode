@@ -11,7 +11,7 @@ class EpochLog {
     created(slowObj: SlowObject) {
         assert(!this.allTrackedObjects.has(slowObj));
         this.ensureSlowObjectHasUniqueId(slowObj);
-console.log('----CREATED ' + this.id + ':' + slowObj.$slow.kind + ':' + slowObj.$slow.id);
+//console.log('----CREATED ' + this.id + ':' + slowObj.$slow.kind + ':' + slowObj.$slow.id);
         this.allTrackedObjects.add(slowObj);
         this.updatedTrackedObjects.add(slowObj);
     }
@@ -21,13 +21,13 @@ console.log('----CREATED ' + this.id + ':' + slowObj.$slow.kind + ':' + slowObj.
     }
 
     deleted(slowObj: SlowObject) {
-console.log('----DELETED ' + this.id + ':' + slowObj.$slow.kind + ':' + slowObj.$slow.id);
+//console.log('----DELETED ' + this.id + ':' + slowObj.$slow.kind + ':' + slowObj.$slow.id);
         // TODO: implement...
     }
 
     flush() {
         // TODO: temp testing...
-        console.log('TODO: (' + this.id + ') FLUSH LOG');
+//console.log('TODO: (' + this.id + ') FLUSH LOG');
     }
 
     // TODO: ...

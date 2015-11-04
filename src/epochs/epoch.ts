@@ -1,5 +1,6 @@
 ﻿import assert = require('assert');
 import EpochLog = require('./epochLog');
+import SlowKind = require('../slowKind');
 import slowEventLoop = require('../eventLoop/slowEventLoop');
 import slowTimers = require('../eventLoop/slowTimers');
 import SlowPromise = require('../promises/slowPromise');
@@ -12,7 +13,6 @@ class Epoch {
 
     // TODO: take a filename
     constructor() {
-
 
         // TODO: need orderly attach/detach in pairs. This will never be detached!! And will keep ref to epoch/log alive!
         slowEventLoop.beforeNextTick.attach(() => {
@@ -40,6 +40,14 @@ class Epoch {
 
     // TODO: temp testing...
     async = makeAsyncFunctionForEpoch(this);
+
+    // TODO: temp testing...
+    addWeakRef = (obj: any) => {
+        assert(obj && (typeof obj === 'object' || typeof obj === 'function'), 'addWeakRef: argument must be an object');
+        assert(!obj.$slow, 'addWeakRef: argument is already a slow object');
+        obj.$slow = { kind: SlowKind.WeakRef };
+        this.log.created(obj);
+    }
 }
 
 

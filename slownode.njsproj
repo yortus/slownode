@@ -73,7 +73,14 @@
     <TypeScriptCompile Include="src\util\isRelocatableFunction.ts" />
     <TypeScriptCompile Include="src\util\makeCallableClass.ts" />
     <TypeScriptCompile Include="src\util\shasum.ts" />
+    <TypeScriptCompile Include="test\fixtures\slowfuncs\1.ts" />
+    <TypeScriptCompile Include="test\fixtures\slowfuncs\2.ts" />
+    <TypeScriptCompile Include="test\fixtures\slowfuncs\3.ts" />
     <TypeScriptCompile Include="test\main.ts" />
+    <TypeScriptCompile Include="test\slowAsyncFunction.ts" />
+    <TypeScriptCompile Include="test\slowEventLoop.ts" />
+    <TypeScriptCompile Include="test\slowPromise.ts" />
+    <TypeScriptCompile Include="test\steppableFunction.ts" />
     <TypeScriptCompile Include="zzzsrc\asyncFunctions\slowAsyncFunction.ts" />
     <TypeScriptCompile Include="zzzsrc\asyncFunctions\slowAsyncFunctionActivation.ts" />
     <TypeScriptCompile Include="zzzsrc\slowClass.ts" />
@@ -159,6 +166,8 @@
     <Folder Include="test\" />
     <Folder Include="src\" />
     <Folder Include="scripts\" />
+    <Folder Include="test\fixtures\" />
+    <Folder Include="test\fixtures\slowfuncs\" />
     <Folder Include="zzzsrc\" />
     <Folder Include="zzzsrc\epochs\" />
     <Folder Include="zzzsrc\util\estree\" />

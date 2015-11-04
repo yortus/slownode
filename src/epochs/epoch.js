@@ -1,3 +1,4 @@
+var assert = require('assert');
 var EpochLog = require('./epochLog');
 var slowEventLoop = require('../eventLoop/slowEventLoop');
 var slowTimers = require('../eventLoop/slowTimers');
@@ -21,6 +22,13 @@ var Epoch = (function () {
         this.closure = SlowClosure.forEpoch(this.log);
         // TODO: temp testing...
         this.async = makeAsyncFunctionForEpoch(this);
+        // TODO: temp testing...
+        this.addWeakRef = function (obj) {
+            assert(obj && (typeof obj === 'object' || typeof obj === 'function'), 'addWeakRef: argument must be an object');
+            assert(!obj.$slow, 'addWeakRef: argument is already a slow object');
+            obj.$slow = { kind: 60 /* WeakRef */ };
+            _this.log.created(obj);
+        };
         // TODO: need orderly attach/detach in pairs. This will never be detached!! And will keep ref to epoch/log alive!
         slowEventLoop.beforeNextTick.attach(function () {
             _this.log.flush();
