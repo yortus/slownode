@@ -1,5 +1,5 @@
 ﻿import _ = require('lodash');
-import EpochLog = require('../epochLog');
+import EpochLog = require('../epochs/epochLog');
 import SlowKind = require('../slowKind');
 import makeCallableClass = require('../util/makeCallableClass');
 import isRelocatableFunction = require('../util/isRelocatableFunction');

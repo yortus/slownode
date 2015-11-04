@@ -1,5 +1,5 @@
 ﻿import assert  = require('assert');
-import SlowObject = require('./slowObject');
+import SlowObject = require('../slowObject');
 export = EpochLog;
 
 

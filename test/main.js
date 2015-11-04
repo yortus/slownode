@@ -1,4 +1,4 @@
-var Epoch = require('../src/epoch');
+var Epoch = require('../src/epochs/epoch');
 var chai = require("chai");
 chai.use(require('chai-as-promised'));
 var expect = chai.expect;

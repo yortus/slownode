@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{9d9eb3d2-039f-403c-b42b-bb2e1365bec5}</ProjectGuid>
     <ProjectHome />
-    <ProjectView>ShowAllFiles</ProjectView>
+    <ProjectView>ProjectFiles</ProjectView>
     <StartupFile>scripts\runSlownodeTestSuite.js</StartupFile>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -31,10 +31,10 @@
     <Content Include="tsconfig.json" />
     <Compile Include="scripts\runPromisesAPlusTestSuite.js" />
     <Compile Include="scripts\runSlownodeTestSuite.js" />
+    <TypeScriptCompile Include="src\epochs\epoch.ts" />
+    <TypeScriptCompile Include="src\epochs\epochLog.ts" />
     <TypeScriptCompile Include="src\functions\slowAsyncFunction.ts" />
     <TypeScriptCompile Include="src\functions\slowAsyncFunctionActivation.ts" />
-    <TypeScriptCompile Include="src\epoch.ts" />
-    <TypeScriptCompile Include="src\epochLog.ts" />
     <TypeScriptCompile Include="src\eventLoop\slowEventLoop.ts" />
     <TypeScriptCompile Include="src\eventLoop\slowTimers.ts" />
     <TypeScriptCompile Include="src\promises\slowPromise.ts" />
@@ -138,6 +138,7 @@
   <ItemGroup>
     <Folder Include="src\eventLoop\" />
     <Folder Include="src\functions\" />
+    <Folder Include="src\epochs\" />
     <Folder Include="src\steppables\" />
     <Folder Include="src\util\" />
     <Folder Include="src\promises\" />

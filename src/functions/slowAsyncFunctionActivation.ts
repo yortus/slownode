@@ -1,6 +1,6 @@
 ﻿import assert = require('assert');
 import path = require('path');
-import EpochLog = require('../epochLog');
+import EpochLog = require('../epochs/epochLog');
 import SlowKind = require('../slowKind');
 import SlowObject = require('../slowObject');
 import SlowPromise = require('../promises/slowPromise');

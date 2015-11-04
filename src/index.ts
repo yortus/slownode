@@ -1,1 +1,1 @@
-﻿export import Epoch = require('./epoch');
+﻿export import Epoch = require('./epochs/epoch');

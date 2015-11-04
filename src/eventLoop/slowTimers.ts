@@ -1,5 +1,5 @@
 ﻿import SlowKind = require('../slowKind');
-import EpochLog = require('../epochLog');
+import EpochLog = require('../epochs/epochLog');
 import slowEventLoop = require('./slowEventLoop');
 
 
