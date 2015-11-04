@@ -5,38 +5,35 @@ var slowTimers = require('../eventLoop/slowTimers');
 var SlowPromise = require('../promises/slowPromise');
 var SlowClosure = require('../functions/slowClosure');
 var SlowAsyncFunction = require('../functions/slowAsyncFunction');
-var Epoch = (function () {
-    // TODO: take a filename
-    function Epoch() {
-        var _this = this;
-        // TODO: explicit disposal...
-        // TODO: temp testing...
-        this.log = new EpochLog();
-        // TODO: temp testing...
-        this.setTimeout = slowTimers.setTimeout.forEpoch(this.log);
-        // TODO: temp testing...
-        this.clearTimeout = slowTimers.clearTimeout;
-        // TODO: temp testing...
-        this.Promise = SlowPromise.forEpoch(this.log);
-        // TODO: temp testing...
-        this.closure = SlowClosure.forEpoch(this.log);
-        // TODO: temp testing...
-        this.async = makeAsyncFunctionForEpoch(this);
-        // TODO: temp testing...
-        this.addWeakRef = function (obj) {
+function open(path) {
+    // TODO: need orderly attach/detach in pairs. This will never be detached!! And will keep ref to epoch/log alive!
+    slowEventLoop.beforeNextTick.attach(function () {
+        epochLog.flush();
+        return Promise.resolve();
+    });
+    var epochLog = new EpochLog();
+    var epoch = {
+        setTimeout: slowTimers.setTimeout.forEpoch(epochLog),
+        clearTimeout: slowTimers.clearTimeout,
+        Promise: SlowPromise.forEpoch(epochLog),
+        closure: SlowClosure.forEpoch(epochLog),
+        async: null,
+        addWeakRef: function (obj) {
             assert(obj && (typeof obj === 'object' || typeof obj === 'function'), 'addWeakRef: argument must be an object');
             assert(!obj.$slow, 'addWeakRef: argument is already a slow object');
             obj.$slow = { kind: 60 /* WeakRef */ };
-            _this.log.created(obj);
-        };
-        // TODO: need orderly attach/detach in pairs. This will never be detached!! And will keep ref to epoch/log alive!
-        slowEventLoop.beforeNextTick.attach(function () {
-            _this.log.flush();
-            return Promise.resolve();
-        });
-    }
-    return Epoch;
-})();
+            epochLog.created(obj);
+        },
+        log: epochLog
+    };
+    epoch.async = makeAsyncFunctionForEpoch(epoch);
+    return epoch;
+}
+exports.open = open;
+function close(epoch) {
+    // TODO: explicit disposal...
+}
+exports.close = close;
 // TODO: temp testing...
 function makeAsyncFunctionForEpoch(epoch) {
     var async = SlowAsyncFunction.forEpoch(epoch.log);
@@ -51,5 +48,4 @@ function makeAsyncFunctionForEpoch(epoch) {
 }
 // TODO: temp testing...
 var mainRequire = require.main.require;
-module.exports = Epoch;
 //# sourceMappingURL=epoch.js.map

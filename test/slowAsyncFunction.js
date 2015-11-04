@@ -1,4 +1,4 @@
-var Epoch = require('..'); // TODO: get strong typing working!!
+var slownode = require('..'); // TODO: get strong typing working!!
 var chai = require("chai");
 chai.use(require('chai-as-promised'));
 var expect = chai.expect;
@@ -9,7 +9,7 @@ process.on('SIGINT', function () {
     process.exit();
 });
 describe('The async(...) function', function () {
-    var slow = new Epoch();
+    var slow = slownode.open('');
     it('works', function (done) {
         var fn = slow.async(function (delay, count, cb) {
             var SlowPromise = __const(require('epoch').Promise); // TODO: flaky!! not relocatable...

@@ -1,11 +1,11 @@
-var Epoch = require('..'); // TODO: get strong typing working!!
+var slownode = require('..'); // TODO: get strong typing working!!
 var chai = require("chai");
 chai.use(require('chai-as-promised'));
 var expect = chai.expect;
 // NB: For full Promise A+ testing use: npm run test-promises-aplus
 describe('SlowPromise', function () {
     it('works', function (done) {
-        var slow = new Epoch();
+        var slow = slownode.open('');
         slow.addWeakRef(done);
         var p = slow.Promise.delay(500);
         console.log('AAA');

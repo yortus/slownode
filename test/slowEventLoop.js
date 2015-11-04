@@ -1,9 +1,9 @@
-var Epoch = require('..'); // TODO: get strong typing working!!
+var slownode = require('..'); // TODO: get strong typing working!!
 var chai = require("chai");
 chai.use(require('chai-as-promised'));
 var expect = chai.expect;
 describe('The slow event loop', function () {
-    var slow = new Epoch();
+    var slow = slownode.open('');
     it('implements setTimeout calls correctly', function (done) {
         slow.addWeakRef(done);
         slow.setTimeout(function () { return done(); }, 100);

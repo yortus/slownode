@@ -1,4 +1,4 @@
-var Epoch = require('..'); // TODO: get strong typing working!!
+var slownode = require('..'); // TODO: get strong typing working!!
 import chai = require("chai");
 chai.use(require('chai-as-promised'));
 var expect = chai.expect;
@@ -11,7 +11,7 @@ describe('SlowPromise', function () {
 
     it('works', (done) => {
 
-        var slow = new Epoch();
+        var slow = slownode.open('');
         slow.addWeakRef(done);
 
         var p = slow.Promise.delay(500);

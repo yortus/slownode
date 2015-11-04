@@ -6,48 +6,68 @@ import slowTimers = require('../eventLoop/slowTimers');
 import SlowPromise = require('../promises/slowPromise');
 import SlowClosure = require('../functions/slowClosure');
 import SlowAsyncFunction = require('../functions/slowAsyncFunction');
-export = Epoch;
 
 
-class Epoch {
+export function open(path: string) {
 
-    // TODO: take a filename
-    constructor() {
+    // TODO: need orderly attach/detach in pairs. This will never be detached!! And will keep ref to epoch/log alive!
+    slowEventLoop.beforeNextTick.attach(() => {
+        epochLog.flush();
+        return Promise.resolve<void>();
+    });
 
-        // TODO: need orderly attach/detach in pairs. This will never be detached!! And will keep ref to epoch/log alive!
-        slowEventLoop.beforeNextTick.attach(() => {
-            this.log.flush();
-            return Promise.resolve<void>();
-        });
-    }
+    var epochLog = new EpochLog();
+
+    var epoch = <Epoch> {
+        setTimeout: slowTimers.setTimeout.forEpoch(epochLog),
+        clearTimeout: slowTimers.clearTimeout,
+        Promise: SlowPromise.forEpoch(epochLog),
+        closure: SlowClosure.forEpoch(epochLog),
+        async: null,
+        addWeakRef: (obj: any) => {
+            assert(obj && (typeof obj === 'object' || typeof obj === 'function'), 'addWeakRef: argument must be an object');
+            assert(!obj.$slow, 'addWeakRef: argument is already a slow object');
+            obj.$slow = { kind: SlowKind.WeakRef };
+            epochLog.created(obj);
+        },
+        log: epochLog
+    };
+
+    epoch.async = makeAsyncFunctionForEpoch(epoch);
+
+    return epoch;
+}
+
+
+export function close(epoch: Epoch) {
 
     // TODO: explicit disposal...
 
-    // TODO: temp testing...
-    log = new EpochLog();
+}
 
-    // TODO: temp testing...
-    setTimeout = slowTimers.setTimeout.forEpoch(this.log);
 
-    // TODO: temp testing...
-    clearTimeout = slowTimers.clearTimeout;
+export interface Epoch {
 
-    // TODO: temp testing...
-    Promise = SlowPromise.forEpoch(this.log);
+    // TODO: doc...
+    setTimeout: (callback: Function, delay: number, ...args: any[]) => slowTimers.Timer;
 
-    // TODO: temp testing...
-    closure = SlowClosure.forEpoch(this.log);
+    // TODO: doc...
+    clearTimeout: (timeoutObject: slowTimers.Timer) => void;
 
-    // TODO: temp testing...
-    async = makeAsyncFunctionForEpoch(this);
+    // TODO: doc...
+    Promise: typeof SlowPromise;
 
-    // TODO: temp testing...
-    addWeakRef = (obj: any) => {
-        assert(obj && (typeof obj === 'object' || typeof obj === 'function'), 'addWeakRef: argument must be an object');
-        assert(!obj.$slow, 'addWeakRef: argument is already a slow object');
-        obj.$slow = { kind: SlowKind.WeakRef };
-        this.log.created(obj);
-    }
+    // TODO: doc...
+    closure: typeof SlowClosure;
+
+    // TODO: doc...
+    async: (bodyFunc: Function) => SlowAsyncFunction;
+
+    // TODO: doc...
+    addWeakRef: (obj: any) => void;
+
+    // TODO: doc... INTERNAL
+    log: EpochLog;
 }
 
 

@@ -1,4 +1,4 @@
-var Epoch = require('..'); // TODO: get strong typing working!!
+var slownode = require('..'); // TODO: get strong typing working!!
 import chai = require("chai");
 chai.use(require('chai-as-promised'));
 var expect = chai.expect;
@@ -21,7 +21,7 @@ process.on('SIGINT', () => {
 describe('The async(...) function', function () {
 
 
-    var slow = new Epoch();
+    var slow = slownode.open('');
 
 
     it('works', (done) => {
