@@ -2,8 +2,8 @@ var EpochLog = require('./epochLog');
 var slowEventLoop = require('./eventLoop/slowEventLoop');
 var slowTimers = require('./eventLoop/slowTimers');
 var SlowPromise = require('./promises/slowPromise');
-var SlowClosure = require('./closures/slowClosure');
-var SlowAsyncFunction = require('./asyncFunctions/slowAsyncFunction');
+var SlowClosure = require('./functions/slowClosure');
+var SlowAsyncFunction = require('./functions/slowAsyncFunction');
 var Epoch = (function () {
     // TODO: take a filename
     function Epoch() {

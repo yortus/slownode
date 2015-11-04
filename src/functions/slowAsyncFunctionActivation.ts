@@ -8,7 +8,7 @@ import SlowPromiseResolve = require('../promises/slowPromiseResolve');
 import SlowPromiseReject = require('../promises/slowPromiseReject');
 import SteppableStateMachine = require('../steppables/steppableStateMachine');
 import SteppableObject = require('../steppables/steppableObject');
-import SlowClosure = require('../closures/slowClosure');
+import SlowClosure = require('./slowClosure');
 import SlowAsyncFunction = require('./slowAsyncFunction'); // NB: elided circular ref (for types only)
 export = SlowAsyncFunctionActivation;
 

@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{9d9eb3d2-039f-403c-b42b-bb2e1365bec5}</ProjectGuid>
     <ProjectHome />
-    <ProjectView>ProjectFiles</ProjectView>
+    <ProjectView>ShowAllFiles</ProjectView>
     <StartupFile>scripts\runSlownodeTestSuite.js</StartupFile>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -31,8 +31,8 @@
     <Content Include="tsconfig.json" />
     <Compile Include="scripts\runPromisesAPlusTestSuite.js" />
     <Compile Include="scripts\runSlownodeTestSuite.js" />
-    <TypeScriptCompile Include="src\asyncFunctions\slowAsyncFunction.ts" />
-    <TypeScriptCompile Include="src\asyncFunctions\slowAsyncFunctionActivation.ts" />
+    <TypeScriptCompile Include="src\functions\slowAsyncFunction.ts" />
+    <TypeScriptCompile Include="src\functions\slowAsyncFunctionActivation.ts" />
     <TypeScriptCompile Include="src\epoch.ts" />
     <TypeScriptCompile Include="src\epochLog.ts" />
     <TypeScriptCompile Include="src\eventLoop\slowEventLoop.ts" />
@@ -41,7 +41,7 @@
     <TypeScriptCompile Include="src\promises\slowPromiseReject.ts" />
     <TypeScriptCompile Include="src\promises\slowPromiseResolve.ts" />
     <TypeScriptCompile Include="src\promises\standardResolutionProcedure.ts" />
-    <TypeScriptCompile Include="src\closures\slowClosure.ts" />
+    <TypeScriptCompile Include="src\functions\slowClosure.ts" />
     <TypeScriptCompile Include="src\slowKind.ts" />
     <TypeScriptCompile Include="src\slowObject.ts" />
     <TypeScriptCompile Include="src\steppables\steppableFunction.ts" />
@@ -137,8 +137,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\eventLoop\" />
-    <Folder Include="src\asyncFunctions\" />
-    <Folder Include="src\closures\" />
+    <Folder Include="src\functions\" />
     <Folder Include="src\steppables\" />
     <Folder Include="src\util\" />
     <Folder Include="src\promises\" />

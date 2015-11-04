@@ -6,54 +6,54 @@ var expect = chai.expect;
 
 describe('Within an Epoch instance', function () {
 
-    //it('the setTimeout(...) API function works', (done) => {
+    it('the setTimeout(...) API function works', (done) => {
 
-    //    // Create an epoch
-    //    var slow = new Epoch();
+        // Create an epoch
+        var slow = new Epoch();
         
-    //    // Iterate until done
-    //    var countDown = 5;
-    //    loop();
+        // Iterate until done
+        var countDown = 5;
+        loop();
 
-    //    // Function to process a single iteration
-    //    function loop() {
-    //        console.log('tick');
-    //        --countDown;
-    //        if (!countDown) return done();
-    //        slow.setTimeout(loop, 500);
-    //    }
-    //});
+        // Function to process a single iteration
+        function loop() {
+            console.log('tick');
+            --countDown;
+            if (!countDown) return done();
+            slow.setTimeout(loop, 500);
+        }
+    });
 
 
-    //it('the Promise class works', (done) => {
+    it('the Promise class works', (done) => {
 
-    //    // Create an epoch
-    //    var slow = new Epoch();
+        // Create an epoch
+        var slow = new Epoch();
         
-    //    // Iterate until done
-    //    var countDown = 5;
-    //    loop();
+        // Iterate until done
+        var countDown = 5;
+        loop();
 
-    //    // Function to process a single iteration
-    //    function loop() {
-    //        console.log('tick');
-    //        --countDown;
-    //        if (!countDown) return done();
-    //        slow.Promise.delay(500).then(loop);
-    //    }
-    //});
+        // Function to process a single iteration
+        function loop() {
+            console.log('tick');
+            --countDown;
+            if (!countDown) return done();
+            slow.Promise.delay(500).then(loop);
+        }
+    });
 
 
-    //it('the closure(...) API function works', (done) => {
+    it('the closure(...) API function works', (done) => {
 
-    //    // Create an epoch
-    //    var slow = new Epoch();
+        // Create an epoch
+        var slow = new Epoch();
 
-    //    var bar: string;
-    //    var foo = slow.closure({ bar: 'baz' }, (arg: string) => bar + arg);
-    //    console.log(foo('555'));
-    //    setTimeout(done, 300);
-    //});
+        var bar: string;
+        var foo = slow.closure({ bar: 'baz' }, (arg: string) => bar + arg);
+        console.log(foo('555'));
+        setTimeout(done, 300);
+    });
 
 
     it('the async (...) API function works', (done) => {

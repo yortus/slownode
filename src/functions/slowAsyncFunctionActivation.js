@@ -5,7 +5,7 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var assert = require('assert');
 var SteppableObject = require('../steppables/steppableObject');
-var SlowClosure = require('../closures/slowClosure');
+var SlowClosure = require('./slowClosure');
 /**
  * A SlowAsyncFunctionActivation is a 'slow' extension of SteppableObject.
  * Instances of SlowAsyncFunctionActivation are used internally to manage

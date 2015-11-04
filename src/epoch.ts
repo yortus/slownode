@@ -3,8 +3,8 @@ import EpochLog = require('./epochLog');
 import slowEventLoop = require('./eventLoop/slowEventLoop');
 import slowTimers = require('./eventLoop/slowTimers');
 import SlowPromise = require('./promises/slowPromise');
-import SlowClosure = require('./closures/slowClosure');
-import SlowAsyncFunction = require('./asyncFunctions/slowAsyncFunction');
+import SlowClosure = require('./functions/slowClosure');
+import SlowAsyncFunction = require('./functions/slowAsyncFunction');
 export = Epoch;
 
 
