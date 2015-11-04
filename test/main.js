@@ -43,13 +43,13 @@ describe('Within an Epoch instance', function () {
         // Create an epoch
         var slow = new Epoch();
         var fn = slow.async(function () {
-            //const slow = __const(require('epoch'));
+            var slow = __const(require('epoch'));
             console.log(111);
-            //await (slow.Promise.delay(500));
+            await(slow.Promise.delay(500));
             console.log(222);
-            //await (slow.Promise.delay(500));
+            await(slow.Promise.delay(500));
             console.log(333);
-            //await (slow.Promise.delay(500));
+            await(slow.Promise.delay(500));
             return 'finished';
         });
         fn(5)

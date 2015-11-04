@@ -9,7 +9,7 @@ export = transformToStateMachine;
 
 // TODO: this module needs more inline documentation to make it clearer what each bit does, to support long-term maintenance.
 // TODO: source maps?
-// TODO: note implicit use of "types".Steppable.StateMachine.State type in here...
+// TODO: note implicit use of "types".Steppable.StateMachine.State type in generated code in here...
 
 /** Returns an equivalent AST in a form suitable for running inside a steppable object. */
 function transformToStateMachine(funcExpr: ESTree.FunctionExpression): ESTree.FunctionExpression {
@@ -164,7 +164,7 @@ class Rewriter {
                         value: steppableBody.ambient || (steppableBody.ambient = (function () {
                             ${this.constDecls.map(decl => `var ${decl.id['name']} = ${escodegen.generate(decl.init)};`).join('\n')}
                             var ambient = Object.create(global);
-                            ambient.require = require.main.require;
+                            ambient.require = require ? (require.main ? require.main.require : require) : null;
                             ${this.constDecls.map(decl => `ambient.${decl.id['name']} = ${decl.id['name']};`).join('\n')}
                             return ambient;
                         })())

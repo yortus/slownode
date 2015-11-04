@@ -3,7 +3,7 @@ var slowEventLoop = require('./eventLoop/slowEventLoop');
 var slowTimers = require('./eventLoop/slowTimers');
 var SlowPromise = require('./promises/slowPromise');
 var SlowClosure = require('./closures/slowClosure');
-var SlowAsyncFuncttion = require('./asyncFunctions/slowAsyncFunction');
+var SlowAsyncFunction = require('./asyncFunctions/slowAsyncFunction');
 var Epoch = (function () {
     // TODO: take a filename
     function Epoch() {
@@ -20,7 +20,7 @@ var Epoch = (function () {
         // TODO: temp testing...
         this.closure = SlowClosure.forEpoch(this.log);
         // TODO: temp testing...
-        this.async = SlowAsyncFuncttion.forEpoch(this.log);
+        this.async = makeAsyncFunctionForEpoch(this);
         // TODO: need orderly attach/detach in pairs. This will never be detached!! And will keep ref to epoch/log alive!
         slowEventLoop.beforeNextTick.attach(function () {
             _this.log.flush();
@@ -29,5 +29,19 @@ var Epoch = (function () {
     }
     return Epoch;
 })();
+// TODO: temp testing...
+function makeAsyncFunctionForEpoch(epoch) {
+    var async = SlowAsyncFunction.forEpoch(epoch.log);
+    var options = { require: require };
+    var result = function (bodyFunc) { return async(bodyFunc, options); };
+    return result;
+    function require(moduleId) {
+        if (moduleId === 'epoch')
+            return epoch;
+        return mainRequire(moduleId);
+    }
+}
+// TODO: temp testing...
+var mainRequire = require.main.require;
 module.exports = Epoch;
 //# sourceMappingURL=epoch.js.map

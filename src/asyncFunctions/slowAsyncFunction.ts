@@ -22,10 +22,10 @@ var SlowAsyncFunction = slowAsyncFunctionForEpoch(null);
 interface SlowAsyncFunctionStatic {
 
     /** Creates a new SlowAsyncFunction instance. */
-    new(bodyFunc: Function): SlowAsyncFunction;
+    new(bodyFunc: Function, options?: Options): SlowAsyncFunction;
 
     /** Creates a new SlowAsyncFunction instance. */
-    (bodyFunc: Function): SlowAsyncFunction;
+    (bodyFunc: Function, options?: Options): SlowAsyncFunction;
 
     /** TODO: doc... */
     forEpoch(epochLog: EpochLog): SlowAsyncFunctionStatic;
@@ -52,6 +52,12 @@ interface SlowAsyncFunction {
 
 
 // TODO: doc...
+interface Options {
+    require?: (moduleId: string) => any;
+}
+
+
+// TODO: doc...
 function slowAsyncFunctionForEpoch(epochLog: EpochLog) {
 
     // TODO: caching...
@@ -62,7 +68,7 @@ function slowAsyncFunctionForEpoch(epochLog: EpochLog) {
     var result: SlowAsyncFunctionStatic = <any> makeCallableClass({
 
         // Create a new SlowAsyncFunction instance that runs the given body function.
-        constructor: function (bodyFunc: Function) {
+        constructor: function (bodyFunc: Function, options?: Options) {
             var self: SlowAsyncFunction = this;
 
             // Validate arguments.
@@ -78,7 +84,12 @@ function slowAsyncFunctionForEpoch(epochLog: EpochLog) {
             if (cached) return cached;
 
             // Create a new SlowAsyncFunction instance.
-            var steppableFunc = new SteppableFunction(bodyFunc, { pseudoYield: 'await', pseudoConst: '__const' });
+            var steppableOptions = {
+                pseudoYield: 'await',
+                pseudoConst: '__const',
+                require: options ? options.require : null
+            };
+            var steppableFunc = new SteppableFunction(bodyFunc, steppableOptions);
             self.stateMachine = steppableFunc.stateMachine;
             self.$slow = {
                 kind: SlowKind.AsyncFunction,

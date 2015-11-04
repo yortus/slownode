@@ -4,7 +4,7 @@ import slowEventLoop = require('./eventLoop/slowEventLoop');
 import slowTimers = require('./eventLoop/slowTimers');
 import SlowPromise = require('./promises/slowPromise');
 import SlowClosure = require('./closures/slowClosure');
-import SlowAsyncFuncttion = require('./asyncFunctions/slowAsyncFunction');
+import SlowAsyncFunction = require('./asyncFunctions/slowAsyncFunction');
 export = Epoch;
 
 
@@ -24,7 +24,7 @@ class Epoch {
     // TODO: explicit disposal...
 
     // TODO: temp testing...
-    private log = new EpochLog();
+    log = new EpochLog();
 
     // TODO: temp testing...
     setTimeout = slowTimers.setTimeout.forEpoch(this.log);
@@ -39,5 +39,23 @@ class Epoch {
     closure = SlowClosure.forEpoch(this.log);
 
     // TODO: temp testing...
-    async = SlowAsyncFuncttion.forEpoch(this.log);
+    async = makeAsyncFunctionForEpoch(this);
 }
+
+
+// TODO: temp testing...
+function makeAsyncFunctionForEpoch(epoch: Epoch) {
+    var async = SlowAsyncFunction.forEpoch(epoch.log);
+    var options = { require };
+    var result = (bodyFunc: Function) => async(bodyFunc, options);
+    return result;
+
+    function require(moduleId: string) {
+        if (moduleId === 'epoch') return epoch;
+        return mainRequire(moduleId);
+    }
+}
+
+
+// TODO: temp testing...
+var mainRequire = require.main.require;

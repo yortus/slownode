@@ -63,16 +63,14 @@ describe('Within an Epoch instance', function () {
 
         var fn = slow.async (() => {
 
-
-            //const slow = __const(require('epoch'));
-
+            const slow = __const(require('epoch'));
 
             console.log(111);
-            //await (slow.Promise.delay(500));
+            await (slow.Promise.delay(500));
             console.log(222);
-            //await (slow.Promise.delay(500));
+            await (slow.Promise.delay(500));
             console.log(333);
-            //await (slow.Promise.delay(500));
+            await (slow.Promise.delay(500));
             return 'finished';
         });
 

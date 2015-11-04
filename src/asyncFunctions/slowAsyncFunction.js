@@ -18,7 +18,7 @@ function slowAsyncFunctionForEpoch(epochLog) {
     // Create a constructor function whose instances (a) are callable and (b) work with instanceof.
     var result = makeCallableClass({
         // Create a new SlowAsyncFunction instance that runs the given body function.
-        constructor: function (bodyFunc) {
+        constructor: function (bodyFunc, options) {
             var self = this;
             // Validate arguments.
             assert(typeof bodyFunc === 'function');
@@ -31,7 +31,12 @@ function slowAsyncFunctionForEpoch(epochLog) {
             if (cached)
                 return cached;
             // Create a new SlowAsyncFunction instance.
-            var steppableFunc = new SteppableFunction(bodyFunc, { pseudoYield: 'await', pseudoConst: '__const' });
+            var steppableOptions = {
+                pseudoYield: 'await',
+                pseudoConst: '__const',
+                require: options ? options.require : null
+            };
+            var steppableFunc = new SteppableFunction(bodyFunc, steppableOptions);
             self.stateMachine = steppableFunc.stateMachine;
             self.$slow = {
                 kind: 20 /* AsyncFunction */,

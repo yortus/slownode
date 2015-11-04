@@ -37,6 +37,7 @@ export = SteppableFunction;
 //     - whitelisted globals and 'ambients' ('arguments', 'require', 'Infinity', 'parseInt', what else...?)
 //     - locally declared 'const' identifiers whose rhs is considered 'safe and idempotent' (as in the HTTP-method sense)
 //       - TODO: rules for 'safe and idempotent'...
+// TODO: can local variables shadow globals/ambients/specials? like require, __const, etc?
 // NB: no need to check for general syntactic validity, since the function must be syntactically valid to have been passed in here.
 // NB: either a normal function or generator function can be passed in - it makes no difference (doc why to do this (hint: yield keyword available in gens))
 //---------------------------------------------
@@ -88,8 +89,15 @@ interface Options {
      * declaration with the function argument as its initializer expression.
      */
     pseudoConst?: string;
-}
 
+    /**
+     * An optional 'require' function for customising how modules are loaded within
+     * the body function. Calls to require() within the body function will be routed
+     * to this function if provided, otherwise such calls will be routed to the
+     * main module's require() function.
+     */
+    require?: (moduleId: string) => any;
+}
 
 
 // Create a constructor function whose instances (a) are callable and (b) work with instanceof.
@@ -98,9 +106,8 @@ SteppableFunction = <any> makeCallableClass({
     // Create a new SteppableFunction instance.
     constructor: function (bodyFunc: Function, options?: Options) {
         assert(typeof bodyFunc === 'function');
-        var pseudoYield = options ? options.pseudoYield : null;
-        var pseudoConst = options ? options.pseudoConst : null;
-        this.stateMachine = makeStateMachine(bodyFunc, options.pseudoYield, options.pseudoConst);
+        options = options || { pseudoYield: null, pseudoConst: null, require: null };
+        this.stateMachine = makeStateMachine(bodyFunc, options);
     },
 
     // Calling the instance creates and returns a new steppable object.
@@ -121,7 +128,7 @@ SteppableFunction.fromStateMachine = (stateMachine: SteppableStateMachine) => {
 
 
 /** Helper function for validating a function body and transforming it into a state machine. */
-function makeStateMachine(bodyFunc: Function, pseudoYield: string, pseudoConst: string): SteppableStateMachine {
+function makeStateMachine(bodyFunc: Function, options: Options): SteppableStateMachine {
 
     // Transform original body function --> source code --> AST.
     var originalFunction = bodyFunc;
@@ -131,10 +138,10 @@ function makeStateMachine(bodyFunc: Function, pseudoYield: string, pseudoConst: 
     var funcExpr = <ESTree.FunctionExpression> exprStmt.expression;
 
     // Convert direct calls to ${pseudoYield} to equivalent yield expressions.
-    if (pseudoYield) replacePseudoYieldCallsWithYieldExpressions(funcExpr, pseudoYield);
+    if (options.pseudoYield) replacePseudoYieldCallsWithYieldExpressions(funcExpr, options.pseudoYield);
 
     // Convert variable declarations whose 'init' is a direct call to ${pseudoConst} to equivalent const declarations.
-    if (pseudoConst) replacePseudoConstCallsWithConstDeclarations(funcExpr, pseudoConst);
+    if (options.pseudoConst) replacePseudoConstCallsWithConstDeclarations(funcExpr, options.pseudoConst);
 
     // Validate the AST.
     ensureNodesAreLegalForSteppableBody(funcExpr);
@@ -144,9 +151,12 @@ function makeStateMachine(bodyFunc: Function, pseudoYield: string, pseudoConst: 
     // Rewrite the AST in a form suitable for serialization/deserialization.
     var stateMachineAST = transformToStateMachine(funcExpr);
 
-    // Transform modified AST --> source code --> function.
+    // Declare a custom require function that is magic module aware.
+    // TODO: doc coupling between this and its reference in Rewriter#generateAST (CTRL+F 'ambient.require = require' in transformToStateMachine.ts)
+
+    // Transform modified AST --> source code --> function, closing over custom require function if given.
     var stateMachineSource = '(' + escodegen.generate(stateMachineAST) + ')';
-    var stateMachine: SteppableStateMachine = eval(stateMachineSource);
+    var stateMachine: SteppableStateMachine = (require => eval(stateMachineSource))(options.require || require.main.require);
 
     // All done.
     return stateMachine;
