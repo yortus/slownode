@@ -14,6 +14,9 @@ import transformToStateMachine = require('../util/estree/funcExpr/transformToSta
 export = SteppableFunction;
 
 
+// TODO: what about refs to 'this' within the body?
+
+
 // TODO: memoize results (use shasum and cache)
 // TODO: another valid 'local' identifier is the function's own name
 // TODO: disallow id refs to: '__dirname', '__filename', 'module', 'exports'

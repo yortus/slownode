@@ -5,6 +5,9 @@ import classifyIdentifiers = require('./classifyIdentifiers');
 export = isRelocatable;
 
 
+// TODO: what about refs to 'this' within the body?
+
+
 /**
  * Traverses the AST to determine whether the function is relocatable. A relocatable function is one
  * whose meaning remains the same after being converted to a string (via toString()) then converted
