@@ -1,3 +1,4 @@
+var persistence = require('../persistence');
 var slowEventLoop = require('./slowEventLoop');
 // TODO: doc...
 exports.setTimeout = setTimeoutForEpoch(null);
@@ -8,52 +9,53 @@ function clearTimeout(timeoutObject) {
 exports.clearTimeout = clearTimeout;
 // TODO: doc...
 var Timer = (function () {
-    function Timer(epochLog, delay, callback, args) {
-        this.epochLog = epochLog;
+    function Timer(epochId, delay, callback, args) {
+        this.epochId = epochId;
         this.$slow = {
             kind: 1 /* Timer */,
+            epochId: epochId,
             id: null,
             due: Date.now() + delay,
             callback: callback,
             arguments: args
         };
+        persistence.created(this);
     }
     Timer.prototype.isBlocked = function () {
         return this.$slow.due > Date.now();
     };
     Timer.prototype.dispatch = function () {
-        this.epochLog.deleted(this);
+        persistence.deleted(this);
         this.$slow.callback.apply(void 0, this.$slow.arguments);
     };
     Timer.prototype.cancel = function () {
-        this.epochLog.deleted(this);
+        persistence.deleted(this);
         slowEventLoop.remove(this);
     };
     return Timer;
 })();
 exports.Timer = Timer;
 // TODO: doc...
-function setTimeoutForEpoch(epochLog) {
-    // TODO: caching...
+function setTimeoutForEpoch(epochId) {
+    // TODO: caching... NB can use a normal obj now that key is a string
     cache = cache || new Map();
-    if (cache.has(epochLog))
-        return cache.get(epochLog);
+    if (cache.has(epochId))
+        return cache.get(epochId);
     // TODO: ...
     var result = (function (callback, delay) {
         var args = [];
         for (var _i = 2; _i < arguments.length; _i++) {
             args[_i - 2] = arguments[_i];
         }
-        var timer = new Timer(epochLog, delay, callback, args);
-        epochLog.created(timer);
+        var timer = new Timer(epochId, delay, callback, args);
         slowEventLoop.add(timer);
         return timer;
     });
     result.forEpoch = setTimeoutForEpoch;
     // TODO: caching...
-    cache.set(epochLog, result);
+    cache.set(epochId, result);
     return result;
 }
-// TODO: ...
+// TODO: ... NB can use a normal obj now that key is a string
 var cache;
 //# sourceMappingURL=slowTimers.js.map

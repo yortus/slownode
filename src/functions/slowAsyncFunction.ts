@@ -1,7 +1,7 @@
 ﻿import assert = require('assert');
 import _ = require('lodash');
-import EpochLog = require('../epochs/epochLog');
 import SlowKind = require('../slowKind');
+import persistence = require('../persistence');
 import makeCallableClass = require('../util/makeCallableClass');
 import shasum = require('../util/shasum');
 import SteppableStateMachine = require('../steppables/steppableStateMachine');
@@ -28,7 +28,7 @@ interface SlowAsyncFunctionStatic {
     (bodyFunc: Function, options?: Options): SlowAsyncFunction;
 
     /** TODO: doc... */
-    forEpoch(epochLog: EpochLog): SlowAsyncFunctionStatic;
+    forEpoch(epochId: string): SlowAsyncFunctionStatic;
 }
 
 
@@ -41,6 +41,7 @@ interface SlowAsyncFunction {
     /** INTERNAL holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
     $slow: {
         kind: SlowKind;
+        epochId: string;
         id: string;
         stateMachineSource: string;
         originalSource: string; // TODO: not needed in operation, but preserve for future debugging/sourcemap needs?
@@ -58,11 +59,11 @@ interface Options {
 
 
 // TODO: doc...
-function slowAsyncFunctionForEpoch(epochLog: EpochLog) {
+function slowAsyncFunctionForEpoch(epochId: string) {
 
-    // TODO: caching...
+    // TODO: caching... NB can use a normal obj now that key is a string
     cache = cache || <any> new Map();
-    if (cache.has(epochLog)) return cache.get(epochLog);
+    if (cache.has(epochId)) return cache.get(epochId);
 
     // Create a constructor function whose instances (a) are callable and (b) work with instanceof.
     var result: SlowAsyncFunctionStatic = <any> makeCallableClass({
@@ -93,6 +94,7 @@ function slowAsyncFunctionForEpoch(epochLog: EpochLog) {
             self.stateMachine = steppableFunc.stateMachine;
             self.$slow = {
                 kind: SlowKind.AsyncFunction,
+                epochId: epochId,
                 id: safid,
                 stateMachineSource: steppableFunc.stateMachine.toString(),
                 originalSource
@@ -102,17 +104,17 @@ function slowAsyncFunctionForEpoch(epochLog: EpochLog) {
             asyncFunctionCache[safid] = self;
 
             // Synchronise with the persistent object graph.
-            epochLog.created(self);
+            persistence.created(self);
         },
 
         // Calling the instance begins execution of the body function, and returns a promise of its outcome.
         call: function (...args: any[]): SlowPromise {
 
             // Create a new SlowPromise to represent the eventual result of the slow async operation.
-            var deferred = SlowPromise.forEpoch(epochLog).deferred();
+            var deferred = SlowPromise.forEpoch(epochId).deferred();
 
             // Create a new SlowAsyncFunctionActivation instance to run the async operation.
-            var safa = new SlowAsyncFunctionActivation(epochLog, (<SlowAsyncFunction> this), deferred.resolve, deferred.reject, args); // TODO: must be log-bound SAFA!
+            var safa = new SlowAsyncFunctionActivation(epochId, (<SlowAsyncFunction> this), deferred.resolve, deferred.reject, args); // TODO: must be log-bound SAFA!
 
             // Run the async operation to completion, and return a promise of the outcome.
             safa.runToCompletion(safa);
@@ -124,7 +126,7 @@ function slowAsyncFunctionForEpoch(epochLog: EpochLog) {
     result.forEpoch = slowAsyncFunctionForEpoch;
 
     // TODO: caching...
-    cache.set(epochLog, result);
+    cache.set(epochId, result);
     return result;
 }
 
@@ -135,6 +137,6 @@ function slowAsyncFunctionForEpoch(epochLog: EpochLog) {
 var asyncFunctionCache: { [afid: string]: SlowAsyncFunction; } = {};
 
 
-// TODO: doc...
+// TODO: doc... NB can use a normal obj now that key is a string
 // TODO: rename: constructorCache
-var cache: Map<EpochLog, SlowAsyncFunctionStatic>;
+var cache: Map<string, SlowAsyncFunctionStatic>;

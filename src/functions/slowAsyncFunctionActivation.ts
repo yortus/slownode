@@ -1,8 +1,8 @@
 ﻿import assert = require('assert');
 import path = require('path');
-import EpochLog = require('../epochs/epochLog');
 import SlowKind = require('../slowKind');
 import SlowObject = require('../slowObject');
+import persistence = require('../persistence');
 import SlowPromise = require('../promises/slowPromise');
 import SlowPromiseResolve = require('../promises/slowPromiseResolve');
 import SlowPromiseReject = require('../promises/slowPromiseReject');
@@ -21,30 +21,32 @@ export = SlowAsyncFunctionActivation;
 class SlowAsyncFunctionActivation extends SteppableObject {
 
     /** Create a new SlowAsyncFunctionActivation instance. */
-    constructor(private epochLog: EpochLog, asyncFunction: SlowAsyncFunction, resolve: SlowPromiseResolve, reject: SlowPromiseReject, args: any[]) {
+    constructor(private epochId: string, asyncFunction: SlowAsyncFunction, resolve: SlowPromiseResolve, reject: SlowPromiseReject, args: any[]) {
         super(asyncFunction.stateMachine);
         this.state = { local: { arguments: args } };
 
         var safa = this;
         this.$slow = {
             kind: SlowKind.AsyncFunctionActivation,
+            epochId: epochId,
             id: null,
             asyncFunction: asyncFunction,
             state: this.state,
             awaiting: null,
-            resumeNext: SlowClosure.forEpoch(epochLog)({safa}, value => { safa.runToCompletion(null, value); }),
-            resumeError: SlowClosure.forEpoch(epochLog)({safa}, error => { safa.runToCompletion(error); }),
+            resumeNext: SlowClosure.forEpoch(epochId)({safa}, value => { safa.runToCompletion(null, value); }),
+            resumeError: SlowClosure.forEpoch(epochId)({safa}, error => { safa.runToCompletion(error); }),
             resolve: resolve,
             reject: reject
         };
 
         // Synchronise with the persistent object graph.
-        epochLog.created(this); // TODO: temp testing...
+        persistence.created(this); // TODO: temp testing...
     }
 
     /** Holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
     $slow: {
         kind: SlowKind,
+        epochId: string,
         id: string,
 
         /** The body of code being executed by this activation. */
@@ -99,11 +101,11 @@ class SlowAsyncFunctionActivation extends SteppableObject {
 
             // Synchronise with the persistent object graph.
             // TODO: temp testing...
-            this.epochLog.deleted(s.resolve);
-            this.epochLog.deleted(s.reject);
-            this.epochLog.deleted(s.resumeNext);
-            this.epochLog.deleted(s.resumeError);
-            this.epochLog.deleted(this);
+            persistence.deleted(s.resolve);
+            persistence.deleted(s.reject);
+            persistence.deleted(s.resumeNext);
+            persistence.deleted(s.resumeError);
+            persistence.deleted(this);
             return;
         }
 
@@ -117,6 +119,6 @@ class SlowAsyncFunctionActivation extends SteppableObject {
 
         // Synchronise with the persistent object graph.
         // TODO: temp testing...
-        this.epochLog.updated(this);
+        persistence.updated(this);
     }
 }

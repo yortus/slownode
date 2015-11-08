@@ -9,6 +9,9 @@ interface SlowObject {
         /** The kind of this slow object. */
         kind: SlowKind;
 
+        /** TODO: doc.. */
+        epochId: string;
+
         /** The epoch-unique identifier assigned to this slow object. */
         id: string;
 

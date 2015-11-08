@@ -1,4 +1,5 @@
 var assert = require('assert');
+var persistence = require('../persistence');
 var makeCallableClass = require('../util/makeCallableClass');
 var shasum = require('../util/shasum');
 var SteppableFunction = require('../steppables/steppableFunction');
@@ -10,11 +11,11 @@ var SlowAsyncFunctionActivation = require('./slowAsyncFunctionActivation');
  */
 var SlowAsyncFunction = slowAsyncFunctionForEpoch(null);
 // TODO: doc...
-function slowAsyncFunctionForEpoch(epochLog) {
-    // TODO: caching...
+function slowAsyncFunctionForEpoch(epochId) {
+    // TODO: caching... NB can use a normal obj now that key is a string
     cache = cache || new Map();
-    if (cache.has(epochLog))
-        return cache.get(epochLog);
+    if (cache.has(epochId))
+        return cache.get(epochId);
     // Create a constructor function whose instances (a) are callable and (b) work with instanceof.
     var result = makeCallableClass({
         // Create a new SlowAsyncFunction instance that runs the given body function.
@@ -40,6 +41,7 @@ function slowAsyncFunctionForEpoch(epochLog) {
             self.stateMachine = steppableFunc.stateMachine;
             self.$slow = {
                 kind: 20 /* AsyncFunction */,
+                epochId: epochId,
                 id: safid,
                 stateMachineSource: steppableFunc.stateMachine.toString(),
                 originalSource: originalSource
@@ -47,7 +49,7 @@ function slowAsyncFunctionForEpoch(epochLog) {
             // Cache this SlowAsyncFunction instance to save re-computing it again.
             asyncFunctionCache[safid] = self;
             // Synchronise with the persistent object graph.
-            epochLog.created(self);
+            persistence.created(self);
         },
         // Calling the instance begins execution of the body function, and returns a promise of its outcome.
         call: function () {
@@ -56,9 +58,9 @@ function slowAsyncFunctionForEpoch(epochLog) {
                 args[_i - 0] = arguments[_i];
             }
             // Create a new SlowPromise to represent the eventual result of the slow async operation.
-            var deferred = SlowPromise.forEpoch(epochLog).deferred();
+            var deferred = SlowPromise.forEpoch(epochId).deferred();
             // Create a new SlowAsyncFunctionActivation instance to run the async operation.
-            var safa = new SlowAsyncFunctionActivation(epochLog, this, deferred.resolve, deferred.reject, args); // TODO: must be log-bound SAFA!
+            var safa = new SlowAsyncFunctionActivation(epochId, this, deferred.resolve, deferred.reject, args); // TODO: must be log-bound SAFA!
             // Run the async operation to completion, and return a promise of the outcome.
             safa.runToCompletion(safa);
             return deferred.promise;
@@ -67,14 +69,14 @@ function slowAsyncFunctionForEpoch(epochLog) {
     // TODO: ...
     result.forEpoch = slowAsyncFunctionForEpoch;
     // TODO: caching...
-    cache.set(epochLog, result);
+    cache.set(epochId, result);
     return result;
 }
 /** Supports memoization of SlowAsyncFunction instances, which are immutable and expensive to compute. */
 // TODO: when used?
 // TODO: rename: instanceCache
 var asyncFunctionCache = {};
-// TODO: doc...
+// TODO: doc... NB can use a normal obj now that key is a string
 // TODO: rename: constructorCache
 var cache;
 module.exports = SlowAsyncFunction;

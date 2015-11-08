@@ -1,4 +1,5 @@
 var _ = require('lodash');
+var persistence = require('../persistence');
 var makeCallableClass = require('../util/makeCallableClass');
 var isRelocatableFunction = require('../util/isRelocatableFunction');
 /**
@@ -9,11 +10,11 @@ var isRelocatableFunction = require('../util/isRelocatableFunction');
  */
 var SlowClosure = slowClosureForEpoch(null);
 // TODO: doc...
-function slowClosureForEpoch(epochLog) {
-    // TODO: caching...
+function slowClosureForEpoch(epochId) {
+    // TODO: caching... NB can use a normal obj now that key is a string
     cache = cache || new Map();
-    if (cache.has(epochLog))
-        return cache.get(epochLog);
+    if (cache.has(epochId))
+        return cache.get(epochId);
     // Create a constructor function whose instances (a) are callable and (b) work with instanceof.
     var result = makeCallableClass({
         // Creates a new SlowClosure instance.
@@ -30,12 +31,13 @@ function slowClosureForEpoch(epochLog) {
             self.function = fn;
             self.$slow = {
                 kind: 50 /* Closure */,
+                epochId: epochId,
                 id: null,
                 functionSource: functionSource,
                 environment: env
             };
             // Synchronise with the persistent object graph.
-            epochLog.created(self); // TODO: temp testing...
+            persistence.created(self); // TODO: temp testing...
         },
         // Calling the SlowClosure executes the function passed to the constructor in the environment passed to the constructor.
         call: function () {
@@ -52,10 +54,10 @@ function slowClosureForEpoch(epochLog) {
     // TODO: ...
     result.forEpoch = slowClosureForEpoch;
     // TODO: caching...
-    cache.set(epochLog, result);
+    cache.set(epochId, result);
     return result;
 }
-// TODO: ...
+// TODO: ... NB can use a normal obj now that key is a string
 var cache;
 module.exports = SlowClosure;
 //# sourceMappingURL=slowClosure.js.map

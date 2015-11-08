@@ -1,4 +1,4 @@
-// TODO: doc... no knowledge of epochs/logs in here... Entry impls handle that
+var persistence = require('../persistence');
 // TODO: doc...
 function add(entry) {
     entries.push(entry);
@@ -13,19 +13,6 @@ function remove(entry) {
     entries.splice(i, 1);
 }
 exports.remove = remove;
-// TODO: doc...
-exports.beforeNextTick = {
-    attach: function (handler) {
-        tickHandlers.push(handler);
-    },
-    detach: function (handler) {
-        var i = tickHandlers.indexOf(handler);
-        if (i === -1)
-            throw new Error('entry not found');
-        tickHandlers.splice(i, 1);
-    }
-};
-var tickHandlers = [];
 // TODO: doc...
 var entries = [];
 // TODO: doc...
@@ -46,7 +33,7 @@ function runUntilEmpty() {
 // TODO: doc...
 function processOneTick() {
     traverseAllEntries();
-    return Promise.all(tickHandlers.map(function (handler) { return handler(); }));
+    return persistence.flush();
 }
 // TODO: doc...
 function traverseAllEntries() {

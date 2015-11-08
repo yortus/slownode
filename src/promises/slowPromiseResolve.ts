@@ -1,4 +1,5 @@
 import SlowKind = require('../slowKind');
+import persistence = require('../persistence');
 import SlowPromise = require('./slowPromise'); // NB: elided circular ref (for types only)
 import makeCallableClass = require('../util/makeCallableClass');
 import standardResolutionProcedure = require('./standardResolutionProcedure');
@@ -25,6 +26,7 @@ interface SlowPromiseResolve {
     /** INTERNAL holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
     $slow: {
         kind: SlowKind;
+        epochId: string;
         id: string;
         promise: SlowPromise;
     };
@@ -38,10 +40,10 @@ SlowPromiseResolve = <any> makeCallableClass({
     constructor: function (promise: SlowPromise) {
 
         // Add slow metadata to the resolve function.
-        (<SlowPromiseResolve> this).$slow = { kind: SlowKind.PromiseResolve, id: null, promise };
+        (<SlowPromiseResolve> this).$slow = { kind: SlowKind.PromiseResolve, epochId: promise.$slow.epochId, id: null, promise };
 
         // Synchronise with the persistent object graph.
-        (<typeof SlowPromise> promise.constructor).epochLog.created(this); // TODO: temp testing...
+        persistence.created(this); // TODO: temp testing...
     },
 
     // Calling the instance resolves the promise passed to the constructor, with `value` as the resolved value.
@@ -51,4 +53,15 @@ SlowPromiseResolve = <any> makeCallableClass({
         var promise = (<SlowPromiseResolve> this).$slow.promise;
         standardResolutionProcedure(promise, value);
     }
+});
+
+
+
+
+
+// TODO: ==================== rehydration logic... temp testing... ====================
+persistence.howToRehydrate(SlowKind.PromiseResolve, ($slow: any) => {
+    var resolve = new SlowPromiseResolve($slow.promise);
+    resolve.$slow.id = $slow.id;
+    return resolve;
 });

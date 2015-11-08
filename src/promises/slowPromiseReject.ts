@@ -1,4 +1,5 @@
 import SlowKind = require('../slowKind');
+import persistence = require('../persistence');
 import SlowPromise = require('./slowPromise'); // NB: elided circular ref (for types only)
 import makeCallableClass = require('../util/makeCallableClass');
 export = SlowPromiseReject;
@@ -24,6 +25,7 @@ interface SlowPromiseReject {
     /** INTERNAL holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
     $slow: {
         kind: SlowKind;
+        epochId: string;
         id: string;
         promise: SlowPromise;
     };
@@ -37,10 +39,10 @@ SlowPromiseReject = <any> makeCallableClass({
     constructor: function (promise: SlowPromise) {
 
         // Add slow metadata to the resolve function.
-        (<SlowPromiseReject> this).$slow = { kind: SlowKind.PromiseReject, id: null, promise };
+        (<SlowPromiseReject> this).$slow = { kind: SlowKind.PromiseReject, epochId: promise.$slow.epochId, id: null, promise };
 
         // Synchronise with the persistent object graph.
-        (<typeof SlowPromise> promise.constructor).epochLog.created(this); // TODO: temp testing...
+        persistence.created(this); // TODO: temp testing...
     },
 
     // Calling the instance rejects the promise passed to the constructor, with `reason` as the rejection reason.
@@ -50,4 +52,15 @@ SlowPromiseReject = <any> makeCallableClass({
         var promise = (<SlowPromiseReject> this).$slow.promise;
         promise.reject(reason);
     }
+});
+
+
+
+
+
+// TODO: ==================== rehydration logic... temp testing... ====================
+persistence.howToRehydrate(SlowKind.PromiseReject, ($slow: any) => {
+    var reject = new SlowPromiseReject($slow.promise);
+    reject.$slow.id = $slow.id;
+    return reject;
 });

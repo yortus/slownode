@@ -1,7 +1,7 @@
 ﻿import assert = require('assert');
 import API = require('../index.d.ts'); // NB: elided ref (for types only)
-import EpochLog = require('./epochLog');
 import SlowKind = require('../slowKind');
+import persistence = require('../persistence');
 import slowEventLoop = require('../eventLoop/slowEventLoop');
 import slowTimers = require('../eventLoop/slowTimers');
 import SlowPromise = require('../promises/slowPromise');
@@ -11,14 +11,13 @@ import SlowAsyncFunction = require('../functions/slowAsyncFunction');
 
 export function open(path: string, flags: string): Epoch {
 
-    // TODO: need orderly attach/detach in pairs. This will never be detached!! And will keep ref to epoch/log alive!
-    slowEventLoop.beforeNextTick.attach(() => {
-        epochLog.flush();
-        return Promise.resolve<void>();
-    });
 
-    var epochLog = new EpochLog(path, flags);
-    var epoch = createEpoch(epochLog);
+    // TODO: fully review!!!
+
+    // TODO: temp testing...
+    var epochId = 'TEST';
+
+    var epoch = createEpoch(epochId);
     return epoch;
 }
 
@@ -33,25 +32,27 @@ export function close(epoch: Epoch) {
 export interface Epoch extends API.Epoch {
 
     // TODO: doc... INTERNAL
-    log: EpochLog;
+    id: string;
 }
 
 
 // TODO: temp testing...
-function createEpoch(epochLog: EpochLog): Epoch {
+function createEpoch(epochId: string): Epoch {
+
+
     var epoch = <Epoch> {
-        setTimeout: slowTimers.setTimeout.forEpoch(epochLog),
+        setTimeout: slowTimers.setTimeout.forEpoch(epochId),
         clearTimeout: slowTimers.clearTimeout,
-        Promise: SlowPromise.forEpoch(epochLog),
-        closure: SlowClosure.forEpoch(epochLog),
+        Promise: SlowPromise.forEpoch(epochId),
+        closure: SlowClosure.forEpoch(epochId),
         async: null,
         addWeakRef: (obj: any) => {
             assert(obj && (typeof obj === 'object' || typeof obj === 'function'), 'addWeakRef: argument must be an object');
             assert(!obj.$slow, 'addWeakRef: argument is already a slow object');
             obj.$slow = { kind: SlowKind.WeakRef };
-            epochLog.created(obj);
+            persistence.created(obj);
         },
-        log: epochLog
+        id: epochId
     };
     epoch.async = createAsyncFunctionForEpoch(epoch);
     return epoch;
@@ -60,7 +61,7 @@ function createEpoch(epochLog: EpochLog): Epoch {
 
 // TODO: temp testing...
 function createAsyncFunctionForEpoch(epoch: Epoch) {
-    var async = SlowAsyncFunction.forEpoch(epoch.log);
+    var async = SlowAsyncFunction.forEpoch(epoch.id);
     var options = { require };
     var result = (bodyFunc: Function) => async(bodyFunc, options);
     return result;

@@ -1,6 +1,6 @@
 ﻿import _ = require('lodash');
-import EpochLog = require('../epochs/epochLog');
 import SlowKind = require('../slowKind');
+import persistence = require('../persistence');
 import makeCallableClass = require('../util/makeCallableClass');
 import isRelocatableFunction = require('../util/isRelocatableFunction');
 export = SlowClosure;
@@ -25,7 +25,7 @@ interface SlowClosureStatic {
     (env: { [name: string]: any; }, fn: Function): SlowClosure;
 
     /** TODO: doc... */
-    forEpoch(epochLog: EpochLog): SlowClosureStatic;
+    forEpoch(epochId: string): SlowClosureStatic;
 }
 
 
@@ -38,6 +38,7 @@ interface SlowClosure {
     /** INTERNAL holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
     $slow: {
         kind: SlowKind;
+        epochId: string;
         id: string;
         functionSource: string;
         environment: { [name: string]: any; };
@@ -49,11 +50,11 @@ interface SlowClosure {
 
 
 // TODO: doc...
-function slowClosureForEpoch(epochLog: EpochLog) {
+function slowClosureForEpoch(epochId: string) {
 
-    // TODO: caching...
+    // TODO: caching... NB can use a normal obj now that key is a string
     cache = cache || <any> new Map();
-    if (cache.has(epochLog)) return cache.get(epochLog);
+    if (cache.has(epochId)) return cache.get(epochId);
 
     // Create a constructor function whose instances (a) are callable and (b) work with instanceof.
     var result: SlowClosureStatic = <any> makeCallableClass({
@@ -75,13 +76,14 @@ function slowClosureForEpoch(epochLog: EpochLog) {
             self.function = <Function> fn;
             self.$slow = {
                 kind: SlowKind.Closure,
+                epochId: epochId,
                 id: null,
                 functionSource,
                 environment: env
             };
 
             // Synchronise with the persistent object graph.
-            epochLog.created(self); // TODO: temp testing...
+            persistence.created(self); // TODO: temp testing...
         },
 
         // Calling the SlowClosure executes the function passed to the constructor in the environment passed to the constructor.
@@ -98,10 +100,10 @@ function slowClosureForEpoch(epochLog: EpochLog) {
     result.forEpoch = slowClosureForEpoch;
 
     // TODO: caching...
-    cache.set(epochLog, result);
+    cache.set(epochId, result);
     return result;
 }
 
 
-// TODO: ...
-var cache: Map<EpochLog, SlowClosureStatic>;
+// TODO: ... NB can use a normal obj now that key is a string
+var cache: Map<string, SlowClosureStatic>;

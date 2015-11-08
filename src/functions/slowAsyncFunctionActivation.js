@@ -4,6 +4,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var assert = require('assert');
+var persistence = require('../persistence');
 var SteppableObject = require('../steppables/steppableObject');
 var SlowClosure = require('./slowClosure');
 /**
@@ -14,24 +15,25 @@ var SlowClosure = require('./slowClosure');
 var SlowAsyncFunctionActivation = (function (_super) {
     __extends(SlowAsyncFunctionActivation, _super);
     /** Create a new SlowAsyncFunctionActivation instance. */
-    function SlowAsyncFunctionActivation(epochLog, asyncFunction, resolve, reject, args) {
+    function SlowAsyncFunctionActivation(epochId, asyncFunction, resolve, reject, args) {
         _super.call(this, asyncFunction.stateMachine);
-        this.epochLog = epochLog;
+        this.epochId = epochId;
         this.state = { local: { arguments: args } };
         var safa = this;
         this.$slow = {
             kind: 30 /* AsyncFunctionActivation */,
+            epochId: epochId,
             id: null,
             asyncFunction: asyncFunction,
             state: this.state,
             awaiting: null,
-            resumeNext: SlowClosure.forEpoch(epochLog)({ safa: safa }, function (value) { safa.runToCompletion(null, value); }),
-            resumeError: SlowClosure.forEpoch(epochLog)({ safa: safa }, function (error) { safa.runToCompletion(error); }),
+            resumeNext: SlowClosure.forEpoch(epochId)({ safa: safa }, function (value) { safa.runToCompletion(null, value); }),
+            resumeError: SlowClosure.forEpoch(epochId)({ safa: safa }, function (error) { safa.runToCompletion(error); }),
             resolve: resolve,
             reject: reject
         };
         // Synchronise with the persistent object graph.
-        epochLog.created(this); // TODO: temp testing...
+        persistence.created(this); // TODO: temp testing...
     }
     /**
      * Runs the SlowAsyncFunctionActivation instance to completion. First, the activation (which
@@ -62,11 +64,11 @@ var SlowAsyncFunctionActivation = (function (_super) {
                 s.resolve(yielded.value);
             // Synchronise with the persistent object graph.
             // TODO: temp testing...
-            this.epochLog.deleted(s.resolve);
-            this.epochLog.deleted(s.reject);
-            this.epochLog.deleted(s.resumeNext);
-            this.epochLog.deleted(s.resumeError);
-            this.epochLog.deleted(this);
+            persistence.deleted(s.resolve);
+            persistence.deleted(s.reject);
+            persistence.deleted(s.resumeNext);
+            persistence.deleted(s.resumeError);
+            persistence.deleted(this);
             return;
         }
         // The Steppable yielded. Ensure the yielded value is awaitable.
@@ -77,7 +79,7 @@ var SlowAsyncFunctionActivation = (function (_super) {
         awaiting.then(this.$slow.resumeNext, this.$slow.resumeError);
         // Synchronise with the persistent object graph.
         // TODO: temp testing...
-        this.epochLog.updated(this);
+        persistence.updated(this);
     };
     return SlowAsyncFunctionActivation;
 })(SteppableObject);

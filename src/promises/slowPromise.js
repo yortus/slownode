@@ -5,10 +5,11 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var assert = require('assert');
 var _ = require('lodash');
+var persistence = require('../persistence');
+var slowTimers = require('../eventLoop/slowTimers');
 var SlowPromiseResolve = require('./slowPromiseResolve');
 var SlowPromiseReject = require('./slowPromiseReject');
 var standardResolutionProcedure = require('./standardResolutionProcedure');
-var slowTimers = require('../eventLoop/slowTimers');
 // TODO: add all(), race()... (see https://github.com/borisyankov/DefinitelyTyped/blob/master/es6-promise/es6-promise.d.ts)
 /**
  * Promises A+ compliant slow promise implementation.
@@ -23,6 +24,7 @@ var SlowPromise = (function () {
          */
         this.$slow = {
             kind: 10 /* Promise */,
+            epochId: this.epochId,
             id: null,
             state: 0 /* Pending */,
             settledValue: void 0,
@@ -31,7 +33,7 @@ var SlowPromise = (function () {
         // Validate arguments.
         assert(!resolver || _.isFunction(resolver));
         // Synchronise with the persistent object graph.
-        this.constructor.epochLog.created(this); // TODO: temp testing...
+        persistence.created(this); // TODO: temp testing...
         // If no resolver was given, just return now. This is an internal use of the constructor.
         if (!resolver)
             return this;
@@ -83,7 +85,7 @@ var SlowPromise = (function () {
         var _this = this;
         return new this(function (resolve) {
             // TODO: temp testing...
-            slowTimers.setTimeout.forEpoch(_this.epochLog)(function (resolve) { return resolve(); }, ms, resolve);
+            slowTimers.setTimeout.forEpoch(_this.prototype.epochId)(function (resolve) { return resolve(); }, ms, resolve);
             // TODO: temp testing...
             //setTimeout(resolve => resolve(), ms, resolve);
             // TODO: was... fix!!!
@@ -94,19 +96,20 @@ var SlowPromise = (function () {
     /**
      * TODO: INTERNAL...
      */
-    SlowPromise.forEpoch = function (epochLog) {
-        // TODO: caching...
+    SlowPromise.forEpoch = function (epochId) {
+        // TODO: caching... NB can use a normal obj now that key is a string
         cache = cache || new Map();
-        if (cache.has(epochLog))
-            return cache.get(epochLog);
+        if (cache.has(epochId))
+            return cache.get(epochId);
+        // TODO: ...
         var Subclass = (function (_super) {
             __extends(SlowPromise, _super);
             function SlowPromise(resolver) {
                 _super.call(this, resolver);
             }
-            SlowPromise.epochLog = epochLog;
             return SlowPromise;
         })(this);
+        Subclass.prototype.epochId = epochId;
         // TODO: force-bind static props so they work when called as free functions
         for (var staticProperty in Subclass) {
             if (!Subclass.hasOwnProperty(staticProperty))
@@ -116,7 +119,7 @@ var SlowPromise = (function () {
             Subclass[staticProperty] = Subclass[staticProperty].bind(Subclass);
         }
         // TODO: caching...
-        cache.set(epochLog, Subclass);
+        cache.set(epochId, Subclass);
         return Subclass;
     };
     /**
@@ -133,7 +136,7 @@ var SlowPromise = (function () {
         var deferred2 = this.constructor.deferred();
         this.$slow.handlers.push({ onFulfilled: onFulfilled, onRejected: onRejected, deferred2: deferred2 });
         // Synchronise with the persistent object graph.
-        this.constructor.epochLog.updated(this); // TODO: temp testing...
+        persistence.updated(this); // TODO: temp testing...
         // If the promise is already settled, invoke the given handlers now (asynchronously).
         if (this.$slow.state !== 0 /* Pending */)
             process.nextTick(function () { return processAllHandlers(_this); });
@@ -157,8 +160,9 @@ var SlowPromise = (function () {
             return;
         _a = [1 /* Fulfilled */, value], this.$slow.state = _a[0], this.$slow.settledValue = _a[1];
         // Synchronise with the persistent object graph.
-        this.constructor.epochLog.updated(this); // TODO: temp testing...
+        persistence.updated(this); // TODO: temp testing...
         // Invoke any already-attached handlers now (asynchronously).
+        // TODO: use a 'slow' nextTick? pros/cons?
         process.nextTick(function () { return processAllHandlers(_this); });
         var _a;
     };
@@ -172,8 +176,9 @@ var SlowPromise = (function () {
             return;
         _a = [2 /* Rejected */, reason], this.$slow.state = _a[0], this.$slow.settledValue = _a[1];
         // Synchronise with the persistent object graph.
-        this.constructor.epochLog.updated(this); // TODO: temp testing...
+        persistence.updated(this); // TODO: temp testing...
         // Invoke any already-attached handlers now (asynchronously).
+        // TODO: use a 'slow' nextTick? pros/cons?
         process.nextTick(function () { return processAllHandlers(_this); });
         var _a;
     };
@@ -189,7 +194,7 @@ function processAllHandlers(p) {
     while (p.$slow.handlers.length > 0) {
         var handler = p.$slow.handlers.shift();
         // Synchronise with the persistent object graph.
-        p.constructor.epochLog.updated(p); // TODO: temp testing...
+        persistence.updated(p); // TODO: temp testing...
         // Fulfilled case.
         if (p.$slow.state === 1 /* Fulfilled */) {
             if (_.isFunction(handler.onFulfilled)) {
@@ -221,7 +226,13 @@ function processAllHandlers(p) {
         }
     }
 }
-// TODO: ...
+// TODO: ... NB can use a normal obj now that key is a string
 var cache;
+// TODO: ==================== rehydration logic... temp testing... ====================
+persistence.howToRehydrate(10 /* Promise */, function ($slow) {
+    var promise = new (SlowPromise.forEpoch($slow.epochId))(null);
+    promise.$slow = $slow;
+    return promise;
+});
 module.exports = SlowPromise;
 //# sourceMappingURL=slowPromise.js.map

@@ -1,11 +1,11 @@
 import assert = require('assert');
 import _ = require('lodash');
-import EpochLog = require('../epochs/epochLog');
 import SlowKind = require('../slowKind');
+import persistence = require('../persistence');
+import slowTimers = require('../eventLoop/slowTimers');
 import SlowPromiseResolve = require('./slowPromiseResolve');
 import SlowPromiseReject = require('./slowPromiseReject');
 import standardResolutionProcedure = require('./standardResolutionProcedure');
-import slowTimers = require('../eventLoop/slowTimers');
 export = SlowPromise;
 
 
@@ -26,7 +26,7 @@ class SlowPromise {
         assert(!resolver || _.isFunction(resolver));
 
         // Synchronise with the persistent object graph.
-        (<typeof SlowPromise> this.constructor).epochLog.created(this); // TODO: temp testing...
+        persistence.created(this); // TODO: temp testing...
 
         // If no resolver was given, just return now. This is an internal use of the constructor.
         if (!resolver) return this;
@@ -76,7 +76,7 @@ class SlowPromise {
         return new this(resolve => {
 
             // TODO: temp testing...
-            slowTimers.setTimeout.forEpoch(this.epochLog)(resolve => resolve(), ms, resolve);
+            slowTimers.setTimeout.forEpoch(this.prototype.epochId)(resolve => resolve(), ms, resolve);
 
 
 
@@ -91,19 +91,20 @@ class SlowPromise {
     /**
      * TODO: INTERNAL...
      */
-    static forEpoch(epochLog: EpochLog): typeof SlowPromise {
+    static forEpoch(epochId: string): typeof SlowPromise {
 
-        // TODO: caching...
+        // TODO: caching... NB can use a normal obj now that key is a string
         cache = cache || <any> new Map();
-        if (cache.has(epochLog)) return cache.get(epochLog);
+        if (cache.has(epochId)) return cache.get(epochId);
 
+        // TODO: ...
         var Subclass = class SlowPromise extends this {
             constructor(resolver) {
                 super(resolver);
             }
-            static epochLog = epochLog;
         };
-
+        Subclass.prototype.epochId = epochId;
+        
         // TODO: force-bind static props so they work when called as free functions
         for (var staticProperty in Subclass) {
             if (!Subclass.hasOwnProperty(staticProperty)) continue;
@@ -112,14 +113,14 @@ class SlowPromise {
         }
 
         // TODO: caching...
-        cache.set(epochLog, Subclass);
+        cache.set(epochId, Subclass);
         return Subclass;
     }
 
     /**
      * TODO: INTERNAL...
      */
-    static epochLog: EpochLog;
+    epochId: string;
 
 	/**
      * onFulfilled is called when the promise resolves. onRejected is called when the promise rejects.
@@ -136,7 +137,7 @@ class SlowPromise {
         this.$slow.handlers.push({ onFulfilled, onRejected, deferred2 });
 
         // Synchronise with the persistent object graph.
-        (<typeof SlowPromise> this.constructor).epochLog.updated(this); // TODO: temp testing...
+        persistence.updated(this); // TODO: temp testing...
 
         // If the promise is already settled, invoke the given handlers now (asynchronously).
         if (this.$slow.state !== State.Pending) process.nextTick(() => processAllHandlers(this));
@@ -158,6 +159,7 @@ class SlowPromise {
      */
     $slow = {
         kind: SlowKind.Promise,
+        epochId: <string> this.epochId,
         id: <string> null,
         state: State.Pending,
         settledValue: void 0,
@@ -178,9 +180,10 @@ class SlowPromise {
         [this.$slow.state, this.$slow.settledValue] = [State.Fulfilled, value];
 
         // Synchronise with the persistent object graph.
-        (<typeof SlowPromise> this.constructor).epochLog.updated(this); // TODO: temp testing...
+        persistence.updated(this); // TODO: temp testing...
 
         // Invoke any already-attached handlers now (asynchronously).
+        // TODO: use a 'slow' nextTick? pros/cons?
         process.nextTick(() => processAllHandlers(this));
     }
 
@@ -194,9 +197,10 @@ class SlowPromise {
         [this.$slow.state, this.$slow.settledValue] = [State.Rejected, reason];
 
         // Synchronise with the persistent object graph.
-        (<typeof SlowPromise> this.constructor).epochLog.updated(this); // TODO: temp testing...
+        persistence.updated(this); // TODO: temp testing...
 
         // Invoke any already-attached handlers now (asynchronously).
+        // TODO: use a 'slow' nextTick? pros/cons?
         process.nextTick(() => processAllHandlers(this));
     }
 }
@@ -214,7 +218,7 @@ function processAllHandlers(p: SlowPromise) {
         var handler = p.$slow.handlers.shift();
 
         // Synchronise with the persistent object graph.
-        (<typeof SlowPromise> p.constructor).epochLog.updated(p); // TODO: temp testing...
+        persistence.updated(p); // TODO: temp testing...
 
         // Fulfilled case.
         if (p.$slow.state === State.Fulfilled) {
@@ -271,5 +275,16 @@ interface Deferred {
 }
 
 
-// TODO: ...
-var cache: Map<EpochLog, typeof SlowPromise>;
+// TODO: ... NB can use a normal obj now that key is a string
+var cache: Map<string, typeof SlowPromise>;
+
+
+
+
+
+// TODO: ==================== rehydration logic... temp testing... ====================
+persistence.howToRehydrate(SlowKind.Promise, $slow => {
+    var promise = new (SlowPromise.forEpoch($slow.epochId))(null);
+    promise.$slow = <any> $slow;
+    return promise;
+});

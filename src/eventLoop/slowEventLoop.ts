@@ -1,4 +1,5 @@
-﻿
+﻿import persistence = require('../persistence');
+
 
 // TODO: doc... no knowledge of epochs/logs in here... Entry impls handle that
 
@@ -29,20 +30,6 @@ export function remove(entry: Entry) {
 
 
 // TODO: doc...
-export var beforeNextTick = {
-    attach(handler: () => Promise<void>) {
-        tickHandlers.push(handler);
-    },
-    detach(handler: () => Promise<void>) {
-        var i = tickHandlers.indexOf(handler);
-        if (i === -1) throw new Error('entry not found');
-        tickHandlers.splice(i, 1);
-    }
-};
-var tickHandlers: Array<() => Promise<void>> = [];
-
-
-// TODO: doc...
 var entries: Entry[] = [];
 
 
@@ -66,7 +53,7 @@ function runUntilEmpty() {
 // TODO: doc...
 function processOneTick() {
     traverseAllEntries();
-    return Promise.all(tickHandlers.map(handler => handler()));
+    return persistence.flush();
 }
 
 
