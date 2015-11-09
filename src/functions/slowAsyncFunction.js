@@ -79,5 +79,13 @@ var asyncFunctionCache = {};
 // TODO: doc... NB can use a normal obj now that key is a string
 // TODO: rename: constructorCache
 var cache;
+// TODO: ==================== rehydration logic... temp testing... ====================
+persistence.howToRehydrate(20 /* AsyncFunction */, function ($slow) {
+    var async = slowAsyncFunctionForEpoch($slow.epochId);
+    var saf = async(function () { });
+    saf.$slow = $slow;
+    saf.stateMachine = eval("(" + $slow.stateMachineSource + ")");
+    return saf;
+});
 module.exports = SlowAsyncFunction;
 //# sourceMappingURL=slowAsyncFunction.js.map

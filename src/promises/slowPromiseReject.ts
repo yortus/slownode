@@ -39,7 +39,12 @@ SlowPromiseReject = <any> makeCallableClass({
     constructor: function (promise: SlowPromise) {
 
         // Add slow metadata to the resolve function.
-        (<SlowPromiseReject> this).$slow = { kind: SlowKind.PromiseReject, epochId: promise.$slow.epochId, id: null, promise };
+        (<SlowPromiseReject> this).$slow = {
+            kind: SlowKind.PromiseReject,
+            epochId: promise ? promise.$slow.epochId : null,
+            id: null,
+            promise: promise
+        };
 
         // Synchronise with the persistent object graph.
         persistence.created(this); // TODO: temp testing...
@@ -59,8 +64,8 @@ SlowPromiseReject = <any> makeCallableClass({
 
 
 // TODO: ==================== rehydration logic... temp testing... ====================
-persistence.howToRehydrate(SlowKind.PromiseReject, ($slow: any) => {
-    var reject = new SlowPromiseReject($slow.promise);
-    reject.$slow.id = $slow.id;
+persistence.howToRehydrate(SlowKind.PromiseReject, $slow => {
+    var reject = new SlowPromiseReject(null);
+    reject.$slow = <any> $slow;
     return reject;
 });

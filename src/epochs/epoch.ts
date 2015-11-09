@@ -15,7 +15,7 @@ export function open(path: string, flags: string): Epoch {
     // TODO: fully review!!!
 
     // TODO: temp testing...
-    var epochId = 'TEST';
+    var epochId = 'DEFAULT';
 
     var epoch = createEpoch(epochId);
     return epoch;
@@ -75,3 +75,12 @@ function createAsyncFunctionForEpoch(epoch: Epoch) {
 
 // TODO: temp testing...
 var mainRequire = require.main.require;
+
+
+
+
+
+// TODO: ==================== rehydration logic... temp testing... ====================
+persistence.howToRehydrate(SlowKind.WeakRef, $slow => {
+    return null;
+});

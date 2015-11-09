@@ -23,17 +23,13 @@ function runUntilEmpty() {
         return;
     isRunning = true;
     setTimeout(function () {
-        processOneTick().then(function () {
+        persistence.flush().then(function () {
+            traverseAllEntries();
             isRunning = false;
             if (entries.length > 0)
                 runUntilEmpty();
         });
     }, 200);
-}
-// TODO: doc...
-function processOneTick() {
-    traverseAllEntries();
-    return persistence.flush();
 }
 // TODO: doc...
 function traverseAllEntries() {

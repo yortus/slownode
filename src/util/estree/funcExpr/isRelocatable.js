@@ -1,6 +1,7 @@
 var _ = require('lodash');
 var classifyIdentifiers = require('./classifyIdentifiers');
 // TODO: what about refs to 'this' within the body?
+// TODO: can relocatable functions contain inner closures? Semantics? Should this be checked and prevented as with slowAsyncFuncs?
 /**
  * Traverses the AST to determine whether the function is relocatable. A relocatable function is one
  * whose meaning remains the same after being converted to a string (via toString()) then converted

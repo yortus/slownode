@@ -58,4 +58,10 @@ function setTimeoutForEpoch(epochId) {
 }
 // TODO: ... NB can use a normal obj now that key is a string
 var cache;
+// TODO: ==================== rehydration logic... temp testing... ====================
+persistence.howToRehydrate(1 /* Timer */, function ($slow) {
+    var timer = setTimeoutForEpoch($slow.epochId)(null, 0);
+    timer.$slow = $slow;
+    return timer;
+});
 //# sourceMappingURL=slowTimers.js.map

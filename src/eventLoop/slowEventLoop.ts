@@ -42,18 +42,12 @@ function runUntilEmpty() {
     if (isRunning) return;
     isRunning = true;
     setTimeout(() => {
-        processOneTick().then(() => {
+        persistence.flush().then(() => {
+            traverseAllEntries();
             isRunning = false;
             if (entries.length > 0) runUntilEmpty();
         });
     }, 200);
-}
-
-
-// TODO: doc...
-function processOneTick() {
-    traverseAllEntries();
-    return persistence.flush();
 }
 
 

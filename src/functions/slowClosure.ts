@@ -107,3 +107,14 @@ function slowClosureForEpoch(epochId: string) {
 
 // TODO: ... NB can use a normal obj now that key is a string
 var cache: Map<string, SlowClosureStatic>;
+
+
+
+
+
+// TODO: ==================== rehydration logic... temp testing... ====================
+persistence.howToRehydrate(SlowKind.Closure, $slow => {
+    var Closure = slowClosureForEpoch($slow.epochId);
+    var closure = new Closure((<any> $slow).functionSource, (<any> $slow).environment);
+    return closure;
+});

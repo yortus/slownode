@@ -7,7 +7,7 @@ var SlowAsyncFunction = require('../functions/slowAsyncFunction');
 function open(path, flags) {
     // TODO: fully review!!!
     // TODO: temp testing...
-    var epochId = 'TEST';
+    var epochId = 'DEFAULT';
     var epoch = createEpoch(epochId);
     return epoch;
 }
@@ -49,4 +49,8 @@ function createAsyncFunctionForEpoch(epoch) {
 }
 // TODO: temp testing...
 var mainRequire = require.main.require;
+// TODO: ==================== rehydration logic... temp testing... ====================
+persistence.howToRehydrate(60 /* WeakRef */, function ($slow) {
+    return null;
+});
 //# sourceMappingURL=epoch.js.map

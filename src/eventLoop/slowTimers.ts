@@ -83,3 +83,14 @@ function setTimeoutForEpoch(epochId: string) {
 
 // TODO: ... NB can use a normal obj now that key is a string
 var cache: Map<string, SetTimeoutFunction>;
+
+
+
+
+
+// TODO: ==================== rehydration logic... temp testing... ====================
+persistence.howToRehydrate(SlowKind.Timer, $slow => {
+    var timer = setTimeoutForEpoch($slow.epochId)(null, 0);
+    timer.$slow = <any> $slow;
+    return timer;
+});

@@ -140,3 +140,16 @@ var asyncFunctionCache: { [afid: string]: SlowAsyncFunction; } = {};
 // TODO: doc... NB can use a normal obj now that key is a string
 // TODO: rename: constructorCache
 var cache: Map<string, SlowAsyncFunctionStatic>;
+
+
+
+
+
+// TODO: ==================== rehydration logic... temp testing... ====================
+persistence.howToRehydrate(SlowKind.AsyncFunction, $slow => {
+    var async = slowAsyncFunctionForEpoch($slow.epochId);
+    var saf = async(() => {});
+    saf.$slow = <any> $slow;
+    saf.stateMachine = eval(`(${(<any> $slow).stateMachineSource})`);
+    return saf;
+});

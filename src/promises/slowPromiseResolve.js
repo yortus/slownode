@@ -11,7 +11,12 @@ SlowPromiseResolve = makeCallableClass({
     // Create a new SlowPromiseResolve instance, tied to the given SlowPromise.
     constructor: function (promise) {
         // Add slow metadata to the resolve function.
-        this.$slow = { kind: 11 /* PromiseResolve */, epochId: promise.$slow.epochId, id: null, promise: promise };
+        this.$slow = {
+            kind: 11 /* PromiseResolve */,
+            epochId: promise ? promise.$slow.epochId : null,
+            id: null,
+            promise: promise
+        };
         // Synchronise with the persistent object graph.
         persistence.created(this); // TODO: temp testing...
     },
@@ -24,8 +29,8 @@ SlowPromiseResolve = makeCallableClass({
 });
 // TODO: ==================== rehydration logic... temp testing... ====================
 persistence.howToRehydrate(11 /* PromiseResolve */, function ($slow) {
-    var resolve = new SlowPromiseResolve($slow.promise);
-    resolve.$slow.id = $slow.id;
+    var resolve = new SlowPromiseResolve(null);
+    resolve.$slow = $slow;
     return resolve;
 });
 module.exports = SlowPromiseResolve;

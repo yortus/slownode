@@ -122,3 +122,15 @@ class SlowAsyncFunctionActivation extends SteppableObject {
         persistence.updated(this);
     }
 }
+
+
+
+
+
+// TODO: ==================== rehydration logic... temp testing... ====================
+persistence.howToRehydrate(SlowKind.AsyncFunctionActivation, $slow => {
+    var safa = new SlowAsyncFunctionActivation(null, null, null, null, null);
+    safa.$slow = <any> $slow;
+    safa.state = safa.$slow.state; // TODO: will this be resolved yet? create a getter instead?
+    return safa;
+});

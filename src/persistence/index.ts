@@ -32,8 +32,15 @@ export function deleted(slowObj: SlowObject) {
 
 // TODO: doc...
 export function flush(): Promise<void> {
+
     // TODO: implement...
-    console.log('FLUSH!!!');
+    if (updatedTrackedObjects.size > 0 || deletedTrackedObjects.size > 0) {
+
+        // TODO: implement...
+        console.log('FLUSH!!!');
+        updatedTrackedObjects.clear();
+        deletedTrackedObjects.clear();
+    }
     return Promise.resolve(null);
 }
 

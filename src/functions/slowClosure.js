@@ -59,5 +59,11 @@ function slowClosureForEpoch(epochId) {
 }
 // TODO: ... NB can use a normal obj now that key is a string
 var cache;
+// TODO: ==================== rehydration logic... temp testing... ====================
+persistence.howToRehydrate(50 /* Closure */, function ($slow) {
+    var Closure = slowClosureForEpoch($slow.epochId);
+    var closure = new Closure($slow.functionSource, $slow.environment);
+    return closure;
+});
 module.exports = SlowClosure;
 //# sourceMappingURL=slowClosure.js.map

@@ -83,5 +83,12 @@ var SlowAsyncFunctionActivation = (function (_super) {
     };
     return SlowAsyncFunctionActivation;
 })(SteppableObject);
+// TODO: ==================== rehydration logic... temp testing... ====================
+persistence.howToRehydrate(30 /* AsyncFunctionActivation */, function ($slow) {
+    var safa = new SlowAsyncFunctionActivation(null, null, null, null, null);
+    safa.$slow = $slow;
+    safa.state = safa.$slow.state; // TODO: will this be resolved yet? create a getter instead?
+    return safa;
+});
 module.exports = SlowAsyncFunctionActivation;
 //# sourceMappingURL=slowAsyncFunctionActivation.js.map

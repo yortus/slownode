@@ -11,6 +11,8 @@ var SlowPromiseResolve = require('./slowPromiseResolve');
 var SlowPromiseReject = require('./slowPromiseReject');
 var standardResolutionProcedure = require('./standardResolutionProcedure');
 // TODO: add all(), race()... (see https://github.com/borisyankov/DefinitelyTyped/blob/master/es6-promise/es6-promise.d.ts)
+// TODO: BUG? if 'resolver' is a relocatable (not slow async) function, and contains async constructs, and the process restarts before
+// it calls resolve() or reject(), then the promise will never settle because the resolver is not re-run on epoch resume.
 /**
  * Promises A+ compliant slow promise implementation.
  */
