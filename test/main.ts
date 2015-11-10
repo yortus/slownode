@@ -10,8 +10,8 @@ describe('Within an Epoch instance', function () {
 
         // Create an epoch
         var slow = slownode.run('tests', () => {});
-        slow.addWeakRef(slow);
-        slow.addWeakRef(done);
+        slownode.weakRef(slow);
+        slownode.weakRef(done);
         
         // Iterate until done
         loopNTimes(slow, done, 5);

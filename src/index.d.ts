@@ -8,6 +8,18 @@
 // TODO: doc...
 export function run(epochId: string, slowMain: Function, ...args: any[]): Epoch;
 //export function forceDisconnect(): Promise<void>;
+
+
+
+/**
+ * Marks the given object as a weak-referenced slow object. WeakRefs are serializable
+ * regardless of what they contain, however they are effectively serialized as `null`.
+ * Therefore, code using WeakRefs must always check for null before dereferencing them,
+ * as they may become null between every tick of the slow event loop, due to the
+ * possibility of the process stopping and restarting, and the epoch hence resuming
+ * with rehydrated slow objects.
+ * @param obj the object to mark as a weak-referenced slow object. It must be an object type.
+ */
 export function weakRef(obj: any): void;
 
 
@@ -62,17 +74,6 @@ export interface Epoch {
     async<T1, T2, T3, T4, TReturn>(fn: (_1: T1, _2: T2, _3: T3, _4: T4) => TReturn): SlowAsyncFunctionQuaternary<T1, T2, T3, T4, TReturn>;
     /** Creates a slow async function, which is analogous to an ES7 async function. */
     async<TReturn>(fn: (...args: any[]) => TReturn): SlowAsyncFunctionVariadic<TReturn>;
-
-    /**
-     * Marks the given object as a weak-referenced slow object. WeakRefs are serializable
-     * regardless of what they contain, however they are effectively serialized as `null`.
-     * Therefore, code using WeakRefs must always check for null before dereferencing them,
-     * as they may become null between every tick of the slow event loop, due to the
-     * possibility of the process stopping and restarting, and the epoch hence resuming
-     * with rehydrated slow objects.
-     * @param obj the object to mark as a weak-referenced slow object. It must be an object type.
-     */
-    addWeakRef(obj: any): void;
 }
 
 

@@ -1,4 +1,3 @@
-var assert = require('assert');
 var persistence = require('../persistence');
 var slowTimers = require('../eventLoop/slowTimers');
 var SlowPromise = require('../promises/slowPromise');
@@ -17,6 +16,10 @@ function run(epochId, slowMain) {
     return epoch;
 }
 exports.run = run;
+function weakRef(obj) {
+    persistence.weakRef(obj);
+}
+exports.weakRef = weakRef;
 // TODO: temp testing...
 function createEpoch(epochId) {
     var epoch = {
@@ -25,12 +28,6 @@ function createEpoch(epochId) {
         Promise: SlowPromise.forEpoch(epochId),
         closure: SlowClosure.forEpoch(epochId),
         async: null,
-        addWeakRef: function (obj) {
-            assert(obj && (typeof obj === 'object' || typeof obj === 'function'), 'addWeakRef: argument must be an object');
-            assert(!obj.$slow, 'addWeakRef: argument is already a slow object');
-            obj.$slow = { kind: -1 /* WeakRef */, epochId: epochId, id: null };
-            persistence.created(obj);
-        },
         id: epochId
     };
     epoch.async = createAsyncFunctionForEpoch(epoch);

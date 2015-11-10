@@ -11,6 +11,7 @@ import Knex = require('knex');
 /** Begins tracking the specified object. */
 export function created(slowObj: SlowObject) {
     assert(!trackedObjects.has(slowObj));
+    assert(!weakReferences.has(slowObj));
     trackedObjects.add(slowObj);
     pendingCreates.add(slowObj);
 }
@@ -19,6 +20,7 @@ export function created(slowObj: SlowObject) {
 /** Records that the tracked object has changed state. */
 export function updated(slowObj: SlowObject) {
     assert(trackedObjects.has(slowObj));
+    assert(!weakReferences.has(slowObj));
     if (!pendingCreates.has(slowObj)) {
         pendingUpdates.add(slowObj);
     }
@@ -27,6 +29,7 @@ export function updated(slowObj: SlowObject) {
 /** Records that the tracked object is no longer referenced. */
 export function deleted(slowObj: SlowObject) {
     assert(trackedObjects.has(slowObj));
+    assert(!weakReferences.has(slowObj));
     if (pendingCreates.has(slowObj)) {
         trackedObjects.delete(slowObj);
         pendingCreates.delete(slowObj);
@@ -35,6 +38,11 @@ export function deleted(slowObj: SlowObject) {
         pendingUpdates.delete(slowObj);
         pendingDeletes.add(slowObj);
     }
+}
+
+/** TODO: doc weak references... Marks the object as a weak reference. */
+export function weakRef(obj: any) {
+    weakReferences.add(obj);
 }
 
 
@@ -51,7 +59,7 @@ export var flush = async (() => {
     // Process each pending change appropriately.
     pendingCreates.forEach(obj => {
         obj.$slow.id = obj.$slow.id || `#${++nextId}`; // Ensure object has a unique id.
-        var json = JSON.stringify(dehydrateSlowObject(obj, trackedObjects));
+        var json = JSON.stringify(dehydrateSlowObject(obj, trackedObjects, weakReferences));
         await (knex.table('Entry').insert({
             kind: obj.$slow.kind,
             epochId: obj.$slow.epochId,
@@ -60,7 +68,7 @@ export var flush = async (() => {
         }));
     });
     pendingUpdates.forEach(obj => {
-        var json = JSON.stringify(dehydrateSlowObject(obj, trackedObjects));
+        var json = JSON.stringify(dehydrateSlowObject(obj, trackedObjects, weakReferences));
         await (knex.table('Entry').where('id', obj.$slow.id).update({ json: json }));
     });
     pendingDeletes.forEach(obj => {
@@ -112,6 +120,7 @@ var trackedObjects = new Set<SlowObject>();
 var pendingCreates = new Set<SlowObject>();
 var pendingUpdates = new Set<SlowObject>();
 var pendingDeletes = new Set<SlowObject>();
+var weakReferences = new WeakSet<Object>();
 var nextId = 0;
 
 

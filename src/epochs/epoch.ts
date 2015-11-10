@@ -23,6 +23,12 @@ export function run(epochId: string, slowMain: Function, ...args: any[]): Epoch 
 }
 
 
+export function weakRef(obj: any) {
+    persistence.weakRef(obj);
+}
+
+
+
 // TODO: temp for internal use...
 //export function forceDisconnect() {
 //    return persistence.disconnect();
@@ -49,12 +55,6 @@ function createEpoch(epochId: string): Epoch {
         Promise: SlowPromise.forEpoch(epochId),
         closure: SlowClosure.forEpoch(epochId),
         async: null,
-        addWeakRef: (obj: any) => {
-            assert(obj && (typeof obj === 'object' || typeof obj === 'function'), 'addWeakRef: argument must be an object');
-            assert(!obj.$slow, 'addWeakRef: argument is already a slow object');
-            obj.$slow = { kind: SlowKind.WeakRef, epochId: epochId, id: null };
-            persistence.created(obj);
-        },
         id: epochId
     };
     epoch.async = createAsyncFunctionForEpoch(epoch);

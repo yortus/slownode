@@ -6,8 +6,8 @@ describe('Within an Epoch instance', function () {
     it('the setTimeout(...) API function works', function (done) {
         // Create an epoch
         var slow = slownode.run('tests', function () { });
-        slow.addWeakRef(slow);
-        slow.addWeakRef(done);
+        slownode.weakRef(slow);
+        slownode.weakRef(done);
         // Iterate until done
         loopNTimes(slow, done, 5);
         // Function to process a single iteration

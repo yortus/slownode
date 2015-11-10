@@ -5,32 +5,35 @@ var isRelocatableFunction = require('../util/isRelocatableFunction');
  * Recursively converts the given slow object into an object that can be safely converted to JSON.
  * Throws an error if any part of the value cannot be converted.
  */
-function dehydrateSlowObject(slowObj, allSlowObjects) {
+function dehydrateSlowObject(slowObj, allSlowObjs, weakRefs) {
     // TODO: temp testing...
-    if (!allSlowObjects.has(slowObj)) {
+    if (!allSlowObjs.has(slowObj)) {
         // Should never get here. This matches the assertion below, but allows debugging. Remove this when solid.
         debugger;
     }
-    assert(allSlowObjects.has(slowObj));
-    return _.mapValues(slowObj.$slow, function (v) { return dehydrate(v, allSlowObjects); });
+    assert(allSlowObjs.has(slowObj));
+    return _.mapValues(slowObj.$slow, function (v) { return dehydrate(v, allSlowObjs, weakRefs); });
 }
 /**
  * Recursively converts the given value into an object that can be safely converted to JSON.
  * Throws an error if any part of the value cannot be converted.
  */
-function dehydrate(value, allSlowObjects) {
+function dehydrate(value, allSlowObjs, weakRefs) {
     // Some primitives map to themselves. Return them as-is.
     if (_.isString(value) || _.isNumber(value) || _.isBoolean(value) || _.isNull(value)) {
         return value;
     }
-    else if (allSlowObjects.has(value)) {
+    else if (weakRefs.has(value)) {
+        return null;
+    }
+    else if (allSlowObjs.has(value)) {
         return { $ref: value.$slow.id };
     }
     else if (_.isArray(value)) {
-        return value.map(function (v) { return dehydrate(v, allSlowObjects); });
+        return value.map(function (v) { return dehydrate(v, allSlowObjs, weakRefs); });
     }
     else if (_.isPlainObject(value)) {
-        return { $type: 'object', value: _.pairs(value).map(function (pair) { return [pair[0], dehydrate(pair[1], allSlowObjects)]; }) };
+        return { $type: 'object', value: _.pairs(value).map(function (pair) { return [pair[0], dehydrate(pair[1], allSlowObjs, weakRefs)]; }) };
     }
     else if (_.isUndefined(value)) {
         return { $type: 'undefined' };

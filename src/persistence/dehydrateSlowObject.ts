@@ -10,16 +10,16 @@ export = dehydrateSlowObject;
  * Recursively converts the given slow object into an object that can be safely converted to JSON.
  * Throws an error if any part of the value cannot be converted.
  */
-function dehydrateSlowObject(slowObj: SlowObject, allSlowObjects: Set<SlowObject>) {
+function dehydrateSlowObject(slowObj: SlowObject, allSlowObjs: Set<SlowObject>, weakRefs: WeakSet<Object>) {
 
     // TODO: temp testing...
-    if (!allSlowObjects.has(slowObj)) {
+    if (!allSlowObjs.has(slowObj)) {
         // Should never get here. This matches the assertion below, but allows debugging. Remove this when solid.
         debugger;
     }
 
-    assert(allSlowObjects.has(slowObj));
-    return _.mapValues(slowObj.$slow, v => dehydrate(v, allSlowObjects));
+    assert(allSlowObjs.has(slowObj));
+    return _.mapValues(slowObj.$slow, v => dehydrate(v, allSlowObjs, weakRefs));
 }
 
 
@@ -27,26 +27,31 @@ function dehydrateSlowObject(slowObj: SlowObject, allSlowObjects: Set<SlowObject
  * Recursively converts the given value into an object that can be safely converted to JSON.
  * Throws an error if any part of the value cannot be converted.
  */
-function dehydrate(value: any, allSlowObjects: Set<SlowObject>) {
+function dehydrate(value: any, allSlowObjs: Set<SlowObject>, weakRefs: WeakSet<Object>) {
 
     // Some primitives map to themselves. Return them as-is.
     if (_.isString(value) || _.isNumber(value) || _.isBoolean(value) || _.isNull(value)) {
         return value;
     }
 
+    // Map a weak reference to null.
+    else if (weakRefs.has(value)) {
+        return null;
+    }
+
     // Map a slow object reference to a shorthand $ref object
-    else if (allSlowObjects.has(value)) {
+    else if (allSlowObjs.has(value)) {
         return { $ref: value.$slow.id };
     }
 
     // Map an array of values to an array of safe values.
     else if (_.isArray(value)) {
-        return value.map(v => dehydrate(v, allSlowObjects));
+        return value.map(v => dehydrate(v, allSlowObjs, weakRefs));
     }
 
     // Map a plain (and non-slow) object to a new object whose property values are safe values.
     else if (_.isPlainObject(value)) {
-        return { $type: 'object', value: _.pairs(value).map(pair => [pair[0], dehydrate(pair[1], allSlowObjects)]) };
+        return { $type: 'object', value: _.pairs(value).map(pair => [pair[0], dehydrate(pair[1], allSlowObjs, weakRefs)]) };
     }
 
     // Map `undefined` to a sentinel object that will be deserialized back to `undefined`
