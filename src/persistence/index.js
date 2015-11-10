@@ -1,5 +1,6 @@
 var assert = require('assert');
 var dehydrateSlowObject = require('./dehydrateSlowObject');
+var Knex = require('knex');
 // TODO: doc...
 function created(slowObj) {
     assert(!allTrackedObjects.has(slowObj));
@@ -76,6 +77,14 @@ function log(s) {
     //init();
     //(<any>fs.writeSync)(logFileDescriptor, s, null, 'utf8');
     //fs.fsyncSync(logFileDescriptor);
+}
+function connect() {
+    // TODO: caching...
+    var knex = connect['knex'];
+    if (knex)
+        return knex;
+    // TODO: ...
+    var knex = Knex({});
 }
 //var init = () => {
 //    // Ensure init is only performed once.

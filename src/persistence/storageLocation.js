@@ -6,7 +6,7 @@ var mainPath = findRoot(require.main.filename);
 /** The parsed contents of the package.json file located in `path`. */
 var packageJson = require(path.join(mainPath, './package.json'));
 // TODO: doc...
-var relPath = (packageJson.slownode || {}).location || 'slowdb';
+var relPath = (packageJson.slownode || {}).location || 'slownode.db';
 var absPath = path.isAbsolute(relPath) ? relPath : path.join(mainPath, relPath);
 module.exports = absPath;
 //# sourceMappingURL=storageLocation.js.map

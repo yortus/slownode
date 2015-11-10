@@ -13,5 +13,5 @@ var packageJson = require(path.join(mainPath, './package.json'));
 
 
 // TODO: doc...
-var relPath = (packageJson.slownode || {}).location || 'slowdb';
+var relPath = (packageJson.slownode || {}).location || 'slownode.db';
 var absPath = path.isAbsolute(relPath) ? relPath : path.join(mainPath, relPath);

@@ -3,6 +3,7 @@ import SlowKind = require('../slowKind');
 import SlowObject = require('../slowObject');
 import storageLocation = require('./storageLocation');
 import dehydrateSlowObject = require('./dehydrateSlowObject');
+import Knex = require('knex');
 
 
 // TODO: doc...
@@ -110,6 +111,22 @@ function log(s: string) {
     //fs.fsyncSync(logFileDescriptor);
 
 }
+
+
+function connect() {
+
+    // TODO: caching...
+    var knex: Knex = connect['knex'];
+    if (knex) return knex;
+
+    // TODO: ...
+    var knex = Knex({
+    });
+}
+
+
+
+
 
 //var init = () => {
 
