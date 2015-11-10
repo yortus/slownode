@@ -23,6 +23,11 @@ export function run(epochId: string, slowMain: Function, ...args: any[]): Epoch;
 export function weakRef(obj: any): void;
 
 
+// TODO: doc...
+export function on(eventId: string, handler: Function): void;
+export function on(eventId: 'end', handler: Function): void;
+
+
 
 
 export interface Epoch {

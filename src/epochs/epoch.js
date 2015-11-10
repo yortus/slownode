@@ -1,8 +1,11 @@
+var assert = require('assert');
 var persistence = require('../persistence');
+var slowEventLoop = require('../eventLoop/slowEventLoop');
 var slowTimers = require('../eventLoop/slowTimers');
 var SlowPromise = require('../promises/slowPromise');
 var SlowClosure = require('../functions/slowClosure');
 var SlowAsyncFunction = require('../functions/slowAsyncFunction');
+// TODO: ...
 function run(epochId, slowMain) {
     // TODO: fully review!!!
     var args = [];
@@ -16,10 +19,17 @@ function run(epochId, slowMain) {
     return epoch;
 }
 exports.run = run;
+// TODO: ...
 function weakRef(obj) {
     persistence.weakRef(obj);
 }
 exports.weakRef = weakRef;
+// TODO: ...
+function on(eventId, handler) {
+    assert(eventId === 'end');
+    slowEventLoop.addExitHandler(handler);
+}
+exports.on = on;
 // TODO: temp testing...
 function createEpoch(epochId) {
     var epoch = {

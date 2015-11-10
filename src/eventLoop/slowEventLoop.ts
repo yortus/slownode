@@ -1,4 +1,6 @@
-﻿import persistence = require('../persistence');
+﻿import async = require('asyncawait/async');
+import await = require('asyncawait/await');
+import persistence = require('../persistence');
 
 
 // TODO: doc... no knowledge of epochs/logs in here... Entry impls handle that
@@ -30,6 +32,13 @@ export function remove(entry: Entry) {
 
 
 // TODO: doc...
+export function addExitHandler(handler: Function) {
+    exitHandlers.push(handler);
+}
+var exitHandlers: Function[] = [];
+
+
+// TODO: doc...
 var entries: Entry[] = [];
 
 
@@ -49,10 +58,7 @@ function runUntilEmpty() {
                 runUntilEmpty();
             }
             else {
-                // Event loop empty - epoch is about to end
-                persistence.flush()
-                    .then(() => persistence.disconnect());
-                // TODO: other actions...
+                finalize();
             }
         });
     }, 200);
@@ -83,3 +89,11 @@ function traverseAllEntries() {
         }
     }
 }
+
+
+var finalize = async (() => {
+    await (persistence.flush());
+    await (persistence.disconnect());
+    exitHandlers.forEach(handler => handler());
+    // TODO: other actions...?
+});

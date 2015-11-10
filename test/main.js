@@ -2,19 +2,26 @@ var slownode = require('..');
 var chai = require("chai");
 chai.use(require('chai-as-promised'));
 var expect = chai.expect;
+// TODO: temp testing... make CTRL+C force node.js to exit immediately
+// TODO: put this in its own file inside a before() function
+process.on('SIGINT', function () {
+    console.log('KILLED BY SIGINT (CTRL+C)');
+    process.exit();
+});
 describe('Within an Epoch instance', function () {
     it('the setTimeout(...) API function works', function (done) {
         slownode.weakRef(done);
-        slownode.run('tests', loopNTimes, done, 5);
-        // Function to process a single iteration
-        function loopNTimes(done, countDown) {
+        slownode.run('tests', loopNTimes, 5);
+        slownode.on('end', function () {
+            console.log('Finished!');
+            done();
+        });
+        function loopNTimes(count) {
             console.log('tick');
-            --countDown;
-            if (countDown === 0) {
-                return done();
+            --count;
+            if (count > 0) {
+                setTimeout(loopNTimes, 500, count);
             }
-            setTimeout(loopNTimes, 500, done, countDown);
-            // TODO: was... slow.setTimeout(loopNTimes, 500, slow, done, countDown);
         }
     });
     //it('the Promise class works', (done) => {

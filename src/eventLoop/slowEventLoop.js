@@ -1,3 +1,5 @@
+var async = require('asyncawait/async');
+var await = require('asyncawait/await');
 var persistence = require('../persistence');
 // TODO: doc...
 function add(entry) {
@@ -13,6 +15,12 @@ function remove(entry) {
     entries.splice(i, 1);
 }
 exports.remove = remove;
+// TODO: doc...
+function addExitHandler(handler) {
+    exitHandlers.push(handler);
+}
+exports.addExitHandler = addExitHandler;
+var exitHandlers = [];
 // TODO: doc...
 var entries = [];
 // TODO: doc...
@@ -30,9 +38,7 @@ function runUntilEmpty() {
                 runUntilEmpty();
             }
             else {
-                // Event loop empty - epoch is about to end
-                persistence.flush()
-                    .then(function () { return persistence.disconnect(); });
+                finalize();
             }
         });
     }, 200);
@@ -56,4 +62,10 @@ function traverseAllEntries() {
         }
     }
 }
+var finalize = async(function () {
+    await(persistence.flush());
+    await(persistence.disconnect());
+    exitHandlers.forEach(function (handler) { return handler(); });
+    // TODO: other actions...?
+});
 //# sourceMappingURL=slowEventLoop.js.map

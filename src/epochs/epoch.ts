@@ -9,6 +9,7 @@ import SlowClosure = require('../functions/slowClosure');
 import SlowAsyncFunction = require('../functions/slowAsyncFunction');
 
 
+// TODO: ...
 export function run(epochId: string, slowMain: Function, ...args: any[]): Epoch {
 
     // TODO: fully review!!!
@@ -23,16 +24,17 @@ export function run(epochId: string, slowMain: Function, ...args: any[]): Epoch 
 }
 
 
+// TODO: ...
 export function weakRef(obj: any) {
     persistence.weakRef(obj);
 }
 
 
-
-// TODO: temp for internal use...
-//export function forceDisconnect() {
-//    return persistence.disconnect();
-//}
+// TODO: ...
+export function on(eventId: string, handler: Function) {
+    assert(eventId === 'end');
+    slowEventLoop.addExitHandler(handler);
+}
 
 
 
