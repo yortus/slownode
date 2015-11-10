@@ -9,12 +9,12 @@ import SlowClosure = require('../functions/slowClosure');
 import SlowAsyncFunction = require('../functions/slowAsyncFunction');
 
 
-export function run(epochId: string, slowMain: Function): Epoch {
+export function run(epochId: string, slowMain: Function, ...args: any[]): Epoch {
 
     // TODO: fully review!!!
 
     var epoch = createEpoch(epochId);
-    epoch.setTimeout(slowMain, 0);
+    epoch.setTimeout(slowMain, 0, ...args);
 
 
     // TODO: temp testing...
@@ -23,10 +23,19 @@ export function run(epochId: string, slowMain: Function): Epoch {
 }
 
 
+// TODO: temp for internal use...
+//export function forceDisconnect() {
+//    return persistence.disconnect();
+//}
+
+
+
+
+
 export interface Epoch extends API.Epoch {
 
     // TODO: doc... INTERNAL
-    id: string;
+    id: string; // TODO: get rid of this
 }
 
 
@@ -43,7 +52,7 @@ function createEpoch(epochId: string): Epoch {
         addWeakRef: (obj: any) => {
             assert(obj && (typeof obj === 'object' || typeof obj === 'function'), 'addWeakRef: argument must be an object');
             assert(!obj.$slow, 'addWeakRef: argument is already a slow object');
-            obj.$slow = { kind: SlowKind.WeakRef };
+            obj.$slow = { kind: SlowKind.WeakRef, epochId: epochId, id: null };
             persistence.created(obj);
         },
         id: epochId

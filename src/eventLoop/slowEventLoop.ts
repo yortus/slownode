@@ -45,7 +45,15 @@ function runUntilEmpty() {
         persistence.flush().then(() => {
             traverseAllEntries();
             isRunning = false;
-            if (entries.length > 0) runUntilEmpty();
+            if (entries.length > 0) {
+                runUntilEmpty();
+            }
+            else {
+                // Event loop empty - epoch is about to end
+                persistence.flush()
+                    .then(() => persistence.disconnect());
+                // TODO: other actions...
+            }
         });
     }, 200);
 }

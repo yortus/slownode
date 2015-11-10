@@ -14,8 +14,9 @@ describe('Within an Epoch instance', function () {
         function loopNTimes(slow, done, countDown) {
             console.log('tick');
             --countDown;
-            if (!countDown)
+            if (!countDown) {
                 return done();
+            }
             slow.setTimeout(loopNTimes, 500, slow, done, countDown);
         }
     });

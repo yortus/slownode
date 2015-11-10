@@ -6,7 +6,9 @@
 
 
 // TODO: doc...
-export function run(epochId: string, slowMain: Function): Epoch;
+export function run(epochId: string, slowMain: Function, ...args: any[]): Epoch;
+//export function forceDisconnect(): Promise<void>;
+export function weakRef(obj: any): void;
 
 
 

@@ -40,6 +40,7 @@
   },
   "homepage": "https://github.com/paypac/slownode",
   "dependencies": {
+    "asyncawait": "^1.0.1",
     "escodegen": "^1.6.1",
     "esprima": "^2.5.0",
     "find-root": "^0.1.1",
@@ -50,7 +51,6 @@
     "weak": "^1.0.0"
   },
   "devDependencies": {
-    "asyncawait": "^1.0.1",
     "chai": "^3.2.0",
     "chai-as-promised": "^5.1.0",
     "mocha": "^2.2.5",
@@ -58,7 +58,6 @@
     "typescript": "^1.6.0-beta"
   },
   "slownode": {
-    "storage": "fileSystem",
-    "location": "slowlog.txt"
+    "location": "slownode.db"
   }
 }

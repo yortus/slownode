@@ -11,7 +11,7 @@ function dehydrateSlowObject(slowObject, allSlowObjects) {
         debugger;
     }
     assert(allSlowObjects.has(slowObject));
-    return { $slow: _.mapValues(slowObject.$slow, function (v) { return dehydrate(v, allSlowObjects); }) };
+    return _.mapValues(slowObject.$slow, function (v) { return dehydrate(v, allSlowObjects); });
 }
 /**
  * Recursively converts the given value into an object that can be safely converted to JSON.

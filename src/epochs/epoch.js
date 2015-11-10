@@ -6,8 +6,12 @@ var SlowClosure = require('../functions/slowClosure');
 var SlowAsyncFunction = require('../functions/slowAsyncFunction');
 function run(epochId, slowMain) {
     // TODO: fully review!!!
+    var args = [];
+    for (var _i = 2; _i < arguments.length; _i++) {
+        args[_i - 2] = arguments[_i];
+    }
     var epoch = createEpoch(epochId);
-    epoch.setTimeout(slowMain, 0);
+    epoch.setTimeout.apply(epoch, [slowMain, 0].concat(args));
     // TODO: temp testing...
     //var epochId = 'DEFAULT';
     return epoch;
@@ -24,7 +28,7 @@ function createEpoch(epochId) {
         addWeakRef: function (obj) {
             assert(obj && (typeof obj === 'object' || typeof obj === 'function'), 'addWeakRef: argument must be an object');
             assert(!obj.$slow, 'addWeakRef: argument is already a slow object');
-            obj.$slow = { kind: 60 /* WeakRef */ };
+            obj.$slow = { kind: 60 /* WeakRef */, epochId: epochId, id: null };
             persistence.created(obj);
         },
         id: epochId

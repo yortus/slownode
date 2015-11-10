@@ -9,7 +9,7 @@ export = dehydrateSlowObject;
  * Recursively converts the given slow object into an object that can be safely converted to JSON.
  * Throws an error if any part of the value cannot be converted.
  */
-function dehydrateSlowObject(slowObject: SlowObject, allSlowObjects: Set<SlowObject>): SlowObject {
+function dehydrateSlowObject(slowObject: SlowObject, allSlowObjects: Set<SlowObject>) {
 
 
 // TODO: temp testing...
@@ -19,7 +19,7 @@ if (!allSlowObjects.has(slowObject)) {
 
 
     assert(allSlowObjects.has(slowObject));
-    return <any> { $slow: _.mapValues(slowObject.$slow, v => dehydrate(v, allSlowObjects)) };
+    return _.mapValues(slowObject.$slow, v => dehydrate(v, allSlowObjects));
 }
 
 

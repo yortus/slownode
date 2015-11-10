@@ -16,11 +16,14 @@ describe('Within an Epoch instance', function () {
         // Iterate until done
         loopNTimes(slow, done, 5);
 
+
         // Function to process a single iteration
         function loopNTimes(slow, done, countDown) {
             console.log('tick');
             --countDown;
-            if (!countDown) return done();
+            if (!countDown) {
+                return done();
+            }
             slow.setTimeout(loopNTimes, 500, slow, done, countDown);
         }
     });

@@ -1,4 +1,6 @@
 ﻿import assert = require('assert');
+import async = require('asyncawait/async');
+import await = require('asyncawait/await');
 import SlowKind = require('../slowKind');
 import SlowObject = require('../slowObject');
 import storageLocation = require('./storageLocation');
@@ -6,65 +8,71 @@ import dehydrateSlowObject = require('./dehydrateSlowObject');
 import Knex = require('knex');
 
 
-// TODO: doc...
+/** Begins tracking the specified object. */
 export function created(slowObj: SlowObject) {
-    assert(!allTrackedObjects.has(slowObj));
-    ensureSlowObjectHasUniqueId(slowObj);
-    allTrackedObjects.add(slowObj);
-    updatedTrackedObjects.add(slowObj);
-    // TODO: was... console.log('----CREATED ' + this.id + ':' + slowObj.$slow.kind + ':' + slowObj.$slow.id);
+    assert(!trackedObjects.has(slowObj));
+    trackedObjects.add(slowObj);
+    pendingCreates.add(slowObj);
 }
 
 
-// TODO: doc...
+/** Records that the tracked object has changed state. */
 export function updated(slowObj: SlowObject) {
-    assert(allTrackedObjects.has(slowObj));
-    updatedTrackedObjects.add(slowObj);
-    // TODO: was... console.log('----UPDATED ' + this.id + ':' + slowObj.$slow.kind + ':' + slowObj.$slow.id);
-}
-
-
-// TODO: doc...
-export function deleted(slowObj: SlowObject) {
-    assert(allTrackedObjects.has(slowObj));
-    deletedTrackedObjects.add(slowObj);
-    // TODO: was... console.log('----DELETED ' + this.id + ':' + slowObj.$slow.kind + ':' + slowObj.$slow.id);
-}
-
-
-// TODO: doc...
-export function flush(): Promise<void> {
-
-    // TODO: implement...
-    if (updatedTrackedObjects.size > 0 || deletedTrackedObjects.size > 0) {
-
-        // TODO: implement...
-        //updatedTrackedObjects.clear();
-        //deletedTrackedObjects.clear();
-
-
-        // TODO: ========================================== SUPER INEFFICIENT APPROACH... =============================================
-
-        // For each deleted object, mark it as deleted in the log, and remove it from the set of tracked objects.
-        deletedTrackedObjects.forEach(obj => {
-            log(`["${obj.$slow.id}", null],\n\n\n`);
-            allTrackedObjects.delete(obj);
-        });
-
-        // For each updated object, dehydrate it and write its serialized form to the log.
-        updatedTrackedObjects.forEach(obj => {
-            var jsonSafe = dehydrateSlowObject(obj, allTrackedObjects);
-            log(`["${obj.$slow.id}", ${JSON.stringify(jsonSafe)}],\n\n\n`);
-        });
-
-        // Clear the deleted and updated sets.
-        deletedTrackedObjects.clear();
-        updatedTrackedObjects.clear();
-
-
+    assert(trackedObjects.has(slowObj));
+    if (!pendingCreates.has(slowObj)) {
+        pendingUpdates.add(slowObj);
     }
-    return Promise.resolve(null);
 }
+
+/** Records that the tracked object is no longer referenced. */
+export function deleted(slowObj: SlowObject) {
+    assert(trackedObjects.has(slowObj));
+    if (pendingCreates.has(slowObj)) {
+        trackedObjects.delete(slowObj);
+        pendingCreates.delete(slowObj);
+    }
+    else {
+        pendingUpdates.delete(slowObj);
+        pendingDeletes.add(slowObj);
+    }
+}
+
+
+/** Commits the current state of all tracked objects to persistent storage. */
+export var flush = async (() => {
+
+    // Return immediately if there are no pending changes.
+    if (pendingCreates.size === 0 && pendingUpdates.size === 0 && pendingDeletes.size === 0) return;
+
+    // Get database connection.
+    // TODO: use transaction?
+    var knex = await (connect());
+
+    // Process each pending change appropriately.
+    pendingCreates.forEach(obj => {
+        obj.$slow.id = obj.$slow.id || `#${++nextId}`; // Ensure object has a unique id.
+        var json = JSON.stringify(dehydrateSlowObject(obj, trackedObjects));
+        await (knex.table('Entry').insert({
+            kind: obj.$slow.kind,
+            epochId: obj.$slow.epochId,
+            id: obj.$slow.id,
+            json: json
+        }));
+    });
+    pendingUpdates.forEach(obj => {
+        var json = JSON.stringify(dehydrateSlowObject(obj, trackedObjects));
+        await (knex.table('Entry').where('id', obj.$slow.id).update({ json: json }));
+    });
+    pendingDeletes.forEach(obj => {
+        await (knex.table('Entry').delete().where('id', obj.$slow.id));
+        trackedObjects.delete(obj);
+    });
+
+    // Clear all pending changes.
+    pendingCreates.clear();
+    pendingUpdates.clear();
+    pendingDeletes.clear();
+});
 
 
 // TODO: doc...
@@ -81,65 +89,56 @@ export function howToRehydrate(slowKind: SlowKind, rehydrate: RehydrateFunction)
 
 
 // TODO: temp testing...
+export var disconnect = async (() => {
+    var knex = await (connect());
+    await (knex.destroy());
+    connect['knex'] = null;
+});
+
+
+
+
+
+// TODO: temp testing...
 var rehydrators: { [type: number]: RehydrateFunction; } = {};
 type RehydrateFunction = ($slow: { kind: SlowKind; epochId: string; id: string; [other: string]: any; }) => SlowObject;
 
 
-// TODO: temp testing...
-function ensureSlowObjectHasUniqueId(obj: SlowObject) {
-    obj.$slow.id = obj.$slow.id || `#${++nextId}`;
-}
 
 
 
 // TODO: temp testing...
-var allTrackedObjects = new Set<SlowObject>();
-var updatedTrackedObjects = new Set<SlowObject>();
-var deletedTrackedObjects = new Set<SlowObject>();
+var trackedObjects = new Set<SlowObject>();
+var pendingCreates = new Set<SlowObject>();
+var pendingUpdates = new Set<SlowObject>();
+var pendingDeletes = new Set<SlowObject>();
 var nextId = 0;
 
 
 
 
 
-function log(s: string) {
-    console.log(s);
-
-    // TODO: ...
-    //init();
-    //(<any>fs.writeSync)(logFileDescriptor, s, null, 'utf8');
-    //fs.fsyncSync(logFileDescriptor);
-
-}
-
-
-function connect() {
+// TODO: temp testing...
+var connect = async (() => {
 
     // TODO: caching...
     var knex: Knex = connect['knex'];
     if (knex) return knex;
 
     // TODO: ...
-    var knex = Knex({
+    var knex = connect['knex'] = Knex({
+        client: "sqlite3",
+        connection: {
+            filename: storageLocation
+        }
     });
-}
 
+    await (knex.schema.createTableIfNotExists('Entry', table => {
+        table.string('id').primary().notNullable();
+        table.integer('kind').notNullable();
+        table.string('epochId').notNullable();
+        table.string('json');
+    }));
 
-
-
-
-//var init = () => {
-
-//    // Ensure init is only performed once.
-//    // TODO: this is a bit hacky... better way?
-//    init = () => {};
-
-//    //var fileExists = exists();
-
-
-//    // Resume the current epoch (if file exists) or start a new epoch (if no file).
-//    // TODO: fix ...
-
-//    logFileDescriptor = fs.openSync(storageLocation, 'a'); // TODO: ensure this file gets closed eventually!!!
-//    //TODO: NEEDED!:   fs.flockSync(logFileDescriptor, 'ex'); // TODO: ensure exclusion. HANDLE EXCEPTIONS HERE! ALSO: THIS LOCK MUST BE EXPLICITLY REMOVED AFTER FINISHED!
-//};
+    return knex;
+});
