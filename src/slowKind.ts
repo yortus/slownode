@@ -3,12 +3,12 @@
 
 /** All supported SlowObject kinds. */
 const enum SlowKind {
-    Timer = 1,
-    Promise = 10,
-    PromiseResolve = 11,
-    PromiseReject = 12,
-    AsyncFunction = 20,
-    AsyncFunctionActivation = 30,
-    Closure = 50,
-    WeakRef = 60
+    WeakRef = -1,
+    Timer = 100,
+    Promise = 200,
+    PromiseResolve = 201,
+    PromiseReject = 202,
+    AsyncFunction = 300,
+    AsyncFunctionActivation = 301,
+    Closure = 400,
 }

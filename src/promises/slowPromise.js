@@ -25,7 +25,7 @@ var SlowPromise = (function () {
          * INTERNAL holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data.
          */
         this.$slow = {
-            kind: 10 /* Promise */,
+            kind: 200 /* Promise */,
             epochId: this.epochId,
             id: null,
             state: 0 /* Pending */,
@@ -231,7 +231,7 @@ function processAllHandlers(p) {
 // TODO: ... NB can use a normal obj now that key is a string
 var cache;
 // TODO: ==================== rehydration logic... temp testing... ====================
-persistence.howToRehydrate(10 /* Promise */, function ($slow) {
+persistence.howToRehydrate(200 /* Promise */, function ($slow) {
     var promise = new (SlowPromise.forEpoch($slow.epochId))(null);
     promise.$slow = $slow;
     return promise;

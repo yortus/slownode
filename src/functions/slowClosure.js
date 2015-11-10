@@ -30,7 +30,7 @@ function slowClosureForEpoch(epochId) {
             eval("with (env) fn = " + fn.toString() + ";");
             self.function = fn;
             self.$slow = {
-                kind: 50 /* Closure */,
+                kind: 400 /* Closure */,
                 epochId: epochId,
                 id: null,
                 functionSource: functionSource,
@@ -60,7 +60,7 @@ function slowClosureForEpoch(epochId) {
 // TODO: ... NB can use a normal obj now that key is a string
 var cache;
 // TODO: ==================== rehydration logic... temp testing... ====================
-persistence.howToRehydrate(50 /* Closure */, function ($slow) {
+persistence.howToRehydrate(400 /* Closure */, function ($slow) {
     var Closure = slowClosureForEpoch($slow.epochId);
     var closure = new Closure($slow.functionSource, $slow.environment);
     return closure;

@@ -5,13 +5,14 @@ var isRelocatableFunction = require('../util/isRelocatableFunction');
  * Recursively converts the given slow object into an object that can be safely converted to JSON.
  * Throws an error if any part of the value cannot be converted.
  */
-function dehydrateSlowObject(slowObject, allSlowObjects) {
+function dehydrateSlowObject(slowObj, allSlowObjects) {
     // TODO: temp testing...
-    if (!allSlowObjects.has(slowObject)) {
+    if (!allSlowObjects.has(slowObj)) {
+        // Should never get here. This matches the assertion below, but allows debugging. Remove this when solid.
         debugger;
     }
-    assert(allSlowObjects.has(slowObject));
-    return _.mapValues(slowObject.$slow, function (v) { return dehydrate(v, allSlowObjects); });
+    assert(allSlowObjects.has(slowObj));
+    return _.mapValues(slowObj.$slow, function (v) { return dehydrate(v, allSlowObjects); });
 }
 /**
  * Recursively converts the given value into an object that can be safely converted to JSON.

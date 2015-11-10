@@ -40,7 +40,7 @@ function slowAsyncFunctionForEpoch(epochId) {
             var steppableFunc = new SteppableFunction(bodyFunc, steppableOptions);
             self.stateMachine = steppableFunc.stateMachine;
             self.$slow = {
-                kind: 20 /* AsyncFunction */,
+                kind: 300 /* AsyncFunction */,
                 epochId: epochId,
                 id: safid,
                 stateMachineSource: steppableFunc.stateMachine.toString(),
@@ -80,7 +80,7 @@ var asyncFunctionCache = {};
 // TODO: rename: constructorCache
 var cache;
 // TODO: ==================== rehydration logic... temp testing... ====================
-persistence.howToRehydrate(20 /* AsyncFunction */, function ($slow) {
+persistence.howToRehydrate(300 /* AsyncFunction */, function ($slow) {
     var async = slowAsyncFunctionForEpoch($slow.epochId);
     var saf = async(function () { });
     saf.$slow = $slow;

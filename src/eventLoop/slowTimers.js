@@ -12,7 +12,7 @@ var Timer = (function () {
     function Timer(epochId, delay, callback, args) {
         this.epochId = epochId;
         this.$slow = {
-            kind: 1 /* Timer */,
+            kind: 100 /* Timer */,
             epochId: epochId,
             id: null,
             due: Date.now() + delay,
@@ -59,7 +59,7 @@ function setTimeoutForEpoch(epochId) {
 // TODO: ... NB can use a normal obj now that key is a string
 var cache;
 // TODO: ==================== rehydration logic... temp testing... ====================
-persistence.howToRehydrate(1 /* Timer */, function ($slow) {
+persistence.howToRehydrate(100 /* Timer */, function ($slow) {
     var timer = setTimeoutForEpoch($slow.epochId)(null, 0);
     timer.$slow = $slow;
     return timer;

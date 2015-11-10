@@ -21,7 +21,7 @@ var SlowAsyncFunctionActivation = (function (_super) {
         this.state = { local: { arguments: args } };
         var safa = this;
         this.$slow = {
-            kind: 30 /* AsyncFunctionActivation */,
+            kind: 301 /* AsyncFunctionActivation */,
             epochId: epochId,
             id: null,
             asyncFunction: asyncFunction,
@@ -84,7 +84,7 @@ var SlowAsyncFunctionActivation = (function (_super) {
     return SlowAsyncFunctionActivation;
 })(SteppableObject);
 // TODO: ==================== rehydration logic... temp testing... ====================
-persistence.howToRehydrate(30 /* AsyncFunctionActivation */, function ($slow) {
+persistence.howToRehydrate(301 /* AsyncFunctionActivation */, function ($slow) {
     var safa = new SlowAsyncFunctionActivation(null, null, null, null, null);
     safa.$slow = $slow;
     safa.state = safa.$slow.state; // TODO: will this be resolved yet? create a getter instead?

@@ -11,7 +11,7 @@ SlowPromiseReject = makeCallableClass({
     constructor: function (promise) {
         // Add slow metadata to the resolve function.
         this.$slow = {
-            kind: 12 /* PromiseReject */,
+            kind: 202 /* PromiseReject */,
             epochId: promise ? promise.$slow.epochId : null,
             id: null,
             promise: promise
@@ -27,7 +27,7 @@ SlowPromiseReject = makeCallableClass({
     }
 });
 // TODO: ==================== rehydration logic... temp testing... ====================
-persistence.howToRehydrate(12 /* PromiseReject */, function ($slow) {
+persistence.howToRehydrate(202 /* PromiseReject */, function ($slow) {
     var reject = new SlowPromiseReject(null);
     reject.$slow = $slow;
     return reject;

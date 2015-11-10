@@ -1,5 +1,6 @@
 ﻿import assert = require('assert');
 import _ = require('lodash');
+import SlowKind = require('../slowKind');
 import SlowObject = require('../slowObject');
 import isRelocatableFunction = require('../util/isRelocatableFunction');
 export = dehydrateSlowObject;
@@ -9,17 +10,16 @@ export = dehydrateSlowObject;
  * Recursively converts the given slow object into an object that can be safely converted to JSON.
  * Throws an error if any part of the value cannot be converted.
  */
-function dehydrateSlowObject(slowObject: SlowObject, allSlowObjects: Set<SlowObject>) {
+function dehydrateSlowObject(slowObj: SlowObject, allSlowObjects: Set<SlowObject>) {
 
+    // TODO: temp testing...
+    if (!allSlowObjects.has(slowObj)) {
+        // Should never get here. This matches the assertion below, but allows debugging. Remove this when solid.
+        debugger;
+    }
 
-// TODO: temp testing...
-if (!allSlowObjects.has(slowObject)) {
-    debugger;
-}
-
-
-    assert(allSlowObjects.has(slowObject));
-    return _.mapValues(slowObject.$slow, v => dehydrate(v, allSlowObjects));
+    assert(allSlowObjects.has(slowObj));
+    return _.mapValues(slowObj.$slow, v => dehydrate(v, allSlowObjects));
 }
 
 

@@ -28,7 +28,7 @@ function createEpoch(epochId) {
         addWeakRef: function (obj) {
             assert(obj && (typeof obj === 'object' || typeof obj === 'function'), 'addWeakRef: argument must be an object');
             assert(!obj.$slow, 'addWeakRef: argument is already a slow object');
-            obj.$slow = { kind: 60 /* WeakRef */, epochId: epochId, id: null };
+            obj.$slow = { kind: -1 /* WeakRef */, epochId: epochId, id: null };
             persistence.created(obj);
         },
         id: epochId
@@ -51,7 +51,7 @@ function createAsyncFunctionForEpoch(epoch) {
 // TODO: temp testing...
 var mainRequire = require.main.require;
 // TODO: ==================== rehydration logic... temp testing... ====================
-persistence.howToRehydrate(60 /* WeakRef */, function ($slow) {
+persistence.howToRehydrate(-1 /* WeakRef */, function ($slow) {
     return null;
 });
 //# sourceMappingURL=epoch.js.map
