@@ -78,12 +78,3 @@ function createAsyncFunctionForEpoch(epoch: Epoch) {
 
 // TODO: temp testing...
 var mainRequire = require.main.require;
-
-
-
-
-
-// TODO: ==================== rehydration logic... temp testing... ====================
-persistence.howToRehydrate(SlowKind.WeakRef, $slow => {
-    return null;
-});

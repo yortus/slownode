@@ -47,8 +47,4 @@ function createAsyncFunctionForEpoch(epoch) {
 }
 // TODO: temp testing...
 var mainRequire = require.main.require;
-// TODO: ==================== rehydration logic... temp testing... ====================
-persistence.howToRehydrate(-1 /* WeakRef */, function ($slow) {
-    return null;
-});
 //# sourceMappingURL=epoch.js.map
