@@ -23,13 +23,14 @@ exports.weakRef = weakRef;
 // TODO: temp testing...
 function createEpoch(epochId) {
     var epoch = {
-        setTimeout: slowTimers.setTimeout.forEpoch(epochId),
+        setTimeout: null,
         clearTimeout: slowTimers.clearTimeout,
         Promise: SlowPromise.forEpoch(epochId),
         closure: SlowClosure.forEpoch(epochId),
         async: null,
         id: epochId
     };
+    epoch.setTimeout = slowTimers.setTimeout.forEpoch(epochId, epoch);
     epoch.async = createAsyncFunctionForEpoch(epoch);
     return epoch;
 }

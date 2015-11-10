@@ -24,7 +24,7 @@ function classifyIdentifiers(funcExpr: ESTree.FunctionExpression): ClassifiedIde
 
     // Fail in the presence of inner functions.
     // TODO: could this be relaxed / better implemented? Also, message is copied from elsewhere and is not super helpful here.
-    if (containsInnerFunctions(funcExpr)) throw new Error(`Steppable: function delcarations, function expressions and arrow functions are not allowed within the steppable body`);
+    if (containsInnerFunctions(funcExpr)) throw new Error(`classifyIdentifiers: nested function declarations are not permitted within the function body`);
 
     // Find all locally-declared IDs, and all locally-referenced IDs.
     var selfIds = funcExpr.id && funcExpr.id.name ? [funcExpr.id.name] : [];

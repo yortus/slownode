@@ -8,23 +8,25 @@ describe('Within an Epoch instance', function () {
 
     it('the setTimeout(...) API function works', (done) => {
 
-        // Create an epoch
-        var slow = slownode.run('tests', () => {});
-        slownode.weakRef(slow);
         slownode.weakRef(done);
+        slownode.run('tests', loopNTimes, done, 5);
+
+
         
-        // Iterate until done
-        loopNTimes(slow, done, 5);
+
 
 
         // Function to process a single iteration
-        function loopNTimes(slow, done, countDown) {
+        function loopNTimes(done, countDown) {
+
             console.log('tick');
             --countDown;
-            if (!countDown) {
+            if (countDown === 0) {
                 return done();
             }
-            slow.setTimeout(loopNTimes, 500, slow, done, countDown);
+
+            setTimeout(loopNTimes, 500, done, countDown);
+            // TODO: was... slow.setTimeout(loopNTimes, 500, slow, done, countDown);
         }
     });
 

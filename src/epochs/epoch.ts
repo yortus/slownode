@@ -50,13 +50,14 @@ function createEpoch(epochId: string): Epoch {
 
 
     var epoch = <Epoch> {
-        setTimeout: slowTimers.setTimeout.forEpoch(epochId),
+        setTimeout: null,
         clearTimeout: slowTimers.clearTimeout,
         Promise: SlowPromise.forEpoch(epochId),
         closure: SlowClosure.forEpoch(epochId),
         async: null,
         id: epochId
     };
+    epoch.setTimeout = slowTimers.setTimeout.forEpoch(epochId, epoch);
     epoch.async = createAsyncFunctionForEpoch(epoch);
     return epoch;
 }

@@ -1,4 +1,6 @@
 var persistence = require('../persistence');
+var isRelocatableFunction = require('../util/isRelocatableFunction');
+var evalInContext = require('../util/evalInContext');
 var slowEventLoop = require('./slowEventLoop');
 // TODO: doc...
 exports.setTimeout = setTimeoutForEpoch(null);
@@ -9,14 +11,17 @@ function clearTimeout(timeoutObject) {
 exports.clearTimeout = clearTimeout;
 // TODO: doc...
 var Timer = (function () {
-    function Timer(epochId, delay, callback, args) {
+    function Timer(epochId, context, delay, callback, args) {
         this.epochId = epochId;
+        if (!isRelocatableFunction(callback)) {
+            throw new Error("Timer: callback is not a relocatable function: " + (callback || '[null]').toString() + ".");
+        }
         this.$slow = {
             kind: 100 /* Timer */,
             epochId: epochId,
             id: null,
             due: Date.now() + delay,
-            callback: callback,
+            callback: evalInContext(callback.toString(), context),
             arguments: args
         };
         persistence.created(this);
@@ -36,7 +41,7 @@ var Timer = (function () {
 })();
 exports.Timer = Timer;
 // TODO: doc...
-function setTimeoutForEpoch(epochId) {
+function setTimeoutForEpoch(epochId, context) {
     // TODO: caching... NB can use a normal obj now that key is a string
     cache = cache || new Map();
     if (cache.has(epochId))
@@ -47,7 +52,7 @@ function setTimeoutForEpoch(epochId) {
         for (var _i = 2; _i < arguments.length; _i++) {
             args[_i - 2] = arguments[_i];
         }
-        var timer = new Timer(epochId, delay, callback, args);
+        var timer = new Timer(epochId, context || {}, delay, callback, args);
         slowEventLoop.add(timer);
         return timer;
     });

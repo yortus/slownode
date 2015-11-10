@@ -4,20 +4,17 @@ chai.use(require('chai-as-promised'));
 var expect = chai.expect;
 describe('Within an Epoch instance', function () {
     it('the setTimeout(...) API function works', function (done) {
-        // Create an epoch
-        var slow = slownode.run('tests', function () { });
-        slownode.weakRef(slow);
         slownode.weakRef(done);
-        // Iterate until done
-        loopNTimes(slow, done, 5);
+        slownode.run('tests', loopNTimes, done, 5);
         // Function to process a single iteration
-        function loopNTimes(slow, done, countDown) {
+        function loopNTimes(done, countDown) {
             console.log('tick');
             --countDown;
-            if (!countDown) {
+            if (countDown === 0) {
                 return done();
             }
-            slow.setTimeout(loopNTimes, 500, slow, done, countDown);
+            setTimeout(loopNTimes, 500, done, countDown);
+            // TODO: was... slow.setTimeout(loopNTimes, 500, slow, done, countDown);
         }
     });
     //it('the Promise class works', (done) => {

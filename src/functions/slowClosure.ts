@@ -70,6 +70,7 @@ function slowClosureForEpoch(epochId: string) {
 
             // TODO: this won't work in strict mode. Will need to do it another way eventually (ie via eval)...
             // TODO: use 'vm' module
+            // TODO: delegate to util.evalInContext...
             var functionSource = fn.toString();
             eval(`with (env) fn = ${fn.toString()};`);
 

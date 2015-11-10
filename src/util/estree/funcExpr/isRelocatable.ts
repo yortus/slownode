@@ -8,9 +8,6 @@ export = isRelocatable;
 // TODO: what about refs to 'this' within the body?
 
 
-// TODO: can relocatable functions contain inner closures? Semantics? Should this be checked and prevented as with slowAsyncFuncs?
-
-
 /**
  * Traverses the AST to determine whether the function is relocatable. A relocatable function is one
  * whose meaning remains the same after being converted to a string (via toString()) then converted
@@ -23,9 +20,14 @@ export = isRelocatable;
  */
 function isRelocatable(funcExpr: ESTree.FunctionExpression, safeIds?: string[], baseLocation?: string): boolean {
 
-    // Classify all identifiers referenced by the function.
-    var ids = classifyIdentifiers(funcExpr);
-    var moduleIds = _.difference(ids.module, safeIds || []);
+    // Classify all identifiers referenced by the function. This throws if the function contains nested function declarations.
+    try {
+        var ids = classifyIdentifiers(funcExpr);
+        var moduleIds = _.difference(ids.module, safeIds || []);
+    }
+    catch (ex) {
+        return false;
+    }
 
     // Check for unconditionally non-relocatable constructs.
     if (_.difference(ids.scoped, safeIds || []).length > 0) return false;
