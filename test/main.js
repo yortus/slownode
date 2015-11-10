@@ -5,7 +5,7 @@ var expect = chai.expect;
 describe('Within an Epoch instance', function () {
     it('the setTimeout(...) API function works', function (done) {
         // Create an epoch
-        var slow = slownode.open('slowtest.txt', 'a+');
+        var slow = slownode.run('tests', function () { });
         slow.addWeakRef(slow);
         slow.addWeakRef(done);
         // Iterate until done

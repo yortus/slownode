@@ -31,7 +31,7 @@
     <Content Include="tsconfig.json" />
     <Compile Include="scripts\runPromisesAPlusTestSuite.js" />
     <Compile Include="scripts\runSlownodeTestSuite.js" />
-    <TypeScriptCompile Include="src\epochs\dehydrateSlowObject.ts" />
+    <TypeScriptCompile Include="src\persistence\dehydrateSlowObject.ts" />
     <TypeScriptCompile Include="src\epochs\epoch.ts" />
     <TypeScriptCompile Include="src\epochs\epochLog.ts" />
     <TypeScriptCompile Include="src\functions\slowAsyncFunction.ts" />

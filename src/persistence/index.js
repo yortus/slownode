@@ -1,4 +1,5 @@
 var assert = require('assert');
+var dehydrateSlowObject = require('./dehydrateSlowObject');
 // TODO: doc...
 function created(slowObj) {
     assert(!allTrackedObjects.has(slowObj));
@@ -27,9 +28,22 @@ function flush() {
     // TODO: implement...
     if (updatedTrackedObjects.size > 0 || deletedTrackedObjects.size > 0) {
         // TODO: implement...
-        console.log('FLUSH!!!');
-        updatedTrackedObjects.clear();
+        //updatedTrackedObjects.clear();
+        //deletedTrackedObjects.clear();
+        // TODO: ========================================== SUPER INEFFICIENT APPROACH... =============================================
+        // For each deleted object, mark it as deleted in the log, and remove it from the set of tracked objects.
+        deletedTrackedObjects.forEach(function (obj) {
+            log("[\"" + obj.$slow.id + "\", null],\n\n\n");
+            allTrackedObjects.delete(obj);
+        });
+        // For each updated object, dehydrate it and write its serialized form to the log.
+        updatedTrackedObjects.forEach(function (obj) {
+            var jsonSafe = dehydrateSlowObject(obj, allTrackedObjects);
+            log("[\"" + obj.$slow.id + "\", " + JSON.stringify(jsonSafe) + "],\n\n\n");
+        });
+        // Clear the deleted and updated sets.
         deletedTrackedObjects.clear();
+        updatedTrackedObjects.clear();
     }
     return Promise.resolve(null);
 }
@@ -49,11 +63,28 @@ exports.howToRehydrate = howToRehydrate;
 var rehydrators = {};
 // TODO: temp testing...
 function ensureSlowObjectHasUniqueId(obj) {
-    obj.$slow.id = obj.$slow.id || "#" + ++this.nextId;
+    obj.$slow.id = obj.$slow.id || "#" + ++nextId;
 }
 // TODO: temp testing...
 var allTrackedObjects = new Set();
 var updatedTrackedObjects = new Set();
 var deletedTrackedObjects = new Set();
 var nextId = 0;
+function log(s) {
+    console.log(s);
+    // TODO: ...
+    //init();
+    //(<any>fs.writeSync)(logFileDescriptor, s, null, 'utf8');
+    //fs.fsyncSync(logFileDescriptor);
+}
+//var init = () => {
+//    // Ensure init is only performed once.
+//    // TODO: this is a bit hacky... better way?
+//    init = () => {};
+//    //var fileExists = exists();
+//    // Resume the current epoch (if file exists) or start a new epoch (if no file).
+//    // TODO: fix ...
+//    logFileDescriptor = fs.openSync(storageLocation, 'a'); // TODO: ensure this file gets closed eventually!!!
+//    //TODO: NEEDED!:   fs.flockSync(logFileDescriptor, 'ex'); // TODO: ensure exclusion. HANDLE EXCEPTIONS HERE! ALSO: THIS LOCK MUST BE EXPLICITLY REMOVED AFTER FINISHED!
+//};
 //# sourceMappingURL=index.js.map

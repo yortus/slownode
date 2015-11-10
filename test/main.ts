@@ -9,7 +9,7 @@ describe('Within an Epoch instance', function () {
     it('the setTimeout(...) API function works', (done) => {
 
         // Create an epoch
-        var slow = slownode.open('slowtest.txt', 'a+');
+        var slow = slownode.run('tests', () => {});
         slow.addWeakRef(slow);
         slow.addWeakRef(done);
         

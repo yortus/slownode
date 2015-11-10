@@ -6,7 +6,7 @@
 
 
 // TODO: doc...
-export function open(path: string, flags: string): Epoch;
+export function run(epochId: string, slowMain: Function): Epoch;
 
 
 

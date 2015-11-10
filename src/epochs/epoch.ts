@@ -9,23 +9,17 @@ import SlowClosure = require('../functions/slowClosure');
 import SlowAsyncFunction = require('../functions/slowAsyncFunction');
 
 
-export function open(path: string, flags: string): Epoch {
-
+export function run(epochId: string, slowMain: Function): Epoch {
 
     // TODO: fully review!!!
 
-    // TODO: temp testing...
-    var epochId = 'DEFAULT';
-
     var epoch = createEpoch(epochId);
+    epoch.setTimeout(slowMain, 0);
+
+
+    // TODO: temp testing...
+    //var epochId = 'DEFAULT';
     return epoch;
-}
-
-
-export function close(epoch: Epoch) {
-
-    // TODO: explicit disposal...
-
 }
 
 

@@ -4,18 +4,15 @@ var slowTimers = require('../eventLoop/slowTimers');
 var SlowPromise = require('../promises/slowPromise');
 var SlowClosure = require('../functions/slowClosure');
 var SlowAsyncFunction = require('../functions/slowAsyncFunction');
-function open(path, flags) {
+function run(epochId, slowMain) {
     // TODO: fully review!!!
-    // TODO: temp testing...
-    var epochId = 'DEFAULT';
     var epoch = createEpoch(epochId);
+    epoch.setTimeout(slowMain, 0);
+    // TODO: temp testing...
+    //var epochId = 'DEFAULT';
     return epoch;
 }
-exports.open = open;
-function close(epoch) {
-    // TODO: explicit disposal...
-}
-exports.close = close;
+exports.run = run;
 // TODO: temp testing...
 function createEpoch(epochId) {
     var epoch = {
