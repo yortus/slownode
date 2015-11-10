@@ -14,23 +14,23 @@ process.on('SIGINT', () => {
 
 describe('Within an Epoch instance', function () {
 
-    it('the setTimeout(...) API function works', (done) => {
+    //it('the setTimeout(...) API function works', (done) => {
 
-        slownode.weakRef(done);
-        slownode.run('tests', loopNTimes, 5);
-        slownode.on('end', () => {
-            console.log('Finished!');
-            done();
-        });
+    //    slownode.weakRef(done);
+    //    slownode.run('tests', loopNTimes, 5);
+    //    slownode.on('end', () => {
+    //        console.log('Finished!');
+    //        done();
+    //    });
         
-        function loopNTimes(count) {
-            console.log('tick');
-            --count;
-            if (count > 0) {
-                setTimeout(loopNTimes, 500, count);
-            }
-        }
-    });
+    //    function loopNTimes(count) {
+    //        console.log('tick');
+    //        --count;
+    //        if (count > 0) {
+    //            setTimeout(loopNTimes, 500, count);
+    //        }
+    //    }
+    //});
 
 
     //it('the Promise class works', (done) => {

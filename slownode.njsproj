@@ -80,6 +80,7 @@
     <TypeScriptCompile Include="src\util\makeCallableClass.ts" />
     <TypeScriptCompile Include="src\util\shasum.ts" />
     <TypeScriptCompile Include="test\fixtures\slowfuncs\1.ts" />
+    <TypeScriptCompile Include="test\fixtures\slowfuncs\4.ts" />
     <TypeScriptCompile Include="test\fixtures\slowfuncs\2.ts" />
     <TypeScriptCompile Include="test\fixtures\slowfuncs\3.ts" />
     <TypeScriptCompile Include="test\main.ts" />
