@@ -25,6 +25,8 @@ export function weakRef(obj: any): void;
 
 // TODO: doc...
 export function on(eventId: string, handler: Function): void;
+
+// TODO: fires when slow event loop exits
 export function on(eventId: 'end', handler: Function): void;
 
 
