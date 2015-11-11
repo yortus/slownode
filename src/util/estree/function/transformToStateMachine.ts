@@ -11,19 +11,20 @@ export = transformToStateMachine;
 // TODO: source maps?
 // TODO: note implicit use of "types".Steppable.StateMachine.State type in generated code in here...
 
+
 /** Returns an equivalent AST in a form suitable for running inside a steppable object. */
-function transformToStateMachine(funcExpr: ESTree.FunctionExpression): ESTree.FunctionExpression {
+function transformToStateMachine(func: ESTree.Function): ESTree.FunctionExpression {
 
     // Validate arguments.
-    assert(funcExpr.params.every(p => p.type === 'Identifier'));
-    assert(funcExpr.body.type === 'BlockStatement');
+    assert(func.params.every(p => p.type === 'Identifier'));
+    assert(func.body.type === 'BlockStatement');
 
     // Construct a Rewriter instance to handle the rewrite operation.
-    var rewriter = new Rewriter(<any> funcExpr.body, <any> funcExpr.params);
+    var rewriter = new Rewriter(<any> func.body, <any> func.params);
 
     // Extract and return the rewritten AST.
-    var newFuncExpr = <ESTree.FunctionExpression> rewriter.generateAST();
-    return newFuncExpr;
+    var newFunc = <ESTree.Function> rewriter.generateAST();
+    return newFunc;
 }
 
 
@@ -150,11 +151,16 @@ class Rewriter {
         }
     }
 
+    emitFunc(decl: ESTree.FunctionDeclaration) {
+        this.hoistedFunctions.push(decl);
+    }
+
     generateAST(fromFragment?: string): ESTree.FunctionExpression | ESTree.Statement {
         var source = `
             (function steppableBody($) {
                 $.pos = $.pos || '@start';
                 $.local = $.local || {};
+                ${this.hoistedFunctions.map(decl => `$.local.${decl.id.name} = $.local.${decl.id.name} || (${escodegen.generate(decl)});`).join('\n')}
                 $.temp = $.temp || {};
                 $.error = $.error || { handler: '@fail' };
                 $.finalizers = $.finalizers || { pending: [] };
@@ -197,7 +203,7 @@ class Rewriter {
         `;
         var ast = esprima.parse(source);
         var funcExpr = <ESTree.FunctionExpression> ast.body[0]['expression'];
-        var whileStmt = <ESTree.WhileStatement> funcExpr.body['body'][6];
+        var whileStmt = <ESTree.WhileStatement> funcExpr.body['body'][6 + this.hoistedFunctions.length];
         var tryStmt = <ESTree.TryStatement> whileStmt.body['body'][0];
         var switchStmt = <ESTree.SwitchStatement> tryStmt.block['body'][0];
         if (fromFragment) {
@@ -212,6 +218,8 @@ class Rewriter {
     }
 
     private constDecls: ESTree.VariableDeclarator[] = [];
+
+    private hoistedFunctions: ESTree.FunctionDeclaration[] = [];
 
     private ambientIdentifierNames: string[];
 
@@ -483,6 +491,10 @@ function rewriteStatement(stmt: ESTree.Statement, emitter: Rewriter): void {
                 var $name = emitter.getIdentifierReference(decl.id['name']);
                 if (decl.init) emitter.emitExpr(decl.init, $name);
             });
+        },
+
+        FunctionDeclaration: (decl) => {
+            emitter.emitFunc(decl);
         },
 
         Otherwise: (stmt) => {

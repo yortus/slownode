@@ -5,15 +5,15 @@ export = ensureMutatingOperationsAreLegalForSteppableBody;
 
 
 /** Traverses the AST, throwing an error if any construct mutates a const/module/global variable. */
-function ensureMutatingOperationsAreLegalForSteppableBody(funcExpr: ESTree.FunctionExpression) {
+function ensureMutatingOperationsAreLegalForSteppableBody(func: ESTree.Function) {
 
     // Get the names of all const/module/global variables referenced by the function.
-    var ids = classifyIdentifiers(funcExpr);
+    var ids = classifyIdentifiers(func);
     var nonMutableNames = [].concat(ids.local.const, ids.module, ids.global);
 
     // Ensure all references to const/module/global vars are non-mutating.
     // TODO: ...at least not obviously so; this is not definitive.
-    traverseTree(funcExpr.body, node => {
+    traverseTree(func.body, node => {
         return matchNode<any>(node, {
 
             AssignmentExpression: (expr) => {

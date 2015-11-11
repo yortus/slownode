@@ -4,8 +4,8 @@ export = replacePseudoYieldCallsWithYieldExpressions;
 
 
 /** In the given AST, converts direct calls to `pseudoYieldIdentifier` to equivalent yield expressions */
-function replacePseudoYieldCallsWithYieldExpressions(funcExpr: ESTree.FunctionExpression, pseudoYieldIdentifier: string) {
-    traverseTree(funcExpr.body, node => {
+function replacePseudoYieldCallsWithYieldExpressions(func: ESTree.Function, pseudoYieldIdentifier: string) {
+    traverseTree(func.body, node => {
         matchNode(node, {
             CallExpression: (expr) => {
                 if (expr.callee.type !== 'Identifier') return;

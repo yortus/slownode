@@ -5,12 +5,13 @@ import escodegen = require('escodegen');
 import makeCallableClass = require('../util/makeCallableClass');
 import SteppableStateMachine = require('./steppableStateMachine');
 import SteppableObject = require('./steppableObject');
-import replacePseudoYieldCallsWithYieldExpressions = require('../util/estree/funcExpr/replacePseudoYieldCallsWithYieldExpressions');
-import replacePseudoConstCallsWithConstDeclarations = require('../util/estree/funcExpr/replacePseudoConstCallsWithConstDeclarations');
-import ensureNodesAreLegalForSteppableBody = require('../util/estree/funcExpr/ensureNodesAreLegalForSteppableBody');
-import ensureIdentifiersAreLegalForSteppableBody = require('../util/estree/funcExpr/ensureIdentifiersAreLegalForSteppableBody');
-import ensureMutatingOperationsAreLegalForSteppableBody = require('../util/estree/funcExpr/ensureMutatingOperationsAreLegalForSteppableBody');
-import transformToStateMachine = require('../util/estree/funcExpr/transformToStateMachine');
+import replacePseudoYieldCallsWithYieldExpressions = require('../util/estree/function/replacePseudoYieldCallsWithYieldExpressions');
+import replacePseudoConstCallsWithConstDeclarations = require('../util/estree/function/replacePseudoConstCallsWithConstDeclarations');
+import ensureNodesAreLegalForSteppableBody = require('../util/estree/function/ensureNodesAreLegalForSteppableBody');
+import ensureIdentifiersAreLegalForSteppableBody = require('../util/estree/function/ensureIdentifiersAreLegalForSteppableBody');
+import ensureMutatingOperationsAreLegalForSteppableBody = require('../util/estree/function/ensureMutatingOperationsAreLegalForSteppableBody');
+import ensureNestedFunctionsAreRelocatable = require('../util/estree/function/ensureNestedFunctionsAreRelocatable');
+import transformToStateMachine = require('../util/estree/function/transformToStateMachine');
 export = SteppableFunction;
 
 
@@ -150,6 +151,7 @@ function makeStateMachine(bodyFunc: Function, options: Options): SteppableStateM
     ensureNodesAreLegalForSteppableBody(funcExpr);
     ensureIdentifiersAreLegalForSteppableBody(funcExpr);
     ensureMutatingOperationsAreLegalForSteppableBody(funcExpr);
+    ensureNestedFunctionsAreRelocatable(funcExpr);
 
     // Rewrite the AST in a form suitable for serialization/deserialization.
     var stateMachineAST = transformToStateMachine(funcExpr);

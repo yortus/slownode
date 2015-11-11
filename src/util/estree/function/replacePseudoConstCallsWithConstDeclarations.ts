@@ -4,8 +4,8 @@ export = replacePseudoConstCallsWithConstDeclarations;
 
 
 /** In the given AST, converts variable declarations whose 'init' is a direct call to `pseudoConstIdentifier` to equivalent const declarations. */
-function replacePseudoConstCallsWithConstDeclarations(funcExpr: ESTree.FunctionExpression, pseudoConstIdentifier: string) {
-    traverseTree(funcExpr.body, node => {
+function replacePseudoConstCallsWithConstDeclarations(func: ESTree.Function, pseudoConstIdentifier: string) {
+    traverseTree(func.body, node => {
         matchNode(node, {
             VariableDeclaration: (stmt) => {
                 if (stmt.kind !== 'var') return;

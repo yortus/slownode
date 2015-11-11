@@ -9,7 +9,6 @@ process.on('SIGINT', function () {
 });
 describe('Within an Epoch instance', function () {
     //it('the setTimeout(...) API function works', (done) => {
-    //    slownode.weakRef(done);
     //    slownode.run('tests', loopNTimes, 5);
     //    slownode.on('end', () => {
     //        console.log('Finished!');

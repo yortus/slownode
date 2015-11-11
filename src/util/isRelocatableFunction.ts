@@ -1,6 +1,6 @@
 ﻿import assert = require('assert');
 import esprima = require('esprima');
-import isRelocatable = require('./estree/funcExpr/isRelocatable');
+import isRelocatable = require('./estree/function/isRelocatable');
 export = isRelocatableFunction;
 
 
@@ -25,8 +25,8 @@ function isRelocatableFunction(func: Function|string, safeIds?: string[]) {
     var source = '(' + func.toString() + ')';
     var ast = esprima.parse(source);
     var exprStmt = <ESTree.ExpressionStatement> ast.body[0];
-    var funcExpr = <ESTree.FunctionExpression> exprStmt.expression;
+    var funcNode = <ESTree.Function> exprStmt.expression;
 
     // Check for relocatability at the AST level.
-    return isRelocatable(funcExpr, safeIds);
+    return isRelocatable(funcNode, safeIds);
 }

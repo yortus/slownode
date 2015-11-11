@@ -2,7 +2,7 @@
 
 // Augment ESTree.FunctionExpression with cached identifier metadata.
 declare module ESTree {
-    export interface FunctionExpression {
+    export interface Function {
         _ids: ClassifiedIdentifiers;
     }
 }

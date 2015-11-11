@@ -3,12 +3,13 @@ var esprima = require('esprima');
 var escodegen = require('escodegen');
 var makeCallableClass = require('../util/makeCallableClass');
 var SteppableObject = require('./steppableObject');
-var replacePseudoYieldCallsWithYieldExpressions = require('../util/estree/funcExpr/replacePseudoYieldCallsWithYieldExpressions');
-var replacePseudoConstCallsWithConstDeclarations = require('../util/estree/funcExpr/replacePseudoConstCallsWithConstDeclarations');
-var ensureNodesAreLegalForSteppableBody = require('../util/estree/funcExpr/ensureNodesAreLegalForSteppableBody');
-var ensureIdentifiersAreLegalForSteppableBody = require('../util/estree/funcExpr/ensureIdentifiersAreLegalForSteppableBody');
-var ensureMutatingOperationsAreLegalForSteppableBody = require('../util/estree/funcExpr/ensureMutatingOperationsAreLegalForSteppableBody');
-var transformToStateMachine = require('../util/estree/funcExpr/transformToStateMachine');
+var replacePseudoYieldCallsWithYieldExpressions = require('../util/estree/function/replacePseudoYieldCallsWithYieldExpressions');
+var replacePseudoConstCallsWithConstDeclarations = require('../util/estree/function/replacePseudoConstCallsWithConstDeclarations');
+var ensureNodesAreLegalForSteppableBody = require('../util/estree/function/ensureNodesAreLegalForSteppableBody');
+var ensureIdentifiersAreLegalForSteppableBody = require('../util/estree/function/ensureIdentifiersAreLegalForSteppableBody');
+var ensureMutatingOperationsAreLegalForSteppableBody = require('../util/estree/function/ensureMutatingOperationsAreLegalForSteppableBody');
+var ensureNestedFunctionsAreRelocatable = require('../util/estree/function/ensureNestedFunctionsAreRelocatable');
+var transformToStateMachine = require('../util/estree/function/transformToStateMachine');
 // TODO: what about refs to 'this' within the body?
 // TODO: memoize results (use shasum and cache)
 // TODO: another valid 'local' identifier is the function's own name
@@ -83,6 +84,7 @@ function makeStateMachine(bodyFunc, options) {
     ensureNodesAreLegalForSteppableBody(funcExpr);
     ensureIdentifiersAreLegalForSteppableBody(funcExpr);
     ensureMutatingOperationsAreLegalForSteppableBody(funcExpr);
+    ensureNestedFunctionsAreRelocatable(funcExpr);
     // Rewrite the AST in a form suitable for serialization/deserialization.
     var stateMachineAST = transformToStateMachine(funcExpr);
     // Declare a custom require function that is magic module aware.

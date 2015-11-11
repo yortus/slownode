@@ -1,6 +1,6 @@
 var assert = require('assert');
 var esprima = require('esprima');
-var isRelocatable = require('./estree/funcExpr/isRelocatable');
+var isRelocatable = require('./estree/function/isRelocatable');
 // TODO: memoize results (use shasum and cache)
 /**
  * Determines whether the given function is relocatable. A relocatable function is one whose
@@ -18,9 +18,9 @@ function isRelocatableFunction(func, safeIds) {
     var source = '(' + func.toString() + ')';
     var ast = esprima.parse(source);
     var exprStmt = ast.body[0];
-    var funcExpr = exprStmt.expression;
+    var funcNode = exprStmt.expression;
     // Check for relocatability at the AST level.
-    return isRelocatable(funcExpr, safeIds);
+    return isRelocatable(funcNode, safeIds);
 }
 module.exports = isRelocatableFunction;
 //# sourceMappingURL=isRelocatableFunction.js.map

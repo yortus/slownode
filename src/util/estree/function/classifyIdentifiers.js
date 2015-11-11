@@ -1,7 +1,6 @@
 var _ = require('lodash');
 var matchNode = require('../matchNode');
 var traverseTree = require('../traverseTree');
-var containsInnerFunctions = require('./containsInnerFunctions');
 // TODO: BUG (corner case): A reference to a free (ie non-local) identifier with the same name
 //       as a catch block exception indentifier will be identified as referring to that catch ID,
 //       even if the reference appears outside the catch block, which is materially incorrect.
@@ -11,22 +10,18 @@ var containsInnerFunctions = require('./containsInnerFunctions');
  * and classify them by scope. The results are memoized on the _id key.
  * NB: Duplicates are *not* removed.
  */
-function classifyIdentifiers(funcExpr) {
+function classifyIdentifiers(func) {
     // Return the previously computed result, if available.
-    if (funcExpr._ids)
-        return funcExpr._ids;
-    // Fail in the presence of inner functions.
-    // TODO: could this be relaxed / better implemented? Also, message is copied from elsewhere and is not super helpful here.
-    if (containsInnerFunctions(funcExpr))
-        throw new Error("classifyIdentifiers: nested function declarations are not permitted within the function body");
+    if (func._ids)
+        return func._ids;
     // Find all locally-declared IDs, and all locally-referenced IDs.
-    var selfIds = funcExpr.id && funcExpr.id.name ? [funcExpr.id.name] : [];
-    var varIds = funcExpr.params.map(function (p) { return p['name']; });
+    var selfIds = func.id && func.id.name ? [func.id.name] : [];
+    var varIds = func.params.map(function (p) { return p['name']; });
     var letIds = [];
     var constIds = [];
     var catchIds = [];
     var refIds = [];
-    traverseTree(funcExpr.body, function (node) {
+    traverseTree(func.body, function (node) {
         return matchNode(node, {
             // Collect locally-declared var/let/const IDs.
             VariableDeclaration: function (stmt) {
@@ -59,6 +54,15 @@ function classifyIdentifiers(funcExpr) {
                 return { type: 'ArrayExpression', elements: computedKeyExprs.concat(valueExprs) };
             },
             Identifier: function (expr) { refIds.push(expr.name); },
+            // Skip over nested function declarations, capturing only their name when appropriate.
+            // TODO: ensure name doesn't clash with another name??
+            FunctionExpression: function (expr) { return false; },
+            FunctionDeclaration: function (decl) {
+                var name = decl.id && decl.id.name;
+                if (name)
+                    varIds.push(name);
+                return false;
+            },
             // For all other constructs, just continue traversing their children.
             Otherwise: function (node) { }
         });
@@ -75,7 +79,7 @@ function classifyIdentifiers(funcExpr) {
         (refId in global ? globalIds : allModuleIds.indexOf(refId) === -1 ? scopedIds : moduleIds).push(refId);
     });
     // Memoize and return the classified identifiers.
-    return funcExpr._ids = {
+    return func._ids = {
         local: {
             self: selfIds,
             var: varIds,

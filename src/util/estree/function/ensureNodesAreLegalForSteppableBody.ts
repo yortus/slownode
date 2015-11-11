@@ -3,29 +3,25 @@ import classifyIdentifiers = require('./classifyIdentifiers');
 export = ensureNodesAreLegalForSteppableBody;
 
 
+// TODO: here might be a good place to rule out local decls that shadow global/module decls,
+//       and function decls/exprs whose name is same as a local/global/module
+
+
 /**
  * Traverses the AST, throwing an error if any unsupported constructs are encountered.
  * Constructs may be unsupported for two main reasons:
  * (1) they violate the assumptions on which Steppables depend, in particular the single-scoped-body assumption.
  * (2) they have not been implemented yet (destructuring, for..of, and some other ES6+ constructs). 
  */
-function ensureNodesAreLegalForSteppableBody(funcExpr: ESTree.FunctionExpression) {
+function ensureNodesAreLegalForSteppableBody(func: ESTree.Function) {
 
     // Classify all identifiers referenced by the function.
-    var ids = classifyIdentifiers(funcExpr);
+    var ids = classifyIdentifiers(func);
 
     // Rule out non-whitelisted node types.
-    traverseTree(funcExpr.body, node => {
+    traverseTree(func.body, node => {
         var whitelisted = whitelistedNodeTypes.indexOf(node.type) !== -1;
-        if (whitelisted) return;
-        switch (node.type) {
-            case 'FunctionDeclaration':
-            case 'FunctionExpression':
-            case 'ArrowFunctionExpression':
-                throw new Error(`Steppable: function delcarations, function expressions and arrow functions are not allowed within the steppable body`);
-            default:
-                throw new Error(`Steppable: construct '${node.type}' is not allowed within the steppable body`);
-        }
+        if (!whitelisted) throw new Error(`Steppable: construct '${node.type}' is not allowed within the steppable body`);
     });
 
     // Rule out block-scoped declarations (ie just 'let' declarations; 'const' declarations will be treated as ambients.
@@ -48,5 +44,5 @@ var whitelistedNodeTypes = [
     'VariableDeclaration', 'SequenceExpression', 'YieldExpression', 'AssignmentExpression', 'ConditionalExpression',
     'LogicalExpression', 'BinaryExpression', 'UnaryExpression', 'UpdateExpression', 'CallExpression',
     'NewExpression', 'MemberExpression', 'ArrayExpression', 'ObjectExpression', 'Identifier',
-    'TemplateLiteral', 'RegexLiteral', 'Literal'
+    'TemplateLiteral', 'RegexLiteral', 'Literal', 'FunctionDeclaration', 'FunctionExpression'
 ];

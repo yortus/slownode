@@ -1,7 +1,6 @@
 ﻿import _ = require('lodash');
 import matchNode = require('../matchNode');
 import traverseTree = require('../traverseTree');
-import containsInnerFunctions = require('./containsInnerFunctions');
 export = classifyIdentifiers;
 
 
@@ -12,28 +11,25 @@ export = classifyIdentifiers;
 
 // TODO: what about arguments? Is that a local?
 
+
 /**
  * Find all indentifiers referenced in the given function expression,
  * and classify them by scope. The results are memoized on the _id key.
  * NB: Duplicates are *not* removed.
  */
-function classifyIdentifiers(funcExpr: ESTree.FunctionExpression): ClassifiedIdentifiers {
+function classifyIdentifiers(func: ESTree.Function): ClassifiedIdentifiers {
 
     // Return the previously computed result, if available.
-    if (funcExpr._ids) return funcExpr._ids;
-
-    // Fail in the presence of inner functions.
-    // TODO: could this be relaxed / better implemented? Also, message is copied from elsewhere and is not super helpful here.
-    if (containsInnerFunctions(funcExpr)) throw new Error(`classifyIdentifiers: nested function declarations are not permitted within the function body`);
+    if (func._ids) return func._ids;
 
     // Find all locally-declared IDs, and all locally-referenced IDs.
-    var selfIds = funcExpr.id && funcExpr.id.name ? [funcExpr.id.name] : [];
-    var varIds = funcExpr.params.map(p => <string> p['name']);
+    var selfIds = func.id && func.id.name ? [func.id.name] : [];
+    var varIds = func.params.map(p => <string> p['name']);
     var letIds: string[] = [];
     var constIds: string[] = [];
     var catchIds: string[] = [];
     var refIds: string[] = [];
-    traverseTree(funcExpr.body, node => {
+    traverseTree(func.body, node => {
         return matchNode<any>(node, {
 
             // Collect locally-declared var/let/const IDs.
@@ -64,6 +60,15 @@ function classifyIdentifiers(funcExpr: ESTree.FunctionExpression): ClassifiedIde
             },
             Identifier: (expr) => { refIds.push(expr.name); },
 
+            // Skip over nested function declarations, capturing only their name when appropriate.
+            // TODO: ensure name doesn't clash with another name??
+            FunctionExpression: (expr) => false,
+            FunctionDeclaration: (decl) => {
+                var name = decl.id && decl.id.name;
+                if (name) varIds.push(name);
+                return false;
+            },
+
             // For all other constructs, just continue traversing their children.
             Otherwise: (node) => { /* pass-through */ }
         });
@@ -81,7 +86,7 @@ function classifyIdentifiers(funcExpr: ESTree.FunctionExpression): ClassifiedIde
     });
 
     // Memoize and return the classified identifiers.
-    return funcExpr._ids = {
+    return func._ids = {
         local: {
             self: selfIds,
             var: varIds,
