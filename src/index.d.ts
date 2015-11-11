@@ -118,8 +118,8 @@ declare class SlowPromise<T> {
     /** Returns an object containing a new SlowPromise instance, along with a resolve function and a reject function to control its fate. */
     static deferred(): Deferred;
 
-    /** Returns a new SlowPromise instance that resolves after `ms` milliseconds. */
-    static delay(ms: number): Promise<void>;
+    /** Returns a new SlowPromise instance that resolves to `value` after `ms` milliseconds. */
+    static delay<U>(ms: number, value?: U): Promise<U>;
 
 	/**
      * onFulfilled is called when the promise resolves. onRejected is called when the promise rejects.

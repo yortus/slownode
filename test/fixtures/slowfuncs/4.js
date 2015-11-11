@@ -1,6 +1,4 @@
 function fn(iters) {
-    var c = 0;
-    var setTimeout = 5;
     for (var i = 1; i <= iters; ++i) {
         __yield(square(i));
     }

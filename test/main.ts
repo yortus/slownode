@@ -32,23 +32,24 @@ describe('Within an Epoch instance', function () {
     //});
 
 
-    //it('the Promise class works', (done) => {
+    it('the Promise class works', (done) => {
 
-    //    // Create an epoch
-    //    var slow = slownode.open('slowtest.txt', 'ax');
-        
-    //    // Iterate until done
-    //    var countDown = 5;
-    //    loop();
+        slownode.run('tests', loopNTimes, 5);
+        slownode.on('end', () => {
+            console.log('Finished!');
+            done();
+        });
 
-    //    // Function to process a single iteration
-    //    function loop() {
-    //        console.log('tick');
-    //        --countDown;
-    //        if (!countDown) return done();
-    //        slow.Promise.delay(500).then(loop);
-    //    }
-    //});
+        // Function to process a single iteration
+        function loopNTimes(count: number) {
+            console.log('tick');
+            --count;
+            if (count > 0) {
+                var future = {count, loopNTimes};
+                Promise.delay(500, future).then(f => f.loopNTimes(f.count));
+            }
+        }
+    });
 
 
     //it('the closure(...) API function works', (done) => {

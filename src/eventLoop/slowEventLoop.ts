@@ -54,12 +54,17 @@ function runUntilEmpty() {
         persistence.flush().then(() => {
             traverseAllEntries();
             isRunning = false;
-            if (entries.length > 0) {
-                runUntilEmpty();
-            }
-            else {
-                finalize();
-            }
+
+            // TODO: need nextTick here b/c SlowPromise must use nextTick between promise settlement
+            //       and calling handlers (which are where new slow event loop entries would be added).
+            process.nextTick(() => {
+                if (entries.length > 0) {
+                    runUntilEmpty();
+                }
+                else {
+                    finalize();
+                }
+            });
         });
     }, 200);
 }

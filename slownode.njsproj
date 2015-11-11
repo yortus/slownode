@@ -60,6 +60,7 @@
     <TypeScriptCompile Include="src\typings\esprima\esprima.d.ts" />
     <TypeScriptCompile Include="src\typings\estree\estree.d.ts" />
     <TypeScriptCompile Include="src\typings\fs-ext\fs-ext.d.ts" />
+    <TypeScriptCompile Include="src\typings\globals.d.ts" />
     <TypeScriptCompile Include="src\typings\knex\knex.d.ts" />
     <TypeScriptCompile Include="src\typings\lodash\lodash.d.ts" />
     <TypeScriptCompile Include="src\typings\mocha\mocha.d.ts" />

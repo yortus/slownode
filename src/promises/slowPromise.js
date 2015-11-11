@@ -81,13 +81,13 @@ var SlowPromise = (function () {
     };
     ;
     /**
-     * Returns a new SlowPromise instance that resolves after `ms` milliseconds.
+     * Returns a new SlowPromise instance that resolves to `value` after `ms` milliseconds.
      */
-    SlowPromise.delay = function (ms) {
+    SlowPromise.delay = function (ms, value) {
         var _this = this;
         return new this(function (resolve) {
             // TODO: temp testing...
-            slowTimers.setTimeout.forEpoch(_this.prototype.epochId)(function (resolve) { return resolve(); }, ms, resolve);
+            slowTimers.setTimeout.forEpoch(_this.prototype.epochId)(function (resolve, value) { return resolve(value); }, ms, resolve, value);
             // TODO: temp testing...
             //setTimeout(resolve => resolve(), ms, resolve);
             // TODO: was... fix!!!

@@ -1,3 +1,4 @@
+var slownode = require('..');
 var chai = require("chai");
 chai.use(require('chai-as-promised'));
 var expect = chai.expect;
@@ -22,20 +23,22 @@ describe('Within an Epoch instance', function () {
     //        }
     //    }
     //});
-    //it('the Promise class works', (done) => {
-    //    // Create an epoch
-    //    var slow = slownode.open('slowtest.txt', 'ax');
-    //    // Iterate until done
-    //    var countDown = 5;
-    //    loop();
-    //    // Function to process a single iteration
-    //    function loop() {
-    //        console.log('tick');
-    //        --countDown;
-    //        if (!countDown) return done();
-    //        slow.Promise.delay(500).then(loop);
-    //    }
-    //});
+    it('the Promise class works', function (done) {
+        slownode.run('tests', loopNTimes, 5);
+        slownode.on('end', function () {
+            console.log('Finished!');
+            done();
+        });
+        // Function to process a single iteration
+        function loopNTimes(count) {
+            console.log('tick');
+            --count;
+            if (count > 0) {
+                var future = { count: count, loopNTimes: loopNTimes };
+                Promise.delay(500, future).then(function (f) { return f.loopNTimes(f.count); });
+            }
+        }
+    });
     //it('the closure(...) API function works', (done) => {
     //    // Create an epoch
     //    var slow = slownode.open('slowtest.txt', 'ax');

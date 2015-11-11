@@ -73,13 +73,13 @@ class SlowPromise {
     };
 
     /**
-     * Returns a new SlowPromise instance that resolves after `ms` milliseconds.
+     * Returns a new SlowPromise instance that resolves to `value` after `ms` milliseconds.
      */
-    static delay(ms: number) {
+    static delay(ms: number, value?: any) {
         return new this(resolve => {
 
             // TODO: temp testing...
-            slowTimers.setTimeout.forEpoch(this.prototype.epochId)(resolve => resolve(), ms, resolve);
+            slowTimers.setTimeout.forEpoch(this.prototype.epochId)((resolve, value) => resolve(value), ms, resolve, value);
 
 
 
