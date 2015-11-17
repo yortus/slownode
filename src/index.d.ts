@@ -9,6 +9,26 @@ export function on(eventId: 'end', handler: Function): void;
 
 export class Epoch {
     constructor(epochId: string, code: Function, ...args: any[]);
+
+    /**
+     * Schedules `callback` to be called with the given `args` (if any) after `delay` milliseconds.
+     * Returns an opaque Timer object that may be passed to clearTimeout() to cancel the scheduled call.
+     * @param callback the function to execute after the timeout.
+     * @param delay the number of milliseconds to wait before calling the callback.
+     * @param args the optional arguments to pass to the callback.
+     */
+    setTimeout: (callback: Function, delay: number, ...args: any[]) => Timer;
+
+    /**
+     * Cancels an event previously scheduled with setTimeout.
+     * @param timeoutObject an opaque Timer object that was returned by a prior call to setTimeout.
+     */
+    clearTimeout: (timeoutObject: Timer) => void;
+
+    /**
+     * Promises A+ compliant slow promise implementation.
+     */
+    Promise: typeof SlowPromise;
 }
 
 
