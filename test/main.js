@@ -9,36 +9,36 @@ process.on('SIGINT', function () {
     process.exit();
 });
 describe('Within an Epoch instance', function () {
-    //it('the setTimeout(...) API function works', (done) => {
-    //    slownode.run('tests', loopNTimes, 5);
-    //    slownode.on('end', () => {
-    //        console.log('Finished!');
-    //        done();
-    //    });
-    //    function loopNTimes(count) {
-    //        console.log('tick');
-    //        --count;
-    //        if (count > 0) {
-    //            setTimeout(loopNTimes, 500, count);
-    //        }
-    //    }
-    //});
-    it('the Promise class works', function (done) {
+    it('the setTimeout(...) API function works', function (done) {
         slownode.run('tests', loopNTimes, 5);
         slownode.on('end', function () {
             console.log('Finished!');
             done();
         });
-        // Function to process a single iteration
         function loopNTimes(count) {
             console.log('tick');
             --count;
             if (count > 0) {
-                var future = { count: count, loopNTimes: loopNTimes };
-                Promise.delay(500, future).then(function (f) { return f.loopNTimes(f.count); });
+                setTimeout(loopNTimes, 500, count);
             }
         }
     });
+    //it('the Promise class works', (done) => {
+    //    slownode.run('tests', loopNTimes, 5);
+    //    slownode.on('end', () => {
+    //        console.log('Finished!');
+    //        done();
+    //    });
+    //    // Function to process a single iteration
+    //    function loopNTimes(count: number) {
+    //        console.log('tick');
+    //        --count;
+    //        if (count > 0) {
+    //            var future = {count, loopNTimes};
+    //            Promise.delay(500, future).then(f => f.loopNTimes(f.count));
+    //        }
+    //    }
+    //});
     //it('the closure(...) API function works', (done) => {
     //    // Create an epoch
     //    var slow = slownode.open('slowtest.txt', 'ax');

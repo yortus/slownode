@@ -1,61 +1,52 @@
-var assert = require('assert');
-var persistence = require('../persistence');
-var slowEventLoop = require('../eventLoop/slowEventLoop');
+var vm = require('vm');
 var slowTimers = require('../eventLoop/slowTimers');
-var SlowPromise = require('../promises/slowPromise');
-var SlowClosure = require('../functions/slowClosure');
-var SlowAsyncFunction = require('../functions/slowAsyncFunction');
-// TODO: ...
-function run(epochId, slowMain) {
-    // TODO: fully review!!!
-    var args = [];
-    for (var _i = 2; _i < arguments.length; _i++) {
-        args[_i - 2] = arguments[_i];
+var Epoch = (function () {
+    function Epoch(epochId, code) {
+        var args = [];
+        for (var _i = 2; _i < arguments.length; _i++) {
+            args[_i - 2] = arguments[_i];
+        }
+        // TODO: other 'global' stuff:
+        this.console = global.console;
+        this.global = global.global;
+        vm.createContext(this);
+        this.setTimeout = slowTimers.createSetTimeoutFunction(this);
+        this.clearTimeout = slowTimers.clearTimeout;
+        // TODO: execute the code inside this new epoch
+        this.setTimeout.apply(this, [code, 0].concat(args));
     }
-    var epoch = createEpoch(epochId);
-    epoch.setTimeout.apply(epoch, [slowMain, 0].concat(args));
-    // TODO: temp testing...
-    //var epochId = 'DEFAULT';
-    return epoch;
-}
-exports.run = run;
-// TODO: ...
-function weakRef(obj) {
-    persistence.weakRef(obj);
-}
-exports.weakRef = weakRef;
-// TODO: ...
-function on(eventId, handler) {
-    assert(eventId === 'end');
-    slowEventLoop.addExitHandler(handler);
-}
-exports.on = on;
+    return Epoch;
+})();
+module.exports = Epoch;
+//export interface Epoch extends API.Epoch {
+//    // TODO: doc... INTERNAL
+//    id: string; // TODO: get rid of this
+//}
+//// TODO: temp testing...
+//function createEpoch(epochId: string): Epoch {
+//    var epoch = <Epoch> {
+//        setTimeout: null,
+//        clearTimeout: slowTimers.clearTimeout,
+//        //Promise: SlowPromise.forEpoch(epochId),
+//        //closure: SlowClosure.forEpoch(epochId),
+//        //async: null,
+//        id: epochId
+//    };
+//    epoch.setTimeout = slowTimers.setTimeout.forEpoch(epochId, epoch);
+//    //epoch.async = createAsyncFunctionForEpoch(epoch);
+//    return epoch;
+//}
 // TODO: temp testing...
-function createEpoch(epochId) {
-    var epoch = {
-        setTimeout: null,
-        clearTimeout: slowTimers.clearTimeout,
-        Promise: SlowPromise.forEpoch(epochId),
-        closure: SlowClosure.forEpoch(epochId),
-        async: null,
-        id: epochId
-    };
-    epoch.setTimeout = slowTimers.setTimeout.forEpoch(epochId, epoch);
-    epoch.async = createAsyncFunctionForEpoch(epoch);
-    return epoch;
-}
+//function createAsyncFunctionForEpoch(epoch: Epoch) {
+//    var async = SlowAsyncFunction.forEpoch(epoch.id);
+//    var options = { require };
+//    var result = (bodyFunc: Function) => async(bodyFunc, options);
+//    return result;
+//    function require(moduleId: string) {
+//        if (moduleId === 'epoch') return epoch;
+//        return mainRequire(moduleId);
+//    }
+//}
 // TODO: temp testing...
-function createAsyncFunctionForEpoch(epoch) {
-    var async = SlowAsyncFunction.forEpoch(epoch.id);
-    var options = { require: require };
-    var result = function (bodyFunc) { return async(bodyFunc, options); };
-    return result;
-    function require(moduleId) {
-        if (moduleId === 'epoch')
-            return epoch;
-        return mainRequire(moduleId);
-    }
-}
-// TODO: temp testing...
-var mainRequire = require.main.require;
+//var mainRequire = require.main.require;
 //# sourceMappingURL=epoch.js.map

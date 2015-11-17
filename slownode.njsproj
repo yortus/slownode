@@ -34,7 +34,6 @@
     <Compile Include="scripts\runSlownodeTestSuite.js" />
     <TypeScriptCompile Include="src\persistence\dehydrateSlowObject.ts" />
     <TypeScriptCompile Include="src\epochs\epoch.ts" />
-    <TypeScriptCompile Include="src\epochs\epochLog.ts" />
     <TypeScriptCompile Include="src\functions\slowAsyncFunction.ts" />
     <TypeScriptCompile Include="src\functions\slowAsyncFunctionActivation.ts" />
     <TypeScriptCompile Include="src\eventLoop\slowEventLoop.ts" />

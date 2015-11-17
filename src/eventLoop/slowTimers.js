@@ -1,9 +1,20 @@
+var vm = require('vm');
 var persistence = require('../persistence');
 var isRelocatableFunction = require('../util/isRelocatableFunction');
-var evalInContext = require('../util/evalInContext');
 var slowEventLoop = require('./slowEventLoop');
 // TODO: doc...
-exports.setTimeout = setTimeoutForEpoch(null);
+function createSetTimeoutFunction(epoch) {
+    return function setTimeout(callback, delay) {
+        var args = [];
+        for (var _i = 2; _i < arguments.length; _i++) {
+            args[_i - 2] = arguments[_i];
+        }
+        var timer = new Timer(epoch, delay, callback, args);
+        slowEventLoop.add(timer);
+        return timer;
+    };
+}
+exports.createSetTimeoutFunction = createSetTimeoutFunction;
 // TODO: doc...
 function clearTimeout(timeoutObject) {
     timeoutObject.cancel();
@@ -11,27 +22,28 @@ function clearTimeout(timeoutObject) {
 exports.clearTimeout = clearTimeout;
 // TODO: doc...
 var Timer = (function () {
-    function Timer(epochId, context, delay, callback, args) {
-        this.epochId = epochId;
+    function Timer(epoch, delay, callback, args) {
+        var _this = this;
         if (!isRelocatableFunction(callback)) {
             throw new Error("Timer: callback is not a relocatable function: " + (callback || '[null]').toString() + ".");
         }
         this.$slow = {
             kind: 100 /* Timer */,
-            epochId: epochId,
+            epochId: 'temp',
             id: null,
             due: Date.now() + delay,
-            callback: evalInContext(callback.toString(), context),
+            code: callback.toString(),
             arguments: args
         };
         persistence.created(this);
+        this.dispatch = function () {
+            persistence.deleted(_this);
+            var closure = vm.runInContext('(' + _this.$slow.code + ')', epoch);
+            closure.apply(null, args);
+        };
     }
     Timer.prototype.isBlocked = function () {
         return this.$slow.due > Date.now();
-    };
-    Timer.prototype.dispatch = function () {
-        persistence.deleted(this);
-        this.$slow.callback.apply(void 0, this.$slow.arguments);
     };
     Timer.prototype.cancel = function () {
         persistence.deleted(this);
@@ -40,32 +52,9 @@ var Timer = (function () {
     return Timer;
 })();
 exports.Timer = Timer;
-// TODO: doc...
-function setTimeoutForEpoch(epochId, context) {
-    // TODO: caching... NB can use a normal obj now that key is a string
-    cache = cache || new Map();
-    if (cache.has(epochId))
-        return cache.get(epochId);
-    // TODO: ...
-    var result = (function (callback, delay) {
-        var args = [];
-        for (var _i = 2; _i < arguments.length; _i++) {
-            args[_i - 2] = arguments[_i];
-        }
-        var timer = new Timer(epochId, context || {}, delay, callback, args);
-        slowEventLoop.add(timer);
-        return timer;
-    });
-    result.forEpoch = setTimeoutForEpoch;
-    // TODO: caching...
-    cache.set(epochId, result);
-    return result;
-}
-// TODO: ... NB can use a normal obj now that key is a string
-var cache;
 // TODO: ==================== rehydration logic... temp testing... ====================
-persistence.howToRehydrate(100 /* Timer */, function ($slow) {
-    var timer = setTimeoutForEpoch($slow.epochId)(null, 0);
+persistence.howToRehydrate(100 /* Timer */, function ($slow, epoch) {
+    var timer = new Timer(epoch, 0, function () { }, []);
     timer.$slow = $slow;
     return timer;
 });

@@ -1,4 +1,5 @@
 ﻿import assert = require('assert');
+import vm = require('vm');
 import async = require('asyncawait/async');
 import await = require('asyncawait/await');
 import SlowKind = require('../slowKind');
@@ -109,7 +110,7 @@ export var disconnect = async (() => {
 
 // TODO: temp testing...
 var rehydrators: { [type: number]: RehydrateFunction; } = {};
-type RehydrateFunction = ($slow: { kind: SlowKind; epochId: string; id: string; [other: string]: any; }) => SlowObject;
+type RehydrateFunction = ($slow: { kind: SlowKind; epochId: string; id: string; [other: string]: any; }, epoch: vm.Context) => SlowObject;
 
 
 

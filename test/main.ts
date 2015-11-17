@@ -4,6 +4,9 @@ chai.use(require('chai-as-promised'));
 var expect = chai.expect;
 
 
+import vm = require('vm');
+
+
 // TODO: temp testing... make CTRL+C force node.js to exit immediately
 // TODO: put this in its own file inside a before() function
 process.on('SIGINT', () => {
@@ -14,42 +17,43 @@ process.on('SIGINT', () => {
 
 describe('Within an Epoch instance', function () {
 
-    //it('the setTimeout(...) API function works', (done) => {
 
-    //    slownode.run('tests', loopNTimes, 5);
-    //    slownode.on('end', () => {
-    //        console.log('Finished!');
-    //        done();
-    //    });
-        
-    //    function loopNTimes(count) {
-    //        console.log('tick');
-    //        --count;
-    //        if (count > 0) {
-    //            setTimeout(loopNTimes, 500, count);
-    //        }
-    //    }
-    //});
-
-
-    it('the Promise class works', (done) => {
+    it('the setTimeout(...) API function works', (done) => {
 
         slownode.run('tests', loopNTimes, 5);
         slownode.on('end', () => {
             console.log('Finished!');
             done();
         });
-
-        // Function to process a single iteration
-        function loopNTimes(count: number) {
+        
+        function loopNTimes(count) {
             console.log('tick');
             --count;
             if (count > 0) {
-                var future = {count, loopNTimes};
-                Promise.delay(500, future).then(f => f.loopNTimes(f.count));
+                setTimeout(loopNTimes, 500, count);
             }
         }
     });
+
+
+    //it('the Promise class works', (done) => {
+
+    //    slownode.run('tests', loopNTimes, 5);
+    //    slownode.on('end', () => {
+    //        console.log('Finished!');
+    //        done();
+    //    });
+
+    //    // Function to process a single iteration
+    //    function loopNTimes(count: number) {
+    //        console.log('tick');
+    //        --count;
+    //        if (count > 0) {
+    //            var future = {count, loopNTimes};
+    //            Promise.delay(500, future).then(f => f.loopNTimes(f.count));
+    //        }
+    //    }
+    //});
 
 
     //it('the closure(...) API function works', (done) => {

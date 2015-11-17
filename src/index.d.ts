@@ -1,14 +1,15 @@
 ﻿// TODO: any way to reduce duplication of comments and structure with implementation files?
 
 
+export function run(epochId: string, code: Function, ...args: any[]): void;
+export function on(eventId: string, handler: Function): void;
+// TODO: fires when slow event loop exits
+export function on(eventId: 'end', handler: Function): void;
 
 
-
-
-// TODO: doc...
-export function run(epochId: string, slowMain: Function, ...args: any[]): Epoch;
-//export function forceDisconnect(): Promise<void>;
-
+export class Epoch {
+    constructor(epochId: string, code: Function, ...args: any[]);
+}
 
 
 /**
@@ -23,16 +24,7 @@ export function run(epochId: string, slowMain: Function, ...args: any[]): Epoch;
 export function weakRef(obj: any): void;
 
 
-// TODO: doc...
-export function on(eventId: string, handler: Function): void;
-
-// TODO: fires when slow event loop exits
-export function on(eventId: 'end', handler: Function): void;
-
-
-
-
-export interface Epoch {
+//export interface Epoch {
 
     /**
      * Schedules `callback` to be called with the given `args` (if any) after `delay` milliseconds.
@@ -41,47 +33,47 @@ export interface Epoch {
      * @param delay the number of milliseconds to wait before calling the callback.
      * @param args the optional arguments to pass to the callback.
      */
-    setTimeout(callback: Function, delay: number, ...args: any[]): Timer;
+    //setTimeout(callback: Function, delay: number, ...args: any[]): Timer;
 
     /**
      * Cancels an event previously scheduled with setTimeout.
      * @param timeoutObject an opaque Timer object that was returned by a prior call to setTimeout.
      */
-    clearTimeout(timeoutObject: Timer): void;
+    //clearTimeout(timeoutObject: Timer): void;
 
-    /**
-     * Promises A+ compliant slow promise implementation.
-     */
-    Promise: typeof SlowPromise;
+    ///**
+    // * Promises A+ compliant slow promise implementation.
+    // */
+    //Promise: typeof SlowPromise;
 
-    /**
-     * Creates a SlowClosure instance. It may be called with or without `new`.
-     * A slow closure combines a function and a referencing environment. Calling
-     * a slow closure causes its function to be executed with its environment
-     * bindings added to its scope chain.
-     */
-    closure: {
+    ///**
+    // * Creates a SlowClosure instance. It may be called with or without `new`.
+    // * A slow closure combines a function and a referencing environment. Calling
+    // * a slow closure causes its function to be executed with its environment
+    // * bindings added to its scope chain.
+    // */
+    //closure: {
 
-        /** Creates a new SlowClosure instance. */
-        new(env: { [name: string]: any; }, fn: Function): (...args) => any;
+    //    /** Creates a new SlowClosure instance. */
+    //    new(env: { [name: string]: any; }, fn: Function): (...args) => any;
 
-        /** Creates a new SlowClosure instance. */
-        (env: { [name: string]: any; }, fn: Function): (...args) => any;
-    }
+    //    /** Creates a new SlowClosure instance. */
+    //    (env: { [name: string]: any; }, fn: Function): (...args) => any;
+    //}
 
-    /** Creates a slow async function, which is analogous to an ES7 async function. */
-    async<TReturn>(fn: () => TReturn): SlowAsyncFunctionNullary<TReturn>;
-    /** Creates a slow async function, which is analogous to an ES7 async function. */
-    async<T1, TReturn>(fn: (_1: T1) => TReturn): SlowAsyncFunctionUnary<T1, TReturn>;
-    /** Creates a slow async function, which is analogous to an ES7 async function. */
-    async<T1, T2, TReturn>(fn: (_1: T1, _2: T2) => TReturn): SlowAsyncFunctionBinary<T1, T2, TReturn>;
-    /** Creates a slow async function, which is analogous to an ES7 async function. */
-    async<T1, T2, T3, TReturn>(fn: (_1: T1, _2: T2, _3: T3) => TReturn): SlowAsyncFunctionTernary<T1, T2, T3, TReturn>;
-    /** Creates a slow async function, which is analogous to an ES7 async function. */
-    async<T1, T2, T3, T4, TReturn>(fn: (_1: T1, _2: T2, _3: T3, _4: T4) => TReturn): SlowAsyncFunctionQuaternary<T1, T2, T3, T4, TReturn>;
-    /** Creates a slow async function, which is analogous to an ES7 async function. */
-    async<TReturn>(fn: (...args: any[]) => TReturn): SlowAsyncFunctionVariadic<TReturn>;
-}
+    ///** Creates a slow async function, which is analogous to an ES7 async function. */
+    //async<TReturn>(fn: () => TReturn): SlowAsyncFunctionNullary<TReturn>;
+    ///** Creates a slow async function, which is analogous to an ES7 async function. */
+    //async<T1, TReturn>(fn: (_1: T1) => TReturn): SlowAsyncFunctionUnary<T1, TReturn>;
+    ///** Creates a slow async function, which is analogous to an ES7 async function. */
+    //async<T1, T2, TReturn>(fn: (_1: T1, _2: T2) => TReturn): SlowAsyncFunctionBinary<T1, T2, TReturn>;
+    ///** Creates a slow async function, which is analogous to an ES7 async function. */
+    //async<T1, T2, T3, TReturn>(fn: (_1: T1, _2: T2, _3: T3) => TReturn): SlowAsyncFunctionTernary<T1, T2, T3, TReturn>;
+    ///** Creates a slow async function, which is analogous to an ES7 async function. */
+    //async<T1, T2, T3, T4, TReturn>(fn: (_1: T1, _2: T2, _3: T3, _4: T4) => TReturn): SlowAsyncFunctionQuaternary<T1, T2, T3, T4, TReturn>;
+    ///** Creates a slow async function, which is analogous to an ES7 async function. */
+    //async<TReturn>(fn: (...args: any[]) => TReturn): SlowAsyncFunctionVariadic<TReturn>;
+//}
 
 
 
