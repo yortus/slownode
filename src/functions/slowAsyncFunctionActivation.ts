@@ -1,40 +1,82 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var assert = require('assert');
-var persistence = require('../persistence');
-var SteppableObject = require('../steppables/steppableObject');
-var SlowClosure = require('./slowClosure');
+﻿import assert = require('assert');
+import path = require('path');
+import SlowKind = require('../slowKind');
+import SlowObject = require('../slowObject');
+import persistence = require('../persistence');
+import SlowPromise = require('../promises/slowPromise');
+import SteppableStateMachine = require('../steppables/steppableStateMachine');
+import SteppableObject = require('../steppables/steppableObject');
+import SlowClosure = require('./slowClosure');
+import SlowAsyncFunction = require('./slowAsyncFunction'); // NB: elided circular ref (for types only)
+export = SlowAsyncFunctionActivation;
+
+
 /**
  * A SlowAsyncFunctionActivation is a 'slow' extension of SteppableObject.
  * Instances of SlowAsyncFunctionActivation are used internally to manage
  * calls to SlowAsyncFunction instances.
  */
-var SlowAsyncFunctionActivation = (function (_super) {
-    __extends(SlowAsyncFunctionActivation, _super);
+class SlowAsyncFunctionActivation extends SteppableObject {
+
     /** Create a new SlowAsyncFunctionActivation instance. */
-    function SlowAsyncFunctionActivation(epochId, asyncFunction, resolve, reject, args) {
-        _super.call(this, asyncFunction.stateMachine);
-        this.epochId = epochId;
+    constructor(asyncFunction: SlowAsyncFunction, args: any[]) {
+        super(asyncFunction.stateMachine);
         this.state = { local: { arguments: args } };
+        var deferred = SlowPromise.deferred();
         var safa = this;
         this.$slow = {
-            kind: 301 /* AsyncFunctionActivation */,
-            epochId: epochId,
+            kind: SlowKind.AsyncFunctionActivation,
             id: null,
             asyncFunction: asyncFunction,
             state: this.state,
             awaiting: null,
-            resumeNext: SlowClosure.forEpoch(epochId)({ safa: safa }, function (value) { safa.runToCompletion(null, value); }),
-            resumeError: SlowClosure.forEpoch(epochId)({ safa: safa }, function (error) { safa.runToCompletion(error); }),
-            resolve: resolve,
-            reject: reject
+            resumeNext: SlowClosure({safa}, value => { safa.runToCompletion(null, value); }),
+            resumeError: SlowClosure({safa}, error => { safa.runToCompletion(error); }),
+
+            promise: deferred.promise,
+            resolve: deferred.resolve,
+            reject: deferred.reject
         };
+
         // Synchronise with the persistent object graph.
         persistence.created(this); // TODO: temp testing...
     }
+
+    // TODO: doc...
+    get result() {
+        return this.$slow.promise;
+    }
+
+    /** Holds the full state of the instance in serializable form. An equivalent instance may be 'rehydrated' from this data. */
+    $slow: {
+        kind: SlowKind,
+        id: string,
+
+        /** The body of code being executed by this activation. */
+        asyncFunction: SlowAsyncFunction,
+
+        /** State of all locals at the current point of suspended execution. */
+        state: SteppableStateMachine.State,
+
+        /** The awaitable (ie slow promise) that must resolve before execution may resume. */
+        awaiting: SlowPromise,
+
+        /** Resumes execution with a value. */
+        resumeNext: SlowObject & ((value) => void),
+
+        /** Resumes execution with an error. */
+        resumeError: SlowObject & ((error) => void),
+
+        // TODO: ...
+        promise: SlowPromise,
+
+        /** Signals that the activation returned a result. */
+        resolve: SlowObject & ((value: any) => void),
+
+        /** Signals that the activation threw an error. */
+        reject: SlowObject & ((reason: any) => void)
+    };
+
     /**
      * Runs the SlowAsyncFunctionActivation instance to completion. First, the activation (which
      * must be currently suspended) is resumed, either passing the given `next` value into it, or
@@ -46,7 +88,8 @@ var SlowAsyncFunctionActivation = (function (_super) {
      * awaitable value is settled. Thus an asynchronous 'loop' is executed until the activation
      * either returns or throws.
      */
-    SlowAsyncFunctionActivation.prototype.runToCompletion = function (error, next) {
+    runToCompletion(error?: any, next?: any) {
+
         // Resume the underlying Steppable by either throwing into it or calling next(), depending on args.
         try {
             var yielded = error ? this.throw(error) : this.next(next);
@@ -55,13 +98,13 @@ var SlowAsyncFunctionActivation = (function (_super) {
         catch (ex) {
             error = ex;
         }
+
         // The Steppable returned or threw. Resolve/reject and finalise the SlowAsyncFunctionActivation.
         if (error || yielded.done) {
+
             var s = this.$slow;
-            if (error)
-                s.reject(error);
-            else
-                s.resolve(yielded.value);
+            if (error) s.reject(error); else s.resolve(yielded.value);
+
             // Synchronise with the persistent object graph.
             // TODO: temp testing...
             persistence.deleted(s.resolve);
@@ -71,24 +114,29 @@ var SlowAsyncFunctionActivation = (function (_super) {
             persistence.deleted(this);
             return;
         }
+
         // The Steppable yielded. Ensure the yielded value is awaitable.
         // TODO: review awaitability checks, supported values/types, and error handling
-        var awaiting = this.$slow.awaiting = yielded.value;
+        var awaiting: SlowPromise = this.$slow.awaiting = yielded.value;
         assert(awaiting && typeof awaiting.then === 'function', 'await: expected argument to be a Promise');
+
         // Attach fulfilled/rejected handlers to the awaitable, which resume the steppable.
         awaiting.then(this.$slow.resumeNext, this.$slow.resumeError);
+
         // Synchronise with the persistent object graph.
         // TODO: temp testing...
         persistence.updated(this);
-    };
-    return SlowAsyncFunctionActivation;
-})(SteppableObject);
+    }
+}
+
+
+
+
+
 // TODO: ==================== rehydration logic... temp testing... ====================
-persistence.howToRehydrate(301 /* AsyncFunctionActivation */, function ($slow) {
-    var safa = new SlowAsyncFunctionActivation(null, null, null, null, null);
-    safa.$slow = $slow;
+persistence.howToRehydrate(SlowKind.AsyncFunctionActivation, $slow => {
+    var safa = new SlowAsyncFunctionActivation(null, null);
+    safa.$slow = <any> $slow;
     safa.state = safa.$slow.state; // TODO: will this be resolved yet? create a getter instead?
     return safa;
 });
-module.exports = SlowAsyncFunctionActivation;
-//# sourceMappingURL=slowAsyncFunctionActivation.js.map

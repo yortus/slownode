@@ -5,6 +5,7 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var assert = require('assert');
 var persistence = require('../persistence');
+var SlowPromise = require('../promises/slowPromise');
 var SteppableObject = require('../steppables/steppableObject');
 var SlowClosure = require('./slowClosure');
 /**
@@ -15,26 +16,34 @@ var SlowClosure = require('./slowClosure');
 var SlowAsyncFunctionActivation = (function (_super) {
     __extends(SlowAsyncFunctionActivation, _super);
     /** Create a new SlowAsyncFunctionActivation instance. */
-    function SlowAsyncFunctionActivation(epochId, asyncFunction, resolve, reject, args) {
+    function SlowAsyncFunctionActivation(asyncFunction, args) {
         _super.call(this, asyncFunction.stateMachine);
-        this.epochId = epochId;
         this.state = { local: { arguments: args } };
+        var deferred = SlowPromise.deferred();
         var safa = this;
         this.$slow = {
             kind: 301 /* AsyncFunctionActivation */,
-            epochId: epochId,
             id: null,
             asyncFunction: asyncFunction,
             state: this.state,
             awaiting: null,
-            resumeNext: SlowClosure.forEpoch(epochId)({ safa: safa }, function (value) { safa.runToCompletion(null, value); }),
-            resumeError: SlowClosure.forEpoch(epochId)({ safa: safa }, function (error) { safa.runToCompletion(error); }),
-            resolve: resolve,
-            reject: reject
+            resumeNext: SlowClosure({ safa: safa }, function (value) { safa.runToCompletion(null, value); }),
+            resumeError: SlowClosure({ safa: safa }, function (error) { safa.runToCompletion(error); }),
+            promise: deferred.promise,
+            resolve: deferred.resolve,
+            reject: deferred.reject
         };
         // Synchronise with the persistent object graph.
         persistence.created(this); // TODO: temp testing...
     }
+    Object.defineProperty(SlowAsyncFunctionActivation.prototype, "result", {
+        // TODO: doc...
+        get: function () {
+            return this.$slow.promise;
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * Runs the SlowAsyncFunctionActivation instance to completion. First, the activation (which
      * must be currently suspended) is resumed, either passing the given `next` value into it, or
@@ -85,7 +94,7 @@ var SlowAsyncFunctionActivation = (function (_super) {
 })(SteppableObject);
 // TODO: ==================== rehydration logic... temp testing... ====================
 persistence.howToRehydrate(301 /* AsyncFunctionActivation */, function ($slow) {
-    var safa = new SlowAsyncFunctionActivation(null, null, null, null, null);
+    var safa = new SlowAsyncFunctionActivation(null, null);
     safa.$slow = $slow;
     safa.state = safa.$slow.state; // TODO: will this be resolved yet? create a getter instead?
     return safa;

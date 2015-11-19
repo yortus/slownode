@@ -6,7 +6,7 @@
     <ProjectGuid>{9d9eb3d2-039f-403c-b42b-bb2e1365bec5}</ProjectGuid>
     <ProjectHome />
     <ProjectView>ProjectFiles</ProjectView>
-    <StartupFile>scripts\runSlownodeTestSuite.js</StartupFile>
+    <StartupFile>scripts\runPromisesAPlusTestSuite.js</StartupFile>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <ProjectTypeGuids>{3AF33F2E-1136-4D97-BBB7-1795711AC8B8};{349c5851-65df-11da-9384-00065b846f21};{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}</ProjectTypeGuids>
@@ -232,7 +232,17 @@
     <Content Include="zzz\zzztest\slowEventLoop.js.map" />
     <Content Include="zzz\zzztest\slowPromise.js.map" />
     <Content Include="zzz\zzztest\steppableFunction.js.map" />
+    <TypeScriptCompile Include="src\functions\slowAsyncFunction.ts" />
+    <TypeScriptCompile Include="src\functions\slowAsyncFunctionActivation.ts" />
+    <TypeScriptCompile Include="src\functions\slowClosure.ts" />
     <TypeScriptCompile Include="src\index.d.ts" />
+    <TypeScriptCompile Include="src\persistence\dehydrateSlowObject.ts" />
+    <TypeScriptCompile Include="src\persistence\index.ts" />
+    <TypeScriptCompile Include="src\persistence\storageLocation.ts" />
+    <TypeScriptCompile Include="src\promises\slowPromise.ts" />
+    <TypeScriptCompile Include="src\promises\slowPromiseReject.ts" />
+    <TypeScriptCompile Include="src\promises\slowPromiseResolve.ts" />
+    <TypeScriptCompile Include="src\promises\standardResolutionProcedure.ts" />
     <TypeScriptCompile Include="src\slowKind.ts" />
     <TypeScriptCompile Include="src\slowObject.ts" />
     <TypeScriptCompile Include="src\steppables\steppableFunction.ts" />
@@ -394,6 +404,9 @@
     <TypeScriptCompile Include="zzz\zzztest\steppableFunction.ts" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="src\functions\" />
+    <Folder Include="src\promises\" />
+    <Folder Include="src\persistence\" />
     <Folder Include="src\steppables\" />
     <Folder Include="src\typings\knex\" />
     <Folder Include="src\util\" />
