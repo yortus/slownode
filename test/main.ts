@@ -20,17 +20,20 @@ describe('Within an Epoch instance', function () {
 
     it('the setTimeout(...) API function works', (done) => {
 
-        slownode.run('tests', loopNTimes, 5);
+        slownode.run(`((${main.toString()})())`, 'tests-II');
         slownode.on('end', () => {
             console.log('Finished!');
             done();
         });
-        
-        function loopNTimes(count) {
-            console.log('tick');
-            --count;
-            if (count > 0) {
-                setTimeout(loopNTimes, 500, count);
+
+        function main() {
+            loopNTimes(5);
+            function loopNTimes(count) {
+                console.log('tick');
+                --count;
+                if (count > 0) {
+                    setTimeout(loopNTimes, 500, count);
+                }
             }
         }
     });

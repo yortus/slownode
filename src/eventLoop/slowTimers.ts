@@ -8,8 +8,12 @@ import slowEventLoop = require('./slowEventLoop');
 
 // TODO: doc...
 export function createSetTimeoutFunction(epoch: vm.Context) {
-    return function setTimeout(callback: Function, delay: number, ...args: any[]) {
-        var timer = new Timer(epoch, delay, callback, args);
+    return function setTimeout(code: Function|string, delay: number, ...args: any[]) {
+        if (typeof code === 'string') {
+            code = <any> vm.runInContext(`(function () {\n${code}\n})`, epoch);
+            args = [];
+        }
+        var timer = new Timer(epoch, delay, <Function> code, args);
         slowEventLoop.add(timer);
         return timer;
     };

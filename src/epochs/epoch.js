@@ -1,20 +1,17 @@
 var vm = require('vm');
 var slowTimers = require('../eventLoop/slowTimers');
 var Epoch = (function () {
-    function Epoch(epochId, code) {
-        var args = [];
-        for (var _i = 2; _i < arguments.length; _i++) {
-            args[_i - 2] = arguments[_i];
-        }
+    function Epoch(code, epochId) {
         this.setTimeout = slowTimers.createSetTimeoutFunction(this);
         this.clearTimeout = slowTimers.clearTimeout;
         //    Promise = SlowPromise.forEpoch(this);
         // TODO: other 'global' stuff:
         this.console = global.console;
         this.global = global.global;
+        // TODO: set default (random?) epoch id if none specified
         this.EPOCH = epochId;
         vm.createContext(this);
-        this.setTimeout.apply(this, [code, 0].concat(args));
+        this.setTimeout(code, 0);
     }
     return Epoch;
 })();

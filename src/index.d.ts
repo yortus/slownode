@@ -1,23 +1,23 @@
 ﻿// TODO: any way to reduce duplication of comments and structure with implementation files?
 
 
-export function run(epochId: string, code: Function, ...args: any[]): void;
+export function run(code: string, epochId?: string): void;
 export function on(eventId: string, handler: Function): void;
 // TODO: fires when slow event loop exits
 export function on(eventId: 'end', handler: Function): void;
 
 
 export class Epoch {
-    constructor(epochId: string, code: Function, ...args: any[]);
+    constructor(epochId: string, code: string);
 
     /**
      * Schedules `callback` to be called with the given `args` (if any) after `delay` milliseconds.
      * Returns an opaque Timer object that may be passed to clearTimeout() to cancel the scheduled call.
-     * @param callback the function to execute after the timeout.
+     * @param code the function to execute or string to evaluate after the timeout.
      * @param delay the number of milliseconds to wait before calling the callback.
-     * @param args the optional arguments to pass to the callback.
+     * @param args the optional arguments to pass to the callback (only if `code` is a function).
      */
-    setTimeout: (callback: Function, delay: number, ...args: any[]) => Timer;
+    setTimeout: (code: Function|string, delay: number, ...args: any[]) => Timer;
 
     /**
      * Cancels an event previously scheduled with setTimeout.

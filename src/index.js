@@ -4,12 +4,8 @@ var Epoch = require('./epochs/epoch');
 var slowEventLoop = require('./eventLoop/slowEventLoop');
 var api = {};
 // TODO: ...
-api.run = function (epochId, code) {
-    var args = [];
-    for (var _i = 2; _i < arguments.length; _i++) {
-        args[_i - 2] = arguments[_i];
-    }
-    return new (Epoch.bind.apply(Epoch, [void 0].concat([epochId, code], args)))();
+api.run = function (code, epochId) {
+    return new Epoch(code, epochId);
 };
 // TODO: ...
 api.weakRef = function (obj) {

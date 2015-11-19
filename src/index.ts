@@ -10,8 +10,8 @@ var api: typeof API = <any> {};
 
 
 // TODO: ...
-api.run = (epochId: string, code: Function, ...args: any[]): Epoch => {
-    return new Epoch(epochId, code, ...args);
+api.run = (code: string, epochId?: string): Epoch => {
+    return new Epoch(code, epochId);
 }
 
 

@@ -13,10 +13,11 @@ export = Epoch;
 
 class Epoch implements API.Epoch {
 
-    constructor(epochId: string, code: Function, ...args: any[]) {
+    constructor(code: string, epochId?: string) {
+        // TODO: set default (random?) epoch id if none specified
         this.EPOCH = epochId;
         vm.createContext(this);
-        this.setTimeout(code, 0, ...args);
+        this.setTimeout(code, 0);
     }
 
     EPOCH: string;

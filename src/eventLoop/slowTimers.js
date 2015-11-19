@@ -4,12 +4,16 @@ var isRelocatableFunction = require('../util/isRelocatableFunction');
 var slowEventLoop = require('./slowEventLoop');
 // TODO: doc...
 function createSetTimeoutFunction(epoch) {
-    return function setTimeout(callback, delay) {
+    return function setTimeout(code, delay) {
         var args = [];
         for (var _i = 2; _i < arguments.length; _i++) {
             args[_i - 2] = arguments[_i];
         }
-        var timer = new Timer(epoch, delay, callback, args);
+        if (typeof code === 'string') {
+            code = vm.runInContext("(function () {\n" + code + "\n})", epoch);
+            args = [];
+        }
+        var timer = new Timer(epoch, delay, code, args);
         slowEventLoop.add(timer);
         return timer;
     };
