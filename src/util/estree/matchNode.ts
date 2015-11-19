@@ -12,8 +12,6 @@ function matchNode<TReturn>(node: ESTree.Node, cases: PatternMatch<TReturn>) {
 /** Helper interface that provides static typing for the match() function. */
 interface PatternMatch<TReturn> {
     Program?:               (prog: ESTree.Program)                  => TReturn;
-    FunctionDeclaration?:   (expr: ESTree.FunctionDeclaration)      => TReturn;
-    FunctionExpression?:    (expr: ESTree.FunctionExpression)       => TReturn;
 
     // Statements
     EmptyStatement?:        (stmt: ESTree.EmptyStatement)           => TReturn;
@@ -31,7 +29,9 @@ interface PatternMatch<TReturn> {
     ContinueStatement?:     (stmt: ESTree.ContinueStatement)        => TReturn;
     ReturnStatement?:       (stmt: ESTree.ReturnStatement)          => TReturn;
     ThrowStatement?:        (stmt: ESTree.ThrowStatement)           => TReturn;
+    DebuggerStatement?:     (stmt: ESTree.DebuggerStatement)        => TReturn;
     VariableDeclaration?:   (stmt: ESTree.VariableDeclaration)      => TReturn;
+    FunctionDeclaration?:   (expr: ESTree.FunctionDeclaration)      => TReturn;
 
     // Expressions
     SequenceExpression?:    (expr: ESTree.SequenceExpression)       => TReturn;
@@ -47,6 +47,7 @@ interface PatternMatch<TReturn> {
     MemberExpression?:      (expr: ESTree.MemberExpression)         => TReturn;
     ArrayExpression?:       (expr: ESTree.ArrayExpression)          => TReturn;
     ObjectExpression?:      (expr: ESTree.ObjectExpression)         => TReturn;
+    FunctionExpression?:    (expr: ESTree.FunctionExpression)       => TReturn;
     Identifier?:            (expr: ESTree.Identifier)               => TReturn;
     TemplateLiteral?:       (expr: ESTree.TemplateLiteral)          => TReturn;
     RegexLiteral?:          (expr: ESTree.RegexLiteral)             => TReturn;

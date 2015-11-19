@@ -4,7 +4,6 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var assert = require('assert');
-var vm = require('vm');
 var _ = require('lodash');
 var persistence = require('../persistence');
 var SlowPromiseResolve = require('./slowPromiseResolve');
@@ -42,10 +41,9 @@ var SlowPromise = (function () {
         // Construct resolve and reject functions to be passed to the resolver.
         var resolve = new SlowPromiseResolve(this);
         var reject = new SlowPromiseReject(this);
-        // Call the given resolver inside the epoch. This kicks off the asynchronous operation whose outcome the Promise represents.
+        // Call the given resolver. This kicks off the asynchronous operation whose outcome the Promise represents.
         try {
-            var resolverInEpoch = vm.runInContext('(' + resolver.toString() + ')', this.epoch);
-            resolverInEpoch(resolve, reject);
+            resolver(resolve, reject);
         }
         catch (ex) {
             reject(ex);
@@ -86,7 +84,7 @@ var SlowPromise = (function () {
      */
     SlowPromise.delay = function (ms, value) {
         var deferred = this.deferred();
-        setTimeout(function (resolve, value) { return resolve(value); }, ms, deferred.resolve, value);
+        this.prototype.epoch['setTimeout'](function (resolve, value) { return resolve(value); }, ms, deferred.resolve, value);
         return deferred.promise;
     };
     ;
@@ -97,11 +95,21 @@ var SlowPromise = (function () {
         var Subclass = (function (_super) {
             __extends(SlowPromise, _super);
             function SlowPromise(resolver) {
+                // TODO: temp testing...
+                //if (resolver) {
+                //    var resolver2: any = vm.runInContext('(' + resolver + ')', epoch);
+                //}
                 _super.call(this, resolver);
             }
             return SlowPromise;
         })(this);
         Subclass.prototype.epoch = epoch;
+        //// TODO: temp testing...
+        //Subclass.delay = (ms: number, value?: any) => {
+        //    var deferred = Subclass.deferred();
+        //    epoch['setTimeout']((resolve, value) => resolve(value), ms, deferred.resolve, value);
+        //    return deferred.promise;
+        //};
         // TODO: force-bind static props so they work when called as free functions
         for (var staticProperty in Subclass) {
             if (!Subclass.hasOwnProperty(staticProperty))

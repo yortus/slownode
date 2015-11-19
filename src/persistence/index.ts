@@ -11,6 +11,8 @@ import Knex = require('knex');
 
 /** Begins tracking the specified object. */
 export function created(slowObj: SlowObject) {
+//TODO:...
+console.log(`CREATED   epoch:${slowObj.$slow.epochId}   kind:${slowObj.$slow.kind}   id:${slowObj.$slow.id}`); 
     assert(!trackedObjects.has(slowObj));
     assert(!weakReferences.has(slowObj));
     trackedObjects.add(slowObj);
@@ -20,6 +22,8 @@ export function created(slowObj: SlowObject) {
 
 /** Records that the tracked object has changed state. */
 export function updated(slowObj: SlowObject) {
+//TODO:...
+console.log(`UPDATED   epoch:${slowObj.$slow.epochId}   kind:${slowObj.$slow.kind}   id:${slowObj.$slow.id}`); 
     assert(trackedObjects.has(slowObj));
     assert(!weakReferences.has(slowObj));
     if (!pendingCreates.has(slowObj)) {
@@ -29,6 +33,8 @@ export function updated(slowObj: SlowObject) {
 
 /** Records that the tracked object is no longer referenced. */
 export function deleted(slowObj: SlowObject) {
+//TODO:...
+console.log(`DELETED   epoch:${slowObj.$slow.epochId}   kind:${slowObj.$slow.kind}   id:${slowObj.$slow.id}`); 
     assert(trackedObjects.has(slowObj));
     assert(!weakReferences.has(slowObj));
     if (pendingCreates.has(slowObj)) {
@@ -49,6 +55,8 @@ export function weakRef(obj: any) {
 
 /** Commits the current state of all tracked objects to persistent storage. */
 export var flush = async (() => {
+//TODO:...
+console.log(`FLUSH...`); 
 
     // Return immediately if there are no pending changes.
     if (pendingCreates.size === 0 && pendingUpdates.size === 0 && pendingDeletes.size === 0) return;

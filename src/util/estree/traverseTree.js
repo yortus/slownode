@@ -76,6 +76,7 @@ function traverseTree(rootNode, action) {
         ContinueStatement: function (stmt) { return stmt.label && traverseTree(stmt.label, action); },
         ReturnStatement: function (stmt) { return stmt.argument && traverseTree(stmt.argument, action); },
         ThrowStatement: function (stmt) { return traverseTree(stmt.argument, action); },
+        DebuggerStatement: function (stmt) { },
         VariableDeclaration: function (stmt) {
             stmt.declarations.forEach(function (decl) {
                 traverseTree(decl.id, action);

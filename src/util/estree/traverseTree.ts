@@ -94,6 +94,8 @@ function traverseTree(rootNode: ESTree.Node, action: (node: ESTree.Node) => any)
 
         ThrowStatement: (stmt) => traverseTree(stmt.argument, action),
 
+        DebuggerStatement: (stmt) => {},
+
         VariableDeclaration: (stmt) => {
             stmt.declarations.forEach(decl => {
                 traverseTree(decl.id, action);

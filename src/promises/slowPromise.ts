@@ -15,12 +15,6 @@ export = SlowPromise;
 // TODO: BUG? if 'resolver' is a relocatable (not slow async) function, and contains async constructs, and the process restarts before
 // it calls resolve() or reject(), then the promise will never settle because the resolver is not re-run on epoch resume.
 
-
-
-
-
-
-
 /**
  * Promises A+ compliant slow promise implementation.
  */
@@ -44,14 +38,8 @@ class SlowPromise {
         var resolve = new SlowPromiseResolve(this);
         var reject = new SlowPromiseReject(this);
 
-        // Call the given resolver inside the epoch. This kicks off the asynchronous operation whose outcome the Promise represents.
-        try {
-            var resolverInEpoch = <Function> <any> vm.runInContext('(' + resolver.toString() + ')', this.epoch);
-            resolverInEpoch(resolve, reject);
-        }
-        catch (ex) {
-            reject(ex);
-        }
+        // Call the given resolver. This kicks off the asynchronous operation whose outcome the Promise represents.
+        try { resolver(resolve, reject); } catch (ex) { reject(ex); }
     }
 
     /**
@@ -89,7 +77,7 @@ class SlowPromise {
      */
     static delay(ms: number, value?: any) {
         var deferred = this.deferred();
-        setTimeout((resolve, value) => resolve(value), ms, deferred.resolve, value);
+        this.prototype.epoch['setTimeout']((resolve, value) => resolve(value), ms, deferred.resolve, value);
         return deferred.promise;
     };
 
@@ -100,11 +88,29 @@ class SlowPromise {
 
         var Subclass = class SlowPromise extends this {
             constructor(resolver) {
+
+                // TODO: temp testing...
+                //if (resolver) {
+                //    var resolver2: any = vm.runInContext('(' + resolver + ')', epoch);
+                //}
                 super(resolver);
             }
         };
         Subclass.prototype.epoch = epoch;
+
+
+
+        //// TODO: temp testing...
+        //Subclass.delay = (ms: number, value?: any) => {
+        //    var deferred = Subclass.deferred();
+        //    epoch['setTimeout']((resolve, value) => resolve(value), ms, deferred.resolve, value);
+        //    return deferred.promise;
+        //};
         
+
+
+
+
         // TODO: force-bind static props so they work when called as free functions
         for (var staticProperty in Subclass) {
             if (!Subclass.hasOwnProperty(staticProperty)) continue;

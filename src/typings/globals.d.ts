@@ -9,3 +9,6 @@ declare namespace Promise {
 
 
 declare function closure(env: { [name: string]: any; }, fn: Function): (...args) => any;
+
+
+declare var EPOCH: string;

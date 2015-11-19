@@ -14,10 +14,12 @@ export = Epoch;
 class Epoch implements API.Epoch {
 
     constructor(epochId: string, code: Function, ...args: any[]) {
+        this.EPOCH = epochId;
         vm.createContext(this);
         this.setTimeout(code, 0, ...args);
     }
 
+    EPOCH: string;
     setTimeout = slowTimers.createSetTimeoutFunction(this);
     clearTimeout = slowTimers.clearTimeout;
     Promise = SlowPromise.forEpoch(this);

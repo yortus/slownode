@@ -22,5 +22,7 @@ api.on = function (eventId, handler) {
 };
 // TODO: ...
 api.Epoch = Epoch;
+// TODO: temp testing
+global['EPOCH'] = '<NO-EPOCH>';
 module.exports = api;
 //# sourceMappingURL=index.js.map

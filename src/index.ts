@@ -30,3 +30,7 @@ api.on = (eventId: string, handler: Function) => {
 
 // TODO: ...
 api.Epoch = Epoch;
+
+
+// TODO: temp testing
+global['EPOCH'] = '<NO-EPOCH>';

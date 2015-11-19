@@ -13,6 +13,7 @@ var Epoch = (function () {
         // TODO: other 'global' stuff:
         this.console = global.console;
         this.global = global.global;
+        this.EPOCH = epochId;
         vm.createContext(this);
         this.setTimeout.apply(this, [code, 0].concat(args));
     }

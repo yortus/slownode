@@ -49,7 +49,11 @@ describe('Within an Epoch instance', function () {
             console.log('tick');
             --count;
             if (count > 0) {
-                Promise.delay(500, {count, loopNTimes}).then(ctx => ctx.loopNTimes(ctx.count));
+                Promise.delay(500, {count, loopNTimes}).then(ctx => {
+                    //console.log('COUNT: ' + ctx.count);
+                    //console.log('EPOCH: ' + EPOCH);
+                    ctx.loopNTimes(ctx.count);
+                });
             }
         }
     });
