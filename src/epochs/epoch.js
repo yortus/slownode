@@ -1,6 +1,5 @@
 var vm = require('vm');
 var slowTimers = require('../eventLoop/slowTimers');
-var SlowPromise = require('../promises/slowPromise');
 var Epoch = (function () {
     function Epoch(epochId, code) {
         var args = [];
@@ -9,7 +8,7 @@ var Epoch = (function () {
         }
         this.setTimeout = slowTimers.createSetTimeoutFunction(this);
         this.clearTimeout = slowTimers.clearTimeout;
-        this.Promise = SlowPromise.forEpoch(this);
+        //    Promise = SlowPromise.forEpoch(this);
         // TODO: other 'global' stuff:
         this.console = global.console;
         this.global = global.global;

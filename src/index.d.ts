@@ -25,10 +25,10 @@ export class Epoch {
      */
     clearTimeout: (timeoutObject: Timer) => void;
 
-    /**
-     * Promises A+ compliant slow promise implementation.
-     */
-    Promise: typeof SlowPromise;
+    ///**
+    // * Promises A+ compliant slow promise implementation.
+    // */
+    //Promise: typeof SlowPromise;
 }
 
 
@@ -115,75 +115,75 @@ export function weakRef(obj: any): void;
 declare type Timer = {};
 
 
-/** Promises A+ compliant slow promise implementation. */
-declare class SlowPromise<T> {
+///** Promises A+ compliant slow promise implementation. */
+//declare class SlowPromise<T> {
 
-    /** Constructs a SlowPromise instance. */
-    constructor(resolver: (resolve: (value?: T | Thenable<T>) => void, reject: (error?: any) => void) => void);
+//    /** Constructs a SlowPromise instance. */
+//    constructor(resolver: (resolve: (value?: T | Thenable<T>) => void, reject: (error?: any) => void) => void);
 
-    /** Returns a new SlowPromise instance that is already resolved with the given value. */
-    static resolved<T>(value?: T | Thenable<T>): Promise<T>;
+//    /** Returns a new SlowPromise instance that is already resolved with the given value. */
+//    static resolved<T>(value?: T | Thenable<T>): Promise<T>;
 
-    /** Returns a new SlowPromise instance that is already rejected with the given reason. */
-    static rejected(reason: any): Promise<any>;
+//    /** Returns a new SlowPromise instance that is already rejected with the given reason. */
+//    static rejected(reason: any): Promise<any>;
 
-    /** Returns an object containing a new SlowPromise instance, along with a resolve function and a reject function to control its fate. */
-    static deferred(): Deferred;
+//    /** Returns an object containing a new SlowPromise instance, along with a resolve function and a reject function to control its fate. */
+//    static deferred(): Deferred;
 
-    /** Returns a new SlowPromise instance that resolves to `value` after `ms` milliseconds. */
-    static delay<U>(ms: number, value?: U): Promise<U>;
+//    /** Returns a new SlowPromise instance that resolves to `value` after `ms` milliseconds. */
+//    static delay<U>(ms: number, value?: U): Promise<U>;
 
-	/**
-     * onFulfilled is called when the promise resolves. onRejected is called when the promise rejects.
-     * Both callbacks have a single parameter , the fulfillment value or rejection reason.
-     * "then" returns a new promise equivalent to the value you return from onFulfilled/onRejected after being passed through Promise.resolve.
-     * If an error is thrown in the callback, the returned promise rejects with that error.
-     * @param onFulfilled called when/if "promise" resolves
-     * @param onRejected called when/if "promise" rejects
-     */
-    then<U>(onFulfilled?: (value: T) => U | Thenable<U>, onRejected?: (error: any) => U | Thenable<U>): Promise<U>;
-    then<U>(onFulfilled?: (value: T) => U | Thenable<U>, onRejected?: (error: any) => void): Promise<U>;
+//	/**
+//     * onFulfilled is called when the promise resolves. onRejected is called when the promise rejects.
+//     * Both callbacks have a single parameter , the fulfillment value or rejection reason.
+//     * "then" returns a new promise equivalent to the value you return from onFulfilled/onRejected after being passed through Promise.resolve.
+//     * If an error is thrown in the callback, the returned promise rejects with that error.
+//     * @param onFulfilled called when/if "promise" resolves
+//     * @param onRejected called when/if "promise" rejects
+//     */
+//    then<U>(onFulfilled?: (value: T) => U | Thenable<U>, onRejected?: (error: any) => U | Thenable<U>): Promise<U>;
+//    then<U>(onFulfilled?: (value: T) => U | Thenable<U>, onRejected?: (error: any) => void): Promise<U>;
 
-    /**
-     * Sugar for promise.then(undefined, onRejected)
-     * @param onRejected called when/if "promise" rejects
-     */
-    catch<U>(onRejected?: (error: any) => U | Thenable<U>): Promise<U>;
-}
-
-
-// A promise-like type.
-interface Thenable<T> {
-    then<U>(onFulfilled?: (value: T) => U | Thenable<U>, onRejected?: (error: any) => U | Thenable<U>): Thenable<U>;
-    then<U>(onFulfilled?: (value: T) => U | Thenable<U>, onRejected?: (error: any) => void): Thenable<U>;
-}
+//    /**
+//     * Sugar for promise.then(undefined, onRejected)
+//     * @param onRejected called when/if "promise" rejects
+//     */
+//    catch<U>(onRejected?: (error: any) => U | Thenable<U>): Promise<U>;
+//}
 
 
-// Slow promise resolve function.
-declare type Resolve<T> = (value?: T | Thenable<T>) => void;
+//// A promise-like type.
+//interface Thenable<T> {
+//    then<U>(onFulfilled?: (value: T) => U | Thenable<U>, onRejected?: (error: any) => U | Thenable<U>): Thenable<U>;
+//    then<U>(onFulfilled?: (value: T) => U | Thenable<U>, onRejected?: (error: any) => void): Thenable<U>;
+//}
 
 
-// Slow promise reject function.
-declare type Reject = (reason?: any) => void;
+//// Slow promise resolve function.
+//declare type Resolve<T> = (value?: T | Thenable<T>) => void;
 
 
-// The type of object returned by SlowPromise's deferred() static method.
-interface Deferred {
-    promise: Promise<any>;
-    resolve: Resolve<any>;
-    reject: Reject;
-}
+//// Slow promise reject function.
+//declare type Reject = (reason?: any) => void;
+
+
+//// The type of object returned by SlowPromise's deferred() static method.
+//interface Deferred {
+//    promise: Promise<any>;
+//    resolve: Resolve<any>;
+//    reject: Reject;
+//}
 
 
 
 
-// Slow async function type variations.
-declare type SlowAsyncFunctionNullary<TReturn> = () => Promise<TReturn>;
-declare type SlowAsyncFunctionUnary<T1, TReturn> = (_1: T1) => Promise<TReturn>;
-declare type SlowAsyncFunctionBinary<T1, T2, TReturn> = (_1: T1, _2: T2) => Promise<TReturn>;
-declare type SlowAsyncFunctionTernary<T1, T2, T3, TReturn> = (_1: T1, _2: T2, _3: T3) => Promise<TReturn>;
-declare type SlowAsyncFunctionQuaternary<T1, T2, T3, T4, TReturn> = (_1: T1, _2: T2, _3: T3, _4: T4) => Promise<TReturn>;
-declare type SlowAsyncFunctionVariadic<TReturn> = (...args: any[]) => Promise<any>;
+//// Slow async function type variations.
+//declare type SlowAsyncFunctionNullary<TReturn> = () => Promise<TReturn>;
+//declare type SlowAsyncFunctionUnary<T1, TReturn> = (_1: T1) => Promise<TReturn>;
+//declare type SlowAsyncFunctionBinary<T1, T2, TReturn> = (_1: T1, _2: T2) => Promise<TReturn>;
+//declare type SlowAsyncFunctionTernary<T1, T2, T3, TReturn> = (_1: T1, _2: T2, _3: T3) => Promise<TReturn>;
+//declare type SlowAsyncFunctionQuaternary<T1, T2, T3, T4, TReturn> = (_1: T1, _2: T2, _3: T3, _4: T4) => Promise<TReturn>;
+//declare type SlowAsyncFunctionVariadic<TReturn> = (...args: any[]) => Promise<any>;
 
 
 // TODO: ???

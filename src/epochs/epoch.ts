@@ -5,7 +5,7 @@ import SlowKind = require('../slowKind');
 import persistence = require('../persistence');
 import slowEventLoop = require('../eventLoop/slowEventLoop');
 import slowTimers = require('../eventLoop/slowTimers');
-import SlowPromise = require('../promises/slowPromise');
+//import SlowPromise = require('../promises/slowPromise');
 //import SlowClosure = require('../functions/slowClosure');
 //import SlowAsyncFunction = require('../functions/slowAsyncFunction');
 export = Epoch;
@@ -22,7 +22,7 @@ class Epoch implements API.Epoch {
     EPOCH: string;
     setTimeout = slowTimers.createSetTimeoutFunction(this);
     clearTimeout = slowTimers.clearTimeout;
-    Promise = SlowPromise.forEpoch(this);
+//    Promise = SlowPromise.forEpoch(this);
 
     // TODO: other 'global' stuff:
     console = global.console;

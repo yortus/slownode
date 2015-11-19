@@ -18,45 +18,45 @@ process.on('SIGINT', () => {
 describe('Within an Epoch instance', function () {
 
 
-    //it('the setTimeout(...) API function works', (done) => {
-
-    //    slownode.run('tests', loopNTimes, 5);
-    //    slownode.on('end', () => {
-    //        console.log('Finished!');
-    //        done();
-    //    });
-        
-    //    function loopNTimes(count) {
-    //        console.log('tick');
-    //        --count;
-    //        if (count > 0) {
-    //            setTimeout(loopNTimes, 500, count);
-    //        }
-    //    }
-    //});
-
-
-    it('the Promise class works', (done) => {
+    it('the setTimeout(...) API function works', (done) => {
 
         slownode.run('tests', loopNTimes, 5);
         slownode.on('end', () => {
             console.log('Finished!');
             done();
         });
-
-        // Function to process a single iteration
-        function loopNTimes(count: number) {
+        
+        function loopNTimes(count) {
             console.log('tick');
             --count;
             if (count > 0) {
-                Promise.delay(500, {count, loopNTimes}).then(ctx => {
-                    //console.log('COUNT: ' + ctx.count);
-                    //console.log('EPOCH: ' + EPOCH);
-                    ctx.loopNTimes(ctx.count);
-                });
+                setTimeout(loopNTimes, 500, count);
             }
         }
     });
+
+
+    //it('the Promise class works', (done) => {
+
+    //    slownode.run('tests', loopNTimes, 5);
+    //    slownode.on('end', () => {
+    //        console.log('Finished!');
+    //        done();
+    //    });
+
+    //    // Function to process a single iteration
+    //    function loopNTimes(count: number) {
+    //        console.log('tick');
+    //        --count;
+    //        if (count > 0) {
+    //            Promise.delay(500, {count, loopNTimes}).then(ctx => {
+    //                //console.log('COUNT: ' + ctx.count);
+    //                //console.log('EPOCH: ' + EPOCH);
+    //                ctx.loopNTimes(ctx.count);
+    //            });
+    //        }
+    //    }
+    //});
 
 
     //it('the closure(...) API function works', (done) => {
