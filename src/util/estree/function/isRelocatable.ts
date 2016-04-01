@@ -52,6 +52,8 @@ function isRelocatable(func: ESTree.Function, safeIds?: string[], baseLocation?:
         });
     });
 
+    // TODO: BUG? don't we need to check foundNonRelocatableNestedFunction here?
+
     // All checked. The function must be relocatable.
     return true;
 }
