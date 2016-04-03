@@ -1,8 +1,9 @@
+built/
 node_modules/
-.vs/
 *.js.map
 *.log
 *.sln
+
 slownode.db
 slowfiles/
 slowlog.txt

@@ -1,15 +1,17 @@
 {
   "name": "slownode",
-  "version": "0.3.6",
+  "version": "0.4.0",
   "description": "slownode",
   "readmeFilename": "README.md",
-  "main": "src/index",
-  "typings": "src/index.d.ts",
+  "main": "built/index.js",
+  "typings": "built/index.d.ts",
   "scripts": {
-    "build": "tsc",
-    "prepublish": "npm run build && require-self",
-    "test": "node ./scripts/runSlownodeTestSuite",
-    "test-promises-aplus": "node ./scripts/runPromisesAPlusTestSuite"
+    "build": "tsc -p src && tsc -p test",
+    "clean": "rimraf built/",
+    "prepublish": "npm run self-ref && npm run build",
+    "test": "node ./scripts/run-unit-tests",
+    "test-promises-aplus": "node ./scripts/run-promises-aplus-tests",
+    "self-ref": "node ./scripts/enable-self-reference"
   },
   "repository": {
     "type": "git",
@@ -26,12 +28,12 @@
   ],
   "contributors": [
     {
-      "name": "Carl Winkler",
-      "email": "carl@carlossus.com"
-    },
-    {
       "name": "Troy Gerwien",
       "email": "yortus@gmail.com"
+    },
+    {
+      "name": "Carl Winkler",
+      "email": "carl@carlossus.com"
     }
   ],
   "license": "MIT",
@@ -48,6 +50,7 @@
     "knex": "^0.9.0",
     "lodash": "^3.10.1",
     "sqlite3": "^3.1.1",
+    "typescript": "^1.9.0-dev.20160402",
     "weak": "^1.0.0"
   },
   "devDependencies": {
@@ -55,6 +58,7 @@
     "chai-as-promised": "^5.1.0",
     "mocha": "^2.2.5",
     "promises-aplus-tests": "^2.1.1",
+    "rimraf": "^2.5.2",
     "typescript": "^1.6.0-beta"
   },
   "slownode": {
