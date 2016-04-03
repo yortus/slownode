@@ -1,4 +1,23 @@
 
+
+## New Scheme
+
+1. tsc --noEmit
+  - catch gross syntax errors and typechecking errors
+  - nothing emitted
+2. esprima --> AST --> whitelist nodes
+  - catch unsupported syntax
+  - nothing emitted
+3. tsc --outFile --amd --es6 --noHelpers
+  - emit single output file --> TEMP
+4. esprima --> AST --> xform genfuncs --> escodegen
+  - transformed output file --> TEMP
+5. wrap in prolog + epilog 'runner' code --> FINAL JS FILE
+  - output file is now runnable
+  - exports promise of result/outcome
+
+
+
 ## async operations
 - [ ] internal
   - [ ] own async function
