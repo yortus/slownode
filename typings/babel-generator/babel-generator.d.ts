@@ -5,9 +5,17 @@ declare module "babel-generator" {
     import * as t from 'babel-types';
     type Node = t.Node;
 
-    export default function generate(ast: Node, opts: GenerateOptions, code: string): Thingy;
+    // TODO: finish comment:...
+    /**
+     * Turns an AST into code, maintaining sourcemaps, user preferences, and valid output.
+     * @param ast - ???
+     * @param opts - ???
+     * @param code - ???
+     * @returns - ???
+     */
+    export default function generate(ast: Node, opts: GeneratorOptions, code: string | {[filename: string]: string}): GeneratorResult;
 
-    export interface GenerateOptions {
+    export interface GeneratorOptions {
 
         /**
          * Optional string to add as a block comment at the start of the output file.
@@ -63,9 +71,29 @@ declare module "babel-generator" {
         filename?: string;        
 
         /**
-         * 
+         * Enable generating source maps. Defaults to `false`.
          */
+        sourceMaps?: boolean;
 
+        /**
+         * The filename of the generated code that the source map will be associated with.
+         */
+        sourceMapTarget?: string;
 
+        /**
+         * A root for all relative URLs in the source map.
+         */
+        sourceRoot?: string;
+
+        /**
+         * The filename for the source code (i.e. the code in the `code` argument).
+         * This will only be used if `code` is a string.
+         */
+        sourceFileName?: string;
+    }
+
+    export interface GeneratorResult {
+        map: Object | null | undefined; // JSON
+        code: string;
     }
 }
