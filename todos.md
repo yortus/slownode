@@ -1,6 +1,22 @@
 
 
-## New Scheme
+## New New Scheme
+
+1. tsc --noEmit
+  - optional! (just supports extra safety and editor intellisense)
+  - catch gross syntax errors and typechecking errors
+  - nothing emitted
+2. babel transforms
+  - catch unsupported syntax (use whitelist)
+  - transform async/await/generator functions
+  - resolve imports/exports into single AST / single file
+3. generate single file output
+4. wrap in prolog + epilog 'runner' code --> FINAL JS FILE
+  - output file is now runnable
+  - exports promise of result/outcome
+
+
+## New Scheme (Old)
 
 1. tsc --noEmit
   - catch gross syntax errors and typechecking errors

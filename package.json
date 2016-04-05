@@ -42,8 +42,9 @@
   },
   "homepage": "https://github.com/paypac/slownode",
   "dependencies": {
-    "escodegen": "^1.6.1",
-    "esprima": "^2.5.0",
+    "babel-core": "^6.7.4",
+    "babel-traverse": "^6.7.4",
+    "babylon": "^6.7.0",
     "lodash": "^3.10.1",
     "typescript": "^1.9.0-dev.20160402"
   },
