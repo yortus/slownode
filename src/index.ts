@@ -4,6 +4,7 @@ import * as path from 'path';
 import * as babylon from "babylon";
 import * as t from "babel-types";
 import traverse, {Visitor} from "babel-traverse";
+import generate from "babel-generator";
 //import ts = require("typescript");
 
 
@@ -44,6 +45,10 @@ traverse(ast, {
 
 debugger;
 
+var out = generate(ast, null, code);
+
+
+debugger;
 
 // let ast = esprima.parse(source, {});
 // debugger;
