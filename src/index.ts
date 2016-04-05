@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as babylon from "babylon";
 import * as t from "babel-types";
-import traverse from "babel-traverse";
+import traverse, {Visitor} from "babel-traverse";
 //import ts = require("typescript");
 
 
@@ -85,3 +85,25 @@ function _asyncToGenerator(fn) {
         });
     };
 }
+
+
+
+
+
+const updateParamNameVisitor: Visitor = {
+  Identifier(path) {
+    if (path.node.name === this.paramName) {
+      path.node.name = "x";
+    }
+  }
+};
+
+const MyVisitor: Visitor = {
+  FunctionDeclaration(path) {
+    const param = path.node.params[0];
+    const paramName = param.name;
+    param.name = "x";
+
+    path.traverse(updateParamNameVisitor, { paramName });
+  }
+};

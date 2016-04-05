@@ -3,23 +3,39 @@
 
 declare module "babel-traverse" {
     import * as t from 'babel-types';
+    type Node = t.Node;
 
-    export default function traverse(parent: t.Node | t.Node[], opts?: TraverseOptions, scope?: Scope, state?: State, parentPath?: Path<t.Node>): void;
+    export default function traverse(parent: Node | Node[], opts?: TraverseOptions, scope?: Scope, state?: any, parentPath?: NodePath<Node>): void;
 
     export interface TraverseOptions extends Visitor {
         scope?: Scope;
         noScope?: boolean;
     }
 
-    export interface Scope {
-        // TODO: more props...
+    export class Scope {
+        constructor(path: NodePath<Node>, parentScope?: Scope);
+        path: NodePath<Node>;
+        block: Node;
+        parentBlock: Node;
+        parent: Scope;
+        hub: Hub;
+        bindings: { [name: string]: Binding; };
     }
 
-    export interface State {
-        // TODO: more props...
+    export class Binding {
+        constructor(opts: { existing: Binding; identifier: t.IdentifierNode; scope: Scope; path: NodePath<Node>; kind: 'var' | 'let' | 'const'; });
+        identifier: t.IdentifierNode;
+        scope: Scope;
+        path: NodePath<Node>;
+        kind: 'var' | 'let' | 'const';
+        referenced: boolean;
+        references: number;
+        referencePaths: NodePath<Node>[];
+        constant: boolean;
+        constantViolations: NodePath<Node>[];
     }
 
-    export interface Visitor extends VisitNodeObject<t.Node> {
+    export interface Visitor extends VisitNodeObject<Node> {
         Comment?: VisitNode<t.CommentNode>;
         SourceLocation?: VisitNode<t.SourceLocationNode>;
         BlockComment?: VisitNode<t.BlockCommentNode>;
@@ -198,20 +214,50 @@ declare module "babel-traverse" {
 
     export type VisitNode<T> = VisitNodeFunction<T> | VisitNodeObject<T>;
 
-    export type VisitNodeFunction<T> = (path: Path<T>) => void;
+    export type VisitNodeFunction<T> = (path: NodePath<T>) => void;
 
     export interface VisitNodeObject<T> {
-        enter?(path: Path<T>): void;
-        exit?(path: Path<T>): void;
+        enter?(path: NodePath<T>): void;
+        exit?(path: NodePath<T>): void;
     }
 
-    export interface Path<T> {
-        parent: t.Node;
-        node: T;
+    export class NodePath<T> {
+        constructor(hub: Hub, parent: Node);
+        parent: Node;
+        hub: Hub;
+        contexts: TraversalContext[];
+        data: Object;
+        shouldSkip: boolean;
+        shouldStop: boolean;
+        removed: boolean;
+        state: any;
+        opts: Object | null | undefined;
+        skipKeys: Object | null | undefined;
+        parentPath: NodePath<Node> | null | undefined;
+        context: TraversalContext;
+        container: Object | Object[] | null | undefined;
+        listKey: string | null | undefined;
+        inList: boolean;
+        parentKey: string | null | undefined;
+        key: string | null | undefined;
+        node: T | null | undefined;
         scope: Scope;
-        state: State;
-        // TODO: more props...
-        traverse(visitor: Visitor, state?: State): void;
-        // TODO: more methods...
+        type: string | null | undefined;
+        typeAnnotation: Object | null | undefined;
+
+        traverse(visitor: Visitor, state?: any): void;
+    }
+
+    export class Hub {
+        constructor(file, options);
+        file: any;
+        options: any;
+    }
+
+    interface TraversalContext {
+        parentPath: NodePath<Node>;
+        scope: Scope;
+        state: any;
+        opts: any;
     }
 }
