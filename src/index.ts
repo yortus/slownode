@@ -2,6 +2,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as babylon from "babylon";
+import * as t from "babel-types";
 import traverse from "babel-traverse";
 //import ts = require("typescript");
 
@@ -18,17 +19,27 @@ const code = `function square(n) {
   return n * n;
 }`;
 
-const ast = babylon.parse(source);
+const ast = babylon.parse(code);
 
 traverse(ast, {
-  enter(path) {
-    if (
-      path.node.type === "Identifier" &&
-      path.node.name === "n"
-    ) {
-      path.node.name = "x";
+
+    enter({node}) {
+        if (t.isIdentifier(node)) {
+            if (node.name === "n") {
+                node.name = "x";
+            }
+        }
+    },
+
+    Identifier: {
+        enter({node}) {
+            if (t.isIdentifier(node)) {
+                if (node.name === "n") {
+                    node.name = "x";
+                }
+            }
+        }
     }
-  }
 });
 
 debugger;
