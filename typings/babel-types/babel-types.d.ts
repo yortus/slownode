@@ -6,13 +6,12 @@
 // 05. fix nullable syntax:
 //      - regex find: \?([a-z<>\[\] |]+)
 //      - ...replace: $1 | null | undefined
-// 06. change 'AnyNode' interface naming:
+// 06. change `BabelNodeXXX` interface naming:
 //      - regex find: BabelNode([a-z]*)
 //      - ...replace: $1Node
 // 07. fix required params after optional params (see remaining red squiggles)
 //      - replace (p1?: T1, p2: T2) with (p1: T1 | undefined, p2: T2)
 // 08. fix `Node` interface declaration:
-//      - rename to `AnyNode`, otherwise it merges with lib.d.ts's `Node` defn
 //      - add 'type: string' property
 //      - make xxxComments properties optional and remove | null | undefined from their RHS
 // 09. turn isXXX() functions into type guards:
@@ -24,881 +23,889 @@
 //      - select the copies and find/replace in selection:
 //      - regex find: export function is([a-z]+)\([^)]*\)\: node is \1Node;
 //      - ...replace: export function assert$1(node: Object, opts?: Object): void;
+// 11. wrap whole file inside `declare module "babel-types" {...}`
+//      - interface --> export interface
+//      - type --> export type (careful: don't change `type` properties in interfaces!)
+//      - fix indenting
+// 12. manual tweaks:
+//      - change type annotation: IdentifierNode { name: string }
 
-interface CommentNode {
-    value: string;
-    start: number;
-    end: number;
-    loc: SourceLocationNode;
-}
-
-interface BlockCommentNode extends CommentNode {
-    type: "BlockComment";
-}
-
-interface LineCommentNode extends CommentNode {
-    type: "LineComment";
-}
-
-interface SourceLocationNode {
-    start: {
-        line: number;
-        column: number;
-    };
-
-    end: {
-        line: number;
-        column: number;
-    };
-}
-
-interface AnyNode {
-    type: string;
-    leadingComments?: Array<CommentNode>;
-    innerComments?: Array<CommentNode>;
-    trailingComments?: Array<CommentNode>;
-    start: number | null | undefined;
-    end: number | null | undefined;
-    loc: SourceLocationNode | null | undefined;
-}
-
-interface ArrayExpressionNode extends AnyNode {
-    type: "ArrayExpression";
-    elements?: any;
-}
-
-interface AssignmentExpressionNode extends AnyNode {
-    type: "AssignmentExpression";
-    operator: string;
-    left: LValNode;
-    right: ExpressionNode;
-}
-
-interface BinaryExpressionNode extends AnyNode {
-    type: "BinaryExpression";
-    operator: "+" | "-" | "/" | "%" | "*" | "**" | "&" | "|" | ">>" | ">>>" | "<<" | "^" | "==" | "===" | "!=" | "!==" | "in" | "instanceof" | ">" | "<" | ">=" | "<=";
-    left: ExpressionNode;
-    right: ExpressionNode;
-}
-
-interface DirectiveNode extends AnyNode {
-    type: "Directive";
-    value: DirectiveLiteralNode;
-}
-
-interface DirectiveLiteralNode extends AnyNode {
-    type: "DirectiveLiteral";
-    value: string;
-}
-
-interface BlockStatementNode extends AnyNode {
-    type: "BlockStatement";
-    directives?: any;
-    body: any;
-}
-
-interface BreakStatementNode extends AnyNode {
-    type: "BreakStatement";
-    label?: IdentifierNode | null | undefined;
-}
-
-interface CallExpressionNode extends AnyNode {
-    type: "CallExpression";
-    callee: ExpressionNode;
-    arguments: any;
-}
-
-interface CatchClauseNode extends AnyNode {
-    type: "CatchClause";
-    param: IdentifierNode;
-    body: BlockStatementNode;
-}
-
-interface ConditionalExpressionNode extends AnyNode {
-    type: "ConditionalExpression";
-    test: ExpressionNode;
-    consequent: ExpressionNode;
-    alternate: ExpressionNode;
-}
-
-interface ContinueStatementNode extends AnyNode {
-    type: "ContinueStatement";
-    label?: IdentifierNode | null | undefined;
-}
-
-interface DebuggerStatementNode extends AnyNode {
-    type: "DebuggerStatement";
-}
-
-interface DoWhileStatementNode extends AnyNode {
-    type: "DoWhileStatement";
-    test: ExpressionNode;
-    body: StatementNode;
-}
-
-interface EmptyStatementNode extends AnyNode {
-    type: "EmptyStatement";
-}
-
-interface ExpressionStatementNode extends AnyNode {
-    type: "ExpressionStatement";
-    expression: ExpressionNode;
-}
-
-interface FileNode extends AnyNode {
-    type: "File";
-    program: ProgramNode;
-    comments: any;
-    tokens: any;
-}
-
-interface ForInStatementNode extends AnyNode {
-    type: "ForInStatement";
-    left: VariableDeclarationNode | LValNode;
-    right: ExpressionNode;
-    body: StatementNode;
-}
-
-interface ForStatementNode extends AnyNode {
-    type: "ForStatement";
-    init?: VariableDeclarationNode | ExpressionNode | null | undefined;
-    test?: ExpressionNode | null | undefined;
-    update?: ExpressionNode | null | undefined;
-    body: StatementNode;
-}
-
-interface FunctionDeclarationNode extends AnyNode {
-    type: "FunctionDeclaration";
-    id: IdentifierNode;
-    params: any;
-    body: BlockStatementNode;
-    generator?: boolean;
-    async?: boolean;
-    returnType: any;
-    typeParameters: any;
-}
-
-interface FunctionExpressionNode extends AnyNode {
-    type: "FunctionExpression";
-    id?: IdentifierNode | null | undefined;
-    params: any;
-    body: BlockStatementNode;
-    generator?: boolean;
-    async?: boolean;
-    returnType: any;
-    typeParameters: any;
-}
-
-interface IdentifierNode extends AnyNode {
-    type: "Identifier";
-    name: any;
-    typeAnnotation: any;
-}
-
-interface IfStatementNode extends AnyNode {
-    type: "IfStatement";
-    test: ExpressionNode;
-    consequent: StatementNode;
-    alternate?: StatementNode | null | undefined;
-}
-
-interface LabeledStatementNode extends AnyNode {
-    type: "LabeledStatement";
-    label: IdentifierNode;
-    body: StatementNode;
-}
-
-interface StringLiteralNode extends AnyNode {
-    type: "StringLiteral";
-    value: string;
-}
-
-interface NumericLiteralNode extends AnyNode {
-    type: "NumericLiteral";
-    value: number;
-}
-
-interface NullLiteralNode extends AnyNode {
-    type: "NullLiteral";
-}
-
-interface BooleanLiteralNode extends AnyNode {
-    type: "BooleanLiteral";
-    value: boolean;
-}
-
-interface RegExpLiteralNode extends AnyNode {
-    type: "RegExpLiteral";
-    pattern: string;
-    flags?: string;
-}
-
-interface LogicalExpressionNode extends AnyNode {
-    type: "LogicalExpression";
-    operator: "||" | "&&";
-    left: ExpressionNode;
-    right: ExpressionNode;
-}
-
-interface MemberExpressionNode extends AnyNode {
-    type: "MemberExpression";
-    object: ExpressionNode;
-    property: any;
-    computed?: boolean;
-}
-
-interface NewExpressionNode extends AnyNode {
-    type: "NewExpression";
-    callee: ExpressionNode;
-    arguments: any;
-}
-
-interface ProgramNode extends AnyNode {
-    type: "Program";
-    directives?: any;
-    body: any;
-}
-
-interface ObjectExpressionNode extends AnyNode {
-    type: "ObjectExpression";
-    properties: any;
-}
-
-interface ObjectMethodNode extends AnyNode {
-    type: "ObjectMethod";
-    kind?: any;
-    computed?: boolean;
-    key: any;
-    decorators: any;
-    body: BlockStatementNode;
-    generator?: boolean;
-    async?: boolean;
-    params: any;
-    returnType: any;
-    typeParameters: any;
-}
-
-interface ObjectPropertyNode extends AnyNode {
-    type: "ObjectProperty";
-    computed?: boolean;
-    key: any;
-    value: ExpressionNode;
-    shorthand?: boolean;
-    decorators?: any;
-}
-
-interface RestElementNode extends AnyNode {
-    type: "RestElement";
-    argument: LValNode;
-    typeAnnotation: any;
-}
-
-interface ReturnStatementNode extends AnyNode {
-    type: "ReturnStatement";
-    argument?: ExpressionNode | null | undefined;
-}
-
-interface SequenceExpressionNode extends AnyNode {
-    type: "SequenceExpression";
-    expressions: any;
-}
-
-interface SwitchCaseNode extends AnyNode {
-    type: "SwitchCase";
-    test?: ExpressionNode | null | undefined;
-    consequent: any;
-}
-
-interface SwitchStatementNode extends AnyNode {
-    type: "SwitchStatement";
-    discriminant: ExpressionNode;
-    cases: any;
-}
-
-interface ThisExpressionNode extends AnyNode {
-    type: "ThisExpression";
-}
-
-interface ThrowStatementNode extends AnyNode {
-    type: "ThrowStatement";
-    argument: ExpressionNode;
-}
-
-interface TryStatementNode extends AnyNode {
-    type: "TryStatement";
-    body: BlockStatementNode;
-    handler?: any;
-    finalizer?: BlockStatementNode | null | undefined;
-    block: any;
-}
-
-interface UnaryExpressionNode extends AnyNode {
-    type: "UnaryExpression";
-    prefix?: boolean;
-    argument: ExpressionNode;
-    operator: "void" | "delete" | "!" | "+" | "-" | "++" | "--" | "~" | "typeof";
-}
-
-interface UpdateExpressionNode extends AnyNode {
-    type: "UpdateExpression";
-    prefix?: boolean;
-    argument: ExpressionNode;
-    operator: "++" | "--";
-}
-
-interface VariableDeclarationNode extends AnyNode {
-    type: "VariableDeclaration";
-    kind: any;
-    declarations: any;
-}
-
-interface VariableDeclaratorNode extends AnyNode {
-    type: "VariableDeclarator";
-    id: LValNode;
-    init?: ExpressionNode | null | undefined;
-}
-
-interface WhileStatementNode extends AnyNode {
-    type: "WhileStatement";
-    test: ExpressionNode;
-    body: BlockStatementNode | StatementNode;
-}
-
-interface WithStatementNode extends AnyNode {
-    type: "WithStatement";
-    object: any;
-    body: BlockStatementNode | StatementNode;
-}
-
-interface AssignmentPatternNode extends AnyNode {
-    type: "AssignmentPattern";
-    left: IdentifierNode;
-    right: ExpressionNode;
-}
-
-interface ArrayPatternNode extends AnyNode {
-    type: "ArrayPattern";
-    elements: any;
-    typeAnnotation: any;
-}
-
-interface ArrowFunctionExpressionNode extends AnyNode {
-    type: "ArrowFunctionExpression";
-    params: any;
-    body: BlockStatementNode | ExpressionNode;
-    async?: boolean;
-    returnType: any;
-}
-
-interface ClassBodyNode extends AnyNode {
-    type: "ClassBody";
-    body: any;
-}
-
-interface ClassDeclarationNode extends AnyNode {
-    type: "ClassDeclaration";
-    id: IdentifierNode;
-    body: ClassBodyNode;
-    superClass?: ExpressionNode | null | undefined;
-    decorators: any;
-    mixins: any;
-    typeParameters: any;
-    superTypeParameters: any;
-}
-
-interface ClassExpressionNode extends AnyNode {
-    type: "ClassExpression";
-    id?: IdentifierNode | null | undefined;
-    body: ClassBodyNode;
-    superClass?: ExpressionNode | null | undefined;
-    decorators: any;
-    mixins: any;
-    typeParameters: any;
-    superTypeParameters: any;
-}
-
-interface ExportAllDeclarationNode extends AnyNode {
-    type: "ExportAllDeclaration";
-    source: StringLiteralNode;
-}
-
-interface ExportDefaultDeclarationNode extends AnyNode {
-    type: "ExportDefaultDeclaration";
-    declaration: FunctionDeclarationNode | ClassDeclarationNode | ExpressionNode;
-}
-
-interface ExportNamedDeclarationNode extends AnyNode {
-    type: "ExportNamedDeclaration";
-    declaration?: DeclarationNode | null | undefined;
-    specifiers: any;
-    source?: StringLiteralNode | null | undefined;
-}
-
-interface ExportSpecifierNode extends AnyNode {
-    type: "ExportSpecifier";
-    local: IdentifierNode;
-    imported: IdentifierNode;
-    exported: any;
-}
-
-interface ForOfStatementNode extends AnyNode {
-    type: "ForOfStatement";
-    left: VariableDeclarationNode | LValNode;
-    right: ExpressionNode;
-    body: StatementNode;
-}
-
-interface ImportDeclarationNode extends AnyNode {
-    type: "ImportDeclaration";
-    specifiers: any;
-    source: StringLiteralNode;
-}
-
-interface ImportDefaultSpecifierNode extends AnyNode {
-    type: "ImportDefaultSpecifier";
-    local: IdentifierNode;
-}
-
-interface ImportNamespaceSpecifierNode extends AnyNode {
-    type: "ImportNamespaceSpecifier";
-    local: IdentifierNode;
-}
-
-interface ImportSpecifierNode extends AnyNode {
-    type: "ImportSpecifier";
-    local: IdentifierNode;
-    imported: IdentifierNode;
-}
-
-interface MetaPropertyNode extends AnyNode {
-    type: "MetaProperty";
-    meta: string;
-    property: string;
-}
-
-interface ClassMethodNode extends AnyNode {
-    type: "ClassMethod";
-    kind?: any;
-    computed?: boolean;
-    key: any;
-    params: any;
-    body: BlockStatementNode;
-    generator?: boolean;
-    async?: boolean;
-    decorators: any;
-    returnType: any;
-    typeParameters: any;
-}
-
-interface ObjectPatternNode extends AnyNode {
-    type: "ObjectPattern";
-    properties: any;
-    typeAnnotation: any;
-}
-
-interface SpreadElementNode extends AnyNode {
-    type: "SpreadElement";
-    argument: ExpressionNode;
-}
-
-interface SuperNode extends AnyNode {
-    type: "Super";
-}
-
-interface TaggedTemplateExpressionNode extends AnyNode {
-    type: "TaggedTemplateExpression";
-    tag: ExpressionNode;
-    quasi: TemplateLiteralNode;
-}
-
-interface TemplateElementNode extends AnyNode {
-    type: "TemplateElement";
-    value: any;
-    tail?: boolean;
-}
-
-interface TemplateLiteralNode extends AnyNode {
-    type: "TemplateLiteral";
-    quasis: any;
-    expressions: any;
-}
-
-interface YieldExpressionNode extends AnyNode {
-    type: "YieldExpression";
-    delegate?: boolean;
-    argument?: ExpressionNode | null | undefined;
-}
-
-interface AnyTypeAnnotationNode extends AnyNode {
-    type: "AnyTypeAnnotation";
-}
-
-interface ArrayTypeAnnotationNode extends AnyNode {
-    type: "ArrayTypeAnnotation";
-    elementType: any;
-}
-
-interface BooleanTypeAnnotationNode extends AnyNode {
-    type: "BooleanTypeAnnotation";
-}
-
-interface BooleanLiteralTypeAnnotationNode extends AnyNode {
-    type: "BooleanLiteralTypeAnnotation";
-}
-
-interface NullLiteralTypeAnnotationNode extends AnyNode {
-    type: "NullLiteralTypeAnnotation";
-}
-
-interface ClassImplementsNode extends AnyNode {
-    type: "ClassImplements";
-    id: any;
-    typeParameters: any;
-}
-
-interface ClassPropertyNode extends AnyNode {
-    type: "ClassProperty";
-    key: any;
-    value: any;
-    typeAnnotation: any;
-    decorators: any;
-}
-
-interface DeclareClassNode extends AnyNode {
-    type: "DeclareClass";
-    id: any;
-    typeParameters: any;
-    body: any;
-}
-
-interface DeclareFunctionNode extends AnyNode {
-    type: "DeclareFunction";
-    id: any;
-}
-
-interface DeclareInterfaceNode extends AnyNode {
-    type: "DeclareInterface";
-    id: any;
-    typeParameters: any;
-    body: any;
-}
-
-interface DeclareModuleNode extends AnyNode {
-    type: "DeclareModule";
-    id: any;
-    body: any;
-}
-
-interface DeclareTypeAliasNode extends AnyNode {
-    type: "DeclareTypeAlias";
-    id: any;
-    typeParameters: any;
-    right: any;
-}
-
-interface DeclareVariableNode extends AnyNode {
-    type: "DeclareVariable";
-    id: any;
-}
-
-interface ExistentialTypeParamNode extends AnyNode {
-    type: "ExistentialTypeParam";
-}
-
-interface FunctionTypeAnnotationNode extends AnyNode {
-    type: "FunctionTypeAnnotation";
-    typeParameters: any;
-    params: any;
-    rest: any;
-    returnType: any;
-}
-
-interface FunctionTypeParamNode extends AnyNode {
-    type: "FunctionTypeParam";
-    name: any;
-    typeAnnotation: any;
-}
-
-interface GenericTypeAnnotationNode extends AnyNode {
-    type: "GenericTypeAnnotation";
-    id: any;
-    typeParameters: any;
-}
-
-interface InterfaceExtendsNode extends AnyNode {
-    type: "InterfaceExtends";
-    id: any;
-    typeParameters: any;
-}
-
-interface InterfaceDeclarationNode extends AnyNode {
-    type: "InterfaceDeclaration";
-    id: any;
-    typeParameters: any;
-    body: any;
-}
-
-interface IntersectionTypeAnnotationNode extends AnyNode {
-    type: "IntersectionTypeAnnotation";
-    types: any;
-}
-
-interface MixedTypeAnnotationNode extends AnyNode {
-    type: "MixedTypeAnnotation";
-}
-
-interface NullableTypeAnnotationNode extends AnyNode {
-    type: "NullableTypeAnnotation";
-    typeAnnotation: any;
-}
-
-interface NumericLiteralTypeAnnotationNode extends AnyNode {
-    type: "NumericLiteralTypeAnnotation";
-}
-
-interface NumberTypeAnnotationNode extends AnyNode {
-    type: "NumberTypeAnnotation";
-}
-
-interface StringLiteralTypeAnnotationNode extends AnyNode {
-    type: "StringLiteralTypeAnnotation";
-}
-
-interface StringTypeAnnotationNode extends AnyNode {
-    type: "StringTypeAnnotation";
-}
-
-interface ThisTypeAnnotationNode extends AnyNode {
-    type: "ThisTypeAnnotation";
-}
-
-interface TupleTypeAnnotationNode extends AnyNode {
-    type: "TupleTypeAnnotation";
-    types: any;
-}
-
-interface TypeofTypeAnnotationNode extends AnyNode {
-    type: "TypeofTypeAnnotation";
-    argument: any;
-}
-
-interface TypeAliasNode extends AnyNode {
-    type: "TypeAlias";
-    id: any;
-    typeParameters: any;
-    right: any;
-}
-
-interface TypeAnnotationNode extends AnyNode {
-    type: "TypeAnnotation";
-    typeAnnotation: any;
-}
-
-interface TypeCastExpressionNode extends AnyNode {
-    type: "TypeCastExpression";
-    expression: any;
-    typeAnnotation: any;
-}
-
-interface TypeParameterDeclarationNode extends AnyNode {
-    type: "TypeParameterDeclaration";
-    params: any;
-}
-
-interface TypeParameterInstantiationNode extends AnyNode {
-    type: "TypeParameterInstantiation";
-    params: any;
-}
-
-interface ObjectTypeAnnotationNode extends AnyNode {
-    type: "ObjectTypeAnnotation";
-    properties: any;
-    indexers: any;
-    callProperties: any;
-}
-
-interface ObjectTypeCallPropertyNode extends AnyNode {
-    type: "ObjectTypeCallProperty";
-    value: any;
-}
-
-interface ObjectTypeIndexerNode extends AnyNode {
-    type: "ObjectTypeIndexer";
-    id: any;
-    key: any;
-    value: any;
-}
-
-interface ObjectTypePropertyNode extends AnyNode {
-    type: "ObjectTypeProperty";
-    key: any;
-    value: any;
-}
-
-interface QualifiedTypeIdentifierNode extends AnyNode {
-    type: "QualifiedTypeIdentifier";
-    id: any;
-    qualification: any;
-}
-
-interface UnionTypeAnnotationNode extends AnyNode {
-    type: "UnionTypeAnnotation";
-    types: any;
-}
-
-interface VoidTypeAnnotationNode extends AnyNode {
-    type: "VoidTypeAnnotation";
-}
-
-interface JSXAttributeNode extends AnyNode {
-    type: "JSXAttribute";
-    name: JSXIdentifierNode | JSXNamespacedNameNode;
-    value?: JSXElementNode | StringLiteralNode | JSXExpressionContainerNode | null | undefined;
-}
-
-interface JSXClosingElementNode extends AnyNode {
-    type: "JSXClosingElement";
-    name: JSXIdentifierNode | JSXMemberExpressionNode;
-}
-
-interface JSXElementNode extends AnyNode {
-    type: "JSXElement";
-    openingElement: JSXOpeningElementNode;
-    closingElement?: JSXClosingElementNode | null | undefined;
-    children: any;
-    selfClosing: any;
-}
-
-interface JSXEmptyExpressionNode extends AnyNode {
-    type: "JSXEmptyExpression";
-}
-
-interface JSXExpressionContainerNode extends AnyNode {
-    type: "JSXExpressionContainer";
-    expression: ExpressionNode;
-}
-
-interface JSXIdentifierNode extends AnyNode {
-    type: "JSXIdentifier";
-    name: string;
-}
-
-interface JSXMemberExpressionNode extends AnyNode {
-    type: "JSXMemberExpression";
-    object: JSXMemberExpressionNode | JSXIdentifierNode;
-    property: JSXIdentifierNode;
-}
-
-interface JSXNamespacedNameNode extends AnyNode {
-    type: "JSXNamespacedName";
-    namespace: JSXIdentifierNode;
-    name: JSXIdentifierNode;
-}
-
-interface JSXOpeningElementNode extends AnyNode {
-    type: "JSXOpeningElement";
-    name: JSXIdentifierNode | JSXMemberExpressionNode;
-    selfClosing?: boolean;
-    attributes: any;
-}
-
-interface JSXSpreadAttributeNode extends AnyNode {
-    type: "JSXSpreadAttribute";
-    argument: ExpressionNode;
-}
-
-interface JSXTextNode extends AnyNode {
-    type: "JSXText";
-    value: string;
-}
-
-interface NoopNode extends AnyNode {
-    type: "Noop";
-}
-
-interface ParenthesizedExpressionNode extends AnyNode {
-    type: "ParenthesizedExpression";
-    expression: ExpressionNode;
-}
-
-interface AwaitExpressionNode extends AnyNode {
-    type: "AwaitExpression";
-    argument: ExpressionNode;
-}
-
-interface BindExpressionNode extends AnyNode {
-    type: "BindExpression";
-    object: any;
-    callee: any;
-}
-
-interface DecoratorNode extends AnyNode {
-    type: "Decorator";
-    expression: ExpressionNode;
-}
-
-interface DoExpressionNode extends AnyNode {
-    type: "DoExpression";
-    body: BlockStatementNode;
-}
-
-interface ExportDefaultSpecifierNode extends AnyNode {
-    type: "ExportDefaultSpecifier";
-    exported: IdentifierNode;
-}
-
-interface ExportNamespaceSpecifierNode extends AnyNode {
-    type: "ExportNamespaceSpecifier";
-    exported: IdentifierNode;
-}
-
-interface RestPropertyNode extends AnyNode {
-    type: "RestProperty";
-    argument: LValNode;
-}
-
-interface SpreadPropertyNode extends AnyNode {
-    type: "SpreadProperty";
-    argument: ExpressionNode;
-}
-
-type ExpressionNode = ArrayExpressionNode | AssignmentExpressionNode | BinaryExpressionNode | CallExpressionNode | ConditionalExpressionNode | FunctionExpressionNode | IdentifierNode | StringLiteralNode | NumericLiteralNode | NullLiteralNode | BooleanLiteralNode | RegExpLiteralNode | LogicalExpressionNode | MemberExpressionNode | NewExpressionNode | ObjectExpressionNode | SequenceExpressionNode | ThisExpressionNode | UnaryExpressionNode | UpdateExpressionNode | ArrowFunctionExpressionNode | ClassExpressionNode | MetaPropertyNode | SuperNode | TaggedTemplateExpressionNode | TemplateLiteralNode | YieldExpressionNode | TypeCastExpressionNode | JSXElementNode | JSXEmptyExpressionNode | JSXIdentifierNode | JSXMemberExpressionNode | ParenthesizedExpressionNode | AwaitExpressionNode | BindExpressionNode | DoExpressionNode;
-type BinaryNode = BinaryExpressionNode | LogicalExpressionNode;
-type ScopableNode = BlockStatementNode | CatchClauseNode | DoWhileStatementNode | ForInStatementNode | ForStatementNode | FunctionDeclarationNode | FunctionExpressionNode | ProgramNode | ObjectMethodNode | SwitchStatementNode | WhileStatementNode | ArrowFunctionExpressionNode | ClassDeclarationNode | ClassExpressionNode | ForOfStatementNode | ClassMethodNode;
-type BlockParentNode = BlockStatementNode | DoWhileStatementNode | ForInStatementNode | ForStatementNode | FunctionDeclarationNode | FunctionExpressionNode | ProgramNode | ObjectMethodNode | SwitchStatementNode | WhileStatementNode | ArrowFunctionExpressionNode | ForOfStatementNode | ClassMethodNode;
-type BlockNode = BlockStatementNode | ProgramNode;
-type StatementNode = BlockStatementNode | BreakStatementNode | ContinueStatementNode | DebuggerStatementNode | DoWhileStatementNode | EmptyStatementNode | ExpressionStatementNode | ForInStatementNode | ForStatementNode | FunctionDeclarationNode | IfStatementNode | LabeledStatementNode | ReturnStatementNode | SwitchStatementNode | ThrowStatementNode | TryStatementNode | VariableDeclarationNode | WhileStatementNode | WithStatementNode | ClassDeclarationNode | ExportAllDeclarationNode | ExportDefaultDeclarationNode | ExportNamedDeclarationNode | ForOfStatementNode | ImportDeclarationNode | DeclareClassNode | DeclareFunctionNode | DeclareInterfaceNode | DeclareModuleNode | DeclareTypeAliasNode | DeclareVariableNode | InterfaceDeclarationNode | TypeAliasNode;
-type TerminatorlessNode = BreakStatementNode | ContinueStatementNode | ReturnStatementNode | ThrowStatementNode | YieldExpressionNode | AwaitExpressionNode;
-type CompletionStatementNode = BreakStatementNode | ContinueStatementNode | ReturnStatementNode | ThrowStatementNode;
-type ConditionalNode = ConditionalExpressionNode | IfStatementNode;
-type LoopNode = DoWhileStatementNode | ForInStatementNode | ForStatementNode | WhileStatementNode | ForOfStatementNode;
-type WhileNode = DoWhileStatementNode | WhileStatementNode;
-type ExpressionWrapperNode = ExpressionStatementNode | TypeCastExpressionNode | ParenthesizedExpressionNode;
-type ForNode = ForInStatementNode | ForStatementNode | ForOfStatementNode;
-type ForXStatementNode = ForInStatementNode | ForOfStatementNode;
-type FunctionNode = FunctionDeclarationNode | FunctionExpressionNode | ObjectMethodNode | ArrowFunctionExpressionNode | ClassMethodNode;
-type FunctionParentNode = FunctionDeclarationNode | FunctionExpressionNode | ProgramNode | ObjectMethodNode | ArrowFunctionExpressionNode | ClassMethodNode;
-type PureishNode = FunctionDeclarationNode | FunctionExpressionNode | StringLiteralNode | NumericLiteralNode | NullLiteralNode | BooleanLiteralNode | ArrowFunctionExpressionNode | ClassDeclarationNode | ClassExpressionNode;
-type DeclarationNode = FunctionDeclarationNode | VariableDeclarationNode | ClassDeclarationNode | ExportAllDeclarationNode | ExportDefaultDeclarationNode | ExportNamedDeclarationNode | ImportDeclarationNode | DeclareClassNode | DeclareFunctionNode | DeclareInterfaceNode | DeclareModuleNode | DeclareTypeAliasNode | DeclareVariableNode | InterfaceDeclarationNode | TypeAliasNode;
-type LValNode = IdentifierNode | MemberExpressionNode | RestElementNode | AssignmentPatternNode | ArrayPatternNode | ObjectPatternNode;
-type LiteralNode = StringLiteralNode | NumericLiteralNode | NullLiteralNode | BooleanLiteralNode | RegExpLiteralNode | TemplateLiteralNode;
-type ImmutableNode = StringLiteralNode | NumericLiteralNode | NullLiteralNode | BooleanLiteralNode | JSXAttributeNode | JSXClosingElementNode | JSXElementNode | JSXExpressionContainerNode | JSXOpeningElementNode;
-type UserWhitespacableNode = ObjectMethodNode | ObjectPropertyNode | ObjectTypeCallPropertyNode | ObjectTypeIndexerNode | ObjectTypePropertyNode;
-type MethodNode = ObjectMethodNode | ClassMethodNode;
-type ObjectMemberNode = ObjectMethodNode | ObjectPropertyNode;
-type PropertyNode = ObjectPropertyNode | ClassPropertyNode;
-type UnaryLikeNode = UnaryExpressionNode | SpreadElementNode | RestPropertyNode | SpreadPropertyNode;
-type PatternNode = AssignmentPatternNode | ArrayPatternNode | ObjectPatternNode;
-type ClassNode = ClassDeclarationNode | ClassExpressionNode;
-type ModuleDeclarationNode = ExportAllDeclarationNode | ExportDefaultDeclarationNode | ExportNamedDeclarationNode | ImportDeclarationNode;
-type ExportDeclarationNode = ExportAllDeclarationNode | ExportDefaultDeclarationNode | ExportNamedDeclarationNode;
-type ModuleSpecifierNode = ExportSpecifierNode | ImportDefaultSpecifierNode | ImportNamespaceSpecifierNode | ImportSpecifierNode | ExportDefaultSpecifierNode | ExportNamespaceSpecifierNode;
-type FlowNode = AnyTypeAnnotationNode | ArrayTypeAnnotationNode | BooleanTypeAnnotationNode | BooleanLiteralTypeAnnotationNode | NullLiteralTypeAnnotationNode | ClassImplementsNode | ClassPropertyNode | DeclareClassNode | DeclareFunctionNode | DeclareInterfaceNode | DeclareModuleNode | DeclareTypeAliasNode | DeclareVariableNode | ExistentialTypeParamNode | FunctionTypeAnnotationNode | FunctionTypeParamNode | GenericTypeAnnotationNode | InterfaceExtendsNode | InterfaceDeclarationNode | IntersectionTypeAnnotationNode | MixedTypeAnnotationNode | NullableTypeAnnotationNode | NumericLiteralTypeAnnotationNode | NumberTypeAnnotationNode | StringLiteralTypeAnnotationNode | StringTypeAnnotationNode | ThisTypeAnnotationNode | TupleTypeAnnotationNode | TypeofTypeAnnotationNode | TypeAliasNode | TypeAnnotationNode | TypeCastExpressionNode | TypeParameterDeclarationNode | TypeParameterInstantiationNode | ObjectTypeAnnotationNode | ObjectTypeCallPropertyNode | ObjectTypeIndexerNode | ObjectTypePropertyNode | QualifiedTypeIdentifierNode | UnionTypeAnnotationNode | VoidTypeAnnotationNode;
-type FlowBaseAnnotationNode = AnyTypeAnnotationNode | BooleanTypeAnnotationNode | NullLiteralTypeAnnotationNode | MixedTypeAnnotationNode | NumberTypeAnnotationNode | StringTypeAnnotationNode | ThisTypeAnnotationNode | VoidTypeAnnotationNode;
-type FlowDeclarationNode = DeclareClassNode | DeclareFunctionNode | DeclareInterfaceNode | DeclareModuleNode | DeclareTypeAliasNode | DeclareVariableNode | InterfaceDeclarationNode | TypeAliasNode;
-type JSXNode = JSXAttributeNode | JSXClosingElementNode | JSXElementNode | JSXEmptyExpressionNode | JSXExpressionContainerNode | JSXIdentifierNode | JSXMemberExpressionNode | JSXNamespacedNameNode | JSXOpeningElementNode | JSXSpreadAttributeNode | JSXTextNode;
 
 declare module "babel-types" {
+
+    export interface CommentNode {
+        value: string;
+        start: number;
+        end: number;
+        loc: SourceLocationNode;
+    }
+
+    export interface BlockCommentNode extends CommentNode {
+        type: "BlockComment";
+    }
+
+    export interface LineCommentNode extends CommentNode {
+        type: "LineComment";
+    }
+
+    export interface SourceLocationNode {
+        start: {
+            line: number;
+            column: number;
+        };
+
+        end: {
+            line: number;
+            column: number;
+        };
+    }
+
+    export interface Node {
+        type: string;
+        leadingComments?: Array<CommentNode>;
+        innerComments?: Array<CommentNode>;
+        trailingComments?: Array<CommentNode>;
+        start: number | null | undefined;
+        end: number | null | undefined;
+        loc: SourceLocationNode | null | undefined;
+    }
+
+    export interface ArrayExpressionNode extends Node {
+        type: "ArrayExpression";
+        elements?: any;
+    }
+
+    export interface AssignmentExpressionNode extends Node {
+        type: "AssignmentExpression";
+        operator: string;
+        left: LValNode;
+        right: ExpressionNode;
+    }
+
+    export interface BinaryExpressionNode extends Node {
+        type: "BinaryExpression";
+        operator: "+" | "-" | "/" | "%" | "*" | "**" | "&" | "|" | ">>" | ">>>" | "<<" | "^" | "==" | "===" | "!=" | "!==" | "in" | "instanceof" | ">" | "<" | ">=" | "<=";
+        left: ExpressionNode;
+        right: ExpressionNode;
+    }
+
+    export interface DirectiveNode extends Node {
+        type: "Directive";
+        value: DirectiveLiteralNode;
+    }
+
+    export interface DirectiveLiteralNode extends Node {
+        type: "DirectiveLiteral";
+        value: string;
+    }
+
+    export interface BlockStatementNode extends Node {
+        type: "BlockStatement";
+        directives?: any;
+        body: any;
+    }
+
+    export interface BreakStatementNode extends Node {
+        type: "BreakStatement";
+        label?: IdentifierNode | null | undefined;
+    }
+
+    export interface CallExpressionNode extends Node {
+        type: "CallExpression";
+        callee: ExpressionNode;
+        arguments: any;
+    }
+
+    export interface CatchClauseNode extends Node {
+        type: "CatchClause";
+        param: IdentifierNode;
+        body: BlockStatementNode;
+    }
+
+    export interface ConditionalExpressionNode extends Node {
+        type: "ConditionalExpression";
+        test: ExpressionNode;
+        consequent: ExpressionNode;
+        alternate: ExpressionNode;
+    }
+
+    export interface ContinueStatementNode extends Node {
+        type: "ContinueStatement";
+        label?: IdentifierNode | null | undefined;
+    }
+
+    export interface DebuggerStatementNode extends Node {
+        type: "DebuggerStatement";
+    }
+
+    export interface DoWhileStatementNode extends Node {
+        type: "DoWhileStatement";
+        test: ExpressionNode;
+        body: StatementNode;
+    }
+
+    export interface EmptyStatementNode extends Node {
+        type: "EmptyStatement";
+    }
+
+    export interface ExpressionStatementNode extends Node {
+        type: "ExpressionStatement";
+        expression: ExpressionNode;
+    }
+
+    export interface FileNode extends Node {
+        type: "File";
+        program: ProgramNode;
+        comments: any;
+        tokens: any;
+    }
+
+    export interface ForInStatementNode extends Node {
+        type: "ForInStatement";
+        left: VariableDeclarationNode | LValNode;
+        right: ExpressionNode;
+        body: StatementNode;
+    }
+
+    export interface ForStatementNode extends Node {
+        type: "ForStatement";
+        init?: VariableDeclarationNode | ExpressionNode | null | undefined;
+        test?: ExpressionNode | null | undefined;
+        update?: ExpressionNode | null | undefined;
+        body: StatementNode;
+    }
+
+    export interface FunctionDeclarationNode extends Node {
+        type: "FunctionDeclaration";
+        id: IdentifierNode;
+        params: any;
+        body: BlockStatementNode;
+        generator?: boolean;
+        async?: boolean;
+        returnType: any;
+        typeParameters: any;
+    }
+
+    export interface FunctionExpressionNode extends Node {
+        type: "FunctionExpression";
+        id?: IdentifierNode | null | undefined;
+        params: any;
+        body: BlockStatementNode;
+        generator?: boolean;
+        async?: boolean;
+        returnType: any;
+        typeParameters: any;
+    }
+
+    export interface IdentifierNode extends Node {
+        type: "Identifier";
+        name: string;
+        typeAnnotation: any;
+    }
+
+    export interface IfStatementNode extends Node {
+        type: "IfStatement";
+        test: ExpressionNode;
+        consequent: StatementNode;
+        alternate?: StatementNode | null | undefined;
+    }
+
+    export interface LabeledStatementNode extends Node {
+        type: "LabeledStatement";
+        label: IdentifierNode;
+        body: StatementNode;
+    }
+
+    export interface StringLiteralNode extends Node {
+        type: "StringLiteral";
+        value: string;
+    }
+
+    export interface NumericLiteralNode extends Node {
+        type: "NumericLiteral";
+        value: number;
+    }
+
+    export interface NullLiteralNode extends Node {
+        type: "NullLiteral";
+    }
+
+    export interface BooleanLiteralNode extends Node {
+        type: "BooleanLiteral";
+        value: boolean;
+    }
+
+    export interface RegExpLiteralNode extends Node {
+        type: "RegExpLiteral";
+        pattern: string;
+        flags?: string;
+    }
+
+    export interface LogicalExpressionNode extends Node {
+        type: "LogicalExpression";
+        operator: "||" | "&&";
+        left: ExpressionNode;
+        right: ExpressionNode;
+    }
+
+    export interface MemberExpressionNode extends Node {
+        type: "MemberExpression";
+        object: ExpressionNode;
+        property: any;
+        computed?: boolean;
+    }
+
+    export interface NewExpressionNode extends Node {
+        type: "NewExpression";
+        callee: ExpressionNode;
+        arguments: any;
+    }
+
+    export interface ProgramNode extends Node {
+        type: "Program";
+        directives?: any;
+        body: any;
+    }
+
+    export interface ObjectExpressionNode extends Node {
+        type: "ObjectExpression";
+        properties: any;
+    }
+
+    export interface ObjectMethodNode extends Node {
+        type: "ObjectMethod";
+        kind?: any;
+        computed?: boolean;
+        key: any;
+        decorators: any;
+        body: BlockStatementNode;
+        generator?: boolean;
+        async?: boolean;
+        params: any;
+        returnType: any;
+        typeParameters: any;
+    }
+
+    export interface ObjectPropertyNode extends Node {
+        type: "ObjectProperty";
+        computed?: boolean;
+        key: any;
+        value: ExpressionNode;
+        shorthand?: boolean;
+        decorators?: any;
+    }
+
+    export interface RestElementNode extends Node {
+        type: "RestElement";
+        argument: LValNode;
+        typeAnnotation: any;
+    }
+
+    export interface ReturnStatementNode extends Node {
+        type: "ReturnStatement";
+        argument?: ExpressionNode | null | undefined;
+    }
+
+    export interface SequenceExpressionNode extends Node {
+        type: "SequenceExpression";
+        expressions: any;
+    }
+
+    export interface SwitchCaseNode extends Node {
+        type: "SwitchCase";
+        test?: ExpressionNode | null | undefined;
+        consequent: any;
+    }
+
+    export interface SwitchStatementNode extends Node {
+        type: "SwitchStatement";
+        discriminant: ExpressionNode;
+        cases: any;
+    }
+
+    export interface ThisExpressionNode extends Node {
+        type: "ThisExpression";
+    }
+
+    export interface ThrowStatementNode extends Node {
+        type: "ThrowStatement";
+        argument: ExpressionNode;
+    }
+
+    export interface TryStatementNode extends Node {
+        type: "TryStatement";
+        body: BlockStatementNode;
+        handler?: any;
+        finalizer?: BlockStatementNode | null | undefined;
+        block: any;
+    }
+
+    export interface UnaryExpressionNode extends Node {
+        type: "UnaryExpression";
+        prefix?: boolean;
+        argument: ExpressionNode;
+        operator: "void" | "delete" | "!" | "+" | "-" | "++" | "--" | "~" | "typeof";
+    }
+
+    export interface UpdateExpressionNode extends Node {
+        type: "UpdateExpression";
+        prefix?: boolean;
+        argument: ExpressionNode;
+        operator: "++" | "--";
+    }
+
+    export interface VariableDeclarationNode extends Node {
+        type: "VariableDeclaration";
+        kind: any;
+        declarations: any;
+    }
+
+    export interface VariableDeclaratorNode extends Node {
+        type: "VariableDeclarator";
+        id: LValNode;
+        init?: ExpressionNode | null | undefined;
+    }
+
+    export interface WhileStatementNode extends Node {
+        type: "WhileStatement";
+        test: ExpressionNode;
+        body: BlockStatementNode | StatementNode;
+    }
+
+    export interface WithStatementNode extends Node {
+        type: "WithStatement";
+        object: any;
+        body: BlockStatementNode | StatementNode;
+    }
+
+    export interface AssignmentPatternNode extends Node {
+        type: "AssignmentPattern";
+        left: IdentifierNode;
+        right: ExpressionNode;
+    }
+
+    export interface ArrayPatternNode extends Node {
+        type: "ArrayPattern";
+        elements: any;
+        typeAnnotation: any;
+    }
+
+    export interface ArrowFunctionExpressionNode extends Node {
+        type: "ArrowFunctionExpression";
+        params: any;
+        body: BlockStatementNode | ExpressionNode;
+        async?: boolean;
+        returnType: any;
+    }
+
+    export interface ClassBodyNode extends Node {
+        type: "ClassBody";
+        body: any;
+    }
+
+    export interface ClassDeclarationNode extends Node {
+        type: "ClassDeclaration";
+        id: IdentifierNode;
+        body: ClassBodyNode;
+        superClass?: ExpressionNode | null | undefined;
+        decorators: any;
+        mixins: any;
+        typeParameters: any;
+        superTypeParameters: any;
+    }
+
+    export interface ClassExpressionNode extends Node {
+        type: "ClassExpression";
+        id?: IdentifierNode | null | undefined;
+        body: ClassBodyNode;
+        superClass?: ExpressionNode | null | undefined;
+        decorators: any;
+        mixins: any;
+        typeParameters: any;
+        superTypeParameters: any;
+    }
+
+    export interface ExportAllDeclarationNode extends Node {
+        type: "ExportAllDeclaration";
+        source: StringLiteralNode;
+    }
+
+    export interface ExportDefaultDeclarationNode extends Node {
+        type: "ExportDefaultDeclaration";
+        declaration: FunctionDeclarationNode | ClassDeclarationNode | ExpressionNode;
+    }
+
+    export interface ExportNamedDeclarationNode extends Node {
+        type: "ExportNamedDeclaration";
+        declaration?: DeclarationNode | null | undefined;
+        specifiers: any;
+        source?: StringLiteralNode | null | undefined;
+    }
+
+    export interface ExportSpecifierNode extends Node {
+        type: "ExportSpecifier";
+        local: IdentifierNode;
+        imported: IdentifierNode;
+        exported: any;
+    }
+
+    export interface ForOfStatementNode extends Node {
+        type: "ForOfStatement";
+        left: VariableDeclarationNode | LValNode;
+        right: ExpressionNode;
+        body: StatementNode;
+    }
+
+    export interface ImportDeclarationNode extends Node {
+        type: "ImportDeclaration";
+        specifiers: any;
+        source: StringLiteralNode;
+    }
+
+    export interface ImportDefaultSpecifierNode extends Node {
+        type: "ImportDefaultSpecifier";
+        local: IdentifierNode;
+    }
+
+    export interface ImportNamespaceSpecifierNode extends Node {
+        type: "ImportNamespaceSpecifier";
+        local: IdentifierNode;
+    }
+
+    export interface ImportSpecifierNode extends Node {
+        type: "ImportSpecifier";
+        local: IdentifierNode;
+        imported: IdentifierNode;
+    }
+
+    export interface MetaPropertyNode extends Node {
+        type: "MetaProperty";
+        meta: string;
+        property: string;
+    }
+
+    export interface ClassMethodNode extends Node {
+        type: "ClassMethod";
+        kind?: any;
+        computed?: boolean;
+        key: any;
+        params: any;
+        body: BlockStatementNode;
+        generator?: boolean;
+        async?: boolean;
+        decorators: any;
+        returnType: any;
+        typeParameters: any;
+    }
+
+    export interface ObjectPatternNode extends Node {
+        type: "ObjectPattern";
+        properties: any;
+        typeAnnotation: any;
+    }
+
+    export interface SpreadElementNode extends Node {
+        type: "SpreadElement";
+        argument: ExpressionNode;
+    }
+
+    export interface SuperNode extends Node {
+        type: "Super";
+    }
+
+    export interface TaggedTemplateExpressionNode extends Node {
+        type: "TaggedTemplateExpression";
+        tag: ExpressionNode;
+        quasi: TemplateLiteralNode;
+    }
+
+    export interface TemplateElementNode extends Node {
+        type: "TemplateElement";
+        value: any;
+        tail?: boolean;
+    }
+
+    export interface TemplateLiteralNode extends Node {
+        type: "TemplateLiteral";
+        quasis: any;
+        expressions: any;
+    }
+
+    export interface YieldExpressionNode extends Node {
+        type: "YieldExpression";
+        delegate?: boolean;
+        argument?: ExpressionNode | null | undefined;
+    }
+
+    export interface AnyTypeAnnotationNode extends Node {
+        type: "AnyTypeAnnotation";
+    }
+
+    export interface ArrayTypeAnnotationNode extends Node {
+        type: "ArrayTypeAnnotation";
+        elementType: any;
+    }
+
+    export interface BooleanTypeAnnotationNode extends Node {
+        type: "BooleanTypeAnnotation";
+    }
+
+    export interface BooleanLiteralTypeAnnotationNode extends Node {
+        type: "BooleanLiteralTypeAnnotation";
+    }
+
+    export interface NullLiteralTypeAnnotationNode extends Node {
+        type: "NullLiteralTypeAnnotation";
+    }
+
+    export interface ClassImplementsNode extends Node {
+        type: "ClassImplements";
+        id: any;
+        typeParameters: any;
+    }
+
+    export interface ClassPropertyNode extends Node {
+        type: "ClassProperty";
+        key: any;
+        value: any;
+        typeAnnotation: any;
+        decorators: any;
+    }
+
+    export interface DeclareClassNode extends Node {
+        type: "DeclareClass";
+        id: any;
+        typeParameters: any;
+        body: any;
+    }
+
+    export interface DeclareFunctionNode extends Node {
+        type: "DeclareFunction";
+        id: any;
+    }
+
+    export interface DeclareInterfaceNode extends Node {
+        type: "DeclareInterface";
+        id: any;
+        typeParameters: any;
+        body: any;
+    }
+
+    export interface DeclareModuleNode extends Node {
+        type: "DeclareModule";
+        id: any;
+        body: any;
+    }
+
+    export interface DeclareTypeAliasNode extends Node {
+        type: "DeclareTypeAlias";
+        id: any;
+        typeParameters: any;
+        right: any;
+    }
+
+    export interface DeclareVariableNode extends Node {
+        type: "DeclareVariable";
+        id: any;
+    }
+
+    export interface ExistentialTypeParamNode extends Node {
+        type: "ExistentialTypeParam";
+    }
+
+    export interface FunctionTypeAnnotationNode extends Node {
+        type: "FunctionTypeAnnotation";
+        typeParameters: any;
+        params: any;
+        rest: any;
+        returnType: any;
+    }
+
+    export interface FunctionTypeParamNode extends Node {
+        type: "FunctionTypeParam";
+        name: any;
+        typeAnnotation: any;
+    }
+
+    export interface GenericTypeAnnotationNode extends Node {
+        type: "GenericTypeAnnotation";
+        id: any;
+        typeParameters: any;
+    }
+
+    export interface InterfaceExtendsNode extends Node {
+        type: "InterfaceExtends";
+        id: any;
+        typeParameters: any;
+    }
+
+    export interface InterfaceDeclarationNode extends Node {
+        type: "InterfaceDeclaration";
+        id: any;
+        typeParameters: any;
+        body: any;
+    }
+
+    export interface IntersectionTypeAnnotationNode extends Node {
+        type: "IntersectionTypeAnnotation";
+        types: any;
+    }
+
+    export interface MixedTypeAnnotationNode extends Node {
+        type: "MixedTypeAnnotation";
+    }
+
+    export interface NullableTypeAnnotationNode extends Node {
+        type: "NullableTypeAnnotation";
+        typeAnnotation: any;
+    }
+
+    export interface NumericLiteralTypeAnnotationNode extends Node {
+        type: "NumericLiteralTypeAnnotation";
+    }
+
+    export interface NumberTypeAnnotationNode extends Node {
+        type: "NumberTypeAnnotation";
+    }
+
+    export interface StringLiteralTypeAnnotationNode extends Node {
+        type: "StringLiteralTypeAnnotation";
+    }
+
+    export interface StringTypeAnnotationNode extends Node {
+        type: "StringTypeAnnotation";
+    }
+
+    export interface ThisTypeAnnotationNode extends Node {
+        type: "ThisTypeAnnotation";
+    }
+
+    export interface TupleTypeAnnotationNode extends Node {
+        type: "TupleTypeAnnotation";
+        types: any;
+    }
+
+    export interface TypeofTypeAnnotationNode extends Node {
+        type: "TypeofTypeAnnotation";
+        argument: any;
+    }
+
+    export interface TypeAliasNode extends Node {
+        type: "TypeAlias";
+        id: any;
+        typeParameters: any;
+        right: any;
+    }
+
+    export interface TypeAnnotationNode extends Node {
+        type: "TypeAnnotation";
+        typeAnnotation: any;
+    }
+
+    export interface TypeCastExpressionNode extends Node {
+        type: "TypeCastExpression";
+        expression: any;
+        typeAnnotation: any;
+    }
+
+    export interface TypeParameterDeclarationNode extends Node {
+        type: "TypeParameterDeclaration";
+        params: any;
+    }
+
+    export interface TypeParameterInstantiationNode extends Node {
+        type: "TypeParameterInstantiation";
+        params: any;
+    }
+
+    export interface ObjectTypeAnnotationNode extends Node {
+        type: "ObjectTypeAnnotation";
+        properties: any;
+        indexers: any;
+        callProperties: any;
+    }
+
+    export interface ObjectTypeCallPropertyNode extends Node {
+        type: "ObjectTypeCallProperty";
+        value: any;
+    }
+
+    export interface ObjectTypeIndexerNode extends Node {
+        type: "ObjectTypeIndexer";
+        id: any;
+        key: any;
+        value: any;
+    }
+
+    export interface ObjectTypePropertyNode extends Node {
+        type: "ObjectTypeProperty";
+        key: any;
+        value: any;
+    }
+
+    export interface QualifiedTypeIdentifierNode extends Node {
+        type: "QualifiedTypeIdentifier";
+        id: any;
+        qualification: any;
+    }
+
+    export interface UnionTypeAnnotationNode extends Node {
+        type: "UnionTypeAnnotation";
+        types: any;
+    }
+
+    export interface VoidTypeAnnotationNode extends Node {
+        type: "VoidTypeAnnotation";
+    }
+
+    export interface JSXAttributeNode extends Node {
+        type: "JSXAttribute";
+        name: JSXIdentifierNode | JSXNamespacedNameNode;
+        value?: JSXElementNode | StringLiteralNode | JSXExpressionContainerNode | null | undefined;
+    }
+
+    export interface JSXClosingElementNode extends Node {
+        type: "JSXClosingElement";
+        name: JSXIdentifierNode | JSXMemberExpressionNode;
+    }
+
+    export interface JSXElementNode extends Node {
+        type: "JSXElement";
+        openingElement: JSXOpeningElementNode;
+        closingElement?: JSXClosingElementNode | null | undefined;
+        children: any;
+        selfClosing: any;
+    }
+
+    export interface JSXEmptyExpressionNode extends Node {
+        type: "JSXEmptyExpression";
+    }
+
+    export interface JSXExpressionContainerNode extends Node {
+        type: "JSXExpressionContainer";
+        expression: ExpressionNode;
+    }
+
+    export interface JSXIdentifierNode extends Node {
+        type: "JSXIdentifier";
+        name: string;
+    }
+
+    export interface JSXMemberExpressionNode extends Node {
+        type: "JSXMemberExpression";
+        object: JSXMemberExpressionNode | JSXIdentifierNode;
+        property: JSXIdentifierNode;
+    }
+
+    export interface JSXNamespacedNameNode extends Node {
+        type: "JSXNamespacedName";
+        namespace: JSXIdentifierNode;
+        name: JSXIdentifierNode;
+    }
+
+    export interface JSXOpeningElementNode extends Node {
+        type: "JSXOpeningElement";
+        name: JSXIdentifierNode | JSXMemberExpressionNode;
+        selfClosing?: boolean;
+        attributes: any;
+    }
+
+    export interface JSXSpreadAttributeNode extends Node {
+        type: "JSXSpreadAttribute";
+        argument: ExpressionNode;
+    }
+
+    export interface JSXTextNode extends Node {
+        type: "JSXText";
+        value: string;
+    }
+
+    export interface NoopNode extends Node {
+        type: "Noop";
+    }
+
+    export interface ParenthesizedExpressionNode extends Node {
+        type: "ParenthesizedExpression";
+        expression: ExpressionNode;
+    }
+
+    export interface AwaitExpressionNode extends Node {
+        type: "AwaitExpression";
+        argument: ExpressionNode;
+    }
+
+    export interface BindExpressionNode extends Node {
+        type: "BindExpression";
+        object: any;
+        callee: any;
+    }
+
+    export interface DecoratorNode extends Node {
+        type: "Decorator";
+        expression: ExpressionNode;
+    }
+
+    export interface DoExpressionNode extends Node {
+        type: "DoExpression";
+        body: BlockStatementNode;
+    }
+
+    export interface ExportDefaultSpecifierNode extends Node {
+        type: "ExportDefaultSpecifier";
+        exported: IdentifierNode;
+    }
+
+    export interface ExportNamespaceSpecifierNode extends Node {
+        type: "ExportNamespaceSpecifier";
+        exported: IdentifierNode;
+    }
+
+    export interface RestPropertyNode extends Node {
+        type: "RestProperty";
+        argument: LValNode;
+    }
+
+    export interface SpreadPropertyNode extends Node {
+        type: "SpreadProperty";
+        argument: ExpressionNode;
+    }
+
+    export type ExpressionNode = ArrayExpressionNode | AssignmentExpressionNode | BinaryExpressionNode | CallExpressionNode | ConditionalExpressionNode | FunctionExpressionNode | IdentifierNode | StringLiteralNode | NumericLiteralNode | NullLiteralNode | BooleanLiteralNode | RegExpLiteralNode | LogicalExpressionNode | MemberExpressionNode | NewExpressionNode | ObjectExpressionNode | SequenceExpressionNode | ThisExpressionNode | UnaryExpressionNode | UpdateExpressionNode | ArrowFunctionExpressionNode | ClassExpressionNode | MetaPropertyNode | SuperNode | TaggedTemplateExpressionNode | TemplateLiteralNode | YieldExpressionNode | TypeCastExpressionNode | JSXElementNode | JSXEmptyExpressionNode | JSXIdentifierNode | JSXMemberExpressionNode | ParenthesizedExpressionNode | AwaitExpressionNode | BindExpressionNode | DoExpressionNode;
+    export type BinaryNode = BinaryExpressionNode | LogicalExpressionNode;
+    export type ScopableNode = BlockStatementNode | CatchClauseNode | DoWhileStatementNode | ForInStatementNode | ForStatementNode | FunctionDeclarationNode | FunctionExpressionNode | ProgramNode | ObjectMethodNode | SwitchStatementNode | WhileStatementNode | ArrowFunctionExpressionNode | ClassDeclarationNode | ClassExpressionNode | ForOfStatementNode | ClassMethodNode;
+    export type BlockParentNode = BlockStatementNode | DoWhileStatementNode | ForInStatementNode | ForStatementNode | FunctionDeclarationNode | FunctionExpressionNode | ProgramNode | ObjectMethodNode | SwitchStatementNode | WhileStatementNode | ArrowFunctionExpressionNode | ForOfStatementNode | ClassMethodNode;
+    export type BlockNode = BlockStatementNode | ProgramNode;
+    export type StatementNode = BlockStatementNode | BreakStatementNode | ContinueStatementNode | DebuggerStatementNode | DoWhileStatementNode | EmptyStatementNode | ExpressionStatementNode | ForInStatementNode | ForStatementNode | FunctionDeclarationNode | IfStatementNode | LabeledStatementNode | ReturnStatementNode | SwitchStatementNode | ThrowStatementNode | TryStatementNode | VariableDeclarationNode | WhileStatementNode | WithStatementNode | ClassDeclarationNode | ExportAllDeclarationNode | ExportDefaultDeclarationNode | ExportNamedDeclarationNode | ForOfStatementNode | ImportDeclarationNode | DeclareClassNode | DeclareFunctionNode | DeclareInterfaceNode | DeclareModuleNode | DeclareTypeAliasNode | DeclareVariableNode | InterfaceDeclarationNode | TypeAliasNode;
+    export type TerminatorlessNode = BreakStatementNode | ContinueStatementNode | ReturnStatementNode | ThrowStatementNode | YieldExpressionNode | AwaitExpressionNode;
+    export type CompletionStatementNode = BreakStatementNode | ContinueStatementNode | ReturnStatementNode | ThrowStatementNode;
+    export type ConditionalNode = ConditionalExpressionNode | IfStatementNode;
+    export type LoopNode = DoWhileStatementNode | ForInStatementNode | ForStatementNode | WhileStatementNode | ForOfStatementNode;
+    export type WhileNode = DoWhileStatementNode | WhileStatementNode;
+    export type ExpressionWrapperNode = ExpressionStatementNode | TypeCastExpressionNode | ParenthesizedExpressionNode;
+    export type ForNode = ForInStatementNode | ForStatementNode | ForOfStatementNode;
+    export type ForXStatementNode = ForInStatementNode | ForOfStatementNode;
+    export type FunctionNode = FunctionDeclarationNode | FunctionExpressionNode | ObjectMethodNode | ArrowFunctionExpressionNode | ClassMethodNode;
+    export type FunctionParentNode = FunctionDeclarationNode | FunctionExpressionNode | ProgramNode | ObjectMethodNode | ArrowFunctionExpressionNode | ClassMethodNode;
+    export type PureishNode = FunctionDeclarationNode | FunctionExpressionNode | StringLiteralNode | NumericLiteralNode | NullLiteralNode | BooleanLiteralNode | ArrowFunctionExpressionNode | ClassDeclarationNode | ClassExpressionNode;
+    export type DeclarationNode = FunctionDeclarationNode | VariableDeclarationNode | ClassDeclarationNode | ExportAllDeclarationNode | ExportDefaultDeclarationNode | ExportNamedDeclarationNode | ImportDeclarationNode | DeclareClassNode | DeclareFunctionNode | DeclareInterfaceNode | DeclareModuleNode | DeclareTypeAliasNode | DeclareVariableNode | InterfaceDeclarationNode | TypeAliasNode;
+    export type LValNode = IdentifierNode | MemberExpressionNode | RestElementNode | AssignmentPatternNode | ArrayPatternNode | ObjectPatternNode;
+    export type LiteralNode = StringLiteralNode | NumericLiteralNode | NullLiteralNode | BooleanLiteralNode | RegExpLiteralNode | TemplateLiteralNode;
+    export type ImmutableNode = StringLiteralNode | NumericLiteralNode | NullLiteralNode | BooleanLiteralNode | JSXAttributeNode | JSXClosingElementNode | JSXElementNode | JSXExpressionContainerNode | JSXOpeningElementNode;
+    export type UserWhitespacableNode = ObjectMethodNode | ObjectPropertyNode | ObjectTypeCallPropertyNode | ObjectTypeIndexerNode | ObjectTypePropertyNode;
+    export type MethodNode = ObjectMethodNode | ClassMethodNode;
+    export type ObjectMemberNode = ObjectMethodNode | ObjectPropertyNode;
+    export type PropertyNode = ObjectPropertyNode | ClassPropertyNode;
+    export type UnaryLikeNode = UnaryExpressionNode | SpreadElementNode | RestPropertyNode | SpreadPropertyNode;
+    export type PatternNode = AssignmentPatternNode | ArrayPatternNode | ObjectPatternNode;
+    export type ClassNode = ClassDeclarationNode | ClassExpressionNode;
+    export type ModuleDeclarationNode = ExportAllDeclarationNode | ExportDefaultDeclarationNode | ExportNamedDeclarationNode | ImportDeclarationNode;
+    export type ExportDeclarationNode = ExportAllDeclarationNode | ExportDefaultDeclarationNode | ExportNamedDeclarationNode;
+    export type ModuleSpecifierNode = ExportSpecifierNode | ImportDefaultSpecifierNode | ImportNamespaceSpecifierNode | ImportSpecifierNode | ExportDefaultSpecifierNode | ExportNamespaceSpecifierNode;
+    export type FlowNode = AnyTypeAnnotationNode | ArrayTypeAnnotationNode | BooleanTypeAnnotationNode | BooleanLiteralTypeAnnotationNode | NullLiteralTypeAnnotationNode | ClassImplementsNode | ClassPropertyNode | DeclareClassNode | DeclareFunctionNode | DeclareInterfaceNode | DeclareModuleNode | DeclareTypeAliasNode | DeclareVariableNode | ExistentialTypeParamNode | FunctionTypeAnnotationNode | FunctionTypeParamNode | GenericTypeAnnotationNode | InterfaceExtendsNode | InterfaceDeclarationNode | IntersectionTypeAnnotationNode | MixedTypeAnnotationNode | NullableTypeAnnotationNode | NumericLiteralTypeAnnotationNode | NumberTypeAnnotationNode | StringLiteralTypeAnnotationNode | StringTypeAnnotationNode | ThisTypeAnnotationNode | TupleTypeAnnotationNode | TypeofTypeAnnotationNode | TypeAliasNode | TypeAnnotationNode | TypeCastExpressionNode | TypeParameterDeclarationNode | TypeParameterInstantiationNode | ObjectTypeAnnotationNode | ObjectTypeCallPropertyNode | ObjectTypeIndexerNode | ObjectTypePropertyNode | QualifiedTypeIdentifierNode | UnionTypeAnnotationNode | VoidTypeAnnotationNode;
+    export type FlowBaseAnnotationNode = AnyTypeAnnotationNode | BooleanTypeAnnotationNode | NullLiteralTypeAnnotationNode | MixedTypeAnnotationNode | NumberTypeAnnotationNode | StringTypeAnnotationNode | ThisTypeAnnotationNode | VoidTypeAnnotationNode;
+    export type FlowDeclarationNode = DeclareClassNode | DeclareFunctionNode | DeclareInterfaceNode | DeclareModuleNode | DeclareTypeAliasNode | DeclareVariableNode | InterfaceDeclarationNode | TypeAliasNode;
+    export type JSXNode = JSXAttributeNode | JSXClosingElementNode | JSXElementNode | JSXEmptyExpressionNode | JSXExpressionContainerNode | JSXIdentifierNode | JSXMemberExpressionNode | JSXNamespacedNameNode | JSXOpeningElementNode | JSXSpreadAttributeNode | JSXTextNode;
+
     export function arrayExpression(elements?: any): ArrayExpressionNode;
     export function assignmentExpression(operator: string, left: LValNode, right: ExpressionNode): AssignmentExpressionNode;
     export function binaryExpression(operator: "+" | "-" | "/" | "%" | "*" | "**" | "&" | "|" | ">>" | ">>>" | "<<" | "^" | "==" | "===" | "!=" | "!==" | "in" | "instanceof" | ">" | "<" | ">=" | "<=", left: ExpressionNode, right: ExpressionNode): BinaryExpressionNode;
