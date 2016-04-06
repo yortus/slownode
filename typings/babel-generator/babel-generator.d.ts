@@ -5,15 +5,14 @@ declare module "babel-generator" {
     import * as t from 'babel-types';
     type Node = t.Node;
 
-    // TODO: finish comment:...
     /**
      * Turns an AST into code, maintaining sourcemaps, user preferences, and valid output.
-     * @param ast - ???
-     * @param opts - ???
-     * @param code - ???
-     * @returns - ???
+     * @param ast - the abstract syntax tree from which to generate output code.
+     * @param opts - used for specifying options for code generation.
+     * @param code - the original source code, used for source maps.
+     * @returns - an object containing the output code and source map.
      */
-    export default function generate(ast: Node, opts: GeneratorOptions, code: string | {[filename: string]: string}): GeneratorResult;
+    export default function generate(ast: Node, opts?: GeneratorOptions, code?: string | {[filename: string]: string}): GeneratorResult;
 
     export interface GeneratorOptions {
 
@@ -93,7 +92,7 @@ declare module "babel-generator" {
     }
 
     export interface GeneratorResult {
-        map: Object | null | undefined; // JSON
+        map: Object | null | undefined;
         code: string;
     }
 }
