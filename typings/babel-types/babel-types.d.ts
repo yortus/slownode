@@ -74,12 +74,12 @@ declare module "babel-types" {
 
     export interface ArrayExpression extends Node {
         type: "ArrayExpression";
-        elements?: any;
+        elements: Array<Expression | SpreadElement | null>;
     }
 
     export interface AssignmentExpression extends Node {
         type: "AssignmentExpression";
-        operator: string;
+        operator: "=" | "+=" | "-=" | "*=" | "/=" | "%=" | "<<=" | ">>=" | ">>>=" | "|=" | "^=" | "&=";
         left: LVal;
         right: Expression;
     }
@@ -103,24 +103,24 @@ declare module "babel-types" {
 
     export interface BlockStatement extends Node {
         type: "BlockStatement";
-        directives?: any;
-        body: any;
+        directives?: Directive[];
+        body: Statement[];
     }
 
     export interface BreakStatement extends Node {
         type: "BreakStatement";
-        label?: Identifier | null | undefined;
+        label: Identifier | null;
     }
 
     export interface CallExpression extends Node {
         type: "CallExpression";
-        callee: Expression;
-        arguments: any;
+        callee: Expression | Super;
+        arguments: Array<Expression | SpreadElement>;
     }
 
     export interface CatchClause extends Node {
         type: "CatchClause";
-        param: Identifier;
+        param: Pattern;
         body: BlockStatement;
     }
 
@@ -133,7 +133,7 @@ declare module "babel-types" {
 
     export interface ContinueStatement extends Node {
         type: "ContinueStatement";
-        label?: Identifier | null | undefined;
+        label: Identifier | null;
     }
 
     export interface DebuggerStatement extends Node {
@@ -171,35 +171,35 @@ declare module "babel-types" {
 
     export interface ForStatement extends Node {
         type: "ForStatement";
-        init?: VariableDeclaration | Expression | null | undefined;
-        test?: Expression | null | undefined;
-        update?: Expression | null | undefined;
+        init: VariableDeclaration | Expression | null;
+        test: Expression | null;
+        update: Expression | null;
         body: Statement;
     }
 
     export interface FunctionDeclaration extends Node {
         type: "FunctionDeclaration";
         id: Identifier;
-        params: any;
+        params: Pattern[];
         body: BlockStatement;
-        generator?: boolean;
-        async?: boolean;
-        returnType: any;
-        typeParameters: any;
+        generator: boolean;
+        async: boolean;
+        returnType?: TypeAnnotation;
+        typeParameters?: TypeParameterDeclaration;
     }
 
     export interface FunctionExpression extends Node {
         type: "FunctionExpression";
-        id?: Identifier | null | undefined;
-        params: any;
+        id: Identifier | null;
+        params: Pattern[];
         body: BlockStatement;
-        generator?: boolean;
-        async?: boolean;
-        returnType: any;
-        typeParameters: any;
+        generator: boolean;
+        async: boolean;
+        returnType?: TypeAnnotation;
+        typeParameters?: TypeParameterDeclaration;
     }
 
-    export interface Identifier extends Expression, Pattern {
+    export interface Identifier extends Node {
         type: "Identifier";
         name: string;
         typeAnnotation: any;
@@ -209,7 +209,7 @@ declare module "babel-types" {
         type: "IfStatement";
         test: Expression;
         consequent: Statement;
-        alternate?: Statement | null | undefined;
+        alternate: Statement | null;
     }
 
     export interface LabeledStatement extends Node {
@@ -252,77 +252,81 @@ declare module "babel-types" {
 
     export interface MemberExpression extends Node {
         type: "MemberExpression";
-        object: Expression;
-        property: any;
-        computed?: boolean;
+        object: Expression | Super;
+        property: Expression;
+        computed: boolean;
     }
 
     export interface NewExpression extends Node {
         type: "NewExpression";
-        callee: Expression;
-        arguments: any;
+        callee: Expression | Super;
+        arguments: Array<Expression | SpreadElement>;
     }
 
     export interface Program extends Node {
         type: "Program";
-        directives?: any;
-        body: any;
+        sourceType: "script" | "module";
+        directives?: Directive[];
+        body: Array<Statement | ModuleDeclaration>;
     }
 
     export interface ObjectExpression extends Node {
         type: "ObjectExpression";
-        properties: any;
+        properties: Array<ObjectProperty | ObjectMethod | SpreadProperty>;
     }
 
     export interface ObjectMethod extends Node {
         type: "ObjectMethod";
-        kind?: any;
-        computed?: boolean;
-        key: any;
-        decorators: any;
+        key: Expression;
+        kind: "get" | "set" | "method";
+        shorthand: boolean;
+        computed: boolean;
+        value: Expression;
+        decorators?: Decorator[];
+        id: Identifier | null;
+        params: [ Pattern ];
         body: BlockStatement;
-        generator?: boolean;
-        async?: boolean;
-        params: any;
-        returnType: any;
-        typeParameters: any;
+        generator: boolean;
+        async: boolean;
+        returnType?: TypeAnnotation;
+        typeParameters?: TypeParameterDeclaration;
     }
 
     export interface ObjectProperty extends Node {
         type: "ObjectProperty";
-        computed?: boolean;
-        key: any;
+        key: Expression;
+        computed: boolean;
         value: Expression;
-        shorthand?: boolean;
-        decorators?: any;
+        decorators?: Decorator[];
+        shorthand: boolean;
     }
 
     export interface RestElement extends Node {
         type: "RestElement";
         argument: LVal;
-        typeAnnotation: any;
+        typeAnnotation?: TypeAnnotation;
     }
 
     export interface ReturnStatement extends Node {
         type: "ReturnStatement";
-        argument?: Expression | null | undefined;
+        argument: Expression | null;
     }
 
     export interface SequenceExpression extends Node {
         type: "SequenceExpression";
-        expressions: any;
+        expressions: Expression[];
     }
 
     export interface SwitchCase extends Node {
         type: "SwitchCase";
-        test?: Expression | null | undefined;
-        consequent: any;
+        test: Expression | null;
+        consequent: Statement[];
     }
 
     export interface SwitchStatement extends Node {
         type: "SwitchStatement";
         discriminant: Expression;
-        cases: any;
+        cases: SwitchCase[];
     }
 
     export interface ThisExpression extends Node {
@@ -336,95 +340,98 @@ declare module "babel-types" {
 
     export interface TryStatement extends Node {
         type: "TryStatement";
-        body: BlockStatement;
-        handler?: any;
-        finalizer?: BlockStatement | null | undefined;
-        block: any;
+        block: BlockStatement;
+        handler: CatchClause | null;
+        finalizer: BlockStatement | null;
     }
 
     export interface UnaryExpression extends Node {
         type: "UnaryExpression";
-        prefix?: boolean;
+        operator: "-" | "+" | "!" | "~" | "typeof" | "void" | "delete";
+        prefix: boolean;
         argument: Expression;
-        operator: "void" | "delete" | "!" | "+" | "-" | "++" | "--" | "~" | "typeof";
     }
 
     export interface UpdateExpression extends Node {
         type: "UpdateExpression";
-        prefix?: boolean;
-        argument: Expression;
         operator: "++" | "--";
+        prefix: boolean;
+        argument: Expression;
     }
 
     export interface VariableDeclaration extends Node {
         type: "VariableDeclaration";
-        kind: any;
-        declarations: any;
+        declarations: VariableDeclarator[];
+        kind: "var" | "let" | "const";
     }
 
     export interface VariableDeclarator extends Node {
         type: "VariableDeclarator";
         id: LVal;
-        init?: Expression | null | undefined;
+        init: Expression | null;
     }
 
     export interface WhileStatement extends Node {
         type: "WhileStatement";
         test: Expression;
-        body: BlockStatement | Statement;
+        body: Statement;
     }
 
     export interface WithStatement extends Node {
         type: "WithStatement";
-        object: any;
+        object: Expression;
         body: BlockStatement | Statement;
     }
 
     export interface AssignmentPattern extends Node {
         type: "AssignmentPattern";
-        left: Identifier;
+        left: Pattern;
         right: Expression;
     }
 
     export interface ArrayPattern extends Node {
         type: "ArrayPattern";
-        elements: any;
-        typeAnnotation: any;
+        elements: Array<Pattern | null>;
+        typeAnnotation?: TypeAnnotation;
     }
 
     export interface ArrowFunctionExpression extends Node {
         type: "ArrowFunctionExpression";
-        params: any;
+        id: Identifier | null;
+        params: Pattern[];
         body: BlockStatement | Expression;
-        async?: boolean;
-        returnType: any;
+        generator: boolean;
+        async: boolean;
+        expression: boolean;
+        returnType?: TypeAnnotation;
+        typeParameters?: TypeParameterDeclaration;
     }
 
     export interface ClassBody extends Node {
         type: "ClassBody";
-        body: any;
+        body: Array<ClassMethod | ClassProperty>;
     }
 
     export interface ClassDeclaration extends Node {
         type: "ClassDeclaration";
         id: Identifier;
+        superClass: Expression | null;
         body: ClassBody;
-        superClass?: Expression | null | undefined;
-        decorators: any;
-        mixins: any;
-        typeParameters: any;
-        superTypeParameters: any;
+        decorators?: Decorator[];
+        mixins?: any;
+        typeParameters?: TypeParameterDeclaration;
+        superTypeParameters?: TypeParameterDeclaration;
     }
 
     export interface ClassExpression extends Node {
         type: "ClassExpression";
-        id?: Identifier | null | undefined;
+        id: Identifier | null;
+        superClass: Expression | null;
         body: ClassBody;
-        superClass?: Expression | null | undefined;
-        decorators: any;
+        decorators?: Decorator[];
         mixins: any;
-        typeParameters: any;
-        superTypeParameters: any;
+        typeParameters?: TypeParameterDeclaration;
+        superTypeParameters?: TypeParameterDeclaration;
     }
 
     export interface ExportAllDeclaration extends Node {
@@ -434,21 +441,21 @@ declare module "babel-types" {
 
     export interface ExportDefaultDeclaration extends Node {
         type: "ExportDefaultDeclaration";
-        declaration: FunctionDeclaration | ClassDeclaration | Expression;
+        declaration: Declaration | Expression;
     }
 
     export interface ExportNamedDeclaration extends Node {
         type: "ExportNamedDeclaration";
-        declaration?: Declaration | null | undefined;
-        specifiers: any;
-        source?: StringLiteral | null | undefined;
+        declaration: Declaration | null;
+        specifiers: ExportSpecifier[];
+        source: StringLiteral | null;
     }
 
     export interface ExportSpecifier extends Node {
         type: "ExportSpecifier";
         local: Identifier;
         imported: Identifier;
-        exported: any;
+        exported: Identifier;
     }
 
     export interface ForOfStatement extends Node {
@@ -460,7 +467,7 @@ declare module "babel-types" {
 
     export interface ImportDeclaration extends Node {
         type: "ImportDeclaration";
-        specifiers: any;
+        specifiers: Array<ImportSpecifier | ImportDefaultSpecifier | ImportNamespaceSpecifier>;
         source: StringLiteral;
     }
 
@@ -482,28 +489,42 @@ declare module "babel-types" {
 
     export interface MetaProperty extends Node {
         type: "MetaProperty";
-        meta: string;
-        property: string;
+        meta: Identifier;
+        property: Identifier;
     }
 
     export interface ClassMethod extends Node {
         type: "ClassMethod";
-        kind?: any;
-        computed?: boolean;
-        key: any;
-        params: any;
+        key: Expression;
+        value?: FunctionExpression;
+        kind: "constructor" | "method" | "get" | "set";
+        computed: boolean;
+        static: boolean;
+        decorators?: Decorator[];
+        id: Identifier | null;
+        params: Pattern[];
         body: BlockStatement;
-        generator?: boolean;
-        async?: boolean;
-        decorators: any;
-        returnType: any;
-        typeParameters: any;
+        generator: boolean;
+        async: boolean;
+        expression: boolean;
+        returnType?: TypeAnnotation;
+        typeParameters?: TypeParameterDeclaration;
+    }
+
+    // See: https://github.com/babel/babel/blob/master/doc/ast/spec.md#objectpattern
+    export interface AssignmentProperty extends Node {
+        type: "ObjectProperty";
+        key: Expression;
+        computed: boolean;
+        value: Pattern;
+        decorators?: Decorator[];
+        shorthand: boolean;
     }
 
     export interface ObjectPattern extends Node {
         type: "ObjectPattern";
-        properties: any;
-        typeAnnotation: any;
+        properties: Array<AssignmentProperty | RestProperty>;
+        typeAnnotation?: TypeAnnotation;
     }
 
     export interface SpreadElement extends Node {
@@ -523,20 +544,23 @@ declare module "babel-types" {
 
     export interface TemplateElement extends Node {
         type: "TemplateElement";
-        value: any;
-        tail?: boolean;
+        tail: boolean;
+        value: {
+            cooked: string;
+            raw: string;
+        };
     }
 
     export interface TemplateLiteral extends Node {
         type: "TemplateLiteral";
-        quasis: any;
-        expressions: any;
+        quasis: TemplateElement[];
+        expressions: Expression[];
     }
 
     export interface YieldExpression extends Node {
         type: "YieldExpression";
-        delegate?: boolean;
-        argument?: Expression | null | undefined;
+        argument: Expression | null;
+        delegate: boolean;
     }
 
     export interface AnyTypeAnnotation extends Node {
@@ -568,10 +592,10 @@ declare module "babel-types" {
 
     export interface ClassProperty extends Node {
         type: "ClassProperty";
-        key: any;
-        value: any;
-        typeAnnotation: any;
-        decorators: any;
+        key: Identifier;
+        value: Expression;
+        decorators?: Decorator[];
+        typeAnnotation?: TypeAnnotation;
     }
 
     export interface DeclareClass extends Node {
@@ -833,13 +857,13 @@ declare module "babel-types" {
 
     export interface AwaitExpression extends Node {
         type: "AwaitExpression";
-        argument: Expression;
+        argument: Expression | null;
     }
 
     export interface BindExpression extends Node {
         type: "BindExpression";
-        object: any;
-        callee: any;
+        object: Expression | null;
+        callee: Expression;
     }
 
     export interface Decorator extends Node {
@@ -928,7 +952,7 @@ declare module "babel-types" {
     export function forStatement(init: VariableDeclaration | Expression | null | undefined, test: Expression | null | undefined, update: Expression | null | undefined, body: Statement): ForStatement;
     export function functionDeclaration(id: Identifier, params: any, body: BlockStatement, generator: boolean | undefined, async: boolean | undefined, returnType: any, typeParameters: any): FunctionDeclaration;
     export function functionExpression(id: Identifier | null | undefined, params: any, body: BlockStatement, generator: boolean | undefined, async: boolean | undefined, returnType: any, typeParameters: any): FunctionExpression;
-    export function identifier(name: any, typeAnnotation: any): Identifier;
+    export function identifier(name: string, typeAnnotation: any): Identifier;
     export function ifStatement(test: Expression, consequent: Statement, alternate?: Statement | null | undefined): IfStatement;
     export function labeledStatement(label: Identifier, body: Statement): LabeledStatement;
     export function stringLiteral(value: string): StringLiteral;
