@@ -37,17 +37,17 @@ declare module "babel-types" {
 
     export interface Comment {
         value: string;
-        start: number;
-        end: number;
+        start: number | null;
+        end: number | null;
         loc: SourceLocation | null;
     }
 
-    export interface BlockComment extends Comment {
-        type: "BlockComment";
+    export interface CommentBlock extends Comment {
+        type: "CommentBlock";
     }
 
-    export interface LineComment extends Comment {
-        type: "LineComment";
+    export interface CommentLine extends Comment {
+        type: "CommentLine";
     }
 
     export interface SourceLocation {
@@ -158,8 +158,8 @@ declare module "babel-types" {
     export interface File extends Node {
         type: "File";
         program: Program;
-        comments: any;
-        tokens: any;
+        comments: Comment[];
+        tokens: any[];
     }
 
     export interface ForInStatement extends Node {
@@ -202,7 +202,7 @@ declare module "babel-types" {
     export interface Identifier extends Node {
         type: "Identifier";
         name: string;
-        typeAnnotation: any;
+        typeAnnotation?: TypeAnnotation;
     }
 
     export interface IfStatement extends Node {
@@ -569,7 +569,7 @@ declare module "babel-types" {
 
     export interface ArrayTypeAnnotation extends Node {
         type: "ArrayTypeAnnotation";
-        elementType: any;
+        elementType: FlowTypeAnnotation;
     }
 
     export interface BooleanTypeAnnotation extends Node {
@@ -641,22 +641,22 @@ declare module "babel-types" {
 
     export interface FunctionTypeAnnotation extends Node {
         type: "FunctionTypeAnnotation";
-        typeParameters: any;
-        params: any;
-        rest: any;
-        returnType: any;
+        typeParameters: TypeParameterDeclaration;
+        params: FunctionTypeParam[];
+        rest: FunctionTypeParam | null;
+        returnType: FlowTypeAnnotation;
     }
 
     export interface FunctionTypeParam extends Node {
         type: "FunctionTypeParam";
-        name: any;
-        typeAnnotation: any;
+        name: Identifier;
+        typeAnnotation: FlowTypeAnnotation;
     }
 
     export interface GenericTypeAnnotation extends Node {
         type: "GenericTypeAnnotation";
-        id: any;
-        typeParameters: any;
+        id: Identifier;
+        typeParameters: TypeParameterInstantiation | null;
     }
 
     export interface InterfaceExtends extends Node {
@@ -674,7 +674,7 @@ declare module "babel-types" {
 
     export interface IntersectionTypeAnnotation extends Node {
         type: "IntersectionTypeAnnotation";
-        types: any;
+        types: FlowTypeAnnotation[];
     }
 
     export interface MixedTypeAnnotation extends Node {
@@ -683,7 +683,7 @@ declare module "babel-types" {
 
     export interface NullableTypeAnnotation extends Node {
         type: "NullableTypeAnnotation";
-        typeAnnotation: any;
+        typeAnnotation: FlowTypeAnnotation;
     }
 
     export interface NumericLiteralTypeAnnotation extends Node {
@@ -708,76 +708,76 @@ declare module "babel-types" {
 
     export interface TupleTypeAnnotation extends Node {
         type: "TupleTypeAnnotation";
-        types: any;
+        types: FlowTypeAnnotation[];
     }
 
     export interface TypeofTypeAnnotation extends Node {
         type: "TypeofTypeAnnotation";
-        argument: any;
+        argument: FlowTypeAnnotation;
     }
 
     export interface TypeAlias extends Node {
         type: "TypeAlias";
-        id: any;
-        typeParameters: any;
-        right: any;
+        id: Identifier;
+        typeParameters: TypeParameterDeclaration | null;
+        right: FlowTypeAnnotation;
     }
 
     export interface TypeAnnotation extends Node {
         type: "TypeAnnotation";
-        typeAnnotation: any;
+        typeAnnotation: FlowTypeAnnotation;
     }
 
     export interface TypeCastExpression extends Node {
         type: "TypeCastExpression";
-        expression: any;
-        typeAnnotation: any;
+        expression: Expression;
+        typeAnnotation: FlowTypeAnnotation;
     }
 
     export interface TypeParameterDeclaration extends Node {
         type: "TypeParameterDeclaration";
-        params: any;
+        params: Identifier[];
     }
 
     export interface TypeParameterInstantiation extends Node {
         type: "TypeParameterInstantiation";
-        params: any;
+        params: FlowTypeAnnotation[];
     }
 
     export interface ObjectTypeAnnotation extends Node {
         type: "ObjectTypeAnnotation";
-        properties: any;
-        indexers: any;
-        callProperties: any;
+        properties: ObjectTypeProperty[];
+        indexers: ObjectTypeIndexer[];
+        callProperties: ObjectTypeCallProperty[];
     }
 
     export interface ObjectTypeCallProperty extends Node {
         type: "ObjectTypeCallProperty";
-        value: any;
+        value: FlowTypeAnnotation;
     }
 
     export interface ObjectTypeIndexer extends Node {
         type: "ObjectTypeIndexer";
-        id: any;
-        key: any;
-        value: any;
+        id: Expression;
+        key: FlowTypeAnnotation;
+        value: FlowTypeAnnotation;
     }
 
     export interface ObjectTypeProperty extends Node {
         type: "ObjectTypeProperty";
-        key: any;
-        value: any;
+        key: Expression;
+        value: FlowTypeAnnotation;
     }
 
     export interface QualifiedTypeIdentifier extends Node {
         type: "QualifiedTypeIdentifier";
-        id: any;
-        qualification: any;
+        id: Identifier;
+        qualification: Identifier | QualifiedTypeIdentifier;
     }
 
     export interface UnionTypeAnnotation extends Node {
         type: "UnionTypeAnnotation";
-        types: any;
+        types: FlowTypeAnnotation[];
     }
 
     export interface VoidTypeAnnotation extends Node {
@@ -787,7 +787,7 @@ declare module "babel-types" {
     export interface JSXAttribute extends Node {
         type: "JSXAttribute";
         name: JSXIdentifier | JSXNamespacedName;
-        value?: JSXElement | StringLiteral | JSXExpressionContainer | null | undefined;
+        value: JSXElement | StringLiteral | JSXExpressionContainer | null;
     }
 
     export interface JSXClosingElement extends Node {
@@ -798,7 +798,7 @@ declare module "babel-types" {
     export interface JSXElement extends Node {
         type: "JSXElement";
         openingElement: JSXOpeningElement;
-        closingElement?: JSXClosingElement | null | undefined;
+        closingElement: JSXClosingElement | null;
         children: any;
         selfClosing: any;
     }
@@ -832,7 +832,7 @@ declare module "babel-types" {
     export interface JSXOpeningElement extends Node {
         type: "JSXOpeningElement";
         name: JSXIdentifier | JSXMemberExpression;
-        selfClosing?: boolean;
+        selfClosing: boolean;
         attributes: any;
     }
 
@@ -928,6 +928,7 @@ declare module "babel-types" {
     export type ExportDeclaration = ExportAllDeclaration | ExportDefaultDeclaration | ExportNamedDeclaration;
     export type ModuleSpecifier = ExportSpecifier | ImportDefaultSpecifier | ImportNamespaceSpecifier | ImportSpecifier | ExportDefaultSpecifier | ExportNamespaceSpecifier;
     export type Flow = AnyTypeAnnotation | ArrayTypeAnnotation | BooleanTypeAnnotation | BooleanLiteralTypeAnnotation | NullLiteralTypeAnnotation | ClassImplements | ClassProperty | DeclareClass | DeclareFunction | DeclareInterface | DeclareModule | DeclareTypeAlias | DeclareVariable | ExistentialTypeParam | FunctionTypeAnnotation | FunctionTypeParam | GenericTypeAnnotation | InterfaceExtends | InterfaceDeclaration | IntersectionTypeAnnotation | MixedTypeAnnotation | NullableTypeAnnotation | NumericLiteralTypeAnnotation | NumberTypeAnnotation | StringLiteralTypeAnnotation | StringTypeAnnotation | ThisTypeAnnotation | TupleTypeAnnotation | TypeofTypeAnnotation | TypeAlias | TypeAnnotation | TypeCastExpression | TypeParameterDeclaration | TypeParameterInstantiation | ObjectTypeAnnotation | ObjectTypeCallProperty | ObjectTypeIndexer | ObjectTypeProperty | QualifiedTypeIdentifier | UnionTypeAnnotation | VoidTypeAnnotation;
+    export type FlowTypeAnnotation = AnyTypeAnnotation | ArrayTypeAnnotation | BooleanTypeAnnotation | BooleanLiteralTypeAnnotation | NullLiteralTypeAnnotation | FunctionTypeAnnotation | GenericTypeAnnotation | IntersectionTypeAnnotation | MixedTypeAnnotation | NullableTypeAnnotation | NumericLiteralTypeAnnotation | NumberTypeAnnotation | StringLiteralTypeAnnotation | StringTypeAnnotation | ThisTypeAnnotation | TupleTypeAnnotation | TypeofTypeAnnotation | TypeAnnotation | ObjectTypeAnnotation | UnionTypeAnnotation | VoidTypeAnnotation;
     export type FlowBaseAnnotation = AnyTypeAnnotation | BooleanTypeAnnotation | NullLiteralTypeAnnotation | MixedTypeAnnotation | NumberTypeAnnotation | StringTypeAnnotation | ThisTypeAnnotation | VoidTypeAnnotation;
     export type FlowDeclaration = DeclareClass | DeclareFunction | DeclareInterface | DeclareModule | DeclareTypeAlias | DeclareVariable | InterfaceDeclaration | TypeAlias;
     export type JSX = JSXAttribute | JSXClosingElement | JSXElement | JSXEmptyExpression | JSXExpressionContainer | JSXIdentifier | JSXMemberExpression | JSXNamespacedName | JSXOpeningElement | JSXSpreadAttribute | JSXText;
