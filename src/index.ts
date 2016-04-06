@@ -6,6 +6,7 @@ import * as t from "babel-types";
 import traverse, {Visitor} from "babel-traverse";
 import generate from "babel-generator";
 import template = require("babel-template");
+import * as babel from 'babel-core';
 //import ts = require("typescript");
 
 
@@ -15,6 +16,15 @@ import template = require("babel-template");
 const filename = path.join(__dirname, '../temp/temp.js');
 const source = fs.readFileSync(filename, 'utf8');
 
+
+
+
+
+var b = babel.transform('var x = 5;', {
+    retainLines: true,
+    ast: false
+});
+    
 
 
 const code = `/*sdfsdsdf*/ function square(n: string) {

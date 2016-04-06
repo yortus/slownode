@@ -1,3 +1,4 @@
+///<reference path="../typings/babel-core/babel-core.d.ts" />
 ///<reference path="../typings/babel-generator/babel-generator.d.ts" />
 ///<reference path="../typings/babel-template/babel-template.d.ts" />
 ///<reference path="../typings/babel-traverse/babel-traverse.d.ts" />
