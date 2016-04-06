@@ -44,6 +44,7 @@
   "dependencies": {
     "babel-core": "^6.7.4",
     "babel-generator": "^6.7.2",
+    "babel-template": "^6.7.0",
     "babel-traverse": "^6.7.4",
     "babel-types": "^6.7.2",
     "babylon": "^6.7.0",

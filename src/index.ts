@@ -5,6 +5,7 @@ import * as babylon from "babylon";
 import * as t from "babel-types";
 import traverse, {Visitor} from "babel-traverse";
 import generate from "babel-generator";
+import template = require("babel-template");
 //import ts = require("typescript");
 
 
@@ -16,11 +17,85 @@ const source = fs.readFileSync(filename, 'utf8');
 
 
 
-const code = `function square(n) {
+const code = `/*sdfsdsdf*/ function square(n: string) {
+    // do stuff
   return n * n;
 }`;
 
-const ast = babylon.parse(code);
+const ast = babylon.parse(code, {plugins: ["jsx", "flow"]});
+
+
+
+
+
+
+const buildRequire = template(`
+  var IMPORT_NAME = require(SOURCE);
+`);
+
+
+const ast2 = buildRequire({
+  SOURCE: t.stringLiteral("my-module"),
+  IMPORT_NAME: t.identifier("myModule")
+});
+
+debugger;
+
+var code2 = generate(ast2).code;
+
+debugger;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var tests = [
+    // t.arrayExpression(),
+
+    // t.unionTypeAnnotation(
+    //     [
+    //         t.voidTypeAnnotation(),
+    //         t.stringLiteralTypeAnnotation()
+    //     ]
+    // ),
+
+
+    
+    t.jSXElement(
+        t.jSXOpeningElement(
+            t.jSXIdentifier('h1'), []
+        ),
+        void 0,
+        []
+    )
+    
+];
+
+
+var fd = t.functionDeclaration(
+    t.identifier("foo"),
+    [],
+    t.blockStatement([], [])
+);
+
 
 traverse(ast, {
 
@@ -31,6 +106,11 @@ traverse(ast, {
             }
         }
     },
+
+    Flow({node}) {
+        debugger;
+    },
+
 
     Identifier: {
         enter({node}) {
@@ -103,12 +183,12 @@ const updateParamNameVisitor: Visitor = {
   }
 };
 
-const MyVisitor: Visitor = {
-  FunctionDeclaration(path) {
-    const param = path.node.params[0];
-    const paramName = param.name;
-    param.name = "x";
+// const MyVisitor: Visitor = {
+//   FunctionDeclaration(path) {
+//     const param = path.node.params[0];
+//     const paramName = param.name;
+//     param.name = "x";
 
-    path.traverse(updateParamNameVisitor, { paramName });
-  }
-};
+//     path.traverse(updateParamNameVisitor, { paramName });
+//   }
+// };
