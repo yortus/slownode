@@ -284,7 +284,7 @@ declare module "babel-types" {
         value: Expression;
         decorators?: Decorator[];
         id: Identifier | null;
-        params: [ Pattern ];
+        params: Pattern[];
         body: BlockStatement;
         generator: boolean;
         async: boolean;
@@ -418,9 +418,10 @@ declare module "babel-types" {
         superClass: Expression | null;
         body: ClassBody;
         decorators?: Decorator[];
-        mixins?: any;
+        implements?: ClassImplements[];
+        mixins?: any[];
         typeParameters?: TypeParameterDeclaration;
-        superTypeParameters?: TypeParameterDeclaration;
+        superTypeParameters?: TypeParameterInstantiation;
     }
 
     export interface ClassExpression extends Node {
@@ -429,9 +430,10 @@ declare module "babel-types" {
         superClass: Expression | null;
         body: ClassBody;
         decorators?: Decorator[];
-        mixins: any;
+        implements?: ClassImplements[];
+        mixins?: any[];
         typeParameters?: TypeParameterDeclaration;
-        superTypeParameters?: TypeParameterDeclaration;
+        superTypeParameters?: TypeParameterInstantiation;
     }
 
     export interface ExportAllDeclaration extends Node {
@@ -586,8 +588,8 @@ declare module "babel-types" {
 
     export interface ClassImplements extends Node {
         type: "ClassImplements";
-        id: any;
-        typeParameters: any;
+        id: Identifier;
+        typeParameters: TypeParameterInstantiation | null;
     }
 
     export interface ClassProperty extends Node {
@@ -600,39 +602,41 @@ declare module "babel-types" {
 
     export interface DeclareClass extends Node {
         type: "DeclareClass";
-        id: any;
-        typeParameters: any;
-        body: any;
+        id: Identifier;
+        typeParameters: TypeParameterDeclaration | null;
+        extends: InterfaceExtends[];
+        body: ObjectTypeAnnotation;
     }
 
     export interface DeclareFunction extends Node {
         type: "DeclareFunction";
-        id: any;
+        id: Identifier;
     }
 
     export interface DeclareInterface extends Node {
         type: "DeclareInterface";
-        id: any;
-        typeParameters: any;
-        body: any;
+        id: Identifier;
+        typeParameters: TypeParameterDeclaration | null;
+        extends: InterfaceExtends[];
+        body: ObjectTypeAnnotation;
     }
 
     export interface DeclareModule extends Node {
         type: "DeclareModule";
-        id: any;
-        body: any;
+        id: StringLiteral | Identifier;
+        body: BlockStatement;
     }
 
     export interface DeclareTypeAlias extends Node {
         type: "DeclareTypeAlias";
-        id: any;
-        typeParameters: any;
-        right: any;
+        id: Identifier;
+        typeParameters: TypeParameterDeclaration | null;
+        right: FlowTypeAnnotation;
     }
 
     export interface DeclareVariable extends Node {
         type: "DeclareVariable";
-        id: any;
+        id: Identifier;
     }
 
     export interface ExistentialTypeParam extends Node {
@@ -661,15 +665,17 @@ declare module "babel-types" {
 
     export interface InterfaceExtends extends Node {
         type: "InterfaceExtends";
-        id: any;
-        typeParameters: any;
+        id: Identifier;
+        typeParameters: TypeParameterInstantiation | null;
     }
 
     export interface InterfaceDeclaration extends Node {
         type: "InterfaceDeclaration";
-        id: any;
-        typeParameters: any;
-        body: any;
+        id: Identifier;
+        typeParameters: TypeParameterDeclaration | null;
+        extends: InterfaceExtends[];
+        mixins?: any[];
+        body: ObjectTypeAnnotation;
     }
 
     export interface IntersectionTypeAnnotation extends Node {
@@ -799,8 +805,8 @@ declare module "babel-types" {
         type: "JSXElement";
         openingElement: JSXOpeningElement;
         closingElement: JSXClosingElement | null;
-        children: any;
-        selfClosing: any;
+        children: Array<JSXElement | JSXExpressionContainer | JSXText>;
+        selfClosing?: boolean;
     }
 
     export interface JSXEmptyExpression extends Node {
@@ -833,7 +839,7 @@ declare module "babel-types" {
         type: "JSXOpeningElement";
         name: JSXIdentifier | JSXMemberExpression;
         selfClosing: boolean;
-        attributes: any;
+        attributes: JSXAttribute[];
     }
 
     export interface JSXSpreadAttribute extends Node {
@@ -933,14 +939,14 @@ declare module "babel-types" {
     export type FlowDeclaration = DeclareClass | DeclareFunction | DeclareInterface | DeclareModule | DeclareTypeAlias | DeclareVariable | InterfaceDeclaration | TypeAlias;
     export type JSX = JSXAttribute | JSXClosingElement | JSXElement | JSXEmptyExpression | JSXExpressionContainer | JSXIdentifier | JSXMemberExpression | JSXNamespacedName | JSXOpeningElement | JSXSpreadAttribute | JSXText;
 
-    export function arrayExpression(elements?: any): ArrayExpression;
+    export function arrayExpression(elements?: Array<Expression | SpreadElement | null>): ArrayExpression;
     export function assignmentExpression(operator: string, left: LVal, right: Expression): AssignmentExpression;
     export function binaryExpression(operator: "+" | "-" | "/" | "%" | "*" | "**" | "&" | "|" | ">>" | ">>>" | "<<" | "^" | "==" | "===" | "!=" | "!==" | "in" | "instanceof" | ">" | "<" | ">=" | "<=", left: Expression, right: Expression): BinaryExpression;
     export function directive(value: DirectiveLiteral): Directive;
     export function directiveLiteral(value: string): DirectiveLiteral;
-    export function blockStatement(directives: any, body: any): BlockStatement;
+    export function blockStatement(body: Statement[], directives: Directive[]): BlockStatement;
     export function breakStatement(label?: Identifier | null | undefined): BreakStatement;
-    export function callExpression(callee: Expression, _arguments: any): CallExpression;
+    export function callExpression(callee: Expression, _arguments: Array<Expression | SpreadElement>): CallExpression;
     export function catchClause(param: Identifier, body: BlockStatement): CatchClause;
     export function conditionalExpression(test: Expression, consequent: Expression, alternate: Expression): ConditionalExpression;
     export function continueStatement(label?: Identifier | null | undefined): ContinueStatement;
@@ -948,12 +954,12 @@ declare module "babel-types" {
     export function doWhileStatement(test: Expression, body: Statement): DoWhileStatement;
     export function emptyStatement(): EmptyStatement;
     export function expressionStatement(expression: Expression): ExpressionStatement;
-    export function file(program: Program, comments: any, tokens: any): File;
+    export function file(program: Program, comments: Comment[], tokens: any[]): File;
     export function forInStatement(left: VariableDeclaration | LVal, right: Expression, body: Statement): ForInStatement;
     export function forStatement(init: VariableDeclaration | Expression | null | undefined, test: Expression | null | undefined, update: Expression | null | undefined, body: Statement): ForStatement;
-    export function functionDeclaration(id: Identifier, params: any, body: BlockStatement, generator: boolean | undefined, async: boolean | undefined, returnType: any, typeParameters: any): FunctionDeclaration;
-    export function functionExpression(id: Identifier | null | undefined, params: any, body: BlockStatement, generator: boolean | undefined, async: boolean | undefined, returnType: any, typeParameters: any): FunctionExpression;
-    export function identifier(name: string, typeAnnotation: any): Identifier;
+    export function functionDeclaration(id: Identifier, params: Pattern[], body: BlockStatement, generator?: boolean, async?: boolean, returnType?: TypeAnnotation, typeParameters?: TypeParameterDeclaration): FunctionDeclaration;
+    export function functionExpression(id: Identifier | null | undefined, params: Pattern[], body: BlockStatement, generator?: boolean, async?: boolean, returnType?: TypeAnnotation, typeParameters?: TypeParameterDeclaration): FunctionExpression;
+    export function identifier(name: string, typeAnnotation?: TypeAnnotation): Identifier;
     export function ifStatement(test: Expression, consequent: Statement, alternate?: Statement | null | undefined): IfStatement;
     export function labeledStatement(label: Identifier, body: Statement): LabeledStatement;
     export function stringLiteral(value: string): StringLiteral;
@@ -962,105 +968,105 @@ declare module "babel-types" {
     export function booleanLiteral(value: boolean): BooleanLiteral;
     export function regExpLiteral(pattern: string, flags?: string): RegExpLiteral;
     export function logicalExpression(operator: "||" | "&&", left: Expression, right: Expression): LogicalExpression;
-    export function memberExpression(object: Expression, property: any, computed?: boolean): MemberExpression;
-    export function newExpression(callee: Expression, _arguments: any): NewExpression;
-    export function program(directives: any, body: any): Program;
-    export function objectExpression(properties: any): ObjectExpression;
-    export function objectMethod(kind: any, computed: boolean | undefined, key: any, decorators: any, body: BlockStatement, generator: boolean | undefined, async: boolean | undefined, params: any, returnType: any, typeParameters: any): ObjectMethod;
-    export function objectProperty(computed: boolean | undefined, key: any, value: Expression, shorthand?: boolean, decorators?: any): ObjectProperty;
-    export function restElement(argument: LVal, typeAnnotation: any): RestElement;
+    export function memberExpression(object: Expression | Super, property: Expression, computed?: boolean): MemberExpression;
+    export function newExpression(callee: Expression | Super, _arguments: Array<Expression | SpreadElement>): NewExpression;
+    export function program(directives: Directive[], body: Array<Statement | ModuleDeclaration>): Program;
+    export function objectExpression(properties: Array<ObjectProperty | ObjectMethod | SpreadProperty>): ObjectExpression;
+    export function objectMethod(kind: "get" | "set" | "method", computed: boolean | undefined, key: Expression, decorators: Decorator[], body: BlockStatement, generator: boolean | undefined, async: boolean | undefined, params: Pattern[], returnType?: TypeAnnotation, typeParameters?: TypeParameterDeclaration): ObjectMethod;
+    export function objectProperty(computed: boolean | undefined, key: Expression, value: Expression, shorthand?: boolean, decorators?: Decorator[]): ObjectProperty;
+    export function restElement(argument: LVal, typeAnnotation?: TypeAnnotation): RestElement;
     export function returnStatement(argument?: Expression | null | undefined): ReturnStatement;
-    export function sequenceExpression(expressions: any): SequenceExpression;
-    export function switchCase(test: Expression | null | undefined, consequent: any): SwitchCase;
-    export function switchStatement(discriminant: Expression, cases: any): SwitchStatement;
+    export function sequenceExpression(expressions: Expression[]): SequenceExpression;
+    export function switchCase(test: Expression | null, consequent: Statement[]): SwitchCase;
+    export function switchStatement(discriminant: Expression, cases: SwitchCase[]): SwitchStatement;
     export function thisExpression(): ThisExpression;
     export function throwStatement(argument: Expression): ThrowStatement;
-    export function tryStatement(body: BlockStatement, handler: any, finalizer: BlockStatement | null | undefined, block: any): TryStatement;
+    export function tryStatement(body: BlockStatement, handler: CatchClause | null, finalizer: BlockStatement | null, block: BlockStatement): TryStatement;
     export function unaryExpression(prefix: boolean | undefined, argument: Expression, operator: "void" | "delete" | "!" | "+" | "-" | "++" | "--" | "~" | "typeof"): UnaryExpression;
     export function updateExpression(prefix: boolean | undefined, argument: Expression, operator: "++" | "--"): UpdateExpression;
-    export function variableDeclaration(kind: any, declarations: any): VariableDeclaration;
-    export function variableDeclarator(id: LVal, init?: Expression | null | undefined): VariableDeclarator;
+    export function variableDeclaration(kind: "var" | "let" | "const", declarations: VariableDeclarator[]): VariableDeclaration;
+    export function variableDeclarator(id: LVal, init?: Expression | null): VariableDeclarator;
     export function whileStatement(test: Expression, body: BlockStatement | Statement): WhileStatement;
-    export function withStatement(object: any, body: BlockStatement | Statement): WithStatement;
+    export function withStatement(object: Expression, body: BlockStatement | Statement): WithStatement;
     export function assignmentPattern(left: Identifier, right: Expression): AssignmentPattern;
-    export function arrayPattern(elements: any, typeAnnotation: any): ArrayPattern;
-    export function arrowFunctionExpression(params: any, body: BlockStatement | Expression, async: boolean | undefined, returnType: any): ArrowFunctionExpression;
-    export function classBody(body: any): ClassBody;
-    export function classDeclaration(id: Identifier, body: ClassBody, superClass: Expression | null | undefined, decorators: any, mixins: any, typeParameters: any, superTypeParameters: any, _implements: any): ClassDeclaration;
-    export function classExpression(id: Identifier | null | undefined, body: ClassBody, superClass: Expression | null | undefined, decorators: any, mixins: any, typeParameters: any, superTypeParameters: any, _implements: any): ClassExpression;
+    export function arrayPattern(elements: Array<Pattern | null>, typeAnnotation?: TypeAnnotation): ArrayPattern;
+    export function arrowFunctionExpression(params: Pattern[], body: BlockStatement | Expression, async?: boolean, returnType?: TypeAnnotation): ArrowFunctionExpression;
+    export function classBody(body: Array<ClassMethod | ClassProperty>): ClassBody;
+    export function classDeclaration(id: Identifier, body: ClassBody, superClass?: Expression | null, decorators?: Decorator[], mixins?: any[], typeParameters?: TypeParameterDeclaration[], superTypeParameters?: TypeParameterInstantiation[], _implements?: ClassImplements[]): ClassDeclaration;
+    export function classExpression(id: Identifier | null, body: ClassBody, superClass?: Expression | null, decorators?: Decorator[], mixins?: any[], typeParameters?: TypeParameterDeclaration[], superTypeParameters?: TypeParameterInstantiation[], _implements?: ClassImplements[]): ClassExpression;
     export function exportAllDeclaration(source: StringLiteral): ExportAllDeclaration;
     export function exportDefaultDeclaration(declaration: FunctionDeclaration | ClassDeclaration | Expression): ExportDefaultDeclaration;
-    export function exportNamedDeclaration(declaration: Declaration | null | undefined, specifiers: any, source?: StringLiteral | null | undefined): ExportNamedDeclaration;
-    export function exportSpecifier(local: Identifier, imported: Identifier, exported: any): ExportSpecifier;
+    export function exportNamedDeclaration(declaration: Declaration | null, specifiers: ExportSpecifier[], source?: StringLiteral | null): ExportNamedDeclaration;
+    export function exportSpecifier(local: Identifier, imported: Identifier, exported: Identifier): ExportSpecifier;
     export function forOfStatement(left: VariableDeclaration | LVal, right: Expression, body: Statement): ForOfStatement;
-    export function importDeclaration(specifiers: any, source: StringLiteral): ImportDeclaration;
+    export function importDeclaration(specifiers: Array<ImportSpecifier | ImportDefaultSpecifier | ImportNamespaceSpecifier>, source: StringLiteral): ImportDeclaration;
     export function importDefaultSpecifier(local: Identifier): ImportDefaultSpecifier;
     export function importNamespaceSpecifier(local: Identifier): ImportNamespaceSpecifier;
     export function importSpecifier(local: Identifier, imported: Identifier): ImportSpecifier;
     export function metaProperty(meta: string, property: string): MetaProperty;
-    export function classMethod(kind: any, computed: boolean | undefined, _static: boolean | undefined, key: any, params: any, body: BlockStatement, generator: boolean | undefined, async: boolean | undefined, decorators: any, returnType: any, typeParameters: any): ClassMethod;
-    export function objectPattern(properties: any, typeAnnotation: any): ObjectPattern;
+    export function classMethod(kind: "constructor" | "method" | "get" | "set", computed: boolean | undefined, _static: boolean | undefined, key: Expression, params: Pattern[], body: BlockStatement, generator?: boolean, async?: boolean, decorators?: Decorator[], returnType?: TypeAnnotation, typeParameters?: TypeParameterDeclaration[]): ClassMethod;
+    export function objectPattern(properties: Array<AssignmentProperty | RestProperty>, typeAnnotation?: TypeAnnotation): ObjectPattern;
     export function spreadElement(argument: Expression): SpreadElement;
     export function taggedTemplateExpression(tag: Expression, quasi: TemplateLiteral): TaggedTemplateExpression;
-    export function templateElement(value: any, tail?: boolean): TemplateElement;
-    export function templateLiteral(quasis: any, expressions: any): TemplateLiteral;
+    export function templateElement(value: {cooked: string; raw: string;}, tail?: boolean): TemplateElement;
+    export function templateLiteral(quasis: TemplateElement[], expressions: Expression[]): TemplateLiteral;
     export function yieldExpression(delegate?: boolean, argument?: Expression | null | undefined): YieldExpression;
     export function anyTypeAnnotation(): AnyTypeAnnotation;
-    export function arrayTypeAnnotation(elementType: any): ArrayTypeAnnotation;
+    export function arrayTypeAnnotation(elementType: FlowTypeAnnotation): ArrayTypeAnnotation;
     export function booleanTypeAnnotation(): BooleanTypeAnnotation;
     export function booleanLiteralTypeAnnotation(): BooleanLiteralTypeAnnotation;
     export function nullLiteralTypeAnnotation(): NullLiteralTypeAnnotation;
-    export function classImplements(id: any, typeParameters: any): ClassImplements;
-    export function classProperty(key: any, value: any, typeAnnotation: any, decorators: any): ClassProperty;
-    export function declareClass(id: any, typeParameters: any, _extends: any, body: any): DeclareClass;
-    export function declareFunction(id: any): DeclareFunction;
-    export function declareInterface(id: any, typeParameters: any, _extends: any, body: any): DeclareInterface;
-    export function declareModule(id: any, body: any): DeclareModule;
-    export function declareTypeAlias(id: any, typeParameters: any, right: any): DeclareTypeAlias;
-    export function declareVariable(id: any): DeclareVariable;
+    export function classImplements(id: Identifier, typeParameters: TypeParameterInstantiation | null): ClassImplements;
+    export function classProperty(key: Identifier, value: Expression, typeAnnotation: TypeAnnotation, decorators: Decorator[]): ClassProperty;
+    export function declareClass(id: Identifier, typeParameters: TypeParameterDeclaration | null, _extends: InterfaceExtends[], body: ObjectTypeAnnotation): DeclareClass;
+    export function declareFunction(id: Identifier): DeclareFunction;
+    export function declareInterface(id: Identifier, typeParameters: TypeParameterDeclaration | null, _extends: InterfaceExtends[], body: ObjectTypeAnnotation): DeclareInterface;
+    export function declareModule(id: StringLiteral | Identifier, body: BlockStatement): DeclareModule;
+    export function declareTypeAlias(id: Identifier, typeParameters: TypeParameterDeclaration | null, right: FlowTypeAnnotation): DeclareTypeAlias;
+    export function declareVariable(id: Identifier): DeclareVariable;
     export function existentialTypeParam(): ExistentialTypeParam;
-    export function functionTypeAnnotation(typeParameters: any, params: any, rest: any, returnType: any): FunctionTypeAnnotation;
-    export function functionTypeParam(name: any, typeAnnotation: any): FunctionTypeParam;
-    export function genericTypeAnnotation(id: any, typeParameters: any): GenericTypeAnnotation;
-    export function interfaceExtends(id: any, typeParameters: any): InterfaceExtends;
-    export function interfaceDeclaration(id: any, typeParameters: any, _extends: any, body: any): InterfaceDeclaration;
-    export function intersectionTypeAnnotation(types: any): IntersectionTypeAnnotation;
+    export function functionTypeAnnotation(typeParameters: TypeParameterDeclaration, params: FunctionTypeParam[], rest: FunctionTypeParam | null, returnType: FlowTypeAnnotation): FunctionTypeAnnotation;
+    export function functionTypeParam(name: Identifier, typeAnnotation: FlowTypeAnnotation): FunctionTypeParam;
+    export function genericTypeAnnotation(id: Identifier, typeParameters: TypeParameterInstantiation | null): GenericTypeAnnotation;
+    export function interfaceExtends(id: Identifier, typeParameters: TypeParameterInstantiation | null): InterfaceExtends;
+    export function interfaceDeclaration(id: Identifier, typeParameters: TypeParameterDeclaration | null, _extends: InterfaceExtends[], body: ObjectTypeAnnotation): InterfaceDeclaration;
+    export function intersectionTypeAnnotation(types: FlowTypeAnnotation[]): IntersectionTypeAnnotation;
     export function mixedTypeAnnotation(): MixedTypeAnnotation;
-    export function nullableTypeAnnotation(typeAnnotation: any): NullableTypeAnnotation;
+    export function nullableTypeAnnotation(typeAnnotation: FlowTypeAnnotation): NullableTypeAnnotation;
     export function numericLiteralTypeAnnotation(): NumericLiteralTypeAnnotation;
     export function numberTypeAnnotation(): NumberTypeAnnotation;
     export function stringLiteralTypeAnnotation(): StringLiteralTypeAnnotation;
     export function stringTypeAnnotation(): StringTypeAnnotation;
     export function thisTypeAnnotation(): ThisTypeAnnotation;
-    export function tupleTypeAnnotation(types: any): TupleTypeAnnotation;
-    export function typeofTypeAnnotation(argument: any): TypeofTypeAnnotation;
-    export function typeAlias(id: any, typeParameters: any, right: any): TypeAlias;
-    export function typeAnnotation(typeAnnotation: any): TypeAnnotation;
-    export function typeCastExpression(expression: any, typeAnnotation: any): TypeCastExpression;
-    export function typeParameterDeclaration(params: any): TypeParameterDeclaration;
-    export function typeParameterInstantiation(params: any): TypeParameterInstantiation;
-    export function objectTypeAnnotation(properties: any, indexers: any, callProperties: any): ObjectTypeAnnotation;
-    export function objectTypeCallProperty(value: any): ObjectTypeCallProperty;
-    export function objectTypeIndexer(id: any, key: any, value: any): ObjectTypeIndexer;
-    export function objectTypeProperty(key: any, value: any): ObjectTypeProperty;
-    export function qualifiedTypeIdentifier(id: any, qualification: any): QualifiedTypeIdentifier;
-    export function unionTypeAnnotation(types: any): UnionTypeAnnotation;
+    export function tupleTypeAnnotation(types: FlowTypeAnnotation[]): TupleTypeAnnotation;
+    export function typeofTypeAnnotation(argument: FlowTypeAnnotation): TypeofTypeAnnotation;
+    export function typeAlias(id: Identifier, typeParameters: TypeParameterDeclaration | null, right: FlowTypeAnnotation): TypeAlias;
+    export function typeAnnotation(typeAnnotation: FlowTypeAnnotation): TypeAnnotation;
+    export function typeCastExpression(expression: Expression, typeAnnotation: FlowTypeAnnotation): TypeCastExpression;
+    export function typeParameterDeclaration(params: Identifier[]): TypeParameterDeclaration;
+    export function typeParameterInstantiation(params: FlowTypeAnnotation[]): TypeParameterInstantiation;
+    export function objectTypeAnnotation(properties: ObjectTypeProperty[], indexers: ObjectTypeIndexer[], callProperties: ObjectTypeCallProperty[]): ObjectTypeAnnotation;
+    export function objectTypeCallProperty(value: FlowTypeAnnotation): ObjectTypeCallProperty;
+    export function objectTypeIndexer(id: Expression, key: FlowTypeAnnotation, value: FlowTypeAnnotation): ObjectTypeIndexer;
+    export function objectTypeProperty(key: Expression, value: FlowTypeAnnotation): ObjectTypeProperty;
+    export function qualifiedTypeIdentifier(id: Identifier, qualification: Identifier | QualifiedTypeIdentifier): QualifiedTypeIdentifier;
+    export function unionTypeAnnotation(types: FlowTypeAnnotation[]): UnionTypeAnnotation;
     export function voidTypeAnnotation(): VoidTypeAnnotation;
     export function jSXAttribute(name: JSXIdentifier | JSXNamespacedName, value?: JSXElement | StringLiteral | JSXExpressionContainer | null | undefined): JSXAttribute;
     export function jSXClosingElement(name: JSXIdentifier | JSXMemberExpression): JSXClosingElement;
-    export function jSXElement(openingElement: JSXOpeningElement, closingElement: JSXClosingElement | null | undefined, children: any, selfClosing: any): JSXElement;
+    export function jSXElement(openingElement: JSXOpeningElement, closingElement: JSXClosingElement | null, children: Array<JSXElement | JSXExpressionContainer | JSXText>, selfClosing?: boolean): JSXElement;
     export function jSXEmptyExpression(): JSXEmptyExpression;
     export function jSXExpressionContainer(expression: Expression): JSXExpressionContainer;
     export function jSXIdentifier(name: string): JSXIdentifier;
     export function jSXMemberExpression(object: JSXMemberExpression | JSXIdentifier, property: JSXIdentifier): JSXMemberExpression;
     export function jSXNamespacedName(namespace: JSXIdentifier, name: JSXIdentifier): JSXNamespacedName;
-    export function jSXOpeningElement(name: JSXIdentifier | JSXMemberExpression, selfClosing: boolean | undefined, attributes: any): JSXOpeningElement;
+    export function jSXOpeningElement(name: JSXIdentifier | JSXMemberExpression, selfClosing: boolean | undefined, attributes: JSXAttribute[]): JSXOpeningElement;
     export function jSXSpreadAttribute(argument: Expression): JSXSpreadAttribute;
     export function jSXText(value: string): JSXText;
     export function noop(): Noop;
     export function parenthesizedExpression(expression: Expression): ParenthesizedExpression;
     export function awaitExpression(argument: Expression): AwaitExpression;
-    export function bindExpression(object: any, callee: any): BindExpression;
+    export function bindExpression(object: Expression | null, callee: Expression): BindExpression;
     export function decorator(expression: Expression): Decorator;
     export function doExpression(body: BlockStatement): DoExpression;
     export function exportDefaultSpecifier(exported: Identifier): ExportDefaultSpecifier;
