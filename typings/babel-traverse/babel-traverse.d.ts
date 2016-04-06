@@ -36,10 +36,6 @@ declare module "babel-traverse" {
     }
 
     export interface Visitor extends VisitNodeObject<Node> {
-        Comment?: VisitNode<t.Comment>;
-        SourceLocation?: VisitNode<t.SourceLocation>;
-        BlockComment?: VisitNode<t.BlockComment>;
-        LineComment?: VisitNode<t.LineComment>;
         ArrayExpression?: VisitNode<t.ArrayExpression>;
         AssignmentExpression?: VisitNode<t.AssignmentExpression>;
         LVal?: VisitNode<t.LVal>;
