@@ -1,8 +1,8 @@
 
 
 ## Finish Babel typings
-- [ ] babel-core exports many other things, eg types, traverse, etc. See: babel-core/src/api/node.js
-- [ ] Finish adding method coverage for handbook examples from [here](https://github.com/thejameskyle/babel-handbook/blob/master/translations/en/plugin-handbook.md#writing-your-first-babel-plugin) down
+- [x] babel-core exports many other things, eg types, traverse, etc. See: babel-core/src/api/node.js
+- [x] Finish adding method coverage for handbook examples from [here](https://github.com/thejameskyle/babel-handbook/blob/master/translations/en/plugin-handbook.md#writing-your-first-babel-plugin) down
 - [ ] add `babel-xxx-tests.ts` files for each typing file (for DefinitelyTyped)
 - [ ] add standard file headers (for DefinitelyTyped)
 - [ ] final check: TODOs, NBs, etc

@@ -1,9 +1,17 @@
+/// <reference path="../babel-template/babel-template.d.ts" />
+/// <reference path="../babel-traverse/babel-traverse.d.ts" />
 /// <reference path="../babel-types/babel-types.d.ts" />
 
 
 declare module "babel-core" {
     import * as t from 'babel-types';
+    export {t as types};
     type Node = t.Node;
+    export import template = require('babel-template');
+    export var version: string;
+    import traverse, {Visitor} from "babel-traverse";
+    export {traverse, Visitor};
+
 
     /** Transforms the passed in `code`. Returning an object with the generated code, source map, and AST. */
     export function transform(code: string, opts?: TransformOptions): BabelFileResult;

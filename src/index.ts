@@ -11,6 +11,32 @@ import * as babel from 'babel-core';
 
 
 
+export default function myPlugin({types: t}: typeof babel) {
+    return {
+        visitor: <babel.Visitor> {
+            UnaryExpression: {
+                enter(path) {}
+            },
+            BinaryExpression(path, state) {
+                path
+                state.opts
+                if (t.isIdentifier(path)) {
+                    path.node.left
+                    t.isReferencedIdentifier(path)
+
+
+                    let n = t.memberExpression(
+                        t.identifier('object'),
+                        t.identifier('property')
+                    );
+                    
+                    path.replaceWith(n);
+                    path.get
+                }
+            }
+        }
+    }    
+}
 
 
 const filename = path.join(__dirname, '../temp/temp.js');
