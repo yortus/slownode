@@ -1,7 +1,11 @@
+// Type definitions for babel-core v6.7
+// Project: https://github.com/babel/babel/tree/master/packages/babel-core
+// Definitions by: Troy Gerwien <https://github.com/yortus>
+// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
+
 /// <reference path="../babel-template/babel-template.d.ts" />
 /// <reference path="../babel-traverse/babel-traverse.d.ts" />
 /// <reference path="../babel-types/babel-types.d.ts" />
-
 
 declare module "babel-core" {
     import * as t from 'babel-types';

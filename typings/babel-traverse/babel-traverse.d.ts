@@ -1,5 +1,9 @@
-/// <reference path="../babel-types/babel-types.d.ts" />
+// Type definitions for babel-traverse v6.7
+// Project: https://github.com/babel/babel/tree/master/packages/babel-traverse
+// Definitions by: Troy Gerwien <https://github.com/yortus>
+// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 
+/// <reference path="../babel-types/babel-types.d.ts" />
 
 declare module "babel-traverse" {
     import * as t from 'babel-types';

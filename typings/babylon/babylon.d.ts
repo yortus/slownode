@@ -1,5 +1,9 @@
-/// <reference path="../babel-types/babel-types.d.ts" />
+// Type definitions for babylon v6.7
+// Project: https://github.com/babel/babylon
+// Definitions by: Troy Gerwien <https://github.com/yortus>
+// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 
+/// <reference path="../babel-types/babel-types.d.ts" />
 
 declare module "babylon" {
     import * as t from 'babel-types';

@@ -1,5 +1,9 @@
-/// <reference path="../babel-types/babel-types.d.ts" />
+// Type definitions for babel-generator v6.7
+// Project: https://github.com/babel/babel/tree/master/packages/babel-generator
+// Definitions by: Troy Gerwien <https://github.com/yortus>
+// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 
+/// <reference path="../babel-types/babel-types.d.ts" />
 
 declare module "babel-generator" {
     import * as t from 'babel-types';

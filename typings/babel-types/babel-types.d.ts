@@ -1,37 +1,7 @@
-// How this file was created:
-// 01. start with contents of https://github.com/babel/babel/blob/master/lib/types.js
-// 02. replace double-spaces with quad-spaces
-// 03. replace 'declare class' with 'interface'
-// 04. replace 'declare function' with 'export function'
-// 05. fix nullable syntax:
-//      - regex find: \?([a-z<>\[\] |]+)
-//      - ...replace: $1 | null | undefined
-// 06. change `BabelNodeXXX` interface naming:
-//      - regex find: BabelNode([a-z]+)
-//      - ...replace: $1
-//      - replace BabelNode with Node
-// 07. fix required params after optional params (see remaining red squiggles)
-//      - replace (p1?: T1, p2: T2) with (p1: T1 | undefined, p2: T2)
-// 08. fix `Node` interface declaration:
-//      - add 'type: string' property
-//      - make xxxComments properties optional and remove | null | undefined from their RHS
-// 09. turn isXXX() functions into type guards:
-//      - regex find: export function is([a-z]+)\(([^)]*)\)\: boolean;
-//      - ...replace: export function is$1($2): node is $1Node;
-//      - fix non-node isXXX() function towards the end (see remaining red squiggles)
-// 10. add assertXXX() functions:
-//      - paste a copy of all the isXXX() functions below the originals
-//      - select the copies and find/replace in selection:
-//      - regex find: export function is([a-z]+)\([^)]*\)\: node is \1Node;
-//      - ...replace: export function assert$1(node: Object, opts?: Object): void;
-// 11. wrap whole file inside `declare module "babel-types" {...}`
-//      - interface --> export interface
-//      - type --> export type (careful: don't change `type` properties in interfaces!)
-//      - fix indenting
-// 12. manual tweaks:
-//      - more accurate typings: https://github.com/babel/babel/blob/master/doc/ast/spec.md
-//      - change type annotation: Identifier { name: string }
-
+// Type definitions for babel-types v6.7
+// Project: https://github.com/babel/babel/tree/master/packages/babel-types
+// Definitions by: Troy Gerwien <https://github.com/yortus>
+// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 
 declare module "babel-types" {
 

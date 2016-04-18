@@ -1,6 +1,10 @@
+// Type definitions for babel-template v6.7
+// Project: https://github.com/babel/babel/tree/master/packages/babel-template
+// Definitions by: Troy Gerwien <https://github.com/yortus>
+// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
+
 /// <reference path="../babylon/babylon.d.ts" />
 /// <reference path="../babel-types/babel-types.d.ts" />
-
 
 declare module "babel-template" {
     import {BabylonOptions} from 'babylon';
