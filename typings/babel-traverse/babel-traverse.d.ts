@@ -52,7 +52,7 @@ declare module "babel-traverse" {
 
         checkBlockScopedCollisions(local: Node, kind: string, name: string, id: Object): void;
 
-        rename(oldName: string, newName: string, block?: Node): void;
+        rename(oldName: string, newName?: string, block?: Node): void;
 
         dump(): void;
 
@@ -81,6 +81,8 @@ declare module "babel-traverse" {
         getData(key: string): any;
 
         removeData(key: string): void;
+
+        push(opts: any): void;
 
         getProgramParent(): Scope;
 
@@ -548,13 +550,13 @@ declare module "babel-traverse" {
 
         // ------------------------- modification -------------------------
         /** Insert the provided nodes before the current one. */
-        insertBefore(nodes: Node[]): any;
+        insertBefore(nodes: Node | Node[]): any;
 
         /**
          * Insert the provided nodes after the current one. When inserting nodes after an
          * expression, ensure that the completion record is correct by pushing the current node.
          */
-        insertAfter(nodes: Node[]): any;
+        insertAfter(nodes: Node | Node[]): any;
 
         /** Update all sibling node paths after `fromIndex` by `incrementBy`. */
         updateSiblingKeys(fromIndex: number, incrementBy: number): void;
@@ -759,6 +761,16 @@ declare module "babel-traverse" {
         isJSX(opts?: Object): boolean;
         isNumberLiteral(opts?: Object): boolean;
         isRegexLiteral(opts?: Object): boolean;
+        isReferencedIdentifier(opts?: Object): boolean;
+        isReferencedMemberExpression(opts?: Object): boolean;
+        isBindingIdentifier(opts?: Object): boolean;
+        isScope(opts?: Object): boolean;
+        isReferenced(opts?: Object): boolean;
+        isBlockScoped(opts?: Object): boolean;
+        isVar(opts?: Object): boolean;
+        isUser(opts?: Object): boolean;
+        isGenerated(opts?: Object): boolean;
+        isPure(opts?: Object): boolean;
 
         // ------------------------- assertXXX -------------------------
         assertArrayExpression(opts?: Object): void;

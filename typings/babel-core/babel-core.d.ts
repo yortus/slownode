@@ -24,7 +24,7 @@ declare module "babel-core" {
 
     export function transformFromAst(ast: Node, code?: string, opts?: TransformOptions): BabelFileResult;
 
-    interface TransformOptions {
+    export interface TransformOptions {
 
         /** Filename to use when reading from stdin - this will be used in source-maps, errors etc. Default: "unknown". */
         filename?: string;
