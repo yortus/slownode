@@ -17,11 +17,11 @@ const output = generate(ast, { /* options */ }, code);
 
 // Example from https://github.com/thejameskyle/babel-handbook/blob/master/translations/en/plugin-handbook.md#babel-generator
 let result = generate(ast, {
-  retainLines: false,
-  compact: "auto",
-  concise: false,
-  quotes: "double",
-  // ...
+    retainLines: false,
+    compact: "auto",
+    concise: false,
+    quotes: "double",
+    // ...
 }, code);
 result.code;
 result.map;

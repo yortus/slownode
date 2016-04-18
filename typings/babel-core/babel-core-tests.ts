@@ -24,9 +24,9 @@ let options: babel.TransformOptions = {
 };
 
 babel.transformFile("filename.js", options, function (err, result) {
-  result.code;
-  result.map;
-  result.ast;
+    result.code;
+    result.map;
+    result.ast;
 });
 
 babel.transformFileSync("filename.js", options).code;

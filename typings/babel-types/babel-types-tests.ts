@@ -9,11 +9,11 @@ import * as t from "babel-types";
 let ast: t.Node;
 
 traverse(ast, {
-  enter(path) {
-    if (t.isIdentifier(path.node, { name: "n" })) {
-      path.node.name = "x";
+    enter(path) {
+        if (t.isIdentifier(path.node, { name: "n" })) {
+            path.node.name = "x";
+        }
     }
-  }
 });
 
 if (t.isBinaryExpression(ast)) {
