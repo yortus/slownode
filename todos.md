@@ -5,7 +5,7 @@
 - [x] Finish adding method coverage for handbook examples from [here](https://github.com/thejameskyle/babel-handbook/blob/master/translations/en/plugin-handbook.md#writing-your-first-babel-plugin) down
 - [x] add `babel-xxx-tests.ts` files for each typing file (for DefinitelyTyped)
 - [x] add standard file headers (for DefinitelyTyped)
-- [ ] final check: TODOs, NBs, etc
+- [x] final check: TODOs, NBs, etc
 - [ ] sumbit to DefinitelyTyped
 
 ## New New Scheme
