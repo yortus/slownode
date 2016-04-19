@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "target": "es2015",
+        "module": "es2015",
+        "noLib": true
+    },
+    "files": [
+        "temp.ts",
+        "lib.slownode.d.ts"
+    ]
+}

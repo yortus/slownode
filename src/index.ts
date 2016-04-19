@@ -15,9 +15,9 @@ import run from './interpreter';
 
 
 
-const filename = path.join(__dirname, '../temp/temp.js');
+const filename = path.join(__dirname, '../temp/temp.ts');
 const source = fs.readFileSync(filename, 'utf8');
-const ast = babylon.parse(source, {plugins: ["jsx", "flow"]});
+const ast = babylon.parse(source, {plugins: ["asyncFunctions", "jsx", "flow"]});
 run(ast);
 
 

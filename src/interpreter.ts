@@ -69,7 +69,7 @@ export default function run(node: Node) {
 
             // --------------------------------------------------
             Otherwise: (node) => {
-                console.log(node.type);
+                console.log(`Unhandled: ${node.type}`);
                 throw new Error(`Unhandled: ${node.type}`);
             }
         });
