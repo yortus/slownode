@@ -49,7 +49,7 @@
     "babel-types": "^6.7.2",
     "babylon": "^6.7.0",
     "lodash": "^3.10.1",
-    "typescript": "^1.9.0-dev.20160402"
+    "typescript": "^1.9.0-dev.20160419"
   },
   "devDependencies": {
     "chai": "^3.2.0",
