@@ -115,8 +115,11 @@ export default function run(node: Node) {
                     let result = node.prefix ? newVal : oldVal;
                     evalStack.push(result);
                 }
+                else if (t.isMemberExpression(node.argument)) {
+                    // TODO: ...
+                }
                 else {
-                    assert(false, `update operators currently only support single identifiers as arguments`);
+                    assert(false, `unsupported l-value type: ${node.argument.type}`);
                 }
             },            
 
