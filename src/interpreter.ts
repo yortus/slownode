@@ -7,8 +7,8 @@ import traverse, {Visitor} from "babel-traverse";
 import generate from "babel-generator";
 import template = require("babel-template");
 import * as babel from 'babel-core';
-import EvaluationStack from './evaluation-stack';
-import Scope from './scope';
+import Environment from './environment';
+import Evaluator, {LValue} from './evaluator';
 import matchNode, {RuleSet, Handler} from './match-node';
 const NOT_SUPPORTED = new Error('Not supported');
 
@@ -19,8 +19,8 @@ const NOT_SUPPORTED = new Error('Not supported');
 export default function run(node: Node) {
     
 
-    const scope = new Scope();
-    const evalStack = new EvaluationStack();
+    const environment = new Environment();
+    const evaluator = new Evaluator();
     execute(node);
 
 
@@ -32,8 +32,7 @@ export default function run(node: Node) {
             },
 
             ExpressionStatement: (node) => {
-                evaluate(node.expression);
-                let result = evalStack.pop();
+                let result = evaluate(node.expression).pop();
                 console.log(`Expression result: ${result}`);
             },
 
@@ -48,13 +47,18 @@ export default function run(node: Node) {
             VariableDeclaration: (node) => {
                 assert(node.kind === 'var', `'let' and 'const' variable declarations are not currently supported.`);
                 node.declarations.forEach(decl => {
-                    let name: string;
-                    if (t.isIdentifier(decl.id)) name = decl.id.name;
-                    assert(name, `Unsupported variable declaration syntax`);
-                    if (!scope.existsLocal(name)) scope.createLocal(name);
-                    if (decl.init) {
-                        let value = evaluate(decl.init).pop();
-                        scope.setValue(name, value);
+                    if (t.isIdentifier(decl.id)) {
+                        let name = decl.id.name;
+
+                        // TODO: non-compliant! fix...
+                        let binding = environment.createBinding(name);
+                        if (decl.init) {
+                            let value = evaluate(decl.init).pop();
+                            binding.initialize(value);
+                        }
+                    }
+                    else {
+                        assert(false, `Unsupported variable declaration syntax`);
                     }
                 });
             },
@@ -76,48 +80,47 @@ export default function run(node: Node) {
     }
 
 
-    function evaluate(node: t.Expression) {
+    function evaluate(node: t.Expression): Evaluator {
         matchNode(node, {
 
             BinaryExpression: (node) => {
                 evaluate(node.left);
                 evaluate(node.right);
-                evalStack.binary(node.operator);
+                evaluator.binary(node.operator);
             },
 
             BooleanLiteral: (node) => {
-                evalStack.push(node.value);
+                evaluator.push(node.value);
             },
 
             Identifier: (node) => {
-                let value = scope.getValue(node.name);
-                evalStack.push(value);
+                let binding = environment.getBinding(node.name);
+                let lval = new LValue(binding, 'value');
+                evaluator.push(lval);
             },
 
             NullLiteral: (node) => {
-                evalStack.push(null);
+                evaluator.push(null);
             },
 
             NumericLiteral: (node) => {
-                evalStack.push(node.value);
+                evaluator.push(node.value);
             },
 
             StringLiteral: (node) => {
-                evalStack.push(node.value);
+                evaluator.push(node.value);
             },
 
             UpdateExpression: (node) => {
                 if (t.isIdentifier(node.argument)) {
-                    let name = node.argument.name;
-                    let oldVal = scope.getValue(name);
-                    let newVal = node.operator === '++' ? (oldVal + 1) : (oldVal - 1);
-                    scope.setValue(name, newVal);
-                    let result = node.prefix ? newVal : oldVal;
-                    evalStack.push(result);
+                    let binding = environment.getBinding(node.argument.name);
+                    let lval = new LValue(binding, 'value');
+                    evaluator.push(lval);
+                    evaluator.update(node.operator, node.prefix);
                 }
-                else if (t.isMemberExpression(node.argument)) {
-                    // TODO: ...
-                }
+                // else if (t.isMemberExpression(node.argument)) {
+                //     // TODO: ...
+                // }
                 else {
                     assert(false, `unsupported l-value type: ${node.argument.type}`);
                 }
@@ -129,6 +132,6 @@ export default function run(node: Node) {
                 throw new Error(`Unhandled: ${node.type}`);
             }
         });
-        return evalStack;
+        return evaluator;
     }
 }

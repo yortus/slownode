@@ -82,7 +82,7 @@ export default class Evaluator {
     update(op: UpdateOperator, prefix: boolean): void {
         let arg = this._stack.pop(); // NB: preserve lvalue-ness
         assert(arg instanceof LValue, `Argument of update expression must be an l-value`);
-        let result = eval(`${prefix ? op : ''} (lhs.object[lhs.key] ${prefix ? '' : op})`);
+        let result = eval(`(${prefix ? op : ''} arg.object[arg.key] ${prefix ? '' : op})`);
         this.push(result);
     }
 
