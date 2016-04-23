@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as babylon from "babylon";
 import * as t from "babel-types";
 import {Node} from "babel-types";
-import traverse, {Visitor} from "babel-traverse";
+import traverse, {Visitor, Binding} from "babel-traverse";
 import generate from "babel-generator";
 import template = require("babel-template");
 import * as babel from 'babel-core';
@@ -18,7 +18,40 @@ import run from './interpreter';
 const filename = path.join(__dirname, '../temp/temp.ts');
 const source = fs.readFileSync(filename, 'utf8');
 const ast = babylon.parse(source, {plugins: ["asyncFunctions", "jsx", "flow"]});
-run(ast);
+let scopes = analyzeScopes(ast);
+run(ast, scopes);
+
+
+
+
+
+function analyzeScopes(ast: Node) {
+
+    let scopes = new WeakMap<Node, Binding[]>();
+
+    // What introduces a new name?
+    // - var decl (var, let, const)
+    // - func decl (hoisted)
+    // - class decl (not hoisted)
+    // - func expr. scope of name is only *inside* the func body
+    // - class expr. scope of name is only *inside* the class body
+    // - catch clause. scope of name is only the catch clause body
+    traverse(ast, <Visitor> {
+        enter(path) {
+            // console.log(`enter: ${path.node.type}`);
+            if (path.scope.block === path.node) {
+                let bs = path.scope.bindings;
+                scopes.set(path.node, Object.keys(bs).map(name => bs[name]));
+
+                // console.log(`  NEW BLOCK`);
+                // console.log(`  bindings: ${Object.keys(bs).map(id => `${bs[id].kind} ${id}`).join(', ')}`);
+
+            }
+        }
+    });
+    return scopes;
+}
+
 
 
 

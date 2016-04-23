@@ -37,7 +37,7 @@ export default class Environment {
     getBinding(name: string): Binding {
         let env: Environment = this, binding;
         while (env && !binding) {
-            binding = this._bindings.find(b => b.name === name);
+            binding = env._bindings.find(b => b.name === name);
             if (!binding) env = env.outer;
         }
         return binding;

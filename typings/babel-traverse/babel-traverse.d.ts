@@ -126,7 +126,7 @@ declare module "babel-traverse" {
         identifier: t.Identifier;
         scope: Scope;
         path: NodePath<Node>;
-        kind: 'var' | 'let' | 'const';
+        kind: 'var' | 'let' | 'const' | 'hoisted' | 'param'; // TODO: added 2 elements... update on DT
         referenced: boolean;
         references: number;
         referencePaths: NodePath<Node>[];
