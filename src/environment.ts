@@ -1,6 +1,6 @@
 'use strict';
 import * as assert from 'assert';
-import Binding from './binding';
+import Binding, {Options as BindingOptions} from './binding';
 
 
 
@@ -14,9 +14,9 @@ export default class Environment {
     }
 
 
-    createBinding(name: string, immutable?: boolean): Binding {
+    createBinding(name: string, options?: BindingOptions): Binding {
         assert(this._bindings.every(b => b.name !== name));
-        let newBinding = new Binding(this, name, immutable);
+        let newBinding = new Binding(this, name, options);
         this._bindings.push(newBinding);
         return newBinding;
     }

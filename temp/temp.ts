@@ -1,10 +1,27 @@
 
-var i;
+
+
+
+
+// foo();
+
+// function foo() {
+// }
+
+
+
+
+
 let i = 0;
+var j = 9;
 
 while (i < 3) {
     ++i;
 }
+
+
+
+
 
 // while (asyncTest(i)) {
 //     asyncBody(i);

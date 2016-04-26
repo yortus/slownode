@@ -8,6 +8,7 @@ import generate from "babel-generator";
 import template = require("babel-template");
 import * as babel from 'babel-core';
 import Environment from './environment';
+import {Options as BindingOptions} from './binding';
 import Evaluator, {LValue} from './evaluator';
 import matchNode, {RuleSet, Handler} from './match-node';
 const NOT_SUPPORTED = new Error('Not supported');
@@ -20,27 +21,23 @@ export default function run(node: Node, scopes: WeakMap<Node, Binding[]>) {
     
 
     let currentNode = node;
-    let currentPath: string[] = [];
     let environment = new Environment();
     const evaluator = new Evaluator();
+//    test(node);
     execute(node);
 
 
+    // function test(node: Node) {
+    //     traverse(node, {
+    //         enter(path) {
+    //             console.log(path.node.address);
+    //         }
+    //     });
+    // }
+
+
     function execute(node: Node) {
-
-        if (scopes.has(node)) {
-            let bindings = scopes.get(node);
-            // console.log(`ENTER SCOPE: ${bindings.map(b => b.identifier.name)}`);
-            environment = environment.createInnerEnvironment();
-            bindings.forEach(binding => {
-                let b = environment.createBinding(binding.identifier.name, binding.constant);
-                if (binding.kind === 'var') {
-                    b.initialize(void 0);
-                }
-                // TODO: else if hoisted...
-            });
-        }
-
+        let oldEnv = updateEnvironment(node);
         matchNode(node, {
 
             BlockStatement: (node) => {
@@ -88,8 +85,19 @@ export default function run(node: Node, scopes: WeakMap<Node, Binding[]>) {
             // TryStatement: (node) => {/*TODO*/},
 
             VariableDeclaration: (node) => {
-                //assert(node.kind === 'var', `'let' and 'const' variable declarations are not currently supported.`);
                 node.declarations.forEach(decl => {
+
+
+                    if (!t.isIdentifier(decl.id)) {
+                        decl.id
+                        //throw 1;
+                        assert(false);
+                    }
+
+                    decl.id
+                    
+
+
                     if (t.isIdentifier(decl.id)) {
                         let name = decl.id.name;
 
@@ -128,14 +136,10 @@ export default function run(node: Node, scopes: WeakMap<Node, Binding[]>) {
             // --------------------------------------------------
             Otherwise: (node) => {
                 console.log(`Unhandled: ${node.type}`);
-                throw new Error(`Unhandled: ${node.type}`);
+                // throw new Error(`Unhandled: ${node.type}`);
             }
         });
-
-        if (scopes.has(node)) {
-            // console.log(`LEAVE SCOPE`);
-            environment = environment.outer;
-        }
+        environment = oldEnv;
     }
 
 
@@ -217,16 +221,28 @@ export default function run(node: Node, scopes: WeakMap<Node, Binding[]>) {
 
             // --------------------------------------------------
             Otherwise: (node) => {
-                console.log(node.type);
-                throw new Error(`Unhandled: ${node.type}`);
+                console.log(`Unhandled: ${node.type}`);
+                // throw new Error(`Unhandled: ${node.type}`);
             }
         });
         return evaluator;
     }
+
+
+    // TODO... doc... returns 'old' environment
+    function updateEnvironment(node: Node): Environment {
+        let oldEnv = environment;
+        if (scopes.has(node)) {
+            let bindings = scopes.get(node);
+            environment = environment.createInnerEnvironment();
+            bindings.forEach(binding => {
+                environment.createBinding(binding.identifier.name, {
+                    hoisted: binding.kind === 'hoisted' || binding.kind === 'var', // TODO: what about imports?
+                    immutable: binding.constant,
+                    declaration: binding.path.node
+                });
+            });
+        }
+        return oldEnv;
+    }
 }
-
-
-
-
-
-// TODO...
