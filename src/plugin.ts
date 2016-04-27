@@ -1,6 +1,6 @@
 import * as babel from 'babel-core';
 import {Visitor, NodePath} from "babel-traverse";
-import {Node} from "babel-types";
+import {Node, SequenceExpression} from "babel-types";
 
 
 
@@ -20,11 +20,16 @@ function makeDepthFirstPostOrder(v: Visitor): Visitor {
                 }
 
                 // Compute the new node and substitute it in place of the current one.
-                let newNode = v[key](path, state);
-                path.replaceWith(newNode);
-
-                // Mark the new node as not-for-revisiting.
-                transformedNodes.add(newNode);
+                // AAAND mark the new node(s) as not-for-revisiting.
+                let newNode: Node | Node[] = v[key](path, state);
+                if (Array.isArray(newNode)) {
+                    path.replaceWithMultiple(newNode);
+                    newNode.forEach(n => transformedNodes.add(n));
+                }
+                else {
+                    path.replaceWith(newNode);
+                    transformedNodes.add(newNode);
+                }
             }
         };
     });
@@ -64,7 +69,11 @@ export default function ({types: t}: typeof babel) {
         // DoWhileStatement(path, state) {...},
         // Statement(path, state) {...},
         // EmptyStatement(path, state) {...},
-        // ExpressionStatement(path, state) {...},
+        ExpressionStatement: (path, state) => {
+            let expr = <SequenceExpression> path.node.expression;
+            t.assertSequenceExpression(expr);
+            return expr.expressions.map(expr => t.expressionStatement(expr));
+        },
         // File(path, state) {...},
         // Program(path, state) {...},
         // ForInStatement(path, state) {...},
