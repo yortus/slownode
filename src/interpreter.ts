@@ -124,6 +124,20 @@ export default function run(node: Node, scopes: WeakMap<Node, Binding[]>) {
             // VariableDeclaration: (node) => {/*TODO*/},
 
             WhileStatement: (node) => {
+                // #test
+                // #body
+                // #exit
+                
+
+                // label A
+                // test condition
+                // if false goto B
+                // execute body
+                // goto A
+                // label B
+                
+
+
                 while (true) {
                     let testValue = evaluate(node.test).pop();
                     if (!testValue) break;
