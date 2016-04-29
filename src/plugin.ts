@@ -1,61 +1,80 @@
 import * as babel from 'babel-core';
 import {Visitor, NodePath} from "babel-traverse";
-import {Node, SequenceExpression} from "babel-types";
+import {Node, Expression, SequenceExpression, BlockStatement} from "babel-types";
 
 
 
 
 
-// TODO: Babel-overcomer-device. See also http://entertainment.ie/images_content/MDQa6iC.png
-let transformedNodes = new WeakSet<Node>();
-function makeDepthFirstPostOrder(v: Visitor): Visitor {
-    let result: Visitor = {};
-    Object.keys(v).forEach(key => {
-        result[key] = {
-            exit(path: NodePath<Node>, state) {
-
-                // Don't revisit substituted nodes or their children.
-                for (let p = path; p; p = p.parentPath) {
-                    if (transformedNodes.has(p.node)) return;
-                }
-
-                // Compute the new node and substitute it in place of the current one.
-                // AAAND mark the new node(s) as not-for-revisiting.
-                let newNode: Node | Node[] = v[key](path, state);
-                if (Array.isArray(newNode)) {
-                    path.replaceWithMultiple(newNode);
-                    newNode.forEach(n => transformedNodes.add(n));
-                }
-                else {
-                    path.replaceWith(newNode);
-                    transformedNodes.add(newNode);
-                }
-            }
-        };
-    });
-    return result;
-}
 
 
 
 
 
 export default function ({types: t}: typeof babel) {
+
+
+
+
+
+    // TODO: Babel-overcomer-device. See also http://entertainment.ie/images_content/MDQa6iC.png
+    let transformedNodes = new WeakSet<Node>();
+    function makeDepthFirstPostOrder(v: Visitor): Visitor {
+        let result: Visitor = {};
+        Object.keys(v).forEach(key => {
+            result[key] = {
+                exit(path: NodePath<Node>, state) {
+
+                    // Don't revisit substituted nodes or their children.
+                    for (let p = path; p; p = p.parentPath) {
+                        if (transformedNodes.has(p.node)) return;
+                    }
+
+                    // Compute the new node.
+                    let newNodeOrNodes: Node | Node[] = v[key](path, state);
+                    let newNode: Node;
+                    if (Array.isArray(newNodeOrNodes)) {
+                        newNode = t.blockStatement(<any> newNodeOrNodes);
+                    }
+                    else {
+                        newNode = newNodeOrNodes;
+                    }
+
+                    // Substitute it in place of the current one, and mark it as not-for-revisiting.
+                    path.replaceWith(newNode);
+                    transformedNodes.add(newNode);
+                }
+            };
+        });
+        return result;
+    }
+    function getBlockStatementBody(node: Node) {
+        t.assertBlockStatement(node);
+        let stmt = <BlockStatement> node;
+        return stmt.body;
+    }
+
+
+
+
+
     return { visitor: makeDepthFirstPostOrder({
         // ------------------------- core -------------------------
         // ArrayExpression(path, state) {...},
         // AssignmentExpression(path, state) {...},
-        BinaryExpression: (path, state) => t.sequenceExpression([
-            path.node.left,
-            path.node.right,
-            t.callExpression(
-                t.memberExpression(
-                    t.identifier('evaluator'),
-                    t.identifier('binary')
-                ),
-                [t.stringLiteral(path.node.operator)]
+        BinaryExpression: (path, state) => [
+            ...getBlockStatementBody(path.node.left),
+            ...getBlockStatementBody(path.node.right),
+            t.expressionStatement(
+                t.callExpression(
+                    t.memberExpression(
+                        t.identifier('evaluator'),
+                        t.identifier('binary')
+                    ),
+                    [t.stringLiteral(path.node.operator)]
+                )
             )
-        ]),
+        ],
         // Directive(path, state) {...},
         // DirectiveLiteral(path, state) {...},
         // BlockStatement(path, state) {...},
@@ -69,11 +88,11 @@ export default function ({types: t}: typeof babel) {
         // DoWhileStatement(path, state) {...},
         // Statement(path, state) {...},
         // EmptyStatement(path, state) {...},
-        ExpressionStatement: (path, state) => {
-            let expr = <SequenceExpression> path.node.expression;
-            t.assertSequenceExpression(expr);
-            return expr.expressions.map(expr => t.expressionStatement(expr));
-        },
+        // ExpressionStatement: (path, state) => {---------------------------------- TODO!!!
+        //     let expr = <SequenceExpression> path.node.expression;
+        //     t.assertSequenceExpression(expr);
+        //     return expr.expressions.map(expr => t.expressionStatement(expr));
+        // },
         // File(path, state) {...},
         // Program(path, state) {...},
         // ForInStatement(path, state) {...},
@@ -84,13 +103,17 @@ export default function ({types: t}: typeof babel) {
         // IfStatement(path, state) {...},
         // LabeledStatement(path, state) {...},
         // StringLiteral(path, state) {...},
-        NumericLiteral: (path, state) => t.callExpression(
-            t.memberExpression(
-                t.identifier('evaluator'),
-                t.identifier('push')
-            ),
-            [path.node]
-        ),
+        NumericLiteral: (path, state) => [
+            t.expressionStatement(
+                t.callExpression(
+                    t.memberExpression(
+                        t.identifier('evaluator'),
+                        t.identifier('push')
+                    ),
+                    [path.node]
+                )
+            )
+        ],
         // NullLiteral(path, state) {...},
         // BooleanLiteral(path, state) {...},
         // RegExpLiteral(path, state) {...},
