@@ -4,14 +4,30 @@ import esprima = require('esprima');                // TODO: remove this...
 import escodegen = require('escodegen');            // TODO: remove this...
 import matchNode from './match-node';               // TODO: remove this...
 import traverseTree from './traverse-tree';         // TODO: remove this...
+//export = transformToStateMachine;                 // TODO: remove this...
 
 
 // TODO: new...
+import * as babel from 'babel-core';
 import * as t from "babel-types";
 import {Node} from "babel-types";
+import {Visitor} from "babel-traverse";
+import template = require("babel-template");
 
 
-export = transformToStateMachine;
+
+
+
+export default function ({types: t}: typeof babel) {
+    return {
+        visitor: <Visitor> {
+            FunctionDeclaration(path) {
+                let newNode = transformToStateMachine(path.node);
+                path.replaceWith(newNode);
+            }
+        }
+    };
+}
 
 
 
@@ -33,7 +49,7 @@ function transformToStateMachine(func: t.Function): t.FunctionExpression {
     var rewriter = new Rewriter(<any> func.body, <any> func.params);
 
     // Extract and return the rewritten AST.
-    var newFunc = <t.Function> rewriter.generateAST();
+    var newFunc = <t.FunctionExpression> rewriter.generateAST();
     return newFunc;
 }
 
@@ -56,7 +72,7 @@ class Rewriter {
                     if (stmt.kind !== 'const') return;
                     this.constDecls = this.constDecls.concat(stmt.declarations);
                     Object.keys(stmt).forEach(key => delete stmt[key]);
-                    stmt.type = 'EmptyStatement';
+                    stmt.type = <any> 'EmptyStatement';
                 },
                 Otherwise: (node) => { /* pass-through */ }
             });
@@ -127,12 +143,12 @@ class Rewriter {
     }
 
     emitCase(label: string) {
-        var newCase = { type: 'SwitchCase', test: { type: 'Literal', value: label }, consequent: [] };
+        var newCase = t.switchCase(t.stringLiteral(label), []);
         this.switchCases.push(newCase);
     }
 
     emitText(text: string) {
-        var stmt = this.generateAST(text);
+        var stmt = <t.Statement> this.generateAST(text);
         this.switchCases[this.switchCases.length - 1].consequent.push(stmt);
     }
 
@@ -358,7 +374,7 @@ function rewriteStatement(stmt: t.Statement, emitter: Rewriter): void {
             emitter.pushJumpTarget(JumpTarget.Break, exitLabel);
             emitter.pushJumpTarget(JumpTarget.Continue, entryLabel);
             if (stmt.init) {
-                if (stmt.init.type === 'VariableDeclaration') {
+                if (t.isVariableDeclaration(stmt.init)) {
                     emitter.emitStmt(stmt.init);
                 }
                 else {
@@ -530,7 +546,7 @@ function rewriteExpression(expr: t.Expression, $tgt: string, emitter: Rewriter):
             var throwLabel = emitter.newLabel();
             var returnLabel = emitter.newLabel();
             emitter.emitText(`$.outgoing = { type: 'yield' };`);
-            var arg = expr.argument || { type: 'UnaryExpression', operator: 'void', prefix: true, argument: { type: 'literal', value: 0 } };
+            var arg = expr.argument || t.unaryExpression('void', t.numericLiteral(0), true);
             emitter.emitExpr(arg, '$.outgoing.value');
             emitter.temporaryIdentifierPool.forEach(id => emitter.emitText(`delete ${id};`));
             if (emitter.isTemporaryIdentifier($tgt)) emitter.emitText(`delete ${$tgt};`);
@@ -653,15 +669,14 @@ function rewriteExpression(expr: t.Expression, $tgt: string, emitter: Rewriter):
             var $func = emitter.reserveTemporaryIdentifier('func');
             var $args = emitter.reserveTemporaryIdentifier('args');
             var $arg = emitter.reserveTemporaryIdentifier('arg');
-            if (expr.callee.type === 'MemberExpression') {
-                var callee = <t.MemberExpression> expr.callee;
-                emitter.emitExpr(callee.object, $receiver);
-                if (callee.computed) {
-                    emitter.emitExpr(callee.property, $func);
+            if (t.isMemberExpression(expr.callee)) {
+                emitter.emitExpr(expr.callee.object, $receiver);
+                if (expr.callee.computed) {
+                    emitter.emitExpr(expr.callee.property, $func);
                     emitter.emitText(`${$func} = ${$receiver}[${$func}];`);
                 }
                 else {
-                    emitter.emitText(`${$func} = ${$receiver}['${callee.property['name']}'];`);
+                    emitter.emitText(`${$func} = ${$receiver}['${expr.callee.property['name']}'];`);
                 }
             }
             else {
@@ -670,7 +685,8 @@ function rewriteExpression(expr: t.Expression, $tgt: string, emitter: Rewriter):
             }
             emitter.emitText(`${$args} = [];`);
             for (var i = 0; i < expr.arguments.length; ++i) {
-                emitter.emitExpr(expr.arguments[i], $arg);
+                let arg = <t.Expression> expr.arguments[i]; // TODO: unsafe cast - what about ES6 SpreadElement etc?
+                emitter.emitExpr(arg, $arg);
                 emitter.emitText(`${$args}.push(${$arg});`);
             }
             emitter.emitText(`${$tgt} = ${$func}.apply(${$receiver}, ${$args});`);
@@ -687,7 +703,8 @@ function rewriteExpression(expr: t.Expression, $tgt: string, emitter: Rewriter):
             emitter.emitExpr(expr.callee, $func);
             emitter.emitText(`${$args} = [];`);
             for (var i = 0; i < expr.arguments.length; ++i) {
-                emitter.emitExpr(expr.arguments[i], $arg);
+                let arg = <t.Expression> expr.arguments[i]; // TODO: unsafe cast - what about ES6 SpreadElement etc?
+                emitter.emitExpr(arg, $arg);
                 emitter.emitText(`${$args}.push(${$arg});`);
             }
             emitter.emitText(`${$tgt} = Object.create(${$func}.prototype);`);
@@ -716,7 +733,8 @@ function rewriteExpression(expr: t.Expression, $tgt: string, emitter: Rewriter):
             var $elem = emitter.reserveTemporaryIdentifier('elem');
             emitter.emitText(`${$tgt} = [];`);
             for (var i = 0; i < expr.elements.length; ++i) {
-                emitter.emitExpr(expr.elements[i], $elem);
+                let elem = <t.Expression> expr.elements[i]; // TODO: unsafe cast - what about ES6 SpreadElement etc?
+                emitter.emitExpr(elem, $elem);
                 emitter.emitText(`${$tgt}.push(${$elem});`);
             }
             emitter.releaseTemporaryIdentifier($elem);
@@ -727,13 +745,19 @@ function rewriteExpression(expr: t.Expression, $tgt: string, emitter: Rewriter):
             emitter.emitText(`${$tgt} = {};`);
             for (var i = 0; i < expr.properties.length; ++i) {
                 var prop = expr.properties[i];
-                if (prop.key.type === 'Identifier') {
-                    emitter.emitText(`${$key} = '${prop.key['name']}';`);
+                if (t.isObjectProperty(prop)) {
+                    if (t.isIdentifier(prop.key)) {
+                        emitter.emitText(`${$key} = '${prop.key['name']}';`);
+                    }
+                    else {
+                        emitter.emitExpr(prop.key, $key);
+                    }
+                    emitter.emitExpr(prop.value, `${$tgt}[${$key}]`);
                 }
                 else {
-                    emitter.emitExpr(prop.key, $key);
+                    // TODO: handle other cases... just throw for now
+                    t.assertObjectProperty(prop);
                 }
-                emitter.emitExpr(prop.value, `${$tgt}[${$key}]`);
             }
             emitter.releaseTemporaryIdentifier($key);
         },
@@ -756,8 +780,11 @@ function rewriteExpression(expr: t.Expression, $tgt: string, emitter: Rewriter):
         },
 
         Literal: (expr) => {
-            if (expr['regex']) {
-                emitter.emitText(`${$tgt} = /${expr['regex'].pattern}/${expr['regex'].flags}`);
+            if (t.isRegExpLiteral(expr)) {
+                emitter.emitText(`${$tgt} = /${expr.pattern}/${expr.flags}`);
+            }
+            else if (t.isTemplateLiteral(expr)) {
+                assert(false); // TODO: template literals were handled above - this should never be reached
             }
             else {
                 emitter.emitText(`${$tgt} = ${JSON.stringify(expr.value)};`);

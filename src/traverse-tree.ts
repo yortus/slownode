@@ -1,4 +1,4 @@
-import {Node} from "babel-types";
+import {Node, ObjectProperty} from "babel-types";
 import matchNode from './match-node';
 
 
@@ -161,7 +161,8 @@ export default function traverseTree(rootNode: Node, action: (node: Node) => any
         ArrayExpression: (expr) => expr.elements.forEach(elem => traverseTree(elem, action)),
 
         ObjectExpression: (expr) => {
-            expr.properties.forEach(prop => {
+            expr.properties.forEach((prop: ObjectProperty) => {
+                // TODO: will crash if prop is an ES6 ObjectMethod or SpreadProperty - add handling for these cases!
                 traverseTree(prop.key, action);
                 traverseTree(prop.value, action);
             });

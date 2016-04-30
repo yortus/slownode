@@ -8,7 +8,7 @@ import traverse, {Visitor, Binding, NodePath} from "babel-traverse";
 import generate from "babel-generator";
 import template = require("babel-template");
 import * as babel from 'babel-core';
-import plugin from './plugin';
+import plugin from './plugin2';
 
 
 

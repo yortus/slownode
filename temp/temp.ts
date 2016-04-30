@@ -5,18 +5,15 @@
 
 // foo();
 
-// function foo() {
-// }
+function main() {
 
+    let i = 0;
+    var j = 9;
 
+    while (i < 3) {
+        ++i;
+    }
 
-
-
-let i = 0;
-var j = 9;
-
-while (i < 3) {
-    ++i;
 }
 
 
