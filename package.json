@@ -48,8 +48,6 @@
     "babel-traverse": "^6.7.4",
     "babel-types": "^6.7.2",
     "babylon": "^6.7.0",
-    "escodegen": "^1.6.1",
-    "esprima": "^2.5.0",
     "lodash": "^3.10.1",
     "typescript": "^1.9.0-dev.20160429"
   },

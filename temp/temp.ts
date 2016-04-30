@@ -10,6 +10,9 @@ function main() {
     let i = 0;
     var j = 9;
 
+    for (var a in {}) {}
+
+
     while (i < 3) {
         ++i;
     }
