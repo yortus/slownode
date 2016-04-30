@@ -178,7 +178,13 @@ export default function traverseTree(rootNode: Node, action: (node: Node) => any
 
         TemplateLiteral: (expr) => expr.expressions.forEach(expr => traverseTree(expr, action)),
 
-        Literal: (expr) => {},
+        NumericLiteral: (expr) => {},
+
+        StringLiteral: (expr) => {},
+
+        BooleanLiteral: (expr) => {},
+
+        RegExpLiteral: (expr) => {},
 
         Otherwise: (node) => {
             throw new Error(`traverseTree: unsupported node type: '${node.type}'`);

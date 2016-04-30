@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import * as _ from 'lodash';                        // TODO: remove this...
-import esprima = require('esprima');                // TODO: remove this...
-import escodegen = require('escodegen');            // TODO: remove this...
+//import esprima = require('esprima');                // TODO: remove this...
+//import escodegen = require('escodegen');            // TODO: remove this...
 import matchNode from './match-node';               // TODO: remove this...
 import traverseTree from './traverse-tree';         // TODO: remove this...
 //export = transformToStateMachine;                 // TODO: remove this...
@@ -9,10 +9,12 @@ import traverseTree from './traverse-tree';         // TODO: remove this...
 
 // TODO: new...
 import * as babel from 'babel-core';
+import * as babylon from 'babylon';
 import * as t from "babel-types";
 import {Node} from "babel-types";
 import {Visitor} from "babel-traverse";
 import template = require("babel-template");
+import generate from "babel-generator";
 
 
 
@@ -186,7 +188,7 @@ class Rewriter {
             (function steppableBody($) {
                 $.pos = $.pos || '@start';
                 $.local = $.local || {};
-                ${this.hoistedFunctions.map(decl => `$.local.${decl.id.name} = $.local.${decl.id.name} || (${escodegen.generate(decl)});`).join('\n')}
+                ${this.hoistedFunctions.map(decl => `$.local.${decl.id.name} = $.local.${decl.id.name} || (${generate(decl).code});`).join('\n')}
                 $.temp = $.temp || {};
                 $.error = $.error || { handler: '@fail' };
                 $.finalizers = $.finalizers || { pending: [] };
@@ -194,7 +196,7 @@ class Rewriter {
                     Object.defineProperty($, 'ambient', {
                         enumerable: false,
                         value: steppableBody.ambient || (steppableBody.ambient = (function () {
-                            ${this.constDecls.map(decl => `var ${decl.id['name']} = ${escodegen.generate(decl.init)};`).join('\n')}
+                            ${this.constDecls.map(decl => `var ${decl.id['name']} = ${generate(decl.init).code};`).join('\n')}
                             var ambient = Object.create(global);
                             ambient.require = require ? (require.main ? require.main.require : require) : null;
                             ${this.constDecls.map(decl => `ambient.${decl.id['name']} = ${decl.id['name']};`).join('\n')}
@@ -227,8 +229,8 @@ class Rewriter {
                 }
             })
         `;
-        var ast = esprima.parse(source);
-        var funcExpr = <t.FunctionExpression> ast.body[0]['expression'];
+        var ast = <t.File> babylon.parse(source);
+        var funcExpr = <t.FunctionExpression> ast.program.body[0]['expression'];
         var whileStmt = <t.WhileStatement> funcExpr.body['body'][6 + this.hoistedFunctions.length];
         var tryStmt = <t.TryStatement> whileStmt.body['body'][0];
         var switchStmt = <t.SwitchStatement> tryStmt.block['body'][0];
@@ -779,16 +781,17 @@ function rewriteExpression(expr: t.Expression, $tgt: string, emitter: Rewriter):
             emitter.releaseTemporaryIdentifier($expr);
         },
 
-        Literal: (expr) => {
-            if (t.isRegExpLiteral(expr)) {
-                emitter.emitText(`${$tgt} = /${expr.pattern}/${expr.flags}`);
-            }
-            else if (t.isTemplateLiteral(expr)) {
-                assert(false); // TODO: template literals were handled above - this should never be reached
-            }
-            else {
-                emitter.emitText(`${$tgt} = ${JSON.stringify(expr.value)};`);
-            }
+        NumericLiteral: (expr) => {
+            emitter.emitText(`${$tgt} = ${JSON.stringify(expr.value)};`);
+        },
+        StringLiteral: (expr) => {
+            emitter.emitText(`${$tgt} = ${JSON.stringify(expr.value)};`);
+        },
+        BooleanLiteral: (expr) => {
+            emitter.emitText(`${$tgt} = ${JSON.stringify(expr.value)};`);
+        },
+        RegExpLiteral: (expr) => {
+            emitter.emitText(`${$tgt} = /${expr.pattern}/${expr.flags}`);
         },
 
         Otherwise: (expr) => {
