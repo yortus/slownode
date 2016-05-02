@@ -1,11 +1,16 @@
-import * as babel from 'babel-core';                // elided (types only)
-import {Node, Statement, ObjectProperty} from "babel-types";   // elided (types only)
-import {Visitor} from "babel-traverse";             // elided (types only)
-import * as types from "babel-types";               // elided (types only)
-// TODO: not used (yet)... import template = require("babel-template");
+// TODO: doc... elided (types only)...
+import * as babel from 'babel-core';
+import {Node, Statement, Expression, ObjectProperty} from "babel-types";
+import {Visitor} from "babel-traverse";
+import * as types from "babel-types";
+
+
+// TODO: doc...
 let t: typeof types;
 let transform: typeof babel.transform;
 let transformFromAst: typeof babel.transformFromAst;
+let template: typeof babel.template;
+let evalStack: EvalStack;
 
 
 
@@ -15,6 +20,8 @@ export default function (b: typeof babel) {
     t = b.types;
     transform = b.transform;
     transformFromAst = b.transformFromAst;
+    template = b.template;
+    evalStack = new EvalStack();
 
     let done = false; // TODO: temp testing...
     return {
@@ -81,11 +88,11 @@ function flatten(node: Node): StmtList {
         // FunctionExpression: (node) => [***],
         // IfStatement: (node) => [***],
         // LabeledStatement: (node) => [***],
-        // StringLiteral: (node) => [***],
-        NumericLiteral: (node) => evalStack.pushLiteral(node),
-        // NullLiteral: (node) => [***],
-        // BooleanLiteral: (node) => [***],
-        // RegExpLiteral: (node) => [***],
+        StringLiteral: (node) => evalStack.push(node),
+        NumericLiteral: (node) => evalStack.push(node),
+        NullLiteral: (node) => evalStack.push(<any> node),
+        BooleanLiteral: (node) => evalStack.push(node),
+        RegExpLiteral: (node) => evalStack.push(node),
         // LogicalExpression: (node) => [***],
         // MemberExpression: (node) => [***],
         // NewExpression: (node) => [***],
@@ -245,23 +252,25 @@ function flatten(node: Node): StmtList {
 
 
 
-namespace evalStack {
-    export function pushLiteral(literal: types.Literal) {
-        return [
-            t.expressionStatement(
-                t.callExpression(
-                    t.memberExpression(
-                        t.identifier('Σ'),
-                        t.identifier('push')
-                    ),
-                    [literal]
-                )
-            )
+class EvalStack {
+    
+    push(expr: Expression) {
+        return <Statement[]> [
+            this.templates.push({VAL: expr})
+            // t.expressionStatement(
+            //     t.callExpression(
+            //         t.memberExpression(
+            //             t.identifier('Σ'),
+            //             t.identifier('push')
+            //         ),
+            //         [expr]
+            //     )
+            // )
         ]
     }
 
 
-    export function pop() {
+    pop() {
         return [
             t.expressionStatement(
                 t.callExpression(
@@ -276,7 +285,7 @@ namespace evalStack {
     }
 
 
-    export function binary(op: string) {
+    binary(op: string) {
         return [
             t.expressionStatement(
                 t.callExpression(
@@ -289,6 +298,12 @@ namespace evalStack {
             )
         ];
     }
+
+    private templates = {
+        push: template(`Σ.push(VAL)`),
+        pop: template(`Σ.pop()`),
+        binary: template(`Σ.binary(OP)`)
+    };
 }
 
 
