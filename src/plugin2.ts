@@ -23,18 +23,18 @@ export default function ({types: t, transform, transformFromAst}: typeof babel) 
 
 
     /** Returns an equivalent AST in a form suitable for running inside a steppable object. */
-    function transformToStateMachine(func: types.Function): types.FunctionExpression {
+    function transformToStateMachine(prog: types.Program): types.Program {
 
         // Validate arguments.
-        assert(func.params.every(p => p.type === 'Identifier'));
-        assert(func.body.type === 'BlockStatement');
+        //assert(func.params.every(p => p.type === 'Identifier'));
+        //assert(func.body.type === 'BlockStatement');
 
         // Construct a Rewriter instance to handle the rewrite operation.
-        var rewriter = new Rewriter(<any> func.body, <any> func.params);
+        var rewriter = new Rewriter(prog); //TODO: was... , <any> func.params);
 
         // Extract and return the rewritten AST.
-        var newFunc = <types.FunctionExpression> rewriter.generateAST();
-        return newFunc;
+        var newProg = <types.Program> rewriter.generateAST();
+        return newProg;
     }
 
 
@@ -42,7 +42,8 @@ export default function ({types: t, transform, transformFromAst}: typeof babel) 
     class Rewriter {
 
         // TODO: doc all members...
-        constructor(body: types.BlockStatement, params: types.Identifier[]) {
+        constructor(prog: types.Program) { // TODO: was... , params: types.Identifier[]) {
+            let params: types.Identifier[] = []; // TODO: temp testing...
 
             // Initialise state.
             this.emitCase(this.newLabel());
@@ -50,7 +51,7 @@ export default function ({types: t, transform, transformFromAst}: typeof babel) 
             this.pushJumpTarget(JumpTarget.Return, '@done');
 
             // Remove all const declarations from the AST. These will be emitted as ambients.
-            traverseTree(body, node => {
+            traverseTree(prog, node => {
                 matchNode(node, {
                     VariableDeclaration: (stmt) => {
                         if (stmt.kind !== 'const') return;
@@ -70,6 +71,7 @@ export default function ({types: t, transform, transformFromAst}: typeof babel) 
                 this.constDecls.map(decl => decl.id['name'])
             );
 
+            // TODO: remove this?
             // Emit code to initially assign formal parameters from $.arguments.
             for (var i = 0; i < params.length; ++i) {
                 var $paramName = this.getIdentifierReference(params[i].name);
@@ -78,7 +80,8 @@ export default function ({types: t, transform, transformFromAst}: typeof babel) 
             }
 
             // Emit the body of the function.
-            this.emitStmt(body);
+            prog.body.forEach(stmt => this.emitStmt(stmt));
+            // TODO: was... this.emitStmt(body);
         }
 
         currentThrowTarget: string;
@@ -165,12 +168,12 @@ export default function ({types: t, transform, transformFromAst}: typeof babel) 
             this.hoistedFunctions.push(decl);
         }
 
-        generateAST(fromFragment?: string): types.FunctionExpression | types.Statement {
+        generateAST(fromFragment?: string): types.Program | types.Statement {
             var source = `
                 (function steppableBody($) {
                     $.pos = $.pos || '@start';
                     $.local = $.local || {};
-                    ${this.hoistedFunctions.map(decl => `$.local.${decl.id.name} = $.local.${decl.id.name} || (${transformFromAst(decl).code});`).join('\n')}
+                    ${this.hoistedFunctions.map(decl => `$.local.${decl.id.name} = $.local.${decl.id.name} || (${transformFromAst(t.program([decl])).code});`).join('\n')}
                     $.temp = $.temp || {};
                     $.error = $.error || { handler: '@fail' };
                     $.finalizers = $.finalizers || { pending: [] };
@@ -212,7 +215,8 @@ export default function ({types: t, transform, transformFromAst}: typeof babel) 
                 })
             `;
             var ast = <types.File> transform(source, {code: false}).ast;
-            var funcExpr = <types.FunctionExpression> ast.program.body[0]['expression'];
+            var prog = ast.program;
+            var funcExpr = <types.FunctionExpression> prog.body[0]['expression'];
             var whileStmt = <types.WhileStatement> funcExpr.body['body'][6 + this.hoistedFunctions.length];
             var tryStmt = <types.TryStatement> whileStmt.body['body'][0];
             var switchStmt = <types.SwitchStatement> tryStmt.block['body'][0];
@@ -223,7 +227,7 @@ export default function ({types: t, transform, transformFromAst}: typeof babel) 
             }
             else {
                 switchStmt.cases.splice(1, 0, ...this.switchCases);
-                return funcExpr;
+                return prog;
             }
         }
 
@@ -785,10 +789,12 @@ export default function ({types: t, transform, transformFromAst}: typeof babel) 
 
 
 
-
+    let done = false; // TODO: temp testing...
     return {
         visitor: <Visitor> {
-            FunctionDeclaration(path) {
+            Program(path) {
+                if (done) return;
+                done = true;
                 let newNode = transformToStateMachine(path.node);
                 path.replaceWith(newNode);
             }
@@ -1221,6 +1227,8 @@ function traverseTree(rootNode: Node, action: (node: Node) => any): void {
         BooleanLiteral: (expr) => {},
 
         RegExpLiteral: (expr) => {},
+
+        NullLiteral: (expr) => {},
 
         Otherwise: (node) => {
             throw new Error(`traverseTree: unsupported node type: '${node.type}'`);
