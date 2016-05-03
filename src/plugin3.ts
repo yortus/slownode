@@ -13,6 +13,26 @@ let template: typeof babel.template;
 
 
 // TODO: temp testing...
+interface SlowProgram {
+    state: SlowProgramState;
+    step(): SlowProgram;
+    ready: Promise<void>;
+    finished: boolean;
+    sources: { [filename: string]: string };
+    filename: string;
+    line: number;
+    column: number;
+}
+interface SlowProgramState {
+    environment: Environment;
+}
+declare class Environment {
+}
+declare class Binding {
+}
+
+
+// TODO: temp testing...
 var rɾɼρφϫгɍᵲṙ0;
 var ṙ0;
 var ɼ1;
@@ -79,7 +99,8 @@ function flatten(node: Node, targetRegister?: Identifier) {
             return [
                 flatten(node.left, lhs),
                 flatten(node.right, rhs),
-                template(`tgt = lhs ${node.operator} rhs`)({lhs, rhs, tgt})
+                template(`tgt = lhs ${node.operator} rhs`)({lhs, rhs, tgt}),
+                t.switchStatement(t.stringLiteral('%%%'), [t.switchCase(t.stringLiteral('$$$'), [])])
             ];
         },
         // Directive: (node) => [***],
