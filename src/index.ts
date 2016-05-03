@@ -18,7 +18,7 @@ const filename = path.join(__dirname, '../temp/temp.ts');
 const source = fs.readFileSync(filename, 'utf8');
 const ast = babylon.parse(source, {
     sourceFilename: filename,
-    plugins: ["asyncFunctions", "jsx", "flow"]
+    plugins: ["asyncFunctions", "flow"]
 });
 transformToStateMachine(ast);
 let code = generate(ast).code;

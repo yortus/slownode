@@ -1,6 +1,6 @@
 // TODO: doc... elided (types only)...
 import * as babel from 'babel-core';
-import {Node, Statement, Expression, ObjectProperty} from "babel-types";
+import {Node, Statement, Expression, Identifier, ObjectProperty} from "babel-types";
 import {Visitor} from "babel-traverse";
 import * as types from "babel-types";
 
@@ -10,7 +10,16 @@ let t: typeof types;
 let transform: typeof babel.transform;
 let transformFromAst: typeof babel.transformFromAst;
 let template: typeof babel.template;
-let evalStack: EvalStack;
+
+
+// TODO: temp testing...
+var rɾɼρφϫгɍᵲṙ0;
+var ṙ0;
+var ɼ1;
+var φ2;
+var г3;
+var ϫ4;
+var ɍ5;
 
 
 
@@ -21,7 +30,6 @@ export default function (b: typeof babel) {
     transform = b.transform;
     transformFromAst = b.transformFromAst;
     template = b.template;
-    evalStack = new EvalStack();
 
     let done = false; // TODO: temp testing...
     return {
@@ -47,7 +55,7 @@ interface StmtList extends Array<Statement|StmtList> {}
 
 
 function transformToStateMachine(prog: types.Program): types.Program {
-    let stmts: StmtList = [].concat(...prog.body.map(flatten));
+    let stmts: StmtList = [].concat(...prog.body.map(stmt => flatten(stmt)));
     let flatStmts: Statement[] = [];
     (function recurse(stmts: StmtList) {
         stmts.forEach(el => Array.isArray(el) ? recurse(el) : flatStmts.push(el));
@@ -59,17 +67,26 @@ function transformToStateMachine(prog: types.Program): types.Program {
 
 
 
-function flatten(node: Node): StmtList {
-    return matchNode<StmtList>(node, {
+function flatten(node: Node, targetRegister?: Identifier) {
+    let tgt = targetRegister || t.identifier('φ');
+    let allocatedRegisterCount = allocatedRegisters.length;
+    let result = matchNode<Statement|StmtList>(node, {
         // ------------------------- core -------------------------
         // ArrayExpression: (node) => [***],
         // AssignmentExpression: (node) => [***],
-        BinaryExpression: (node) => [flatten(node.left), flatten(node.right), evalStack.binary(node.operator)],
+        BinaryExpression(node) {
+            let lhs = allocateRegister(), rhs = allocateRegister();
+            return [
+                flatten(node.left, lhs),
+                flatten(node.right, rhs),
+                template(`tgt = lhs ${node.operator} rhs`)({lhs, rhs, tgt})
+            ];
+        },
         // Directive: (node) => [***],
         // DirectiveLiteral: (node) => [***],
         // BlockStatement: (node) => [***],
         // BreakStatement: (node) => [***],
-        // Identifier: (node) => [***],
+        Identifier: (node) => <Statement> template(`tgt = node`)({node, tgt}),
         // CallExpression: (node) => [***],
         // CatchClause: (node) => [***],
         // ConditionalExpression: (node) => [***],
@@ -78,7 +95,7 @@ function flatten(node: Node): StmtList {
         // DoWhileStatement: (node) => [***],
         // Statement: (node) => [***],
         // EmptyStatement: (node) => [***],
-        ExpressionStatement: (node) => [flatten(node.expression), evalStack.pop()],
+        ExpressionStatement: (node) => flatten(node.expression),
         // File: (node) => [***],
         // Program: (node) => [***],
         // ForInStatement: (node) => [***],
@@ -88,11 +105,11 @@ function flatten(node: Node): StmtList {
         // FunctionExpression: (node) => [***],
         // IfStatement: (node) => [***],
         // LabeledStatement: (node) => [***],
-        StringLiteral: (node) => evalStack.push(node),
-        NumericLiteral: (node) => evalStack.push(node),
-        NullLiteral: (node) => evalStack.push(<any> node),
-        BooleanLiteral: (node) => evalStack.push(node),
-        RegExpLiteral: (node) => evalStack.push(node),
+        StringLiteral: (node) => <Statement> template(`tgt = node`)({node, tgt}),
+        NumericLiteral: (node) => <Statement> template(`tgt = node`)({node, tgt}),
+        NullLiteral: (node) => <Statement> template(`tgt = null`)({tgt}),
+        BooleanLiteral: (node) => <Statement> template(`tgt = node`)({node, tgt}),
+        RegExpLiteral: (node) => <Statement> template(`tgt = node`)({node, tgt}),
         // LogicalExpression: (node) => [***],
         // MemberExpression: (node) => [***],
         // NewExpression: (node) => [***],
@@ -140,62 +157,6 @@ function flatten(node: Node): StmtList {
         // TemplateElement: (node) => [***],
         // YieldExpression: (node) => [***],
 
-        // ------------------------- flow -------------------------
-        // AnyTypeAnnotation: (node) => [***],
-        // ArrayTypeAnnotation: (node) => [***],
-        // BooleanTypeAnnotation: (node) => [***],
-        // BooleanLiteralTypeAnnotation: (node) => [***],
-        // NullLiteralTypeAnnotation: (node) => [***],
-        // ClassImplements: (node) => [***],
-        // ClassProperty: (node) => [***],
-        // DeclareClass: (node) => [***],
-        // DeclareFunction: (node) => [***],
-        // DeclareInterface: (node) => [***],
-        // DeclareModule: (node) => [***],
-        // DeclareTypeAlias: (node) => [***],
-        // DeclareVariable: (node) => [***],
-        // ExistentialTypeParam: (node) => [***],
-        // FunctionTypeAnnotation: (node) => [***],
-        // FunctionTypeParam: (node) => [***],
-        // GenericTypeAnnotation: (node) => [***],
-        // InterfaceExtends: (node) => [***],
-        // InterfaceDeclaration: (node) => [***],
-        // IntersectionTypeAnnotation: (node) => [***],
-        // MixedTypeAnnotation: (node) => [***],
-        // NullableTypeAnnotation: (node) => [***],
-        // NumericLiteralTypeAnnotation: (node) => [***],
-        // NumberTypeAnnotation: (node) => [***],
-        // StringLiteralTypeAnnotation: (node) => [***],
-        // StringTypeAnnotation: (node) => [***],
-        // ThisTypeAnnotation: (node) => [***],
-        // TupleTypeAnnotation: (node) => [***],
-        // TypeofTypeAnnotation: (node) => [***],
-        // TypeAlias: (node) => [***],
-        // TypeAnnotation: (node) => [***],
-        // TypeCastExpression: (node) => [***],
-        // TypeParameterDeclaration: (node) => [***],
-        // TypeParameterInstantiation: (node) => [***],
-        // ObjectTypeAnnotation: (node) => [***],
-        // ObjectTypeCallProperty: (node) => [***],
-        // ObjectTypeIndexer: (node) => [***],
-        // ObjectTypeProperty: (node) => [***],
-        // QualifiedTypeIdentifier: (node) => [***],
-        // UnionTypeAnnotation: (node) => [***],
-        // VoidTypeAnnotation: (node) => [***],
-
-        // ------------------------- jsx -------------------------
-        // JSXAttribute: (node) => [***],
-        // JSXIdentifier: (node) => [***],
-        // JSXNamespacedName: (node) => [***],
-        // JSXElement: (node) => [***],
-        // JSXExpressionContainer: (node) => [***],
-        // JSXClosingElement: (node) => [***],
-        // JSXMemberExpression: (node) => [***],
-        // JSXOpeningElement: (node) => [***],
-        // JSXEmptyExpression: (node) => [***],
-        // JSXSpreadAttribute: (node) => [***],
-        // JSXText: (node) => [***],
-
         // ------------------------- misc -------------------------
         // Noop: (node) => [***],
         // ParenthesizedExpression: (node) => [***],
@@ -209,102 +170,24 @@ function flatten(node: Node): StmtList {
         // ExportNamespaceSpecifier: (node) => [***],
         // RestProperty: (node) => [***],
         // SpreadProperty: (node) => [***],
-
-        // ------------------------- aliases -------------------------
-        // LVal: (node) => [***],
-        // Expression: (node) => [***],
-        // Binary: (node) => [***],
-        // Scopable: (node) => [***],
-        // BlockParent: (node) => [***],
-        // Block: (node) => [***],
-        // Terminatorless: (node) => [***],
-        // CompletionStatement: (node) => [***],
-        // Conditional: (node) => [***],
-        // Loop: (node) => [***],
-        // While: (node) => [***],
-        // ExpressionWrapper: (node) => [***],
-        // For: (node) => [***],
-        // ForXStatement: (node) => [***],
-        // Function: (node) => [***],
-        // FunctionParent: (node) => [***],
-        // Pureish: (node) => [***],
-        // Literal: (node) => [***],
-        // Immutable: (node) => [***],
-        // UserWhitespacable: (node) => [***],
-        // Method: (node) => [***],
-        // ObjectMember: (node) => [***],
-        // Property: (node) => [***],
-        // UnaryLike: (node) => [***],
-        // Pattern: (node) => [***],
-        // Class: (node) => [***],
-        // ModuleDeclaration: (node) => [***],
-        // ExportDeclaration: (node) => [***],
-        // ModuleSpecifier: (node) => [***],
-        // Flow: (node) => [***],
-        // FlowBaseAnnotation: (node) => [***],
-        // FlowDeclaration: (node) => [***],
-        // JSX: (node) => [***],
         // ------------------------- end -------------------------
     });
+
+    while (allocatedRegisters.length > allocatedRegisterCount) {
+        availableRegisters.push(allocatedRegisters.pop());
+    }
+
+    return result;
+
+    function allocateRegister(): Identifier {
+        if (availableRegisters.length > 0) return availableRegisters.pop();
+        var newRegister = t.identifier(`ɼ${allocatedRegisters.length + 1}`);
+        allocatedRegisters.push(newRegister);
+        return newRegister;
+    }
 }
-
-
-
-
-
-class EvalStack {
-    
-    push(expr: Expression) {
-        return <Statement[]> [
-            this.templates.push({VAL: expr})
-            // t.expressionStatement(
-            //     t.callExpression(
-            //         t.memberExpression(
-            //             t.identifier('Σ'),
-            //             t.identifier('push')
-            //         ),
-            //         [expr]
-            //     )
-            // )
-        ]
-    }
-
-
-    pop() {
-        return [
-            t.expressionStatement(
-                t.callExpression(
-                    t.memberExpression(
-                        t.identifier('Σ'),
-                        t.identifier('pop')
-                    ),
-                    []
-                )
-            )
-        ];
-    }
-
-
-    binary(op: string) {
-        return [
-            t.expressionStatement(
-                t.callExpression(
-                    t.memberExpression(
-                        t.identifier('Σ'),
-                        t.identifier('binary')
-                    ),
-                    [t.stringLiteral(op)]
-                )
-            )
-        ];
-    }
-
-    private templates = {
-        push: template(`Σ.push(VAL)`),
-        pop: template(`Σ.pop()`),
-        binary: template(`Σ.binary(OP)`)
-    };
-}
+const availableRegisters: Identifier[] = [];
+const allocatedRegisters: Identifier[] = [];
 
 
 
