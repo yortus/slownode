@@ -75,10 +75,22 @@ class IL {
     label = (name: string) => this.addLine(`label('${name}')`);
 
     // [] => [elem]
-    pushVal = (val: string | number | boolean) => this.addLine(`pushVal(${JSON.stringify(val)})`);
+    push = (val: string | number | boolean) => this.addLine(`push(${JSON.stringify(val)})`);
 
     // [elem] => []
     pop = () => this.addLine(`pop()`);
+
+    // [name] => [val]
+    get = () => this.addLine(`get()`);
+
+    // [obj, prop] => [val]
+    getProp = () => this.addLine(`getProp()`);
+
+    // [name, val] => [val]
+    set = () => this.addLine(`set()`);
+
+    // [obj, prop, val] => [val]
+    setProp = () => this.addLine(`setProp()`);
 
     // [arg] => [result]
     unaryOp = (operator: string) => this.addLine(`unaryOp('${operator}')`);
@@ -117,123 +129,164 @@ function transformToIL(prog: types.Program, il: IL) {
         let label = ((i) => (strs) => `${strs[0]}-${i}`)(++visitCounter);
         matchNode<void>(stmt, {
             // ------------------------- core -------------------------
-            // Directive: (stmt) => [***],
-            // DirectiveLiteral: (stmt) => [***],
-            BlockStatement:         (stmt) => [stmt.body.forEach(visitStmt)],
-            // BreakStatement: (stmt) => [***],
-            // CatchClause: (stmt) => [***],
-            // ContinueStatement: (stmt) => [***],
-            // DebuggerStatement: (stmt) => [***],
-            // DoWhileStatement: (stmt) => [***],
-            // Statement: (stmt) => [***],
-            // EmptyStatement: (stmt) => [***],
-            ExpressionStatement:    (stmt) => [visitExpr(stmt.expression), il.pop()],
-            Program:                (stmt) => [stmt.body.forEach(visitStmt)],
-            // ForInStatement: (stmt) => [***],
-            // VariableDeclaration: (stmt) => [***],
-            // ForStatement: (stmt) => [***],
-            // FunctionDeclaration: (stmt) => [***],
-            IfStatement:            (stmt) => [
-                visitExpr(stmt.test),
-                il.jumpIf(label`alternate`, false),
-                visitStmt(stmt.consequent),
-                il.jump(label`exit`),
-                il.label(label`alternate`),
-                visitStmt(stmt.alternate || t.blockStatement([])),
-                il.label(label`exit`),
-            ],
-            // LabeledStatement: (stmt) => [***],
-            // ReturnStatement: (stmt) => [***],
-            // SwitchCase: (stmt) => [***],
-            // SwitchStatement: (stmt) => [***],
-            // ThrowStatement: (stmt) => [***],
-            // TryStatement: (stmt) => [***],
-            // VariableDeclarator: (stmt) => [***],
-            // WhileStatement: (stmt) => [***],
-            // WithStatement: (stmt) => [***],
+            // Directive: stmt => [***],
+            // DirectiveLiteral: stmt => [***],
+            BlockStatement:         stmt => {
+                                        stmt.body.forEach(visitStmt);
+                                    },
+            // BreakStatement: stmt => [***],
+            // CatchClause: stmt => [***],
+            // ContinueStatement: stmt => [***],
+            // DebuggerStatement: stmt => [***],
+            // DoWhileStatement: stmt => [***],
+            // Statement: stmt => [***],
+            EmptyStatement:         stmt => {},
+            ExpressionStatement:    stmt => {
+                                        visitExpr(stmt.expression);
+                                        il.pop();
+                                    },
+            Program:                stmt => {
+                                        stmt.body.forEach(visitStmt);
+                                    },
+            // ForInStatement: stmt => [***],
+            // VariableDeclaration: stmt => [***],
+            // ForStatement: stmt => [***],
+            // FunctionDeclaration: stmt => [***],
+            IfStatement:            stmt => {
+                                        visitExpr(stmt.test);
+                                        il.jumpIf(label`alternate`, false);
+                                        visitStmt(stmt.consequent);
+                                        il.jump(label`exit`);
+                                        il.label(label`alternate`);
+                                        visitStmt(stmt.alternate || t.blockStatement([]));
+                                        il.label(label`exit`);
+                                    },
+            // LabeledStatement: stmt => [***],
+            // ReturnStatement: stmt => [***],
+            // SwitchCase: stmt => [***],
+            // SwitchStatement: stmt => [***],
+            // ThrowStatement: stmt => [***],
+            // TryStatement: stmt => [***],
+            // VariableDeclarator: stmt => [***],
+            // WhileStatement: stmt => [***],
+            // WithStatement: stmt => [***],
 
             // ------------------------- es2015 -------------------------
-            // ClassBody: (stmt) => [***],
-            // ClassDeclaration: (stmt) => [***],
-            // ExportAllDeclaration: (stmt) => [***],
-            // ExportDefaultDeclaration: (stmt) => [***],
-            // ExportNamedDeclaration: (stmt) => [***],
-            // Declaration: (stmt) => [***],
-            // ExportSpecifier: (stmt) => [***],
-            // ForOfStatement: (stmt) => [***],
-            // ImportDeclaration: (stmt) => [***],
-            // ImportDefaultSpecifier: (stmt) => [***],
-            // ImportNamespaceSpecifier: (stmt) => [***],
-            // ImportSpecifier: (stmt) => [***],
-            // ClassMethod: (stmt) => [***],
+            // ClassBody: stmt => [***],
+            // ClassDeclaration: stmt => [***],
+            // ExportAllDeclaration: stmt => [***],
+            // ExportDefaultDeclaration: stmt => [***],
+            // ExportNamedDeclaration: stmt => [***],
+            // Declaration: stmt => [***],
+            // ExportSpecifier: stmt => [***],
+            // ForOfStatement: stmt => [***],
+            // ImportDeclaration: stmt => [***],
+            // ImportDefaultSpecifier: stmt => [***],
+            // ImportNamespaceSpecifier: stmt => [***],
+            // ImportSpecifier: stmt => [***],
+            // ClassMethod: stmt => [***],
 
             // ------------------------- experimental -------------------------
-            // Decorator: (stmt) => [***],
-            // ExportDefaultSpecifier: (stmt) => [***],
-            // ExportNamespaceSpecifier: (stmt) => [***]
+            // Decorator: stmt => [***],
+            // ExportDefaultSpecifier: stmt => [***],
+            // ExportNamespaceSpecifier: stmt => [***]
         });
     }
     function visitExpr(expr: Expression) {
         let label = ((i) => (strs) => `${strs[0]}-${i}`)(++visitCounter);
         matchNode<void>(expr, {
             // ------------------------- core -------------------------
-            // ArrayExpression: (expr) => [***],
-            // AssignmentExpression: (expr) => [***],
-            BinaryExpression:   (expr) => [visitExpr(expr.left), visitExpr(expr.right), il.binaryOp(expr.operator)],
-            //Identifier:         (expr) => [il.push(expr)],
-            // CallExpression: (expr) => [***],
-            // ConditionalExpression: (expr) => [***],
-            // FunctionExpression: (expr) => [***],
-            StringLiteral:      (expr) => [il.pushVal(expr.value)],
-            NumericLiteral:     (expr) => [il.pushVal(expr.value)],
-            NullLiteral:        (expr) => [il.pushVal(null)],
-            BooleanLiteral:     (expr) => [il.pushVal(expr.value)],
-            //RegExpLiteral:      (expr) => [il.push(expr)],
-            LogicalExpression:  (expr) => [
-                visitExpr(expr.left),
-                il.jumpIf(label`exit`, expr.operator === '||'),
-                il.pop(),
-                visitExpr(expr.right),
-                il.label(label`exit`)
-            ],
-            // MemberExpression: (expr) => [***],
-            // NewExpression: (expr) => [***],
-            // ObjectExpression: (expr) => [***],
-            // ObjectMethod: (expr) => [***],
-            // ObjectProperty: (expr) => [***],
-            // SequenceExpression: (expr) => [***],
-            // ThisExpression: (expr) => [***],
-            UnaryExpression:    (expr) => [visitExpr(expr.argument), il.unaryOp(expr.operator)],
-            // UpdateExpression: (expr) => [***],
+            // ArrayExpression: expr => [***],
+            AssignmentExpression:   expr => {
+                                        assert(t.isIdentifier(expr.left) || t.isMemberExpression(expr.left)); // TODO: loosen up later...
+                                        visitLVal(expr.left);
+                                        visitExpr(expr.right);
+                                        t.isIdentifier(expr.left) ? il.set() : il.setProp();
+                                    },
+            BinaryExpression:       expr => {
+                                        visitExpr(expr.left);
+                                        visitExpr(expr.right);
+                                        il.binaryOp(expr.operator);
+                                    },
+            Identifier:             expr => {
+                                        il.push(expr.name);
+                                        il.get();
+                                    },
+            // CallExpression: expr => [***],
+            // ConditionalExpression: expr => [***],
+            // FunctionExpression: expr => [***],
+            StringLiteral:          expr => {
+                                        il.push(expr.value);
+                                    },
+            NumericLiteral:         expr => {
+                                        il.push(expr.value);
+                                    },
+            NullLiteral:            expr => {
+                                        il.push(null);
+                                    },
+            BooleanLiteral:         expr => {
+                                        il.push(expr.value);
+                                    },
+            //RegExpLiteral: expr => [...],
+            LogicalExpression:      expr => {
+                                        visitExpr(expr.left);
+                                        il.jumpIf(label`exit`, expr.operator === '||');
+                                        il.pop();
+                                        visitExpr(expr.right);
+                                        il.label(label`exit`);
+                                    },
+            MemberExpression:       expr => {
+                                        assert(t.isIdentifier(expr.property) && !expr.computed); // TODO: relax this restriction...
+                                        visitExpr(expr.object);
+                                        il.push((<Identifier> expr.property).name);
+                                        il.getProp();
+                                    },
+            // NewExpression: expr => [***],
+            // ObjectExpression: expr => [***],
+            // ObjectMethod: expr => [***],
+            // ObjectProperty: expr => [***],
+            // SequenceExpression: expr => [***],
+            // ThisExpression: expr => [***],
+            UnaryExpression:        expr => {
+                                        visitExpr(expr.argument);
+                                        il.unaryOp(expr.operator);
+                                    },
+            // UpdateExpression: expr => [***],
 
             // ------------------------- es2015 -------------------------
-            // ArrowFunctionExpression: (expr) => [***],
-            // ClassBody: (expr) => [***],
-            // ClassExpression: (expr) => [***],
-            // ClassMethod: (expr) => [***],
-            // SpreadElement: (expr) => [***],
-            // Super: (expr) => [***],
-            // TaggedTemplateExpression: (expr) => [***],
-            // TemplateLiteral: (expr) => [***],
-            // TemplateElement: (expr) => [***],
-            // YieldExpression: (expr) => [***],
+            // ArrowFunctionExpression: expr => [***],
+            // ClassBody: expr => [***],
+            // ClassExpression: expr => [***],
+            // ClassMethod: expr => [***],
+            // SpreadElement: expr => [***],
+            // Super: expr => [***],
+            // TaggedTemplateExpression: expr => [***],
+            // TemplateLiteral: expr => [***],
+            // TemplateElement: expr => [***],
+            // YieldExpression: expr => [***],
 
             // ------------------------- experimental -------------------------
-            // AwaitExpression: (expr) => [***]
+            // AwaitExpression: expr => [***]
         });
     }
     function visitLVal(expr: Node) {
         let label = ((i) => (strs) => `${strs[0]}-${i}`)(++visitCounter);
         matchNode<void>(expr, {
             // ------------------------- core -------------------------
-            // Identifier: (expr) => [],
-            // MemberExpression: (expr) => [***],
-            // RestElement: (expr) => [***],
+            Identifier:         expr => {
+                                    il.push(expr.name);
+                                },
+            MemberExpression:   expr => {
+                                    assert(t.isIdentifier(expr.property) && !expr.computed); // TODO: relax this restriction...
+                                    visitExpr(expr.object);
+                                    il.push((<Identifier> expr.property).name);
+                                },
+            // RestElement: expr => [***],
 
             // ------------------------- es2015 -------------------------
-            // AssignmentPattern: (expr) => [***],
-            // ArrayPattern: (expr) => [***],
-            // ObjectPattern: (expr) => [***],
+            // AssignmentPattern: expr => [***],
+            // ArrayPattern: expr => [***],
+            // ObjectPattern: expr => [***],
         });
     }
 }
@@ -474,200 +527,3 @@ export interface RuleSet<TReturn> {
 
 
 export type Handler<TNode extends Node, TReturn> = (node: TNode) => TReturn;
-
-
-
-
-
-//========================= inlined traverse-tree.ts =========================
-// TODO: move this back out to own file after finished testing in ASTExplorer.net
-
-
-/**
- * Traverses the AST rooted at the given `rootNode` in depth-first preorder.
- * The action callback is applied to each node in turn. If the action callback
- * returns false (using strict equality) for a particular node, then traversal
- * does not continue to that node's children. If the action callback returns
- * a node for a particular input node, then the returned node is traversed and
- * the input node's children are not traversed.
- */
-function traverseTree(rootNode: Node, action: (node: Node) => any): void {
-
-    // Invoke the action on the root node.
-    var actionResult = action(rootNode);
-
-    // If the action returns false, skip the node's children.
-    if (actionResult === false) return;
-
-    // If the action returns a node, traverse the returned node recursively, and skip the original node's children.
-    if (actionResult && actionResult.type) {
-        traverseTree(actionResult, action);
-        return;
-    }
-
-    // Recursively traverse the root node's children.
-    matchNode(rootNode, {
-
-        Program: (prgm) => prgm.body.forEach(stmt => traverseTree(stmt, action)),
-
-        EmptyStatement: (stmt) => {},
-
-        BlockStatement: (stmt) => stmt.body.forEach(stmt => traverseTree(stmt, action)),
-
-        ExpressionStatement: (stmt) => traverseTree(stmt.expression, action),
-
-        IfStatement: (stmt) => {
-            traverseTree(stmt.test, action);
-            traverseTree(stmt.consequent, action);
-            if (stmt.alternate) traverseTree(stmt.alternate, action);
-        },
-
-        SwitchStatement: (stmt) => {
-            traverseTree(stmt.discriminant, action);
-            stmt.cases.forEach(switchCase => {
-                traverseTree(switchCase.test, action);
-                switchCase.consequent.forEach(stmt => traverseTree(stmt, action));
-            });
-        },
-
-        WhileStatement: (stmt) => {
-            traverseTree(stmt.test, action);
-            traverseTree(stmt.body, action);
-        },
-
-        DoWhileStatement: (stmt) => {
-            traverseTree(stmt.body, action);
-            traverseTree(stmt.test, action);
-        },
-
-        ForStatement: (stmt) => {
-            if (stmt.init) traverseTree(stmt.init, action);
-            if (stmt.test) traverseTree(stmt.test, action);
-            if (stmt.update) traverseTree(stmt.update, action);
-            traverseTree(stmt.body, action);
-        },
-
-        ForInStatement: (stmt) => {
-            traverseTree(stmt.left, action);
-            traverseTree(stmt.right, action);
-            traverseTree(stmt.body, action);
-        },
-
-        TryStatement: (stmt) => {
-            traverseTree(stmt.block, action);
-            if (stmt.handler) {
-                traverseTree(stmt.handler.param, action);
-                traverseTree(stmt.handler.body, action);
-            }
-            if (stmt.finalizer) traverseTree(stmt.finalizer, action);
-        },
-
-        LabeledStatement: (stmt) => {
-            traverseTree(stmt.label, action);
-            traverseTree(stmt.body, action);
-        },
-
-        BreakStatement: (stmt) => stmt.label && traverseTree(stmt.label, action),
-
-        ContinueStatement: (stmt) => stmt.label && traverseTree(stmt.label, action),
-
-        ReturnStatement: (stmt) => stmt.argument && traverseTree(stmt.argument, action),
-
-        ThrowStatement: (stmt) => traverseTree(stmt.argument, action),
-
-        DebuggerStatement: (stmt) => {},
-
-        VariableDeclaration: (stmt) => {
-            stmt.declarations.forEach(decl => {
-                traverseTree(decl.id, action);
-                if (decl.init) traverseTree(decl.init, action);
-            });
-        },
-
-        FunctionDeclaration: (stmt) => {
-            if (stmt.id) traverseTree(stmt.id, action);
-            stmt.params.forEach(p => traverseTree(p, action));
-            traverseTree(stmt.body, action);
-        },
-
-        SequenceExpression: (expr) => expr.expressions.forEach(expr => traverseTree(expr, action)),
-
-        YieldExpression: (expr) => {
-            if (expr.argument) traverseTree(expr.argument, action);
-        },
-
-        AssignmentExpression: (expr) => {
-            traverseTree(expr.left, action);
-            traverseTree(expr.right, action);
-        },
-
-        ConditionalExpression: (expr) => {
-            traverseTree(expr.test, action);
-            traverseTree(expr.consequent, action);
-            traverseTree(expr.alternate, action);
-        },
-
-        LogicalExpression: (expr) => {
-            traverseTree(expr.left, action);
-            traverseTree(expr.right, action);
-        },
-
-        BinaryExpression: (expr) => {
-            traverseTree(expr.left, action);
-            traverseTree(expr.right, action);
-        },
-
-        UnaryExpression: (expr) => traverseTree(expr.argument, action),
-
-        UpdateExpression: (expr) => traverseTree(expr.argument, action),
-
-        CallExpression: (expr) => {
-            traverseTree(expr.callee, action);
-            expr.arguments.forEach(arg => traverseTree(arg, action));
-        },
-
-        NewExpression: (expr) => {
-            traverseTree(expr.callee, action);
-            expr.arguments.forEach(arg => traverseTree(arg, action));
-        },
-
-        MemberExpression: (expr) => {
-            traverseTree(expr.object, action);
-            traverseTree(expr.property, action);
-        },
-
-        ArrayExpression: (expr) => expr.elements.forEach(elem => traverseTree(elem, action)),
-
-        ObjectExpression: (expr) => {
-            expr.properties.forEach((prop: ObjectProperty) => {
-                // TODO: will crash if prop is an ES6 ObjectMethod or SpreadProperty - add handling for these cases!
-                traverseTree(prop.key, action);
-                traverseTree(prop.value, action);
-            });
-        },
-
-        FunctionExpression: (expr) => {
-            if (expr.id) traverseTree(expr.id, action);
-            expr.params.forEach(p => traverseTree(p, action));
-            traverseTree(expr.body, action);
-        },
-
-        Identifier: (expr) => {},
-
-        TemplateLiteral: (expr) => expr.expressions.forEach(expr => traverseTree(expr, action)),
-
-        NumericLiteral: (expr) => {},
-
-        StringLiteral: (expr) => {},
-
-        BooleanLiteral: (expr) => {},
-
-        RegExpLiteral: (expr) => {},
-
-        NullLiteral: (expr) => {},
-
-        Otherwise: (node) => {
-            throw new Error(`traverseTree: unsupported node type: '${node.type}'`);
-        }
-    });
-}
