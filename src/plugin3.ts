@@ -95,17 +95,17 @@ class IL {
     // [obj, prop, val] => [val]
     setProp = () => this.addLine(`setProp()`);
 
-    // [arg] => [result]
-    unaryOp = (operator: string) => this.addLine(`unaryOp('${operator}')`);
-
-    // [lhs, rhs] => [result]
-    binaryOp = (operator: string) => this.addLine(`binaryOp('${operator}')`);
-
     // [] => []
     jump = (label: string) => this.addLine(`jump('${label}')`);
 
     // [] => []
-    jumpIf = (label: string, truthy: boolean) => this.addLine(`jumpIf('${label}', ${truthy ? 'true' : 'false'})`);
+    jumpIfTruthy = (label: string) => this.addLine(`jumpIfTruthy('${label}')`);
+
+    // [] => []
+    jumpIfFalsy = (label: string) => this.addLine(`jumpIfFalsy('${label}')`);
+
+    // [...args] => [result]
+    call = (funcName: string, argCount: number) => this.addLine(`call('${funcName}', ${argCount})`);
 
     private addLine(line: string) {
         this.lines.push(line);
@@ -157,7 +157,7 @@ function transformToIL(prog: types.Program, il: IL) {
             // FunctionDeclaration: stmt => [***],
             IfStatement:            stmt => {
                                         visitExpr(stmt.test);
-                                        il.jumpIf(label`alternate`, false);
+                                        il.jumpIfFalsy(label`alternate`);
                                         visitStmt(stmt.consequent);
                                         il.jump(label`exit`);
                                         il.label(label`alternate`);
@@ -209,7 +209,7 @@ function transformToIL(prog: types.Program, il: IL) {
             BinaryExpression:       expr => {
                                         visitExpr(expr.left);
                                         visitExpr(expr.right);
-                                        il.binaryOp(expr.operator);
+                                        il.call(`operator${expr.operator}`, 2);
                                     },
             Identifier:             expr => {
                                         il.push(expr.name);
@@ -233,7 +233,12 @@ function transformToIL(prog: types.Program, il: IL) {
             //RegExpLiteral: expr => [...],
             LogicalExpression:      expr => {
                                         visitExpr(expr.left);
-                                        il.jumpIf(label`exit`, expr.operator === '||');
+                                        if (expr.operator === '&&') {
+                                            il.jumpIfFalsy(label`exit`);
+                                        }
+                                        else {
+                                            il.jumpIfTruthy(label`exit`);
+                                        }
                                         il.pop();
                                         visitExpr(expr.right);
                                         il.label(label`exit`);
@@ -257,7 +262,7 @@ function transformToIL(prog: types.Program, il: IL) {
             // ThisExpression: expr => [***],
             UnaryExpression:        expr => {
                                         visitExpr(expr.argument);
-                                        il.unaryOp(expr.operator);
+                                        il.call(`operator${expr.operator}`, 1);
                                     },
             // UpdateExpression: expr => [***],
 
