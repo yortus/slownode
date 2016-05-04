@@ -32,16 +32,6 @@ declare class Binding {
 }
 
 
-// TODO: temp testing...
-var rɾɼρφϫгɍᵲṙ0;
-var ṙ0;
-var ɼ1;
-var φ2;
-var г3;
-var ϫ4;
-var ɍ5;
-
-
 
 
 
@@ -51,13 +41,18 @@ export default function (b: typeof babel) {
     transformFromAst = b.transformFromAst;
     template = b.template;
 
+
+    let emit = new Emit();
+
+
     let done = false; // TODO: temp testing...
     return {
         visitor: <Visitor> {
             Program(path) {
                 if (done) return;
                 done = true;
-                let newNode = transformToStateMachine(path.node);
+                transformToStateMachine(path.node, emit);
+                let newNode = emit.compile();
                 path.replaceWith(newNode);
             }
         }
@@ -74,137 +69,151 @@ interface StmtList extends Array<Statement|StmtList> {}
 
 
 
-function transformToStateMachine(prog: types.Program): types.Program {
-    let stmts: StmtList = [].concat(...prog.body.map(stmt => flatten(stmt)));
-    let flatStmts: Statement[] = [];
-    (function recurse(stmts: StmtList) {
-        stmts.forEach(el => Array.isArray(el) ? recurse(el) : flatStmts.push(el));
-    })(stmts);
-    return t.program(flatStmts);
+class Emit {
+
+    label(name: string) {
+        let stmt = t.labeledStatement(t.identifier(name));
+        this.stmts.push(stmt);
+        return this;
+    }
+
+    push(expr: Expression) {
+        let stmt = <Statement> template(`push(expr)`)({expr});
+        this.stmts.push(stmt);
+        return this;
+    }
+
+    pop() {
+        let stmt = <Statement> template(`pop()`)();
+        this.stmts.push(stmt);
+        return this;
+    }
+
+    unaryOp(operator: string) {
+        let stmt = <Statement> template(`unaryOp('${operator}')`)();
+        this.stmts.push(stmt);
+        return this;
+    }    
+
+    binaryOp(operator: string) {
+        let stmt = <Statement> template(`binaryOp('${operator}')`)();
+        this.stmts.push(stmt);
+        return this;
+    }    
+
+    compile(): Node {
+        return t.program(this.stmts);
+    }
+
+    private stmts: Statement[] = [];
 }
 
 
 
 
 
-function flatten(node: Node, targetRegister?: Identifier) {
-    let tgt = targetRegister || t.identifier('φ');
-    let allocatedRegisterCount = allocatedRegisters.length;
-    let result = matchNode<Statement|StmtList>(node, {
-        // ------------------------- core -------------------------
-        // ArrayExpression: (node) => [***],
-        // AssignmentExpression: (node) => [***],
-        BinaryExpression(node) {
-            let lhs = allocateRegister(), rhs = allocateRegister();
-            return [
-                flatten(node.left, lhs),
-                flatten(node.right, rhs),
-                template(`tgt = lhs ${node.operator} rhs`)({lhs, rhs, tgt}),
-                t.switchStatement(t.stringLiteral('%%%'), [t.switchCase(t.stringLiteral('$$$'), [])])
-            ];
-        },
-        // Directive: (node) => [***],
-        // DirectiveLiteral: (node) => [***],
-        // BlockStatement: (node) => [***],
-        // BreakStatement: (node) => [***],
-        Identifier: (node) => <Statement> template(`tgt = node`)({node, tgt}),
-        // CallExpression: (node) => [***],
-        // CatchClause: (node) => [***],
-        // ConditionalExpression: (node) => [***],
-        // ContinueStatement: (node) => [***],
-        // DebuggerStatement: (node) => [***],
-        // DoWhileStatement: (node) => [***],
-        // Statement: (node) => [***],
-        // EmptyStatement: (node) => [***],
-        ExpressionStatement: (node) => flatten(node.expression),
-        // File: (node) => [***],
-        // Program: (node) => [***],
-        // ForInStatement: (node) => [***],
-        // VariableDeclaration: (node) => [***],
-        // ForStatement: (node) => [***],
-        // FunctionDeclaration: (node) => [***],
-        // FunctionExpression: (node) => [***],
-        // IfStatement: (node) => [***],
-        // LabeledStatement: (node) => [***],
-        StringLiteral: (node) => <Statement> template(`tgt = node`)({node, tgt}),
-        NumericLiteral: (node) => <Statement> template(`tgt = node`)({node, tgt}),
-        NullLiteral: (node) => <Statement> template(`tgt = null`)({tgt}),
-        BooleanLiteral: (node) => <Statement> template(`tgt = node`)({node, tgt}),
-        RegExpLiteral: (node) => <Statement> template(`tgt = node`)({node, tgt}),
-        // LogicalExpression: (node) => [***],
-        // MemberExpression: (node) => [***],
-        // NewExpression: (node) => [***],
-        // ObjectExpression: (node) => [***],
-        // ObjectMethod: (node) => [***],
-        // ObjectProperty: (node) => [***],
-        // RestElement: (node) => [***],
-        // ReturnStatement: (node) => [***],
-        // SequenceExpression: (node) => [***],
-        // SwitchCase: (node) => [***],
-        // SwitchStatement: (node) => [***],
-        // ThisExpression: (node) => [***],
-        // ThrowStatement: (node) => [***],
-        // TryStatement: (node) => [***],
-        // UnaryExpression: (node) => [***],
-        // UpdateExpression: (node) => [***],
-        // VariableDeclarator: (node) => [***],
-        // WhileStatement: (node) => [***],
-        // WithStatement: (node) => [***],
+function transformToStateMachine(prog: types.Program, emit: Emit) {
 
-        // ------------------------- es2015 -------------------------
-        // AssignmentPattern: (node) => [***],
-        // ArrayPattern: (node) => [***],
-        // ArrowFunctionExpression: (node) => [***],
-        // ClassBody: (node) => [***],
-        // ClassDeclaration: (node) => [***],
-        // ClassExpression: (node) => [***],
-        // ExportAllDeclaration: (node) => [***],
-        // ExportDefaultDeclaration: (node) => [***],
-        // ExportNamedDeclaration: (node) => [***],
-        // Declaration: (node) => [***],
-        // ExportSpecifier: (node) => [***],
-        // ForOfStatement: (node) => [***],
-        // ImportDeclaration: (node) => [***],
-        // ImportDefaultSpecifier: (node) => [***],
-        // ImportNamespaceSpecifier: (node) => [***],
-        // ImportSpecifier: (node) => [***],
-        // MetaProperty: (node) => [***],
-        // ClassMethod: (node) => [***],
-        // ObjectPattern: (node) => [***],
-        // SpreadElement: (node) => [***],
-        // Super: (node) => [***],
-        // TaggedTemplateExpression: (node) => [***],
-        // TemplateLiteral: (node) => [***],
-        // TemplateElement: (node) => [***],
-        // YieldExpression: (node) => [***],
 
-        // ------------------------- misc -------------------------
-        // Noop: (node) => [***],
-        // ParenthesizedExpression: (node) => [***],
+    flatten(prog);
 
-        // ------------------------- experimental -------------------------
-        // AwaitExpression: (node) => [***],
-        // BindExpression: (node) => [***],
-        // Decorator: (node) => [***],
-        // DoExpression: (node) => [***],
-        // ExportDefaultSpecifier: (node) => [***],
-        // ExportNamespaceSpecifier: (node) => [***],
-        // RestProperty: (node) => [***],
-        // SpreadProperty: (node) => [***],
-        // ------------------------- end -------------------------
-    });
 
-    while (allocatedRegisters.length > allocatedRegisterCount) {
-        availableRegisters.push(allocatedRegisters.pop());
-    }
+    function flatten(node: Node) {
+        matchNode<void>(node, {
+            // ------------------------- core -------------------------
+            // ArrayExpression: (node) => [***],
+            // AssignmentExpression: (node) => [***],
+            BinaryExpression: (node) => [flatten(node.left), flatten(node.right), emit.binaryOp(node.operator)],
+            // Directive: (node) => [***],
+            // DirectiveLiteral: (node) => [***],
+            // BlockStatement: (node) => [***],
+            // BreakStatement: (node) => [***],
+            Identifier: (node) => emit.push(node),
+            // CallExpression: (node) => [***],
+            // CatchClause: (node) => [***],
+            // ConditionalExpression: (node) => [***],
+            // ContinueStatement: (node) => [***],
+            // DebuggerStatement: (node) => [***],
+            // DoWhileStatement: (node) => [***],
+            // Statement: (node) => [***],
+            // EmptyStatement: (node) => [***],
+            ExpressionStatement: (node) => [flatten(node.expression), emit.pop()],
+            // File: (node) => [***],
+            Program: (node) => node.body.forEach(flatten),
+            // ForInStatement: (node) => [***],
+            // VariableDeclaration: (node) => [***],
+            // ForStatement: (node) => [***],
+            // FunctionDeclaration: (node) => [***],
+            // FunctionExpression: (node) => [***],
+            // IfStatement: (node) => [***],
+            // LabeledStatement: (node) => [***],
+            StringLiteral: (node) => emit.push(node),
+            NumericLiteral: (node) => emit.push(node),
+            NullLiteral: (node) => emit.push(<any> node),
+            BooleanLiteral: (node) => emit.push(node),
+            RegExpLiteral: (node) => emit.push(node),
+            // LogicalExpression: (node) => [***],
+            // MemberExpression: (node) => [***],
+            // NewExpression: (node) => [***],
+            // ObjectExpression: (node) => [***],
+            // ObjectMethod: (node) => [***],
+            // ObjectProperty: (node) => [***],
+            // RestElement: (node) => [***],
+            // ReturnStatement: (node) => [***],
+            // SequenceExpression: (node) => [***],
+            // SwitchCase: (node) => [***],
+            // SwitchStatement: (node) => [***],
+            // ThisExpression: (node) => [***],
+            // ThrowStatement: (node) => [***],
+            // TryStatement: (node) => [***],
+            UnaryExpression: (node) => [flatten(node.argument), emit.unaryOp(node.operator)],
+            // UpdateExpression: (node) => [***],
+            // VariableDeclarator: (node) => [***],
+            // WhileStatement: (node) => [***],
+            // WithStatement: (node) => [***],
 
-    return result;
+            // ------------------------- es2015 -------------------------
+            // AssignmentPattern: (node) => [***],
+            // ArrayPattern: (node) => [***],
+            // ArrowFunctionExpression: (node) => [***],
+            // ClassBody: (node) => [***],
+            // ClassDeclaration: (node) => [***],
+            // ClassExpression: (node) => [***],
+            // ExportAllDeclaration: (node) => [***],
+            // ExportDefaultDeclaration: (node) => [***],
+            // ExportNamedDeclaration: (node) => [***],
+            // Declaration: (node) => [***],
+            // ExportSpecifier: (node) => [***],
+            // ForOfStatement: (node) => [***],
+            // ImportDeclaration: (node) => [***],
+            // ImportDefaultSpecifier: (node) => [***],
+            // ImportNamespaceSpecifier: (node) => [***],
+            // ImportSpecifier: (node) => [***],
+            // MetaProperty: (node) => [***],
+            // ClassMethod: (node) => [***],
+            // ObjectPattern: (node) => [***],
+            // SpreadElement: (node) => [***],
+            // Super: (node) => [***],
+            // TaggedTemplateExpression: (node) => [***],
+            // TemplateLiteral: (node) => [***],
+            // TemplateElement: (node) => [***],
+            // YieldExpression: (node) => [***],
 
-    function allocateRegister(): Identifier {
-        if (availableRegisters.length > 0) return availableRegisters.pop();
-        var newRegister = t.identifier(`ɼ${allocatedRegisters.length + 1}`);
-        allocatedRegisters.push(newRegister);
-        return newRegister;
+            // ------------------------- misc -------------------------
+            // Noop: (node) => [***],
+            // ParenthesizedExpression: (node) => [***],
+
+            // ------------------------- experimental -------------------------
+            // AwaitExpression: (node) => [***],
+            // BindExpression: (node) => [***],
+            // Decorator: (node) => [***],
+            // DoExpression: (node) => [***],
+            // ExportDefaultSpecifier: (node) => [***],
+            // ExportNamespaceSpecifier: (node) => [***],
+            // RestProperty: (node) => [***],
+            // SpreadProperty: (node) => [***],
+            // ------------------------- end -------------------------
+        });
     }
 }
 const availableRegisters: Identifier[] = [];
