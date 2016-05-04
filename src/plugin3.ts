@@ -71,35 +71,54 @@ interface StmtList extends Array<Statement|StmtList> {}
 
 class Emit {
 
+    // [] => []
     label(name: string) {
-        let stmt = t.labeledStatement(t.identifier(name));
+        let stmt = <Statement> template(`label('${name}')`)();
         this.stmts.push(stmt);
         return this;
     }
 
+    // [] => [elem]
     push(expr: Expression) {
         let stmt = <Statement> template(`push(expr)`)({expr});
         this.stmts.push(stmt);
         return this;
     }
 
+    // [elem] => []
     pop() {
         let stmt = <Statement> template(`pop()`)();
         this.stmts.push(stmt);
         return this;
     }
 
+    // [arg] => [result]
     unaryOp(operator: string) {
         let stmt = <Statement> template(`unaryOp('${operator}')`)();
         this.stmts.push(stmt);
         return this;
-    }    
+    }
 
+    // [lhs, rhs] => [result]
     binaryOp(operator: string) {
         let stmt = <Statement> template(`binaryOp('${operator}')`)();
         this.stmts.push(stmt);
         return this;
-    }    
+    }
+
+    // [] => []
+    jump(label: string) {
+        let stmt = <Statement> template(`jump('${label}')`)();
+        this.stmts.push(stmt);
+        return this;
+    }
+
+    // [] => []
+    jumpIf(label: string, truthy: boolean) {
+        let stmt = <Statement> template(`jumpIf('${label}', ${truthy ? 'true' : 'false'})`)();
+        this.stmts.push(stmt);
+        return this;
+    }
 
     compile(): Node {
         return t.program(this.stmts);
@@ -113,72 +132,52 @@ class Emit {
 
 
 function transformToStateMachine(prog: types.Program, emit: Emit) {
+    let visitCounter = 0;
+    visitStmtOrDecl(prog);
 
-
-    flatten(prog);
-
-
-    function flatten(node: Node) {
+    function visitStmtOrDecl(node: Node) {
+        let visit = visitStmtOrDecl;
+        let label = ((i) => (strs) => `${strs[0]}-${i}`)(++visitCounter);
         matchNode<void>(node, {
             // ------------------------- core -------------------------
-            // ArrayExpression: (node) => [***],
-            // AssignmentExpression: (node) => [***],
-            BinaryExpression: (node) => [flatten(node.left), flatten(node.right), emit.binaryOp(node.operator)],
             // Directive: (node) => [***],
             // DirectiveLiteral: (node) => [***],
-            // BlockStatement: (node) => [***],
+            BlockStatement:         (node) => [node.body.forEach(visit)],
             // BreakStatement: (node) => [***],
-            Identifier: (node) => emit.push(node),
-            // CallExpression: (node) => [***],
             // CatchClause: (node) => [***],
-            // ConditionalExpression: (node) => [***],
             // ContinueStatement: (node) => [***],
             // DebuggerStatement: (node) => [***],
             // DoWhileStatement: (node) => [***],
             // Statement: (node) => [***],
             // EmptyStatement: (node) => [***],
-            ExpressionStatement: (node) => [flatten(node.expression), emit.pop()],
-            // File: (node) => [***],
-            Program: (node) => node.body.forEach(flatten),
+            ExpressionStatement:    (node) => [visitRValue(node.expression), emit.pop()],
+            Program:                (node) => [node.body.forEach(visit)],
             // ForInStatement: (node) => [***],
             // VariableDeclaration: (node) => [***],
             // ForStatement: (node) => [***],
             // FunctionDeclaration: (node) => [***],
-            // FunctionExpression: (node) => [***],
-            // IfStatement: (node) => [***],
+            IfStatement:            (node) => [
+                visitRValue(node.test),
+                emit.jumpIf(label`alternate`, false),
+                visit(node.consequent),
+                emit.jump(label`exit`),
+                emit.label(label`alternate`),
+                visit(node.alternate || t.blockStatement([])),
+                emit.label(label`exit`),
+            ],
             // LabeledStatement: (node) => [***],
-            StringLiteral: (node) => emit.push(node),
-            NumericLiteral: (node) => emit.push(node),
-            NullLiteral: (node) => emit.push(<any> node),
-            BooleanLiteral: (node) => emit.push(node),
-            RegExpLiteral: (node) => emit.push(node),
-            // LogicalExpression: (node) => [***],
-            // MemberExpression: (node) => [***],
-            // NewExpression: (node) => [***],
-            // ObjectExpression: (node) => [***],
-            // ObjectMethod: (node) => [***],
-            // ObjectProperty: (node) => [***],
-            // RestElement: (node) => [***],
             // ReturnStatement: (node) => [***],
-            // SequenceExpression: (node) => [***],
             // SwitchCase: (node) => [***],
             // SwitchStatement: (node) => [***],
-            // ThisExpression: (node) => [***],
             // ThrowStatement: (node) => [***],
             // TryStatement: (node) => [***],
-            UnaryExpression: (node) => [flatten(node.argument), emit.unaryOp(node.operator)],
-            // UpdateExpression: (node) => [***],
             // VariableDeclarator: (node) => [***],
             // WhileStatement: (node) => [***],
             // WithStatement: (node) => [***],
 
             // ------------------------- es2015 -------------------------
-            // AssignmentPattern: (node) => [***],
-            // ArrayPattern: (node) => [***],
-            // ArrowFunctionExpression: (node) => [***],
             // ClassBody: (node) => [***],
             // ClassDeclaration: (node) => [***],
-            // ClassExpression: (node) => [***],
             // ExportAllDeclaration: (node) => [***],
             // ExportDefaultDeclaration: (node) => [***],
             // ExportNamedDeclaration: (node) => [***],
@@ -189,9 +188,68 @@ function transformToStateMachine(prog: types.Program, emit: Emit) {
             // ImportDefaultSpecifier: (node) => [***],
             // ImportNamespaceSpecifier: (node) => [***],
             // ImportSpecifier: (node) => [***],
-            // MetaProperty: (node) => [***],
             // ClassMethod: (node) => [***],
+
+            // ------------------------- experimental -------------------------
+            // Decorator: (node) => [***],
+            // ExportDefaultSpecifier: (node) => [***],
+            // ExportNamespaceSpecifier: (node) => [***]
+        });
+    }
+    function visitLValue(node: Node) {
+        let label = ((i) => (strs) => `${strs[0]}-${i}`)(++visitCounter);
+        matchNode<void>(node, {
+            // ------------------------- core -------------------------
+            // Identifier: (node) => [***],
+            // MemberExpression: (node) => [***],
+            // RestElement: (node) => [***],
+            // UpdateExpression: (node) => [***],
+
+            // ------------------------- es2015 -------------------------
+            // AssignmentPattern: (node) => [***],
+            // ArrayPattern: (node) => [***],
             // ObjectPattern: (node) => [***],
+        });
+    }
+    function visitRValue(node: Node) {
+        let visit = visitRValue;
+        let label = ((i) => (strs) => `${strs[0]}-${i}`)(++visitCounter);
+        matchNode<void>(node, {
+            // ------------------------- core -------------------------
+            // ArrayExpression: (node) => [***],
+            // AssignmentExpression: (node) => [***],
+            BinaryExpression:   (node) => [visit(node.left), visit(node.right), emit.binaryOp(node.operator)],
+            Identifier:         (node) => [emit.push(node)],
+            // CallExpression: (node) => [***],
+            // ConditionalExpression: (node) => [***],
+            // FunctionExpression: (node) => [***],
+            StringLiteral:      (node) => [emit.push(node)],
+            NumericLiteral:     (node) => [emit.push(node)],
+            NullLiteral:        (node) => [emit.push(<any> node)],
+            BooleanLiteral:     (node) => [emit.push(node)],
+            RegExpLiteral:      (node) => [emit.push(node)],
+            LogicalExpression:  (node) => [
+                visit(node.left),
+                emit.jumpIf(label`exit`, node.operator === '||'),
+                emit.pop(),
+                visit(node.right),
+                emit.label(label`exit`)
+            ],
+            // MemberExpression: (node) => [***],
+            // NewExpression: (node) => [***],
+            // ObjectExpression: (node) => [***],
+            // ObjectMethod: (node) => [***],
+            // ObjectProperty: (node) => [***],
+            // SequenceExpression: (node) => [***],
+            // ThisExpression: (node) => [***],
+            UnaryExpression:    (node) => [visit(node.argument), emit.unaryOp(node.operator)],
+            // UpdateExpression: (node) => [***],
+
+            // ------------------------- es2015 -------------------------
+            // ArrowFunctionExpression: (node) => [***],
+            // ClassBody: (node) => [***],
+            // ClassExpression: (node) => [***],
+            // ClassMethod: (node) => [***],
             // SpreadElement: (node) => [***],
             // Super: (node) => [***],
             // TaggedTemplateExpression: (node) => [***],
@@ -199,25 +257,11 @@ function transformToStateMachine(prog: types.Program, emit: Emit) {
             // TemplateElement: (node) => [***],
             // YieldExpression: (node) => [***],
 
-            // ------------------------- misc -------------------------
-            // Noop: (node) => [***],
-            // ParenthesizedExpression: (node) => [***],
-
             // ------------------------- experimental -------------------------
-            // AwaitExpression: (node) => [***],
-            // BindExpression: (node) => [***],
-            // Decorator: (node) => [***],
-            // DoExpression: (node) => [***],
-            // ExportDefaultSpecifier: (node) => [***],
-            // ExportNamespaceSpecifier: (node) => [***],
-            // RestProperty: (node) => [***],
-            // SpreadProperty: (node) => [***],
-            // ------------------------- end -------------------------
+            // AwaitExpression: (node) => [***]
         });
     }
 }
-const availableRegisters: Identifier[] = [];
-const allocatedRegisters: Identifier[] = [];
 
 
 
