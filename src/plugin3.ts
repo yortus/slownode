@@ -5,6 +5,9 @@ import {Visitor} from "babel-traverse";
 import * as types from "babel-types";
 
 
+
+
+
 // TODO: doc...
 let t: typeof types;
 let transform: typeof babel.transform;
@@ -299,17 +302,6 @@ function transformToIL(prog: types.Program, il: IL) {
 function assert(test: boolean, msg?: string) {
     if (test) return;
     throw new Error(msg || 'Assertion failed');
-}
-
-// TODO: use lodash (?) when done testing in ASTExplorer.net
-function findLast<T>(arr: T[], pred: (t: T) => boolean): T {
-    return arr[findLastIndex(arr, pred)];
-}
-function findLastIndex<T>(arr: T[], pred: (t: T) => boolean): number {
-    for (let i = arr.length - 1; i >= 0; --i) {
-        if (pred(arr[i])) return i;
-    }
-    return -1;
 }
 
 
