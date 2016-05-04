@@ -209,7 +209,7 @@ function transformToIL(prog: types.Program, il: IL) {
             BinaryExpression:       expr => {
                                         visitExpr(expr.left);
                                         visitExpr(expr.right);
-                                        il.call(`operator${expr.operator}`, 2);
+                                        il.call(`%${expr.operator}%`, 2);
                                     },
             Identifier:             expr => {
                                         il.push(expr.name);
@@ -230,7 +230,11 @@ function transformToIL(prog: types.Program, il: IL) {
             BooleanLiteral:         expr => {
                                         il.push(expr.value);
                                     },
-            //RegExpLiteral: expr => [...],
+            RegExpLiteral:          expr => {
+                                        il.push(expr.pattern);
+                                        il.push(expr.flags || '');
+                                        il.call(`%RegExp%`, 2);
+            },
             LogicalExpression:      expr => {
                                         visitExpr(expr.left);
                                         if (expr.operator === '&&') {
@@ -262,7 +266,7 @@ function transformToIL(prog: types.Program, il: IL) {
             // ThisExpression: expr => [***],
             UnaryExpression:        expr => {
                                         visitExpr(expr.argument);
-                                        il.call(`operator${expr.operator}`, 1);
+                                        il.call(`%${expr.operator}%`, 1);
                                     },
             // UpdateExpression: expr => [***],
 
