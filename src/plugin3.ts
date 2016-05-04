@@ -42,7 +42,7 @@ export default function (b: typeof babel) {
     template = b.template;
 
 
-    let emit = new Emit();
+    let emit = new IL();
 
 
     let done = false; // TODO: temp testing...
@@ -51,7 +51,7 @@ export default function (b: typeof babel) {
             Program(path) {
                 if (done) return;
                 done = true;
-                transformToStateMachine(path.node, emit);
+                transformToIL(path.node, emit);
                 let newNode = emit.compile();
                 path.replaceWith(newNode);
             }
@@ -69,196 +69,171 @@ interface StmtList extends Array<Statement|StmtList> {}
 
 
 
-class Emit {
+class IL {
 
     // [] => []
-    label(name: string) {
-        let stmt = <Statement> template(`label('${name}')`)();
-        this.stmts.push(stmt);
-        return this;
-    }
+    label = (name: string) => this.addLine(`label('${name}')`);
 
     // [] => [elem]
-    push(expr: Expression) {
-        let stmt = <Statement> template(`push(expr)`)({expr});
-        this.stmts.push(stmt);
-        return this;
-    }
+    pushVal = (val: string | number | boolean) => this.addLine(`pushVal(${JSON.stringify(val)})`);
 
     // [elem] => []
-    pop() {
-        let stmt = <Statement> template(`pop()`)();
-        this.stmts.push(stmt);
-        return this;
-    }
+    pop = () => this.addLine(`pop()`);
 
     // [arg] => [result]
-    unaryOp(operator: string) {
-        let stmt = <Statement> template(`unaryOp('${operator}')`)();
-        this.stmts.push(stmt);
-        return this;
-    }
+    unaryOp = (operator: string) => this.addLine(`unaryOp('${operator}')`);
 
     // [lhs, rhs] => [result]
-    binaryOp(operator: string) {
-        let stmt = <Statement> template(`binaryOp('${operator}')`)();
-        this.stmts.push(stmt);
-        return this;
-    }
+    binaryOp = (operator: string) => this.addLine(`binaryOp('${operator}')`);
 
     // [] => []
-    jump(label: string) {
-        let stmt = <Statement> template(`jump('${label}')`)();
-        this.stmts.push(stmt);
-        return this;
-    }
+    jump = (label: string) => this.addLine(`jump('${label}')`);
 
     // [] => []
-    jumpIf(label: string, truthy: boolean) {
-        let stmt = <Statement> template(`jumpIf('${label}', ${truthy ? 'true' : 'false'})`)();
-        this.stmts.push(stmt);
+    jumpIf = (label: string, truthy: boolean) => this.addLine(`jumpIf('${label}', ${truthy ? 'true' : 'false'})`);
+
+    private addLine(line: string) {
+        this.lines.push(line);
         return this;
     }
 
     compile(): Node {
-        return t.program(this.stmts);
+        var source = this.lines.join(';\n');
+        return t.program(<any>template(source)());
     }
 
-    private stmts: Statement[] = [];
+    private lines: string[] = [];
 }
 
 
 
 
 
-function transformToStateMachine(prog: types.Program, emit: Emit) {
+function transformToIL(prog: types.Program, il: IL) {
     let visitCounter = 0;
-    visitStmtOrDecl(prog);
+    visitStmt(prog);
 
-    function visitStmtOrDecl(node: Node) {
-        let visit = visitStmtOrDecl;
+    function visitStmt(stmt: Node) {
         let label = ((i) => (strs) => `${strs[0]}-${i}`)(++visitCounter);
-        matchNode<void>(node, {
+        matchNode<void>(stmt, {
             // ------------------------- core -------------------------
-            // Directive: (node) => [***],
-            // DirectiveLiteral: (node) => [***],
-            BlockStatement:         (node) => [node.body.forEach(visit)],
-            // BreakStatement: (node) => [***],
-            // CatchClause: (node) => [***],
-            // ContinueStatement: (node) => [***],
-            // DebuggerStatement: (node) => [***],
-            // DoWhileStatement: (node) => [***],
-            // Statement: (node) => [***],
-            // EmptyStatement: (node) => [***],
-            ExpressionStatement:    (node) => [visitRValue(node.expression), emit.pop()],
-            Program:                (node) => [node.body.forEach(visit)],
-            // ForInStatement: (node) => [***],
-            // VariableDeclaration: (node) => [***],
-            // ForStatement: (node) => [***],
-            // FunctionDeclaration: (node) => [***],
-            IfStatement:            (node) => [
-                visitRValue(node.test),
-                emit.jumpIf(label`alternate`, false),
-                visit(node.consequent),
-                emit.jump(label`exit`),
-                emit.label(label`alternate`),
-                visit(node.alternate || t.blockStatement([])),
-                emit.label(label`exit`),
+            // Directive: (stmt) => [***],
+            // DirectiveLiteral: (stmt) => [***],
+            BlockStatement:         (stmt) => [stmt.body.forEach(visitStmt)],
+            // BreakStatement: (stmt) => [***],
+            // CatchClause: (stmt) => [***],
+            // ContinueStatement: (stmt) => [***],
+            // DebuggerStatement: (stmt) => [***],
+            // DoWhileStatement: (stmt) => [***],
+            // Statement: (stmt) => [***],
+            // EmptyStatement: (stmt) => [***],
+            ExpressionStatement:    (stmt) => [visitExpr(stmt.expression), il.pop()],
+            Program:                (stmt) => [stmt.body.forEach(visitStmt)],
+            // ForInStatement: (stmt) => [***],
+            // VariableDeclaration: (stmt) => [***],
+            // ForStatement: (stmt) => [***],
+            // FunctionDeclaration: (stmt) => [***],
+            IfStatement:            (stmt) => [
+                visitExpr(stmt.test),
+                il.jumpIf(label`alternate`, false),
+                visitStmt(stmt.consequent),
+                il.jump(label`exit`),
+                il.label(label`alternate`),
+                visitStmt(stmt.alternate || t.blockStatement([])),
+                il.label(label`exit`),
             ],
-            // LabeledStatement: (node) => [***],
-            // ReturnStatement: (node) => [***],
-            // SwitchCase: (node) => [***],
-            // SwitchStatement: (node) => [***],
-            // ThrowStatement: (node) => [***],
-            // TryStatement: (node) => [***],
-            // VariableDeclarator: (node) => [***],
-            // WhileStatement: (node) => [***],
-            // WithStatement: (node) => [***],
+            // LabeledStatement: (stmt) => [***],
+            // ReturnStatement: (stmt) => [***],
+            // SwitchCase: (stmt) => [***],
+            // SwitchStatement: (stmt) => [***],
+            // ThrowStatement: (stmt) => [***],
+            // TryStatement: (stmt) => [***],
+            // VariableDeclarator: (stmt) => [***],
+            // WhileStatement: (stmt) => [***],
+            // WithStatement: (stmt) => [***],
 
             // ------------------------- es2015 -------------------------
-            // ClassBody: (node) => [***],
-            // ClassDeclaration: (node) => [***],
-            // ExportAllDeclaration: (node) => [***],
-            // ExportDefaultDeclaration: (node) => [***],
-            // ExportNamedDeclaration: (node) => [***],
-            // Declaration: (node) => [***],
-            // ExportSpecifier: (node) => [***],
-            // ForOfStatement: (node) => [***],
-            // ImportDeclaration: (node) => [***],
-            // ImportDefaultSpecifier: (node) => [***],
-            // ImportNamespaceSpecifier: (node) => [***],
-            // ImportSpecifier: (node) => [***],
-            // ClassMethod: (node) => [***],
+            // ClassBody: (stmt) => [***],
+            // ClassDeclaration: (stmt) => [***],
+            // ExportAllDeclaration: (stmt) => [***],
+            // ExportDefaultDeclaration: (stmt) => [***],
+            // ExportNamedDeclaration: (stmt) => [***],
+            // Declaration: (stmt) => [***],
+            // ExportSpecifier: (stmt) => [***],
+            // ForOfStatement: (stmt) => [***],
+            // ImportDeclaration: (stmt) => [***],
+            // ImportDefaultSpecifier: (stmt) => [***],
+            // ImportNamespaceSpecifier: (stmt) => [***],
+            // ImportSpecifier: (stmt) => [***],
+            // ClassMethod: (stmt) => [***],
 
             // ------------------------- experimental -------------------------
-            // Decorator: (node) => [***],
-            // ExportDefaultSpecifier: (node) => [***],
-            // ExportNamespaceSpecifier: (node) => [***]
+            // Decorator: (stmt) => [***],
+            // ExportDefaultSpecifier: (stmt) => [***],
+            // ExportNamespaceSpecifier: (stmt) => [***]
         });
     }
-    function visitLValue(node: Node) {
+    function visitExpr(expr: Expression) {
         let label = ((i) => (strs) => `${strs[0]}-${i}`)(++visitCounter);
-        matchNode<void>(node, {
+        matchNode<void>(expr, {
             // ------------------------- core -------------------------
-            // Identifier: (node) => [***],
-            // MemberExpression: (node) => [***],
-            // RestElement: (node) => [***],
-            // UpdateExpression: (node) => [***],
-
-            // ------------------------- es2015 -------------------------
-            // AssignmentPattern: (node) => [***],
-            // ArrayPattern: (node) => [***],
-            // ObjectPattern: (node) => [***],
-        });
-    }
-    function visitRValue(node: Node) {
-        let visit = visitRValue;
-        let label = ((i) => (strs) => `${strs[0]}-${i}`)(++visitCounter);
-        matchNode<void>(node, {
-            // ------------------------- core -------------------------
-            // ArrayExpression: (node) => [***],
-            // AssignmentExpression: (node) => [***],
-            BinaryExpression:   (node) => [visit(node.left), visit(node.right), emit.binaryOp(node.operator)],
-            Identifier:         (node) => [emit.push(node)],
-            // CallExpression: (node) => [***],
-            // ConditionalExpression: (node) => [***],
-            // FunctionExpression: (node) => [***],
-            StringLiteral:      (node) => [emit.push(node)],
-            NumericLiteral:     (node) => [emit.push(node)],
-            NullLiteral:        (node) => [emit.push(<any> node)],
-            BooleanLiteral:     (node) => [emit.push(node)],
-            RegExpLiteral:      (node) => [emit.push(node)],
-            LogicalExpression:  (node) => [
-                visit(node.left),
-                emit.jumpIf(label`exit`, node.operator === '||'),
-                emit.pop(),
-                visit(node.right),
-                emit.label(label`exit`)
+            // ArrayExpression: (expr) => [***],
+            // AssignmentExpression: (expr) => [***],
+            BinaryExpression:   (expr) => [visitExpr(expr.left), visitExpr(expr.right), il.binaryOp(expr.operator)],
+            //Identifier:         (expr) => [il.push(expr)],
+            // CallExpression: (expr) => [***],
+            // ConditionalExpression: (expr) => [***],
+            // FunctionExpression: (expr) => [***],
+            StringLiteral:      (expr) => [il.pushVal(expr.value)],
+            NumericLiteral:     (expr) => [il.pushVal(expr.value)],
+            NullLiteral:        (expr) => [il.pushVal(null)],
+            BooleanLiteral:     (expr) => [il.pushVal(expr.value)],
+            //RegExpLiteral:      (expr) => [il.push(expr)],
+            LogicalExpression:  (expr) => [
+                visitExpr(expr.left),
+                il.jumpIf(label`exit`, expr.operator === '||'),
+                il.pop(),
+                visitExpr(expr.right),
+                il.label(label`exit`)
             ],
-            // MemberExpression: (node) => [***],
-            // NewExpression: (node) => [***],
-            // ObjectExpression: (node) => [***],
-            // ObjectMethod: (node) => [***],
-            // ObjectProperty: (node) => [***],
-            // SequenceExpression: (node) => [***],
-            // ThisExpression: (node) => [***],
-            UnaryExpression:    (node) => [visit(node.argument), emit.unaryOp(node.operator)],
-            // UpdateExpression: (node) => [***],
+            // MemberExpression: (expr) => [***],
+            // NewExpression: (expr) => [***],
+            // ObjectExpression: (expr) => [***],
+            // ObjectMethod: (expr) => [***],
+            // ObjectProperty: (expr) => [***],
+            // SequenceExpression: (expr) => [***],
+            // ThisExpression: (expr) => [***],
+            UnaryExpression:    (expr) => [visitExpr(expr.argument), il.unaryOp(expr.operator)],
+            // UpdateExpression: (expr) => [***],
 
             // ------------------------- es2015 -------------------------
-            // ArrowFunctionExpression: (node) => [***],
-            // ClassBody: (node) => [***],
-            // ClassExpression: (node) => [***],
-            // ClassMethod: (node) => [***],
-            // SpreadElement: (node) => [***],
-            // Super: (node) => [***],
-            // TaggedTemplateExpression: (node) => [***],
-            // TemplateLiteral: (node) => [***],
-            // TemplateElement: (node) => [***],
-            // YieldExpression: (node) => [***],
+            // ArrowFunctionExpression: (expr) => [***],
+            // ClassBody: (expr) => [***],
+            // ClassExpression: (expr) => [***],
+            // ClassMethod: (expr) => [***],
+            // SpreadElement: (expr) => [***],
+            // Super: (expr) => [***],
+            // TaggedTemplateExpression: (expr) => [***],
+            // TemplateLiteral: (expr) => [***],
+            // TemplateElement: (expr) => [***],
+            // YieldExpression: (expr) => [***],
 
             // ------------------------- experimental -------------------------
-            // AwaitExpression: (node) => [***]
+            // AwaitExpression: (expr) => [***]
+        });
+    }
+    function visitLVal(expr: Node) {
+        let label = ((i) => (strs) => `${strs[0]}-${i}`)(++visitCounter);
+        matchNode<void>(expr, {
+            // ------------------------- core -------------------------
+            // Identifier: (expr) => [],
+            // MemberExpression: (expr) => [***],
+            // RestElement: (expr) => [***],
+
+            // ------------------------- es2015 -------------------------
+            // AssignmentPattern: (expr) => [***],
+            // ArrayPattern: (expr) => [***],
+            // ObjectPattern: (expr) => [***],
         });
     }
 }
