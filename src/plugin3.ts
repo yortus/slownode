@@ -239,9 +239,14 @@ function transformToIL(prog: types.Program, il: IL) {
                                         il.label(label`exit`);
                                     },
             MemberExpression:       expr => {
-                                        assert(t.isIdentifier(expr.property) && !expr.computed); // TODO: relax this restriction...
                                         visitExpr(expr.object);
-                                        il.push((<Identifier> expr.property).name);
+                                        if (expr.computed) {
+                                            visitExpr(expr.property);
+                                        }
+                                        else {
+                                            assert(t.isIdentifier(expr.property));
+                                            il.push((<Identifier> expr.property).name);
+                                        }
                                         il.getProp();
                                     },
             // NewExpression: expr => [***],
@@ -276,14 +281,19 @@ function transformToIL(prog: types.Program, il: IL) {
         let label = ((i) => (strs) => `${strs[0]}-${i}`)(++visitCounter);
         matchNode<void>(expr, {
             // ------------------------- core -------------------------
-            Identifier:         expr => {
-                                    il.push(expr.name);
-                                },
-            MemberExpression:   expr => {
-                                    assert(t.isIdentifier(expr.property) && !expr.computed); // TODO: relax this restriction...
-                                    visitExpr(expr.object);
-                                    il.push((<Identifier> expr.property).name);
-                                },
+            Identifier:             expr => {
+                                        il.push(expr.name);
+                                    },
+            MemberExpression:       expr => {
+                                        visitExpr(expr.object);
+                                        if (expr.computed) {
+                                            visitExpr(expr.property);
+                                        }
+                                        else {
+                                            assert(t.isIdentifier(expr.property));
+                                            il.push((<Identifier> expr.property).name);
+                                        }
+                                    },
             // RestElement: expr => [***],
 
             // ------------------------- es2015 -------------------------
