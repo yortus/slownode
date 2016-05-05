@@ -70,51 +70,43 @@ interface StmtList extends Array<Statement|StmtList> {}
 
 
 
+/**
+ * OPCODE       PRE-STACK           POST-STACK
+ * call         [...args]           [result]
+ * get          [name]              [val]
+ * getProp      [obj, prop]         [val]
+ * jump         []                  []
+ * jumpIfFalsy  []                  []
+ * jumpIfTruthy []                  []
+ * label        []                  []
+ * pop          [elem]              []
+ * push         []                  [elem]
+ * set          [name, val]         [val]
+ * setProp      [obj, prop, val]    [val]
+ */
 
 
 class IL {
-
-    // [] => []
-    label = (name: string) => this.addLine(`label('${name}')`);
-
-    // [] => [elem]
-    push = (val: string | number | boolean) => this.addLine(`push(${JSON.stringify(val)})`);
-
-    // [elem] => []
-    pop = () => this.addLine(`pop()`);
-
-    // [name] => [val]
-    get = () => this.addLine(`get()`);
-
-    // [obj, prop] => [val]
-    getProp = () => this.addLine(`getProp()`);
-
-    // [name, val] => [val]
-    set = () => this.addLine(`set()`);
-
-    // [obj, prop, val] => [val]
-    setProp = () => this.addLine(`setProp()`);
-
-    // [] => []
-    jump = (label: string) => this.addLine(`jump('${label}')`);
-
-    // [] => []
-    jumpIfTruthy = (label: string) => this.addLine(`jumpIfTruthy('${label}')`);
-
-    // [] => []
-    jumpIfFalsy = (label: string) => this.addLine(`jumpIfFalsy('${label}')`);
-
-    // [...args] => [result]
-    call = (funcName: string, argCount: number) => this.addLine(`call('${funcName}', ${argCount})`);
-
-    private addLine(line: string) {
-        this.lines.push(line);
-        return this;
-    }
+    get             = () => this.addLine(`get()`);
+    getProp         = () => this.addLine(`getProp()`);
+    jump            = (label: string) => this.addLine(`jump('${label}')`);
+    jumpIfTruthy    = (label: string) => this.addLine(`jumpIfTruthy('${label}')`);
+    jumpIfFalsy     = (label: string) => this.addLine(`jumpIfFalsy('${label}')`);
+    label           = (name: string) => this.addLine(`label('${name}')`);
+    pop             = () => this.addLine(`pop()`);
+    push            = (val: string | number | boolean) => this.addLine(`push(${JSON.stringify(val)})`);
+    set             = () => this.addLine(`set()`);
+    setProp         = () => this.addLine(`setProp()`);
+    call            = (funcName: string, argCount: number) => this.addLine(`call('${funcName}', ${argCount})`);
 
     compile(): Node {
         var source = this.lines.join(';\n');
         return t.program(<any>template(source)());
+    }
+
+    private addLine(line: string) {
+        this.lines.push(line);
+        return this;
     }
 
     private lines: string[] = [];
@@ -132,17 +124,17 @@ function transformToIL(prog: types.Program, il: IL) {
         let label = ((i) => (strs) => `${strs[0]}-${i}`)(++visitCounter);
         matchNode<void>(stmt, {
             // ------------------------- core -------------------------
-            // Directive: stmt => [***],
-            // DirectiveLiteral: stmt => [***],
+            // Directive:           stmt => [***],
+            // DirectiveLiteral:    stmt => [***],
             BlockStatement:         stmt => {
                                         stmt.body.forEach(visitStmt);
                                     },
-            // BreakStatement: stmt => [***],
-            // CatchClause: stmt => [***],
-            // ContinueStatement: stmt => [***],
-            // DebuggerStatement: stmt => [***],
-            // DoWhileStatement: stmt => [***],
-            // Statement: stmt => [***],
+            // BreakStatement:      stmt => [***],
+            // CatchClause:         stmt => [***],
+            // ContinueStatement:   stmt => [***],
+            // DebuggerStatement:   stmt => [***],
+            // DoWhileStatement:    stmt => [***],
+            // Statement:           stmt => [***],
             EmptyStatement:         stmt => {},
             ExpressionStatement:    stmt => {
                                         visitExpr(stmt.expression);
@@ -151,9 +143,9 @@ function transformToIL(prog: types.Program, il: IL) {
             Program:                stmt => {
                                         stmt.body.forEach(visitStmt);
                                     },
-            // ForInStatement: stmt => [***],
+            // ForInStatement:      stmt => [***],
             // VariableDeclaration: stmt => [***],
-            // ForStatement: stmt => [***],
+            // ForStatement:        stmt => [***],
             // FunctionDeclaration: stmt => [***],
             IfStatement:            stmt => {
                                         visitExpr(stmt.test);
@@ -164,33 +156,33 @@ function transformToIL(prog: types.Program, il: IL) {
                                         visitStmt(stmt.alternate || t.blockStatement([]));
                                         il.label(label`exit`);
                                     },
-            // LabeledStatement: stmt => [***],
-            // ReturnStatement: stmt => [***],
-            // SwitchCase: stmt => [***],
-            // SwitchStatement: stmt => [***],
-            // ThrowStatement: stmt => [***],
-            // TryStatement: stmt => [***],
-            // VariableDeclarator: stmt => [***],
-            // WhileStatement: stmt => [***],
-            // WithStatement: stmt => [***],
+            // LabeledStatement:    stmt => [***],
+            // ReturnStatement:     stmt => [***],
+            // SwitchCase:          stmt => [***],
+            // SwitchStatement:     stmt => [***],
+            // ThrowStatement:      stmt => [***],
+            // TryStatement:        stmt => [***],
+            // VariableDeclarator:  stmt => [***],
+            // WhileStatement:      stmt => [***],
+            // WithStatement:       stmt => [***],
 
             // ------------------------- es2015 -------------------------
-            // ClassBody: stmt => [***],
-            // ClassDeclaration: stmt => [***],
+            // ClassBody:           stmt => [***],
+            // ClassDeclaration:    stmt => [***],
             // ExportAllDeclaration: stmt => [***],
             // ExportDefaultDeclaration: stmt => [***],
             // ExportNamedDeclaration: stmt => [***],
-            // Declaration: stmt => [***],
-            // ExportSpecifier: stmt => [***],
-            // ForOfStatement: stmt => [***],
-            // ImportDeclaration: stmt => [***],
+            // Declaration:         stmt => [***],
+            // ExportSpecifier:     stmt => [***],
+            // ForOfStatement:      stmt => [***],
+            // ImportDeclaration:   stmt => [***],
             // ImportDefaultSpecifier: stmt => [***],
             // ImportNamespaceSpecifier: stmt => [***],
-            // ImportSpecifier: stmt => [***],
-            // ClassMethod: stmt => [***],
+            // ImportSpecifier:     stmt => [***],
+            // ClassMethod:         stmt => [***],
 
             // ------------------------- experimental -------------------------
-            // Decorator: stmt => [***],
+            // Decorator:           stmt => [***],
             // ExportDefaultSpecifier: stmt => [***],
             // ExportNamespaceSpecifier: stmt => [***]
         });
@@ -199,7 +191,7 @@ function transformToIL(prog: types.Program, il: IL) {
         let label = ((i) => (strs) => `${strs[0]}-${i}`)(++visitCounter);
         matchNode<void>(expr, {
             // ------------------------- core -------------------------
-            // ArrayExpression: expr => [***],
+            // ArrayExpression:     expr => [***],
             AssignmentExpression:   expr => {
                                         assert(t.isIdentifier(expr.left) || t.isMemberExpression(expr.left)); // TODO: loosen up later...
                                         visitLVal(expr.left);
@@ -215,9 +207,9 @@ function transformToIL(prog: types.Program, il: IL) {
                                         il.push(expr.name);
                                         il.get();
                                     },
-            // CallExpression: expr => [***],
+            // CallExpression:      expr => [***],
             // ConditionalExpression: expr => [***],
-            // FunctionExpression: expr => [***],
+            // FunctionExpression:  expr => [***],
             StringLiteral:          expr => {
                                         il.push(expr.value);
                                     },
@@ -258,32 +250,32 @@ function transformToIL(prog: types.Program, il: IL) {
                                         }
                                         il.getProp();
                                     },
-            // NewExpression: expr => [***],
-            // ObjectExpression: expr => [***],
-            // ObjectMethod: expr => [***],
-            // ObjectProperty: expr => [***],
-            // SequenceExpression: expr => [***],
-            // ThisExpression: expr => [***],
+            // NewExpression:       expr => [***],
+            // ObjectExpression:    expr => [***],
+            // ObjectMethod:        expr => [***],
+            // ObjectProperty:      expr => [***],
+            // SequenceExpression:  expr => [***],
+            // ThisExpression:      expr => [***],
             UnaryExpression:        expr => {
                                         visitExpr(expr.argument);
                                         il.call(`%${expr.operator}%`, 1);
                                     },
-            // UpdateExpression: expr => [***],
+            // UpdateExpression:    expr => [***],
 
             // ------------------------- es2015 -------------------------
             // ArrowFunctionExpression: expr => [***],
-            // ClassBody: expr => [***],
-            // ClassExpression: expr => [***],
-            // ClassMethod: expr => [***],
-            // SpreadElement: expr => [***],
-            // Super: expr => [***],
+            // ClassBody:           expr => [***],
+            // ClassExpression:     expr => [***],
+            // ClassMethod:         expr => [***],
+            // SpreadElement:       expr => [***],
+            // Super:               expr => [***],
             // TaggedTemplateExpression: expr => [***],
-            // TemplateLiteral: expr => [***],
-            // TemplateElement: expr => [***],
-            // YieldExpression: expr => [***],
+            // TemplateLiteral:     expr => [***],
+            // TemplateElement:     expr => [***],
+            // YieldExpression:     expr => [***],
 
             // ------------------------- experimental -------------------------
-            // AwaitExpression: expr => [***]
+            // AwaitExpression:     expr => [***]
         });
     }
     function visitLVal(expr: Node) {
@@ -303,12 +295,12 @@ function transformToIL(prog: types.Program, il: IL) {
                                             il.push((<Identifier> expr.property).name);
                                         }
                                     },
-            // RestElement: expr => [***],
+            // RestElement:         expr => [***],
 
             // ------------------------- es2015 -------------------------
-            // AssignmentPattern: expr => [***],
-            // ArrayPattern: expr => [***],
-            // ObjectPattern: expr => [***],
+            // AssignmentPattern:   expr => [***],
+            // ArrayPattern:        expr => [***],
+            // ObjectPattern:       expr => [***],
         });
     }
 }
