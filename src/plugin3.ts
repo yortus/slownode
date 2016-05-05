@@ -1,7 +1,7 @@
 // TODO: doc... elided (types only)...
 import * as babel from 'babel-core';
 import {Node, Statement, Expression, Identifier, ObjectProperty} from "babel-types";
-import {Visitor} from "babel-traverse";
+import {Visitor, Binding as BabelBinding} from "babel-traverse";
 import * as types from "babel-types";
 
 
@@ -48,15 +48,39 @@ export default function (b: typeof babel) {
     let emit = new IL();
 
 
+    let scopes = new WeakMap<Node, BabelBinding[]>();
     let done = false; // TODO: temp testing...
     return {
         visitor: <Visitor> {
-            Program(path) {
-                if (done) return;
-                done = true;
-                transformToIL(path.node, emit);
-                let newNode = emit.compile();
-                path.replaceWith(newNode);
+
+            // Collect info for all block-scopes that have their own bindings.
+            // TODO: What introduces a new name?
+            // - var decl (var, let, const)
+            // - func decl (hoisted)
+            // - class decl (not hoisted)
+            // - import decl (hoisted)
+            // - func expr. scope of name is only *inside* the func body
+            // - class expr. scope of name is only *inside* the class body
+            // - catch clause. scope of name is only the catch clause body
+            Block(path) {
+                assert(path.scope.block === path.node);
+                //if (path.scope.block === path.node) {
+                let bindings = path.scope.bindings;
+                let bindingNames = Object.keys(bindings);
+                if (bindingNames.length === 0) return;
+                scopes.set(path.node, bindingNames.map(name => bindings[name]));
+                //}
+            },
+
+            // Transform the program.
+            Program: {
+                exit(path) {
+                    if (done) return;
+                    done = true;
+                    transformToIL(path.node, scopes, emit);
+                    let newNode = emit.compile();
+                    path.replaceWith(newNode);
+                }
             }
         }
     };
@@ -67,6 +91,8 @@ export default function (b: typeof babel) {
 
 
 interface StmtList extends Array<Statement|StmtList> {}
+
+
 
 
 
@@ -85,8 +111,6 @@ interface StmtList extends Array<Statement|StmtList> {}
  * set          [name, val]         [val]
  * setProp      [obj, prop, val]    [val]
  */
-
-
 class IL {
     call            = (funcName: string, argCount: number) => this.addLine(`call('${funcName}', ${argCount})`);
     callIndirect    = (argCount: number) => this.addLine(`callIndirect(${argCount})`);
@@ -118,11 +142,18 @@ class IL {
 
 
 
-function transformToIL(prog: types.Program, il: IL) {
+function transformToIL(prog: types.Program, scopes: WeakMap<Node, BabelBinding[]>, il: IL) {
     let visitCounter = 0;
     visitStmt(prog);
 
     function visitStmt(stmt: Node) {
+
+        // TODO: temp testing...
+        if (scopes.has(stmt)) {
+            let names = scopes.get(stmt).map(b => b.identifier.name);
+            il.call(`%enterScope-${names.join('-')}%`, 0);
+        }
+        
         let label = ((i) => (strs) => `${strs[0]}-${i}`)(++visitCounter);
         matchNode<void>(stmt, {
             // ------------------------- core -------------------------
@@ -146,7 +177,10 @@ function transformToIL(prog: types.Program, il: IL) {
                                         stmt.body.forEach(visitStmt);
                                     },
             // ForInStatement:      stmt => [***],
-            // VariableDeclaration: stmt => [***],
+            VariableDeclaration:    stmt => {
+                                        // TODO: handle initialisers (if present)...
+                                        // nothing else to do...
+                                    },
             // ForStatement:        stmt => [***],
             // FunctionDeclaration: stmt => [***],
             IfStatement:            stmt => {
@@ -188,6 +222,11 @@ function transformToIL(prog: types.Program, il: IL) {
             // ExportDefaultSpecifier: stmt => [***],
             // ExportNamespaceSpecifier: stmt => [***]
         });
+
+        // TODO: temp testing...
+        if (scopes.has(stmt)) {
+            il.call(`%leaveScope%`, 0);
+        }
     }
     function visitExpr(expr: Expression) {
         let label = ((i) => (strs) => `${strs[0]}-${i}`)(++visitCounter);
