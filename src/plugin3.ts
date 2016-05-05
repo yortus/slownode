@@ -67,7 +67,6 @@ export default function (b: typeof babel) {
                 //if (path.scope.block === path.node) {
                 let bindings = path.scope.bindings;
                 let bindingNames = Object.keys(bindings);
-                if (bindingNames.length === 0) return;
                 scopes.set(path.node, bindingNames.map(name => bindings[name]));
                 //}
             },
@@ -130,11 +129,58 @@ class IL {
     set             = () => this.addLine(`set()`);
     setin           = () => this.addLine(`setin()`);
 
+    enterScope(bindings: any) { // TODO: handle bindings
+        let scope = this.scopes[this.scopes.length - 1].addChild();
+        this.scopes.push(scope);
+        scope.start = this.lines.length;
+        this.maxDepth = Math.max(this.maxDepth, scope.depth);
+    }
+
+    leaveScope() {
+        let scope = this.scopes[this.scopes.length - 1];
+        scope.count = this.lines.length - scope.start;
+        this.scopes.pop();
+    }
+
     compile(): Node {
+
+        assert(this.scopes.length === 1 && this.scopes[0].children.length === 1);
+        let rootScope = this.scopes[0].children[0];
+
+        let maxDepth = this.maxDepth;
+        let draw = this.lines.map(() => ' '.repeat(maxDepth * 2));
+        traverseScope(rootScope);
+
+        function traverseScope(scope: Scope) {
+            let first = scope.start;
+            let last = scope.start + scope.count - 1;
+            let col = (maxDepth - scope.depth) * 2 + 1;
+            // for (let i = first; i <= last; ++i) {
+            //     draw[i] += ' '.repeat(Math.max(0, scope.depth * 2 - draw[i].length));
+            // }
+            if (scope.count <= 1) {
+                draw[first] = draw[first].slice(0, col) + ']' + draw[first].slice(col + 1);
+            }
+            else {
+                draw[first] = draw[first].slice(0, col) + '┐' + draw[first].slice(col + 1);
+                for (let i = first + 1; i < last; ++i) {
+                    draw[i] = draw[i].slice(0, col) + '|' + draw[i].slice(col + 1);
+                }
+                draw[last] = draw[last].slice(0, col) + '┘' + draw[last].slice(col + 1);
+            }
+            scope.children.forEach(traverseScope);
+        }
+
+
+        
         let source = this.lines.join('\n');
         source = source.replace(/ꬹ[^\r\n]+ꬹ/g, (substr) => {
             return`${this.labels[substr.slice(1, -1)]}`;
         });
+        source = source
+            .split('\n')
+            .map((line, i) => `${line}${' '.repeat(Math.max(0, 60 - line.length))}${draw[i]}`)
+            .join('\n');
         source = `var program = \`\nswitch (pc) {\n${source}\n}\n\``;
         return t.program([<any>template(source)()]);
     }
@@ -152,6 +198,30 @@ class IL {
     private lines: string[] = [];
 
     private labels: {[name: string]: number} = {};
+
+    private scopes = [new Scope()];
+
+    private maxDepth = 0;
+}
+
+
+
+
+
+class Scope {
+    start = 0;
+    count = 0;
+    depth = 0;
+    parent = <Scope> null;
+    children = <Scope[]> [];
+
+    addChild() {
+        let child = new Scope();
+        child.depth = this.depth + 1;
+        child.parent = this;
+        this.children.push(child);
+        return child;
+    }
 }
 
 
@@ -166,8 +236,7 @@ function transformToIL(prog: types.Program, scopes: WeakMap<Node, BabelBinding[]
 
         // TODO: temp testing...
         if (scopes.has(stmt)) {
-            let names = scopes.get(stmt).map(b => b.identifier.name);
-            il.calli0(`%enterScope-${names.join('-')}%`);
+            il.enterScope(scopes.get(stmt));
         }
         
         let label = ((i) => (strs) => `${strs[0]}-${i}`)(++visitCounter);
@@ -241,7 +310,7 @@ function transformToIL(prog: types.Program, scopes: WeakMap<Node, BabelBinding[]
 
         // TODO: temp testing...
         if (scopes.has(stmt)) {
-            il.calli0(`%leaveScope%`);
+            il.leaveScope();
         }
     }
     function visitExpr(expr: Expression) {
