@@ -116,26 +116,38 @@ class IL {
     callIndirect    = (argCount: number) => this.addLine(`callIndirect(${argCount})`);
     get             = () => this.addLine(`get()`);
     getProp         = () => this.addLine(`getProp()`);
-    jump            = (label: string) => this.addLine(`jump('${label}')`);
-    jumpIfTruthy    = (label: string) => this.addLine(`jumpIfTruthy('${label}')`);
-    jumpIfFalsy     = (label: string) => this.addLine(`jumpIfFalsy('${label}')`);
-    label           = (name: string) => this.addLine(`label('${name}')`);
+    jump            = (label: string) => this.addLine(`jump(ꬹ${label}ꬹ)`);
+    jumpIfTruthy    = (label: string) => this.addLine(`jumpIfTruthy(ꬹ${label}ꬹ)`);
+    jumpIfFalsy     = (label: string) => this.addLine(`jumpIfFalsy(ꬹ${label}ꬹ)`);
+    label           = (name: string) => this.addLabel(name);
     pop             = () => this.addLine(`pop()`);
     push            = (val: string | number | boolean) => this.addLine(`push(${JSON.stringify(val)})`);
     set             = () => this.addLine(`set()`);
     setProp         = () => this.addLine(`setProp()`);
 
     compile(): Node {
-        var source = this.lines.join(';\n');
-        return t.program(<any>template(source)());
+        let source = this.lines.join('\n');
+        Object.keys(this.labels).forEach(label => {
+            let re = /ꬹ[^\r\n]+ꬹ/g;
+            source = source.replace(re, `${this.labels[label]}`);
+        });
+        source = `var program = \`\nswitch (pc) {\n${source}\n}\n\``;
+        return t.program([<any>template(source)()]);
     }
 
     private addLine(line: string) {
+        line = `    case ${`${this.lines.length}:   `.slice(0, 5)}  ${line};`;
         this.lines.push(line);
         return this;
     }
 
+    private addLabel(name: string) {
+        this.labels[name] = this.lines.length;
+    }
+
     private lines: string[] = [];
+
+    private labels: {[name: string]: number} = {};
 }
 
 
