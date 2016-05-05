@@ -97,33 +97,38 @@ interface StmtList extends Array<Statement|StmtList> {}
 
 
 /**
- * OPCODE       PRE-STACK           POST-STACK
- * call         [...args]           [result]
- * callIndirect [funcName, ...args] [result]
- * get          [name]              [val]
- * getProp      [obj, prop]         [val]
- * jump         []                  []
- * jumpIfFalsy  []                  []
- * jumpIfTruthy []                  []
- * label        []                  []
- * pop          [elem]              []
- * push         []                  [elem]
- * set          [name, val]         [val]
- * setProp      [obj, prop, val]    [val]
+ * OPCODE           STACK
+ * call(arglen)     ( a0 .. an fn -- result )
+ * calli0(name)     ( -- result )
+ * calli1(name)     ( a0 -- result )
+ * calli2(name)     ( a0 a1 -- result )
+ * get              ( name -- val)
+ * getin            ( obj name -- val)
+ * br(line)         ( -- )
+ * bf(line)         ( -- )
+ * bt(line)         ( -- )
+ * label(name)      ( -- )
+ * pop()            ( a -- )
+ * push(val)        ( -- val)
+ * set()            ( name val -- val)
+ * setin()          ( obj name val -- val)
  */
 class IL {
-    call            = (funcName: string, argCount: number) => this.addLine(`call('${funcName}', ${argCount})`);
-    callIndirect    = (argCount: number) => this.addLine(`callIndirect(${argCount})`);
+    call            = (arglen: number) => this.addLine(`call(${arglen})`);
+    calli0          = (name: string) => this.addLine(`calli0('${name}')`);
+    calli1          = (name: string) => this.addLine(`calli1('${name}')`);
+    calli2          = (name: string) => this.addLine(`calli2('${name}')`);
     get             = () => this.addLine(`get()`);
-    getProp         = () => this.addLine(`getProp()`);
-    jump            = (label: string) => this.addLine(`jump(ꬹ${label}ꬹ)`);
-    jumpIfTruthy    = (label: string) => this.addLine(`jumpIfTruthy(ꬹ${label}ꬹ)`);
-    jumpIfFalsy     = (label: string) => this.addLine(`jumpIfFalsy(ꬹ${label}ꬹ)`);
+    getin           = () => this.addLine(`getin()`);
+    br              = (label: string) => this.addLine(`br(ꬹ${label}ꬹ)`); // TODO: weird symbol can still clash with user string. fix...
+    bf              = (label: string) => this.addLine(`bf(ꬹ${label}ꬹ)`);
+    bt              = (label: string) => this.addLine(`bt(ꬹ${label}ꬹ)`);
     label           = (name: string) => this.addLabel(name);
     pop             = () => this.addLine(`pop()`);
     push            = (val: string | number | boolean) => this.addLine(`push(${JSON.stringify(val)})`);
+    roll            = (count: number) => count > 1 ? this.addLine(`roll(${count})`) : null;
     set             = () => this.addLine(`set()`);
-    setProp         = () => this.addLine(`setProp()`);
+    setin           = () => this.addLine(`setin()`);
 
     compile(): Node {
         let source = this.lines.join('\n');
@@ -163,7 +168,7 @@ function transformToIL(prog: types.Program, scopes: WeakMap<Node, BabelBinding[]
         // TODO: temp testing...
         if (scopes.has(stmt)) {
             let names = scopes.get(stmt).map(b => b.identifier.name);
-            il.call(`%enterScope-${names.join('-')}%`, 0);
+            il.calli0(`%enterScope-${names.join('-')}%`);
         }
         
         let label = ((i) => (strs) => `${strs[0]}-${i}`)(++visitCounter);
@@ -197,9 +202,9 @@ function transformToIL(prog: types.Program, scopes: WeakMap<Node, BabelBinding[]
             // FunctionDeclaration: stmt => [***],
             IfStatement:            stmt => {
                                         visitExpr(stmt.test);
-                                        il.jumpIfFalsy(label`alternate`);
+                                        il.bf(label`alternate`);
                                         visitStmt(stmt.consequent);
-                                        il.jump(label`exit`);
+                                        il.br(label`exit`);
                                         il.label(label`alternate`);
                                         visitStmt(stmt.alternate || t.blockStatement([]));
                                         il.label(label`exit`);
@@ -237,7 +242,7 @@ function transformToIL(prog: types.Program, scopes: WeakMap<Node, BabelBinding[]
 
         // TODO: temp testing...
         if (scopes.has(stmt)) {
-            il.call(`%leaveScope%`, 0);
+            il.calli0(`%leaveScope%`);
         }
     }
     function visitExpr(expr: Expression) {
@@ -245,19 +250,22 @@ function transformToIL(prog: types.Program, scopes: WeakMap<Node, BabelBinding[]
         matchNode<void>(expr, {
             // ------------------------- core -------------------------
             ArrayExpression:        expr => {
+                                        // TODO: use proper new/construct opcode...
                                         expr.elements.forEach(visitExpr);
-                                        il.call(`%constructArray%`, expr.elements.length);
+                                        il.push(`%constructArray%`);
+                                        il.get();
+                                        il.call(expr.elements.length);
                                     },
             AssignmentExpression:   expr => {
                                         visitLVal(expr.left);
                                         visitExpr(expr.right);
                                         assert(t.isIdentifier(expr.left) || t.isMemberExpression(expr.left)); // TODO: loosen up later...
-                                        t.isIdentifier(expr.left) ? il.set() : il.setProp();
+                                        t.isIdentifier(expr.left) ? il.set() : il.setin();
                                     },
             BinaryExpression:       expr => {
                                         visitExpr(expr.left);
                                         visitExpr(expr.right);
-                                        il.call(`%operator${expr.operator}%`, 2);
+                                        il.calli2(expr.operator);
                                     },
             Identifier:             expr => {
                                         il.push(expr.name);
@@ -268,13 +276,14 @@ function transformToIL(prog: types.Program, scopes: WeakMap<Node, BabelBinding[]
                                         assert(t.isIdentifier(expr.callee)); // TODO: temp testing...
                                         visitExpr(expr.callee);
                                         expr.arguments.forEach(visitExpr);
-                                        il.callIndirect(expr.arguments.length);
+                                        il.roll(expr.arguments.length + 1);
+                                        il.call(expr.arguments.length);
                                     },
             ConditionalExpression:  expr => {
                                         visitExpr(expr.test);
-                                        il.jumpIfFalsy(label`alternate`);
+                                        il.bf(label`alternate`);
                                         visitExpr(expr.consequent);
-                                        il.jump(label`exit`);
+                                        il.br(label`exit`);
                                         il.label(label`alternate`);
                                         visitExpr(expr.alternate);
                                         il.label(label`exit`);
@@ -293,17 +302,18 @@ function transformToIL(prog: types.Program, scopes: WeakMap<Node, BabelBinding[]
                                         il.push(expr.value);
                                     },
             RegExpLiteral:          expr => {
+                                        // TODO: use proper new/construct opcode...
                                         il.push(expr.pattern);
                                         il.push(expr.flags || '');
-                                        il.call(`%constructRegExp%`, 2);
+                                        il.calli2(`%constructRegExp%`);
             },
             LogicalExpression:      expr => {
                                         visitExpr(expr.left);
                                         if (expr.operator === '&&') {
-                                            il.jumpIfFalsy(label`exit`);
+                                            il.bf(label`exit`);
                                         }
                                         else {
-                                            il.jumpIfTruthy(label`exit`);
+                                            il.bt(label`exit`);
                                         }
                                         il.pop();
                                         visitExpr(expr.right);
@@ -318,7 +328,7 @@ function transformToIL(prog: types.Program, scopes: WeakMap<Node, BabelBinding[]
                                             assert(t.isIdentifier(expr.property));
                                             il.push((<Identifier> expr.property).name);
                                         }
-                                        il.getProp();
+                                        il.getin();
                                     },
             // NewExpression:       expr => [***],
             // ObjectExpression:    expr => [***],
@@ -333,7 +343,7 @@ function transformToIL(prog: types.Program, scopes: WeakMap<Node, BabelBinding[]
             // ThisExpression:      expr => [***],
             UnaryExpression:        expr => {
                                         visitExpr(expr.argument);
-                                        il.call(`%operator${expr.operator}%`, 1);
+                                        il.calli1(expr.operator);
                                     },
             // UpdateExpression:    expr => [***],
 
