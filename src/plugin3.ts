@@ -73,6 +73,7 @@ interface StmtList extends Array<Statement|StmtList> {}
 /**
  * OPCODE       PRE-STACK           POST-STACK
  * call         [...args]           [result]
+ * callIndirect [funcName, ...args] [result]
  * get          [name]              [val]
  * getProp      [obj, prop]         [val]
  * jump         []                  []
@@ -87,6 +88,8 @@ interface StmtList extends Array<Statement|StmtList> {}
 
 
 class IL {
+    call            = (funcName: string, argCount: number) => this.addLine(`call('${funcName}', ${argCount})`);
+    callIndirect    = (argCount: number) => this.addLine(`callIndirect(${argCount})`);
     get             = () => this.addLine(`get()`);
     getProp         = () => this.addLine(`getProp()`);
     jump            = (label: string) => this.addLine(`jump('${label}')`);
@@ -97,7 +100,6 @@ class IL {
     push            = (val: string | number | boolean) => this.addLine(`push(${JSON.stringify(val)})`);
     set             = () => this.addLine(`set()`);
     setProp         = () => this.addLine(`setProp()`);
-    call            = (funcName: string, argCount: number) => this.addLine(`call('${funcName}', ${argCount})`);
 
     compile(): Node {
         var source = this.lines.join(';\n');
@@ -191,24 +193,41 @@ function transformToIL(prog: types.Program, il: IL) {
         let label = ((i) => (strs) => `${strs[0]}-${i}`)(++visitCounter);
         matchNode<void>(expr, {
             // ------------------------- core -------------------------
-            // ArrayExpression:     expr => [***],
+            ArrayExpression:        expr => {
+                                        expr.elements.forEach(visitExpr);
+                                        il.call(`%constructArray%`, expr.elements.length);
+                                    },
             AssignmentExpression:   expr => {
-                                        assert(t.isIdentifier(expr.left) || t.isMemberExpression(expr.left)); // TODO: loosen up later...
                                         visitLVal(expr.left);
                                         visitExpr(expr.right);
+                                        assert(t.isIdentifier(expr.left) || t.isMemberExpression(expr.left)); // TODO: loosen up later...
                                         t.isIdentifier(expr.left) ? il.set() : il.setProp();
                                     },
             BinaryExpression:       expr => {
                                         visitExpr(expr.left);
                                         visitExpr(expr.right);
-                                        il.call(`%${expr.operator}%`, 2);
+                                        il.call(`%operator${expr.operator}%`, 2);
                                     },
             Identifier:             expr => {
                                         il.push(expr.name);
                                         il.get();
                                     },
-            // CallExpression:      expr => [***],
-            // ConditionalExpression: expr => [***],
+            CallExpression:         expr => {
+                                        // TODO: BUG! Need to set `this` if callee is a member expression, need to check callee in general...
+                                        assert(t.isIdentifier(expr.callee)); // TODO: temp testing...
+                                        visitExpr(expr.callee);
+                                        expr.arguments.forEach(visitExpr);
+                                        il.callIndirect(expr.arguments.length);
+                                    },
+            ConditionalExpression:  expr => {
+                                        visitExpr(expr.test);
+                                        il.jumpIfFalsy(label`alternate`);
+                                        visitExpr(expr.consequent);
+                                        il.jump(label`exit`);
+                                        il.label(label`alternate`);
+                                        visitExpr(expr.alternate);
+                                        il.label(label`exit`);
+                                    },
             // FunctionExpression:  expr => [***],
             StringLiteral:          expr => {
                                         il.push(expr.value);
@@ -225,7 +244,7 @@ function transformToIL(prog: types.Program, il: IL) {
             RegExpLiteral:          expr => {
                                         il.push(expr.pattern);
                                         il.push(expr.flags || '');
-                                        il.call(`%RegExp%`, 2);
+                                        il.call(`%constructRegExp%`, 2);
             },
             LogicalExpression:      expr => {
                                         visitExpr(expr.left);
@@ -254,11 +273,16 @@ function transformToIL(prog: types.Program, il: IL) {
             // ObjectExpression:    expr => [***],
             // ObjectMethod:        expr => [***],
             // ObjectProperty:      expr => [***],
-            // SequenceExpression:  expr => [***],
+            SequenceExpression:     expr => {
+                                        for (let len = expr.expressions.length, i = 0; i < len; ++i) {
+                                            visitExpr(expr.expressions[i]);
+                                            if (i < len - 1) il.pop();
+                                        }
+                                    },
             // ThisExpression:      expr => [***],
             UnaryExpression:        expr => {
                                         visitExpr(expr.argument);
-                                        il.call(`%${expr.operator}%`, 1);
+                                        il.call(`%operator${expr.operator}%`, 1);
                                     },
             // UpdateExpression:    expr => [***],
 
