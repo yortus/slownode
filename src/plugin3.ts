@@ -132,9 +132,8 @@ class IL {
 
     compile(): Node {
         let source = this.lines.join('\n');
-        Object.keys(this.labels).forEach(label => {
-            let re = /ꬹ[^\r\n]+ꬹ/g;
-            source = source.replace(re, `${this.labels[label]}`);
+        source = source.replace(/ꬹ[^\r\n]+ꬹ/g, (substr) => {
+            return`${this.labels[substr.slice(1, -1)]}`;
         });
         source = `var program = \`\nswitch (pc) {\n${source}\n}\n\``;
         return t.program([<any>template(source)()]);
