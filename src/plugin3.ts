@@ -154,19 +154,16 @@ class IL {
         function traverseScope(scope: Scope) {
             let first = scope.start;
             let last = scope.start + scope.count - 1;
-            let col = (maxDepth - scope.depth) * 2 + 1;
-            // for (let i = first; i <= last; ++i) {
-            //     draw[i] += ' '.repeat(Math.max(0, scope.depth * 2 - draw[i].length));
-            // }
+            let col = (scope.depth - 1) * 2;
             if (scope.count <= 1) {
-                draw[first] = draw[first].slice(0, col) + ']' + draw[first].slice(col + 1);
+                draw[first] = draw[first].slice(0, col) + '[' + draw[first].slice(col + 1);
             }
             else {
-                draw[first] = draw[first].slice(0, col) + '┐' + draw[first].slice(col + 1);
+                draw[first] = draw[first].slice(0, col) + '┌' + draw[first].slice(col + 1);
                 for (let i = first + 1; i < last; ++i) {
                     draw[i] = draw[i].slice(0, col) + '|' + draw[i].slice(col + 1);
                 }
-                draw[last] = draw[last].slice(0, col) + '┘' + draw[last].slice(col + 1);
+                draw[last] = draw[last].slice(0, col) + '└' + draw[last].slice(col + 1);
             }
             scope.children.forEach(traverseScope);
         }
@@ -179,14 +176,14 @@ class IL {
         });
         source = source
             .split('\n')
-            .map((line, i) => `${line}${' '.repeat(Math.max(0, 60 - line.length))}${draw[i]}`)
+            .map((line, i) => line.slice(0, 16) + draw[i] + line.slice(16))
             .join('\n');
         source = `var program = \`\nswitch (pc) {\n${source}\n}\n\``;
         return t.program([<any>template(source)()]);
     }
 
     private addLine(line: string) {
-        line = `    case ${`${this.lines.length}:   `.slice(0, 5)}  ${line};`;
+        line = `    case ${`${this.lines.length}:'   `.slice(0, 6)}   ';${line};`;
         this.lines.push(line);
         return this;
     }
