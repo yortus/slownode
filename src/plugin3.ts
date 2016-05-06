@@ -101,7 +101,7 @@ interface StmtList extends Array<Statement|StmtList> {}
  * calli0(name)     ( -- result )
  * calli1(name)     ( a0 -- result )
  * calli2(name)     ( a0 a1 -- result )
- * get              ( name -- val)
+ * get              ( name -- val)              TODO: same as getin where obj=env
  * getin            ( obj name -- val)
  * br(line)         ( -- )
  * bf(line)         ( -- )
@@ -109,25 +109,25 @@ interface StmtList extends Array<Statement|StmtList> {}
  * label(name)      ( -- )
  * pop()            ( a -- )
  * push(val)        ( -- val)
- * set()            ( name val -- val)
+ * set()            ( name val -- val)          TODO: same as setin where obj=env, and env throws when setting unknown key, but other objs allow it (proxy?)
  * setin()          ( obj name val -- val)
  */
 class IL {
-    call            = (arglen: number) => this.addLine(`call(${arglen})`);
-    calli0          = (name: string) => this.addLine(`calli0('${name}')`);
-    calli1          = (name: string) => this.addLine(`calli1('${name}')`);
-    calli2          = (name: string) => this.addLine(`calli2('${name}')`);
-    get             = () => this.addLine(`get()`);
-    getin           = () => this.addLine(`getin()`);
-    br              = (label: string) => this.addLine(`br(ꬹ${label}ꬹ)`); // TODO: weird symbol can still clash with user string. fix...
-    bf              = (label: string) => this.addLine(`bf(ꬹ${label}ꬹ)`);
-    bt              = (label: string) => this.addLine(`bt(ꬹ${label}ꬹ)`);
-    label           = (name: string) => this.addLabel(name);
-    pop             = () => this.addLine(`pop()`);
-    push            = (val: string | number | boolean) => this.addLine(`push(${JSON.stringify(val)})`);
-    roll            = (count: number) => count > 1 ? this.addLine(`roll(${count})`) : null;
-    set             = () => this.addLine(`set()`);
-    setin           = () => this.addLine(`setin()`);
+    call    = (arglen: number) => this.addLine(`call(${arglen})`);
+    calli0  = (name: string) => this.addLine(`calli0('${name}')`);
+    calli1  = (name: string) => this.addLine(`calli1('${name}')`);
+    calli2  = (name: string) => this.addLine(`calli2('${name}')`);
+    get     = () => this.addLine(`get()`);
+    getin   = () => this.addLine(`getin()`);
+    br      = (label: string) => this.addLine(`br(ꬹ${label}ꬹ)`); // TODO: weird symbol can still clash with user string. fix...
+    bf      = (label: string) => this.addLine(`bf(ꬹ${label}ꬹ)`);
+    bt      = (label: string) => this.addLine(`bt(ꬹ${label}ꬹ)`);
+    label   = (name: string) => this.addLabel(name);
+    pop     = () => this.addLine(`pop()`);
+    push    = (val: string | number | boolean) => this.addLine(`push(${JSON.stringify(val)})`);
+    roll    = (count: number) => count > 1 ? this.addLine(`roll(${count})`) : null;
+    set     = () => this.addLine(`set()`);
+    setin   = () => this.addLine(`setin()`);
 
     enterScope(bindings: any) { // TODO: handle bindings
         let scope = this.scopes[this.scopes.length - 1].addChild();
@@ -139,6 +139,7 @@ class IL {
     leaveScope() {
         let scope = this.scopes[this.scopes.length - 1];
         scope.count = this.lines.length - scope.start;
+        if (scope.count === 0) scope.parent.children.pop(); // TODO: doc... remove scope if it is empty
         this.scopes.pop();
     }
 
