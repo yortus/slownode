@@ -5,9 +5,6 @@
 
 
 export let globals = {
-    
-    '%enterScope%': 0,
-    '%leaveScope%': 0,
 
     '%constructArray%': 0,
     '%constructRegExp%': 0,
@@ -23,17 +20,30 @@ export let globals = {
 
 
 
-export class VM {
-    call() {}
-    callIndirect() {}
-    get() {}
-    getProp() {}
-    jump() {}
-    jumpIfTruthy() {}
-    jumpIfFalsy() {}
-    label() {}
-    pop() {}
-    push() {}
-    set() {}
-    setProp() {}
+export function makeVM() {
+
+    let evalStack = [];
+    let env = {};
+
+    let opcodes = {
+        call:   (arglen: number) => {},
+        calli0: (name: string) => {},
+        calli1: (name: string) => {},
+        calli2: (name: string) => {},
+        get:    () => {},
+        getin:  () => {},
+        br:     (line: number) => {},
+        bf:     (line: number) => {},
+        bt:     (line: number) => {},
+        pop:    () => { evalStack.pop(); },
+        push:   (val: string | number | boolean) => { evalStack.push(val); },
+        roll:   (count: number) => {},
+        set:    () => {},
+        setin:  () => {},
+    };
+
+    // TODO: add prolog and epilog to every opcode
+    let vm  = {};
+    
+    return vm;
 }
