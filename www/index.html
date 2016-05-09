@@ -3,19 +3,31 @@
         <script src="require.js"></script>
         <script>
             require.config({});
-            require(['knockout', 'babel', 'plugin'], (ko, babel, plugin) => {
-                
+            require(['knockout', 'babel', 'built/plugin3'], (ko, babel, plugin) => {
+                // plugin = {
+                //     default: () => ({
+                //         visitor: {
+                            
+                //         }
+                //     })
+                // };
+
                 let vm = {};
                 vm.input = ko.observable('').extend({ rateLimit: 500 }),
                 vm.output = ko.computed(() => {
                     try {
-                        let code = babel.transform(vm.input(), { plugins: [plugin] }).code;
+                        let code = babel.transform(vm.input(), { plugins: [(...args) => plugin.default(...args)] }).code;
                         return code;
                     }
                     catch (ex) {
                         return ex.message;
                     }
                 });
+
+                let store = window.localStorage;
+                vm.input(store.getItem('input') || '');
+                vm.input.subscribe(i => store.setItem('input', i));
+
                 ko.applyBindings(vm);
             });
         </script>

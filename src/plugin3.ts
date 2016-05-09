@@ -64,11 +64,9 @@ export default function (b: typeof babel) {
             // - catch clause. scope of name is only the catch clause body
             Block(path) {
                 assert(path.scope.block === path.node);
-                //if (path.scope.block === path.node) {
                 let bindings = path.scope.bindings;
                 let bindingNames = Object.keys(bindings);
                 scopes.set(path.node, bindingNames.map(name => bindings[name]));
-                //}
             },
 
             // Transform the program.
