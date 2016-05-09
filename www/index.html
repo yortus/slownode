@@ -1,21 +1,23 @@
 <html>
     <head>
-        <script src="require.js"></script>
+        <script src="scripts/require.js"></script>
         <script>
-            require.config({});
+            require.config({
+                paths: {
+                    "knockout": "scripts/knockout",
+                    "babel": "scripts/babel",
+                    "assert": "scripts/assert",
+                    "util": "scripts/util"
+                }
+            });
             require(['knockout', 'babel', 'built/plugin3'], (ko, babel, plugin) => {
-                // plugin = {
-                //     default: () => ({
-                //         visitor: {
-                            
-                //         }
-                //     })
-                // };
 
+                // Set up a simple viewmodel with 'input' and 'output' properties.
                 let vm = {};
                 vm.input = ko.observable('').extend({ rateLimit: 500 }),
                 vm.output = ko.computed(() => {
                     try {
+                        // When 'input' changes, recompute the 'output'.
                         let code = babel.transform(vm.input(), { plugins: [(...args) => plugin.default(...args)] }).code;
                         return code;
                     }
@@ -24,10 +26,12 @@
                     }
                 });
 
+                // Remember the value of the 'input' property using local storage.
                 let store = window.localStorage;
                 vm.input(store.getItem('input') || '');
                 vm.input.subscribe(i => store.setItem('input', i));
 
+                // Bind the view to the viewmodel.
                 ko.applyBindings(vm);
             });
         </script>
