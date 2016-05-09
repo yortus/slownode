@@ -1,16 +1,19 @@
 <html>
     <head>
+        <link rel="stylesheet" href="scripts/codemirror.css"></script>
         <script src="scripts/require.js"></script>
         <script>
             require.config({
                 paths: {
-                    "knockout": "scripts/knockout",
-                    "babel": "scripts/babel",
                     "assert": "scripts/assert",
+                    "babel": "scripts/babel",
+                    "codemirror": "scripts/codemirror",
+                    "javascript": "scripts/javascript",
+                    "knockout": "scripts/knockout",
                     "util": "scripts/util"
                 }
             });
-            require(['knockout', 'babel', 'built/plugin3'], (ko, babel, plugin) => {
+            require(['knockout', 'babel', 'codemirror', 'built/plugin3', 'javascript'], (ko, babel, cm, plugin) => {
 
                 // Set up a simple viewmodel with 'input' and 'output' properties.
                 let vm = {};
@@ -33,6 +36,17 @@
 
                 // Bind the view to the viewmodel.
                 ko.applyBindings(vm);
+
+                // Initialize CodeMirror.
+                let $input = document.getElementById('input');
+                let editor = cm.fromTextArea($input, {
+                    mode: 'javascript',
+                    theme: 'neat',
+                    lineNumbers: true
+                });
+                editor.on('changes', () => {
+                    vm.input(editor.getValue());
+                });
             });
         </script>
         <style>
@@ -57,6 +71,20 @@
                 height: 100%;
                 width: 50%;
             }
+
+            /* CodeMirror 'neat' theme */
+            .cm-s-neat span.cm-comment { color: #a86; }
+            .cm-s-neat span.cm-keyword { line-height: 1em; font-weight: bold; color: blue; }
+            .cm-s-neat span.cm-string { color: #a22; }
+            .cm-s-neat span.cm-builtin { line-height: 1em; font-weight: bold; color: #077; }
+            .cm-s-neat span.cm-special { line-height: 1em; font-weight: bold; color: #0aa; }
+            .cm-s-neat span.cm-variable { color: black; }
+            .cm-s-neat span.cm-number, .cm-s-neat span.cm-atom { color: #3a3; }
+            .cm-s-neat span.cm-meta { color: #555; }
+            .cm-s-neat span.cm-link { color: #3a3; }
+
+            .cm-s-neat .CodeMirror-activeline-background { background: #e8f2ff; }
+            .cm-s-neat .CodeMirror-matchingbracket { outline:1px solid grey; color:black !important; }            
         </style>
     </head>
     <body>
