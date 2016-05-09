@@ -43,7 +43,27 @@ export function makeVM() {
     };
 
     // TODO: add prolog and epilog to every opcode
-    let vm  = {};
-    
+    let vm: (typeof opcodes) & { pc: number } = <any> {};
+    vm.pc = 0;
+    Object.keys(opcodes).forEach(opcode => {
+        let oldImpl = opcodes[opcode];
+        let newImpl = (...args) => {
+
+            // PROLOG
+            console.log(opcode);
+
+            // IMPL
+            let result = oldImpl(...args);
+
+            // EPILOG
+            ++vm.pc; // not if branch!
+        };
+        vm[opcode] = newImpl;
+    });
+
+
+
+
+
     return vm;
 }

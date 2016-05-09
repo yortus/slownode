@@ -8,6 +8,7 @@
     },
     "files": [
         "../src/plugin3.ts",
+        "../src/vm.ts",
         "../src/typings.d.ts"
     ]
 }

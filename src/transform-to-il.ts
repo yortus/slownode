@@ -1,3 +1,4 @@
+import * as babel from 'babel';
 import {Node, Statement, Expression, Identifier} from "babel-types";    // Elided (used only for types)
 import {Binding as BabelBinding} from "babel-traverse";                 // Elided (used only for types)
 import * as types from "babel-types";                                   // Elided (used only for types)
@@ -9,7 +10,7 @@ import IL from './il';
 
 
 
-export default function transformToIL(t: typeof types, prog: types.Program, scopes: WeakMap<Node, BabelBinding[]>, il: IL) {
+export default function transformToIL({types: t}: typeof babel,  prog: types.Program, scopes: WeakMap<Node, BabelBinding[]>, il: IL) {
     let visitCounter = 0;
     visitStmt(prog);
 
@@ -106,6 +107,7 @@ export default function transformToIL(t: typeof types, prog: types.Program, scop
                                         il.call(expr.elements.length);
                                     },
             AssignmentExpression:   expr => {
+                                        assert(expr.operator === '='); // TODO: BUG! handle all values of 'operator'
                                         visitLVal(expr.left);
                                         visitExpr(expr.right);
                                         assert(t.isIdentifier(expr.left) || t.isMemberExpression(expr.left)); // TODO: loosen up later...

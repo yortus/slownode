@@ -81,20 +81,37 @@ export default class IL {
 
 
         
-        let source = this.lines.join('\n');
+        let source = this.lines.map(l => `                    ${l}`).join('\n');
         source = source.replace(/ꬹ[^\r\n]+ꬹ/g, (substr) => {
             return`${this.labels[substr.slice(1, -1)]}`;
         });
         source = source
             .split('\n')
-            .map((line, i) => line.slice(0, 16) + draw[i] + line.slice(16))
+            .map((line, i) => line.slice(0, 32) + draw[i] + line.slice(32))
             .join('\n');
-        source = `var program = \`\nswitch (pc) {\n${source}\n}\n\``;
+        source = `
+function (vm) {
+    while (true) {
+        try {
+            with (vm) {
+                switch (pc) {
+${source}
+                    default: throw new Error('fin');
+                }
+            }
+        }
+        catch (ex) {
+            // TODO: ...
+            break;
+        }
+    }
+}
+        `;
         return source;
     }
 
     private addLine(line: string) {
-        line = `    case ${`${this.lines.length}:'   `.slice(0, 6)}   ';${line};`;
+        line = `case ${`${this.lines.length}:'   `.slice(0, 6)}   ';${line};`;
         this.lines.push(line);
         return this;
     }
