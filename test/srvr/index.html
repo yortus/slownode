@@ -1,0 +1,50 @@
+<html>
+    <head>
+        <script src="require.js"></script>
+        <script>
+            require.config({});
+            require(['knockout', 'babel', 'plugin'], (ko, babel, plugin) => {
+                
+                let vm = {};
+                vm.input = ko.observable('').extend({ rateLimit: 500 }),
+                vm.output = ko.computed(() => {
+                    try {
+                        let code = babel.transform(vm.input(), { plugins: [plugin] }).code;
+                        return code;
+                    }
+                    catch (ex) {
+                        return ex.message;
+                    }
+                });
+                ko.applyBindings(vm);
+            });
+        </script>
+        <style>
+            * {
+                box-sizing: border-box;
+            }
+            #input {
+                border: 2px solid green;
+                display: block;
+                position: absolute;
+                top: 0;
+                left: 0;
+                height: 100%;
+                width: 50%;
+            }
+            #output {
+                border: 2px solid purple;
+                display: block;
+                position: absolute;
+                top: 0;
+                left: 50%;
+                height: 100%;
+                width: 50%;
+            }
+        </style>
+    </head>
+    <body>
+        <textarea id="input" data-bind="textInput: input"></textarea>
+        <textarea id="output" readonly data-bind="textInput: output"></textarea>
+    </body>
+</html>
