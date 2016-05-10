@@ -14,8 +14,8 @@ export default class IL {
     stm     = (obj: Register, key: Register, src: Register) => this.addLine(`stm(${obj}, ${key}, ${src})`);
 
 
-    call    = (result: Register, func: Register, args: Register, thìs?: Register) => this.addLine(`call(${result}, ${func}, ${args}, ${thìs || 'void 0'})`);
-    syscall = (result: Register, fn: string, ...args: Register[]) => this.addLine(`syscall(${result}, '${fn}'${args.map(arg => `, ${arg}`).join('')})`);
+    call    = (result: Register, func: Register, args: Register[], thìs?: Register) => this.addLine(`${result} = call({func: ${func}, args: [${args}]${thìs ? `, this: ${thìs}` : ''}})`);
+//    syscall = (result: Register, fn: string, ...args: Register[]) => this.addLine(`syscall(${result}, '${fn}'${args.map(arg => `, ${arg}`).join('')})`);
 
 
     newarr  = (tgt: Register) => this.addLine(`newarr(${tgt})`);

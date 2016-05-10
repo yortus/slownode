@@ -119,10 +119,11 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
             //                             il.store();
             //                         },
             BinaryExpression:       expr => {
-                                        regs.reserve((R0, R1) => {
+                                        regs.reserve((R0, R1, R2) => {
                                             visitExpr(expr.left, R0);
                                             visitExpr(expr.right, R1);
-                                            il.syscall(TGT, expr.operator, R0, R1);
+                                            il.ldc(R2, expr.operator);
+                                            il.call(TGT, R2, [R0, R1]);
                                         });
                                     },
             // Identifier:             expr => {
