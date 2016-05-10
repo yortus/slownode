@@ -23,10 +23,10 @@
                     // When 'input' changes, recompute the 'output'.
                     try {
                         let code = plugin.transform(vm.input());
-                        debugger;
-                        let virtm = VM.makeVM();
-                        let prog = eval(`(${code})`);
-                        prog(virtm);
+
+                        //let virtm = VM.makeVM();
+                        //let prog = eval(`(${code})`);
+                        //prog(virtm);
                         
                         return code;
                     }

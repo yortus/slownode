@@ -26,20 +26,18 @@ export function makeVM() {
     let env = {};
 
     let opcodes = {
-        call:   (arglen: number) => {},
-        calli0: (name: string) => {},
-        calli1: (name: string) => {},
-        calli2: (name: string) => {},
-        get:    () => {},
-        getin:  () => {},
+        apply:  () => {},
+        array:  () => {},
         br:     (line: number) => {},
         bf:     (line: number) => {},
         bt:     (line: number) => {},
+        dup:    () => {},
+        env:    () => {},
+        fetch:  () => {},
         pop:    () => { evalStack.pop(); },
         push:   (val: string | number | boolean) => { evalStack.push(val); },
         roll:   (count: number) => {},
-        set:    () => {},
-        setin:  () => {},
+        store:  () => {},
     };
 
     // TODO: add prolog and epilog to every opcode

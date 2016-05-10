@@ -1,9 +1,10 @@
 import * as babel from 'babel';
-import {Node, Statement, Expression, Identifier} from "babel-types";    // Elided (used only for types)
+import {Node, Statement, Expression, Identifier, SpreadElement} from "babel-types";    // Elided (used only for types)
 import {Binding as BabelBinding} from "babel-traverse";                 // Elided (used only for types)
 import * as types from "babel-types";                                   // Elided (used only for types)
 import * as assert from 'assert';
 import matchNode from './match-node';
+import {RegisterFile, Register} from './registers';
 import IL from './il';
 
 
@@ -12,6 +13,7 @@ import IL from './il';
 
 export default function transformToIL({types: t}: typeof babel,  prog: types.Program, scopes: WeakMap<Node, BabelBinding[]>, il: IL) {
     let visitCounter = 0;
+    let regs = new RegisterFile();
     visitStmt(prog);
 
     function visitStmt(stmt: Node) {
@@ -37,8 +39,7 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
             // Statement:           stmt => [***],
             EmptyStatement:         stmt => {},
             ExpressionStatement:    stmt => {
-                                        visitExpr(stmt.expression);
-                                        il.pop();
+                                        visitExpr(stmt.expression, regs.VOID);
                                     },
             Program:                stmt => {
                                         stmt.body.forEach(visitStmt);
@@ -51,7 +52,7 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
             // ForStatement:        stmt => [***],
             // FunctionDeclaration: stmt => [***],
             IfStatement:            stmt => {
-                                        visitExpr(stmt.test);
+                                        visitExpr(stmt.test, regs.VOID);
                                         il.bf(label`alternate`);
                                         visitStmt(stmt.consequent);
                                         il.br(label`exit`);
@@ -95,107 +96,114 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
             il.leaveScope();
         }
     }
-    function visitExpr(expr: Expression) {
+    function visitExpr(expr: Expression|SpreadElement, TGT: Register) {
         let label = ((i) => (strs) => `${strs[0]}-${i}`)(++visitCounter);
         matchNode<void>(expr, {
             // ------------------------- core -------------------------
             ArrayExpression:        expr => {
-                                        // TODO: use proper new/construct opcode...
-                                        expr.elements.forEach(visitExpr);
-                                        il.push(`%constructArray%`);
-                                        il.get();
-                                        il.call(expr.elements.length);
+                                        il.newarr(TGT);
+                                        regs.reserve((R0, R1) => {
+                                            expr.elements.forEach((el, i) => {
+                                                visitExpr(el, R0);
+                                                il.ldc(R1, i);
+                                                il.stm(TGT, R1, R0);
+                                            });
+                                        });
                                     },
-            AssignmentExpression:   expr => {
-                                        assert(expr.operator === '='); // TODO: BUG! handle all values of 'operator'
-                                        visitLVal(expr.left);
-                                        visitExpr(expr.right);
-                                        assert(t.isIdentifier(expr.left) || t.isMemberExpression(expr.left)); // TODO: loosen up later...
-                                        t.isIdentifier(expr.left) ? il.set() : il.setin();
-                                    },
+            // AssignmentExpression:   expr => {
+            //                             assert(expr.operator === '='); // TODO: BUG! handle all values of 'operator'
+            //                             assert(t.isIdentifier(expr.left) || t.isMemberExpression(expr.left)); // TODO: safe to loosen this? What else could it be?
+
+            //                             visitLVal(expr.left);
+            //                             visitExpr(expr.right);
+            //                             il.store();
+            //                         },
             BinaryExpression:       expr => {
-                                        visitExpr(expr.left);
-                                        visitExpr(expr.right);
-                                        il.calli2(expr.operator);
+                                        regs.reserve((R0, R1) => {
+                                            visitExpr(expr.left, R0);
+                                            visitExpr(expr.right, R1);
+                                            il.syscall(TGT, expr.operator, R0, R1);
+                                        });
                                     },
-            Identifier:             expr => {
-                                        il.push(expr.name);
-                                        il.get();
-                                    },
-            CallExpression:         expr => {
-                                        // TODO: BUG! Need to set `this` if callee is a member expression, need to check callee in general...
-                                        assert(t.isIdentifier(expr.callee)); // TODO: temp testing...
-                                        visitExpr(expr.callee);
-                                        expr.arguments.forEach(visitExpr);
-                                        il.roll(expr.arguments.length + 1);
-                                        il.call(expr.arguments.length);
-                                    },
-            ConditionalExpression:  expr => {
-                                        visitExpr(expr.test);
-                                        il.bf(label`alternate`);
-                                        visitExpr(expr.consequent);
-                                        il.br(label`exit`);
-                                        il.label(label`alternate`);
-                                        visitExpr(expr.alternate);
-                                        il.label(label`exit`);
-                                    },
+            // Identifier:             expr => {
+            //                             il.env();
+            //                             il.push(expr.name);
+            //                             il.fetch();
+            //                         },
+            // CallExpression:         expr => {
+            //                             // TODO: BUG! Need to set `this` if callee is a member expression, need to check callee in general...
+            //                             assert(t.isIdentifier(expr.callee)); // TODO: temp testing...
+            //                             visitExpr(expr.callee);
+            //                             expr.arguments.forEach(visitExpr);
+            //                             il.roll(expr.arguments.length + 1);
+            //                             il.call(expr.arguments.length);
+            //                         },
+            // ConditionalExpression:  expr => {
+            //                             visitExpr(expr.test);
+            //                             il.bf(label`alternate`);
+            //                             visitExpr(expr.consequent);
+            //                             il.br(label`exit`);
+            //                             il.label(label`alternate`);
+            //                             visitExpr(expr.alternate);
+            //                             il.label(label`exit`);
+            //                         },
             // FunctionExpression:  expr => [***],
             StringLiteral:          expr => {
-                                        il.push(expr.value);
+                                        il.ldc(TGT, expr.value);
                                     },
             NumericLiteral:         expr => {
-                                        il.push(expr.value);
+                                        il.ldc(TGT, expr.value);
                                     },
             NullLiteral:            expr => {
-                                        il.push(null);
+                                        il.ldc(TGT, null);
                                     },
             BooleanLiteral:         expr => {
-                                        il.push(expr.value);
+                                        il.ldc(TGT, expr.value);
                                     },
-            RegExpLiteral:          expr => {
-                                        // TODO: use proper new/construct opcode...
-                                        il.push(expr.pattern);
-                                        il.push(expr.flags || '');
-                                        il.calli2(`%constructRegExp%`);
-            },
-            LogicalExpression:      expr => {
-                                        visitExpr(expr.left);
-                                        if (expr.operator === '&&') {
-                                            il.bf(label`exit`);
-                                        }
-                                        else {
-                                            il.bt(label`exit`);
-                                        }
-                                        il.pop();
-                                        visitExpr(expr.right);
-                                        il.label(label`exit`);
-                                    },
-            MemberExpression:       expr => {
-                                        visitExpr(expr.object);
-                                        if (expr.computed) {
-                                            visitExpr(expr.property);
-                                        }
-                                        else {
-                                            assert(t.isIdentifier(expr.property));
-                                            il.push((<Identifier> expr.property).name);
-                                        }
-                                        il.getin();
-                                    },
+            // RegExpLiteral:          expr => {
+            //                             // TODO: use proper new/construct opcode...
+            //                             il.push(expr.pattern);
+            //                             il.push(expr.flags || '');
+            //                             il.calli2(`%constructRegExp%`);
+            // },
+            // LogicalExpression:      expr => {
+            //                             visitExpr(expr.left);
+            //                             if (expr.operator === '&&') {
+            //                                 il.bf(label`exit`);
+            //                             }
+            //                             else {
+            //                                 il.bt(label`exit`);
+            //                             }
+            //                             il.pop();
+            //                             visitExpr(expr.right);
+            //                             il.label(label`exit`);
+            //                         },
+            // MemberExpression:       expr => {
+            //                             visitExpr(expr.object);
+            //                             if (expr.computed) {
+            //                                 visitExpr(expr.property);
+            //                             }
+            //                             else {
+            //                                 assert(t.isIdentifier(expr.property));
+            //                                 il.push((<Identifier> expr.property).name);
+            //                             }
+            //                             il.fetch();
+            //                         },
             // NewExpression:       expr => [***],
             // ObjectExpression:    expr => [***],
             // ObjectMethod:        expr => [***],
             // ObjectProperty:      expr => [***],
-            SequenceExpression:     expr => {
-                                        for (let len = expr.expressions.length, i = 0; i < len; ++i) {
-                                            visitExpr(expr.expressions[i]);
-                                            if (i < len - 1) il.pop();
-                                        }
-                                    },
+            // SequenceExpression:     expr => {
+            //                             for (let len = expr.expressions.length, i = 0; i < len; ++i) {
+            //                                 visitExpr(expr.expressions[i]);
+            //                                 if (i < len - 1) il.pop();
+            //                             }
+            //                         },
             // ThisExpression:      expr => [***],
-            UnaryExpression:        expr => {
-                                        visitExpr(expr.argument);
-                                        il.calli1(expr.operator);
-                                    },
+            // UnaryExpression:        expr => {
+            //                             visitExpr(expr.argument);
+            //                             il.calli1(expr.operator);
+            //                         },
             // UpdateExpression:    expr => [***],
 
             // ------------------------- es2015 -------------------------
@@ -218,19 +226,20 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
         let label = ((i) => (strs) => `${strs[0]}-${i}`)(++visitCounter);
         matchNode<void>(expr, {
             // ------------------------- core -------------------------
-            Identifier:             expr => {
-                                        il.push(expr.name);
-                                    },
-            MemberExpression:       expr => {
-                                        visitExpr(expr.object);
-                                        if (expr.computed) {
-                                            visitExpr(expr.property);
-                                        }
-                                        else {
-                                            assert(t.isIdentifier(expr.property));
-                                            il.push((<Identifier> expr.property).name);
-                                        }
-                                    },
+            // Identifier:             expr => {
+            //                             il.env();
+            //                             il.push(expr.name);
+            //                         },
+            // MemberExpression:       expr => {
+            //                             visitExpr(expr.object);
+            //                             if (expr.computed) {
+            //                                 visitExpr(expr.property);
+            //                             }
+            //                             else {
+            //                                 assert(t.isIdentifier(expr.property));
+            //                                 il.push((<Identifier> expr.property).name);
+            //                             }
+            //                         },
             // RestElement:         expr => [***],
 
             // ------------------------- es2015 -------------------------

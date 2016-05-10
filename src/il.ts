@@ -1,43 +1,33 @@
 'use strict';
 import * as assert from 'assert';
+import Scope from './scope';
+import {Register} from './registers';
 
 
 
 
 
-/**
- * OPCODE           STACK
- * call(arglen)     ( a0 .. an fn -- result )
- * calli0(name)     ( -- result )
- * calli1(name)     ( a0 -- result )
- * calli2(name)     ( a0 a1 -- result )
- * get              ( name -- val)              TODO: same as getin where obj=env
- * getin            ( obj name -- val)
- * br(line)         ( -- )
- * bf(line)         ( -- )
- * bt(line)         ( -- )
- * label(name)      ( -- )
- * pop()            ( a -- )
- * push(val)        ( -- val)
- * set()            ( name val -- val)          TODO: same as setin where obj=env, and env throws when setting unknown key, but other objs allow it (proxy?)
- * setin()          ( obj name val -- val)
- */
 export default class IL {
-    call    = (arglen: number) => this.addLine(`call(${arglen})`);
-    calli0  = (name: string) => this.addLine(`calli0('${name}')`);
-    calli1  = (name: string) => this.addLine(`calli1('${name}')`);
-    calli2  = (name: string) => this.addLine(`calli2('${name}')`);
-    get     = () => this.addLine(`get()`);
-    getin   = () => this.addLine(`getin()`);
+
+    ldc     = (tgt: Register, value: string|number|boolean|any[]|{}) => this.addLine(`ldc(${tgt}, ${JSON.stringify(value)})`);
+    ldm     = (tgt: Register, obj: Register, key: Register) => this.addLine(`ldm(${tgt}, ${obj}, ${key})`);
+    stm     = (obj: Register, key: Register, src: Register) => this.addLine(`stm(${obj}, ${key}, ${src})`);
+
+
+    call    = (result: Register, func: Register, args: Register, thìs?: Register) => this.addLine(`call(${result}, ${func}, ${args}, ${thìs || 'void 0'})`);
+    syscall = (result: Register, fn: string, ...args: Register[]) => this.addLine(`syscall(${result}, '${fn}'${args.map(arg => `, ${arg}`).join('')})`);
+
+
+    newarr  = (tgt: Register) => this.addLine(`newarr(${tgt})`);
+
+
+
+
     br      = (label: string) => this.addLine(`br(ꬹ${label}ꬹ)`); // TODO: weird symbol can still clash with user string. fix...
     bf      = (label: string) => this.addLine(`bf(ꬹ${label}ꬹ)`);
     bt      = (label: string) => this.addLine(`bt(ꬹ${label}ꬹ)`);
+
     label   = (name: string) => this.addLabel(name);
-    pop     = () => this.addLine(`pop()`);
-    push    = (val: string | number | boolean) => this.addLine(`push(${JSON.stringify(val)})`);
-    roll    = (count: number) => count > 1 ? this.addLine(`roll(${count})`) : null;
-    set     = () => this.addLine(`set()`);
-    setin   = () => this.addLine(`setin()`);
 
     enterScope(bindings: any) { // TODO: handle bindings
         let scope = this.scopes[this.scopes.length - 1].addChild();
@@ -127,24 +117,4 @@ ${source}
     private scopes = [new Scope()];
 
     private maxDepth = 0;
-}
-
-
-
-
-
-class Scope {
-    start = 0;
-    count = 0;
-    depth = 0;
-    parent = <Scope> null;
-    children = <Scope[]> [];
-
-    addChild() {
-        let child = new Scope();
-        child.depth = this.depth + 1;
-        child.parent = this;
-        this.children.push(child);
-        return child;
-    }
 }
