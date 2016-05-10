@@ -5,7 +5,7 @@ import Address from './address';
 
 
 
-const FILE_SIZE = 64;
+const MAX_REGISTERS = 64;
 
 
 
@@ -23,14 +23,6 @@ export class Register {
 export class RegisterFile {
 
 
-    constructor() {
-        this.generalPurpose = new Array(FILE_SIZE);
-        for (let i = 0; i < FILE_SIZE; ++i) {
-            this.generalPurpose[i] = new Register(`R${i}`);
-        }
-    }
-
-
     VOID = new Register('VOID');
 
 
@@ -39,13 +31,20 @@ export class RegisterFile {
         let count = callback.length;
         let args: Register[] = [];
         try {
-            for (let i = 0; i < FILE_SIZE; ++i) {
+            for (let i = 0; args.length < count && i < this.generalPurpose.length; ++i) {
                 let reg = this.generalPurpose[i];
                 if (!reg) continue;
                 this.generalPurpose[i] = null;
                 args.push(reg);
-                if (args.length === count) return callback(...args);
             }
+
+            while (args.length < count && this.generalPurpose.length < MAX_REGISTERS) {
+                let reg = new Register(`R${this.generalPurpose.length}`);
+                this.generalPurpose.push(null);
+                args.push(reg);
+            }
+
+            if (args.length === count) return callback(...args);
             throw new Error(`All registers in use.`);
         }
         finally {
@@ -61,5 +60,5 @@ export class RegisterFile {
     }
 
 
-    private generalPurpose: Register[];
+    private generalPurpose: Register[] = [];
 }
