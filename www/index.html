@@ -49,10 +49,18 @@
                 let editor = cm.fromTextArea($input, {
                     mode: 'javascript',
                     theme: 'neat',
-                    lineNumbers: true
+                    lineNumbers: true,
+                    indentUnit: 4,
+                    indentWithTabs: false
                 });
                 editor.on('changes', () => {
                     vm.input(editor.getValue());
+                });
+                editor.setOption("extraKeys", {
+                    Tab: function(cm) {
+                        var spaces = Array(cm.getOption("indentUnit") + 1).join(" ");
+                        cm.replaceSelection(spaces);
+                    }
                 });
             });
         </script>
