@@ -7,6 +7,12 @@ import {Register} from './registers';
 
 
 
+type RValue = Register | string | number | boolean;
+
+
+
+
+
 export default class IL {
 
     ldc     = (tgt: Register, value: string|number|boolean|any[]|{}) => this.addLine(`ldc(${tgt}, ${JSON.stringify(value)})`);
@@ -14,7 +20,7 @@ export default class IL {
     stm     = (obj: Register, key: Register, src: Register) => this.addLine(`stm(${obj}, ${key}, ${src})`);
 
 
-    call    = (result: Register, func: Register, args: Register[], thìs?: Register) => this.addLine(`${result} = call({func: ${func}, args: [${args}]${thìs ? `, this: ${thìs}` : ''}})`);
+    call    = (result: Register, func: RValue, args: RValue[], thìs?: Register) => this.addLine(`${result} = call({func: ${func}, args: [${args}]${thìs ? `, this: ${thìs}` : ''}})`);
 //    syscall = (result: Register, fn: string, ...args: Register[]) => this.addLine(`syscall(${result}, '${fn}'${args.map(arg => `, ${arg}`).join('')})`);
 
 
@@ -39,7 +45,10 @@ export default class IL {
     leaveScope() {
         let scope = this.scopes[this.scopes.length - 1];
         scope.count = this.lines.length - scope.start;
-        if (scope.count === 0) scope.parent.children.pop(); // TODO: doc... remove scope if it is empty
+        if (scope.count === 0 && !!scope.parent.parent) {
+            // TODO: doc... remove scope if it is empty, but NOT if this is the 'root' scope
+            scope.parent.children.pop();
+        }
         this.scopes.pop();
     }
 
@@ -53,6 +62,7 @@ export default class IL {
         traverseScope(rootScope);
 
         function traverseScope(scope: Scope) {
+            if (scope.count === 0) return; // TODO: temp testing... special case possible for root scope only
             let first = scope.start;
             let last = scope.start + scope.count - 1;
             let col = (scope.depth - 1) * 2;

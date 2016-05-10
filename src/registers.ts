@@ -27,38 +27,41 @@ export class RegisterFile {
 
 
     /** Issues a general purpose register from the pool. */
-    reserve(callback: (...regs: Register[]) => void): void {
-        let count = callback.length;
-        let args: Register[] = [];
-        try {
-            for (let i = 0; args.length < count && i < this.generalPurpose.length; ++i) {
-                let reg = this.generalPurpose[i];
-                if (!reg) continue;
-                this.generalPurpose[i] = null;
-                args.push(reg);
-            }
+    reserve(): Register {
+        let reg: Register = null;
 
-            while (args.length < count && this.generalPurpose.length < MAX_REGISTERS) {
-                let reg = new Register(`R${this.generalPurpose.length}`);
-                this.generalPurpose.push(null);
-                args.push(reg);
-            }
+        for (let i = 0; i < this.generalPurpose.length; ++i) {
+            reg = this.generalPurpose[i];
+            if (!reg) continue;
+            this.generalPurpose[i] = null;
+            return reg;
+        }
 
-            if (args.length === count) return callback(...args);
-            throw new Error(`All registers in use.`);
+        if (this.generalPurpose.length < MAX_REGISTERS) {
+            reg = new Register(`R${this.generalPurpose.length}`);
+            this.generalPurpose.push(null);
+            return reg;
         }
-        finally {
-            args.forEach(reg => this.release(reg));
-        }
+
+        throw new Error(`All registers in use.`);
     }
 
 
     /** Returns the given general purpose register to the pool. */
-    private release(reg: Register) {
+    release(reg: Register) {
         let i = +reg.name.slice(1);
         this.generalPurpose[i] = reg;
     }
 
 
+    public releaseAll(...regs: any[]) {
+        regs.forEach(reg => {
+            if (reg instanceof Register) {
+                this.release(reg);
+            }
+        });
+    }
+
+    
     private generalPurpose: Register[] = [];
 }
