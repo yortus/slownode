@@ -32,6 +32,7 @@ export interface VM {
     B:      (line: number) => void;
     BF:     (line: number, arg: Register) => void;
     BT:     (line: number, arg: Register) => void;
+    NOOP:   () => void;
 
     // Registers
     PC:     number;
@@ -74,6 +75,7 @@ export function makeVM() {
         B:      (line) => jump(line),
         BF:     (line, arg) => arg.value ? null : jump(line),
         BT:     (line, arg) => arg.value ? jump(line) : null,
+        NOOP:   () => null,
 
         PC:     0,
         ENV:    new Register('ENV'),

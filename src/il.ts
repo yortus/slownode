@@ -48,8 +48,9 @@ export default class IL implements VM {
 
     // Control
     B(line: Label|number) { this.addLine(`B(${line})`); }
-    BF(line: Label|number, arg: Register) { this.addLine(`BF(${line}, ${arg})`); }
-    BT(line: Label|number, arg: Register) { this.addLine(`BT(${line}, ${arg})`); }
+    BF(line: Label|number, arg: Register) { this.addLine(`BF(${line}, ${arg.name})`); }
+    BT(line: Label|number, arg: Register) { this.addLine(`BT(${line}, ${arg.name})`); }
+    NOOP() { this.addLine(`NOOP()`); }
 
     // Registers
     PC = 0;
@@ -102,7 +103,7 @@ function (vm) {
             with (vm) {
                 switch (PC) {
 ${source}
-                    default: throw new Error('fin');
+                    default: throw new Error('fin'); // TODO: ...
                 }
             }
         }
