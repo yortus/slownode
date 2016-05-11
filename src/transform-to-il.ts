@@ -60,7 +60,7 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
                                             visitExpr(stmt.test, $0);
                                             il.BF(L1, $0);
                                             visitStmt(stmt.consequent);
-                                            il.B(L2);
+                                            if (stmt.alternate) il.B(L2);
                                             L1.resolve();
                                             visitStmt(stmt.alternate || t.blockStatement([]));
                                             L2.resolve();
@@ -116,14 +116,64 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
             //                                 });
             //                             });
             //                         },
-            // AssignmentExpression:   expr => {
-            //                             assert(expr.operator === '='); // TODO: BUG! handle all values of 'operator'
-            //                             assert(t.isIdentifier(expr.left) || t.isMemberExpression(expr.left)); // TODO: safe to loosen this? What else could it be?
+            AssignmentExpression:   expr => {
+                                        // ES6 destructuring introduces a number of new LValue node types.
+                                        // We don't need to handle these here, since we can have these nodes
+                                        // downlevelled to ES5 equivalents prior to this traversal of the AST.
+                                        if (!t.isIdentifier(expr.left) && !t.isMemberExpression(expr.left)) {
+                                            throw new Error(`Unsupported LValue type: '${expr.left.type}'`);
+                                        }
 
-            //                             visitLVal(expr.left);
-            //                             visitExpr(expr.right);
-            //                             il.store();
-            //                         },
+                                        // Handle simple assignment
+                                        if (expr.operator === '=') {
+                                            visitExpr(expr.right, $T);
+                                            if (t.isIdentifier(expr.left)) {
+                                                il.STORE($T, il.ENV, expr.left.name);
+                                            }
+                                            else {
+                                                let left = expr.left;
+                                                il.using(($0, $1) => {
+                                                    visitExpr(left.object, $0);
+                                                    visitExpr(left.property, $1);
+                                                    il.STORE($T, $0, $1);
+                                                });
+                                            }
+                                        }
+
+                                        // Handle compound assignment + operation
+                                        else {
+                                            let operation = (operator: string, $T: Register, $0: Register) => {
+                                                switch (operator) {
+                                                    case '+=': return il.ADD($T, $0, $T);
+                                                    case '-=': return il.SUB($T, $0, $T);
+                                                    case '*=': return il.MUL($T, $0, $T);
+                                                    case '/=': return il.DIV($T, $0, $T);
+                                                    // TODO: "%=" | "<<=" | ">>=" | ">>>=" | "|=" | "^=" | "&=";
+                                                    default: throw new Error(`Unsupported assignment operator: '${expr.operator}'`);
+                                                }
+                                            }
+                                            if (t.isIdentifier(expr.left)) {
+                                                let left = expr.left;
+                                                il.using($0 => {
+                                                    il.LOAD($0, il.ENV, left.name);
+                                                    visitExpr(expr.right, $T);
+                                                    operation(expr.operator, $T, $0);
+                                                });
+                                                il.STORE($T, il.ENV, left.name);
+                                            }
+                                            else {
+                                                let left = expr.left;
+                                                il.using(($0, $1, $2) => {
+                                                    visitExpr(left.object, $1);
+                                                    visitExpr(left.property, $2);
+                                                    il.LOAD($0, $1, $2);
+                                                    visitExpr(expr.right, $T);
+                                                    operation(expr.operator, $T, $0);
+                                                    il.STORE($T, $1, $2);
+                                                });
+                                            }
+                                        }
+                                    },
             BinaryExpression:       expr => {
                                         visitExpr(expr.left, $T);
                                         il.using($0 => {
@@ -144,11 +194,9 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
                                             }
                                         });
                                     },
-            // Identifier:             expr => {
-            //                             il.env();
-            //                             il.push(expr.name);
-            //                             il.fetch();
-            //                         },
+            Identifier:             expr => {
+                                        il.LOAD($T, il.ENV, expr.name);
+                                    },
             // CallExpression:         expr => {
             //                             // TODO: BUG! Need to set `this` if callee is a member expression, need to check callee in general...
             //                             assert(t.isIdentifier(expr.callee)); // TODO: temp testing...
@@ -239,32 +287,6 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
 
             // ------------------------- experimental -------------------------
             // AwaitExpression:     expr => [***]
-        });
-    }
-    function visitLVal(expr: Node) {
-        let label = ((i) => (strs) => `${strs[0]}-${i}`)(++visitCounter);
-        matchNode<void>(expr, {
-            // ------------------------- core -------------------------
-            // Identifier:             expr => {
-            //                             il.env();
-            //                             il.push(expr.name);
-            //                         },
-            // MemberExpression:       expr => {
-            //                             visitExpr(expr.object);
-            //                             if (expr.computed) {
-            //                                 visitExpr(expr.property);
-            //                             }
-            //                             else {
-            //                                 assert(t.isIdentifier(expr.property));
-            //                                 il.push((<Identifier> expr.property).name);
-            //                             }
-            //                         },
-            // RestElement:         expr => [***],
-
-            // ------------------------- es2015 -------------------------
-            // AssignmentPattern:   expr => [***],
-            // ArrayPattern:        expr => [***],
-            // ObjectPattern:       expr => [***],
         });
     }
 }

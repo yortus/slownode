@@ -7,10 +7,11 @@ import {Register} from './registers';
 
 export interface VM {
 
-    // Load/store
+    // Load/store/move
     LOAD:   (tgt: Register, obj: Register, key: Register|string|number) => void;
     LOADC:  (tgt: Register, val: string|number|boolean|null) => void;
     STORE:  (src: Register, obj: Register, key: Register|string|number) => void;
+    MOVE:   (tgt: Register, src: Register) => void;
 
     // Arithmetic/logic
     ADD:    (tgt: Register, lhs: Register, rhs: Register) => void;
@@ -57,6 +58,7 @@ export function makeVM() {
         LOAD:   (tgt, obj, key) => tgt.value = obj.value[key instanceof Register ? key.value : key],
         LOADC:  (tgt, val) => tgt.value = val,
         STORE:  (src, obj, key) => obj.value[key instanceof Register ? key.value : key] = src.value,
+        MOVE:   (tgt, src) => tgt.value = src.value,
 
         ADD:    (tgt, lhs, rhs) => tgt.value = lhs.value + rhs.value,
         SUB:    (tgt, lhs, rhs) => tgt.value = lhs.value - rhs.value,

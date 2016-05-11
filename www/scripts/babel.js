@@ -1,3 +1,6 @@
+// Source: https://github.com/Daniel15/babel-standalone
+
+
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();

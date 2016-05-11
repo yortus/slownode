@@ -19,7 +19,7 @@ export interface Label {
 
 export default class IL implements VM {
 
-    // Load/store
+    // Load/store/move
     LOAD(tgt: Register, obj: Register, key: Register|string|number) {
         this.addLine(`LOAD(${tgt.name}, ${obj.name}, ${key instanceof Register ? key.name : JSON.stringify(key)})`);
     }
@@ -28,6 +28,9 @@ export default class IL implements VM {
     }
     STORE(src: Register, obj: Register, key: Register|string|number) {
         this.addLine(`STORE(${src.name}, ${obj.name}, ${key instanceof Register ? key.name : JSON.stringify(key)})`);
+    }
+    MOVE(tgt: Register, src: Register) {
+        this.addLine(`MOVE(${tgt.name}, ${src.name})`);
     }
 
     // Arithmetic/logic
