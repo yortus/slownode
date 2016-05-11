@@ -4,7 +4,7 @@ import {Binding as BabelBinding} from "babel-traverse";                 // Elide
 import * as types from "babel-types";                                   // Elided (used only for types)
 import * as assert from 'assert';
 import matchNode from './match-node';
-import {RegisterFile, Register} from './registers';
+import {Register} from './registers';
 import IL from './il';
 
 
@@ -13,15 +13,14 @@ import IL from './il';
 
 export default function transformToIL({types: t}: typeof babel,  prog: types.Program, scopes: WeakMap<Node, BabelBinding[]>, il: IL) {
     let visitCounter = 0;
-    let regs = new RegisterFile();
     visitStmt(prog);
 
     function visitStmt(stmt: Node) {
 
         // TODO: temp testing...
-        if (scopes.has(stmt)) {
-            il.enterScope(scopes.get(stmt));
-        }
+        // if (scopes.has(stmt)) {
+        //     il.enterScope(scopes.get(stmt));
+        // }
         
         let label = ((i) => (strs) => `${strs[0]}-${i}`)(++visitCounter);
         matchNode<void>(stmt, {
@@ -39,8 +38,9 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
             // Statement:           stmt => [***],
             EmptyStatement:         stmt => {},
             ExpressionStatement:    stmt => {
-                                        let R0 = visitExpr(stmt.expression);
-                                        regs.releaseAll(R0);
+                                        il.using($0 => {
+                                            visitExpr(stmt.expression, $0);
+                                        });
                                     },
             Program:                stmt => {
                                         stmt.body.forEach(visitStmt);
@@ -53,14 +53,17 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
             // ForStatement:        stmt => [***],
             // FunctionDeclaration: stmt => [***],
             IfStatement:            stmt => {
-                                        let R0 = visitExpr(stmt.test);
-                                        regs.releaseAll(R0);
-                                        il.bf(label`alternate`);
-                                        visitStmt(stmt.consequent);
-                                        il.br(label`exit`);
-                                        il.label(label`alternate`);
-                                        visitStmt(stmt.alternate || t.blockStatement([]));
-                                        il.label(label`exit`);
+                                        let L1 = il.label();
+                                        let L2 = il.label();
+                                        il.using($0 => {
+                                            visitExpr(stmt.test, $0);
+                                            il.BF(L1, $0);
+                                            visitStmt(stmt.consequent);
+                                            il.B(L2);
+                                            L1.resolve();
+                                            visitStmt(stmt.alternate || t.blockStatement([]));
+                                            L2.resolve();
+                                        });
                                     },
             // LabeledStatement:    stmt => [***],
             // ReturnStatement:     stmt => [***],
@@ -94,13 +97,13 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
         });
 
         // TODO: temp testing...
-        if (scopes.has(stmt)) {
-            il.leaveScope();
-        }
+        // if (scopes.has(stmt)) {
+        //     il.leaveScope();
+        // }
     }
-    function visitExpr(expr: Expression|SpreadElement): Register|string|number|boolean {
+    function visitExpr(expr: Expression|SpreadElement, $T: Register) {
         let label = ((i) => (strs) => `${strs[0]}-${i}`)(++visitCounter);
-        return matchNode<Register|string|number|boolean>(expr, {
+        matchNode<void>(expr, {
             // ------------------------- core -------------------------
             // ArrayExpression:        expr => {
             //                             il.newarr(TGT);
@@ -121,12 +124,24 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
             //                             il.store();
             //                         },
             BinaryExpression:       expr => {
-                                        let R0 = visitExpr(expr.left);
-                                        let R1 = visitExpr(expr.right);
-                                        let R2 = regs.reserve();
-                                        il.call(R2, expr.operator, [R0, R1]);
-                                        regs.releaseAll(R0, R1);
-                                        return R2;
+                                        visitExpr(expr.left, $T);
+                                        il.using($0 => {
+                                            visitExpr(expr.right, $0);
+                                            switch (expr.operator) {
+                                                case '+':   return il.ADD($T, $T, $0);
+                                                case '-':   return il.SUB($T, $T, $0);
+                                                case '*':   return il.MUL($T, $T, $0);
+                                                case '/':   return il.DIV($T, $T, $0);
+                                                case '===': return il.EQ($T, $T, $0);
+                                                case '!==': return il.NE($T, $T, $0);
+                                                case '>=':  return il.GE($T, $T, $0);
+                                                case '>':   return il.GT($T, $T, $0);
+                                                case '<=':  return il.LE($T, $T, $0);
+                                                case '<':   return il.LT($T, $T, $0);
+                                                // TODO: "%" | "**" | "&" | "|" | ">>" | ">>>" | "<<" | "^" | "==" | "!=" | "in" | "instanceof";
+                                                default: throw new Error(`Unsupported binary operator: '${expr.operator}'`);
+                                            }
+                                        });
                                     },
             // Identifier:             expr => {
             //                             il.env();
@@ -151,18 +166,18 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
             //                             il.label(label`exit`);
             //                         },
             // FunctionExpression:  expr => [***],
-            // StringLiteral:          expr => {
-            //                             il.ldc(TGT, expr.value);
-            //                         },
-            NumericLiteral:         expr => {
-                                        return expr.value;
+            StringLiteral:          expr => {
+                                        il.LOADC($T, expr.value);
                                     },
-            // NullLiteral:            expr => {
-            //                             il.ldc(TGT, null);
-            //                         },
-            // BooleanLiteral:         expr => {
-            //                             il.ldc(TGT, expr.value);
-            //                         },
+            NumericLiteral:         expr => {
+                                        il.LOADC($T, expr.value);
+                                    },
+            NullLiteral:            expr => {
+                                        il.LOADC($T, null);
+                                    },
+            BooleanLiteral:         expr => {
+                                        il.LOADC($T, expr.value);
+                                    },
             // RegExpLiteral:          expr => {
             //                             // TODO: use proper new/construct opcode...
             //                             il.push(expr.pattern);
