@@ -1,7 +1,8 @@
 import * as babel from 'babel';
-import {Node, Statement, Expression, Identifier, SpreadElement} from "babel-types";    // Elided (used only for types)
-import {Binding as BabelBinding} from "babel-traverse";                 // Elided (used only for types)
-import * as types from "babel-types";                                   // Elided (used only for types)
+import {Node, Statement, Expression, Identifier} from "babel-types";        // Elided (used only for types)
+import {StringLiteral, NumericLiteral, SpreadElement} from "babel-types";   // Elided (used only for types)
+import {Binding as BabelBinding} from "babel-traverse";                     // Elided (used only for types)
+import * as types from "babel-types";                                       // Elided (used only for types)
 import * as assert from 'assert';
 import matchNode from './match-node';
 import Register from './register';
@@ -243,10 +244,11 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
                                         L1.resolve();
                                     },
             MemberExpression:       expr => {
+                                        // TODO: refactor common code out of the following cases...
                                         if (!expr.computed) {
+                                            // TODO: good example for TS assert(type) suggestion...
+                                            assert(t.isIdentifier(expr.property));
                                             il.withRegisters($0 => {
-                                                // TODO: good example for TS assert(type) suggestion...
-                                                assert(t.isIdentifier(expr.property));
                                                 visitExpr(expr.object, $0);
                                                 il.LOAD($T, $0, (<Identifier> expr.property).name);
                                             });
@@ -267,9 +269,38 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
                                         }
                                     },
             // NewExpression:       expr => [***],
-            // ObjectExpression:    expr => [***],
-            // ObjectMethod:        expr => [***],
-            // ObjectProperty:      expr => [***],
+            ObjectExpression:       expr => {
+                                        il.NEWOBJ($T);
+                                        expr.properties.forEach(property => {
+                                            if (t.isObjectProperty(property)) {
+                                                let prop = property;
+                                                if (!prop.computed) {
+                                                    let key: string|number;
+                                                    switch (prop.key.type) {
+                                                        case 'Identifier':      key = (<Identifier> prop.key).name; break;
+                                                        case 'StringLiteral':   key = (<StringLiteral> prop.key).value; break;
+                                                        case 'NumericLiteral':  key = (<NumericLiteral> prop.key).value; break;
+                                                        default: throw new Error(`Unsupported property key: '${prop.key.type}'`);
+                                                    }
+                                                    il.withRegisters($0 => {
+                                                        visitExpr(prop.value, $0);
+                                                        il.STORE($T, key, $0);
+                                                    });
+                                                }
+                                                else {
+                                                    il.withRegisters(($0, $1) => {
+                                                        visitExpr(prop.key, $0);
+                                                        visitExpr(prop.value, $1);
+                                                        il.STORE($T, $0, $1);
+                                                    });
+                                                }
+                                            }
+                                            else {
+                                                // TODO: ObjectMethod (ES6), SpreadProperty (experimental)
+                                                throw new Error(`Unsupported object property: '${property.type}'`);
+                                            }
+                                        });
+                                    },
             SequenceExpression:     expr => {
                                         expr.expressions.forEach(expr => {
                                             visitExpr(expr, $T);

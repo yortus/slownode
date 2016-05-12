@@ -59,7 +59,7 @@ export default class IL implements VM {
 
     // Misc
     NEWARR(tgt: Register) { this.addLine(`NEWARR(${tgt.name});`); }
-    NEWOBJ(tgt: Register) { this.addLine(`NEWAOB(${tgt.name});`); }
+    NEWOBJ(tgt: Register) { this.addLine(`NEWOBJ(${tgt.name});`); }
     NOOP() { this.addLine(`NOOP();`); }
 
     // Registers
