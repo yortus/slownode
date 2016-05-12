@@ -204,15 +204,17 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
             //                             il.roll(expr.arguments.length + 1);
             //                             il.call(expr.arguments.length);
             //                         },
-            // ConditionalExpression:  expr => {
-            //                             visitExpr(expr.test);
-            //                             il.bf(label`alternate`);
-            //                             visitExpr(expr.consequent);
-            //                             il.br(label`exit`);
-            //                             il.label(label`alternate`);
-            //                             visitExpr(expr.alternate);
-            //                             il.label(label`exit`);
-            //                         },
+            ConditionalExpression:  expr => {
+                                        let L1 = il.newLabel();
+                                        let L2 = il.newLabel();
+                                        visitExpr(expr.test, $T);
+                                        il.BF(L1, $T);
+                                        visitExpr(expr.consequent, $T);
+                                        il.B(L2);
+                                        L1.resolve();
+                                        visitExpr(expr.alternate, $T);
+                                        L2.resolve();
+                                    },
             // FunctionExpression:  expr => [***],
             StringLiteral:          expr => {
                                         il.LOADC($T, expr.value);
