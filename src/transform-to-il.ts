@@ -269,17 +269,21 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
             // ObjectExpression:    expr => [***],
             // ObjectMethod:        expr => [***],
             // ObjectProperty:      expr => [***],
-            // SequenceExpression:     expr => {
-            //                             for (let len = expr.expressions.length, i = 0; i < len; ++i) {
-            //                                 visitExpr(expr.expressions[i]);
-            //                                 if (i < len - 1) il.pop();
-            //                             }
-            //                         },
+            SequenceExpression:     expr => {
+                                        expr.expressions.forEach(expr => {
+                                            visitExpr(expr, $T);
+                                        });
+                                    },
             // ThisExpression:      expr => [***],
-            // UnaryExpression:        expr => {
-            //                             visitExpr(expr.argument);
-            //                             il.calli1(expr.operator);
-            //                         },
+            UnaryExpression:        expr => {
+                                        visitExpr(expr.argument, $T);
+                                        switch (expr.operator) {
+                                            case '-':   return il.NEG($T, $T);
+                                            case '!':   return il.NOT($T, $T);
+                                            // TODO: "+" | "~" | "typeof" | "void" | "delete"
+                                            default: throw new Error(`Unsupported unary operator: '${expr.operator}'`);
+                                        }
+                                    },
             // UpdateExpression:    expr => [***],
 
             // ------------------------- es2015 -------------------------
