@@ -1,7 +1,7 @@
 'use strict';
 import * as assert from 'assert';
 import Scope from './scope';
-import {Register} from './registers';
+import Register from './register';
 import {VM} from './vm';
 
 
@@ -53,6 +53,10 @@ export default class IL implements VM {
     B(line: Label|number) { this.addLine(`B(${line})`); }
     BF(line: Label|number, arg: Register) { this.addLine(`BF(${line}, ${arg.name})`); }
     BT(line: Label|number, arg: Register) { this.addLine(`BT(${line}, ${arg.name})`); }
+
+    // Misc
+    NEWARR(tgt: Register) { this.addLine(`NEWARR(${tgt.name})`); }
+    NEWOBJ(tgt: Register) { this.addLine(`NEWAOB(${tgt.name})`); }
     NOOP() { this.addLine(`NOOP()`); }
 
     // Registers

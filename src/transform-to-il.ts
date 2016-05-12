@@ -4,7 +4,7 @@ import {Binding as BabelBinding} from "babel-traverse";                 // Elide
 import * as types from "babel-types";                                   // Elided (used only for types)
 import * as assert from 'assert';
 import matchNode from './match-node';
-import {Register} from './registers';
+import Register from './register';
 import IL from './il';
 
 
@@ -59,12 +59,12 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
                                         il.using($0 => {
                                             visitExpr(stmt.test, $0);
                                             il.BF(L1, $0);
-                                            visitStmt(stmt.consequent);
-                                            if (stmt.alternate) il.B(L2);
-                                            L1.resolve();
-                                            visitStmt(stmt.alternate || t.blockStatement([]));
-                                            L2.resolve();
                                         });
+                                        visitStmt(stmt.consequent);
+                                        if (stmt.alternate) il.B(L2);
+                                        L1.resolve();
+                                        visitStmt(stmt.alternate || t.blockStatement([]));
+                                        L2.resolve();
                                     },
             // LabeledStatement:    stmt => [***],
             // ReturnStatement:     stmt => [***],
@@ -106,16 +106,15 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
         let label = ((i) => (strs) => `${strs[0]}-${i}`)(++visitCounter);
         matchNode<void>(expr, {
             // ------------------------- core -------------------------
-            // ArrayExpression:        expr => {
-            //                             il.newarr(TGT);
-            //                             regs.reserve((R0, R1) => {
-            //                                 expr.elements.forEach((el, i) => {
-            //                                     visitExpr(el, R0);
-            //                                     il.ldc(R1, i);
-            //                                     il.stm(TGT, R1, R0);
-            //                                 });
-            //                             });
-            //                         },
+            ArrayExpression:        expr => {
+                                        il.NEWARR($T);
+                                        il.using($0 => {
+                                            expr.elements.forEach((el, i) => {
+                                                visitExpr(el, $0);
+                                                il.STORE($0, $T, i);
+                                            });
+                                        });
+                                    },
             AssignmentExpression:   expr => {
                                         // ES6 destructuring introduces a number of new LValue node types.
                                         // We don't need to handle these here, since we can have these nodes
@@ -245,17 +244,30 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
             //                             visitExpr(expr.right);
             //                             il.label(label`exit`);
             //                         },
-            // MemberExpression:       expr => {
-            //                             visitExpr(expr.object);
-            //                             if (expr.computed) {
-            //                                 visitExpr(expr.property);
-            //                             }
-            //                             else {
-            //                                 assert(t.isIdentifier(expr.property));
-            //                                 il.push((<Identifier> expr.property).name);
-            //                             }
-            //                             il.fetch();
-            //                         },
+            MemberExpression:       expr => {
+                                        if (!expr.computed) {
+                                            il.using($0 => {
+                                                // TODO: good example for TS assert(type) suggestion...
+                                                assert(t.isIdentifier(expr.property));
+                                                visitExpr(expr.object, $0);
+                                                il.LOAD($T, $0, (<Identifier> expr.property).name);
+                                            });
+                                        }
+                                        else if (t.isStringLiteral(expr.property) || t.isNumericLiteral(expr.property)) {
+                                            let prop = expr.property;
+                                            il.using($0 => {
+                                                visitExpr(expr.object, $0);
+                                                il.LOAD($T, $0, prop.value);
+                                            });
+                                        }
+                                        else {
+                                            il.using(($0, $1) => {
+                                                visitExpr(expr.object, $0);
+                                                visitExpr(expr.property, $1);
+                                                il.LOAD($T, $0, $1);
+                                            });
+                                        }
+                                    },
             // NewExpression:       expr => [***],
             // ObjectExpression:    expr => [***],
             // ObjectMethod:        expr => [***],

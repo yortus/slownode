@@ -1,5 +1,5 @@
 'use strict';
-import {Register} from './registers';
+import Register from './register';
 
 
 
@@ -33,6 +33,10 @@ export interface VM {
     B:      (line: number) => void;
     BF:     (line: number, arg: Register) => void;
     BT:     (line: number, arg: Register) => void;
+
+    // Misc
+    NEWARR: (tgt: Register) => void; // TODO: really primitive? could use ctor
+    NEWOBJ: (tgt: Register) => void; // TODO: really primitive? could use ctor
     NOOP:   () => void;
 
     // Registers
@@ -77,6 +81,9 @@ export function makeVM() {
         B:      (line) => jump(line),
         BF:     (line, arg) => arg.value ? null : jump(line),
         BT:     (line, arg) => arg.value ? jump(line) : null,
+
+        NEWARR: (tgt) => tgt.value = [],
+        NEWOBJ: (tgt) => tgt.value = {},
         NOOP:   () => null,
 
         PC:     0,
