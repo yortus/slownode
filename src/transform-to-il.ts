@@ -39,7 +39,7 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
             // Statement:           stmt => [***],
             EmptyStatement:         stmt => {},
             ExpressionStatement:    stmt => {
-                                        il.using($0 => {
+                                        il.withRegisters($0 => {
                                             visitExpr(stmt.expression, $0);
                                         });
                                     },
@@ -54,9 +54,9 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
             // ForStatement:        stmt => [***],
             // FunctionDeclaration: stmt => [***],
             IfStatement:            stmt => {
-                                        let L1 = il.label();
-                                        let L2 = il.label();
-                                        il.using($0 => {
+                                        let L1 = il.newLabel();
+                                        let L2 = il.newLabel();
+                                        il.withRegisters($0 => {
                                             visitExpr(stmt.test, $0);
                                             il.BF(L1, $0);
                                         });
@@ -108,10 +108,10 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
             // ------------------------- core -------------------------
             ArrayExpression:        expr => {
                                         il.NEWARR($T);
-                                        il.using($0 => {
+                                        il.withRegisters($0 => {
                                             expr.elements.forEach((el, i) => {
                                                 visitExpr(el, $0);
-                                                il.STORE($0, $T, i);
+                                                il.STORE($T, i, $0);
                                             });
                                         });
                                     },
@@ -127,14 +127,14 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
                                         if (expr.operator === '=') {
                                             visitExpr(expr.right, $T);
                                             if (t.isIdentifier(expr.left)) {
-                                                il.STORE($T, il.ENV, expr.left.name);
+                                                il.STORE(il.ENV, expr.left.name, $T);
                                             }
                                             else {
                                                 let left = expr.left;
-                                                il.using(($0, $1) => {
+                                                il.withRegisters(($0, $1) => {
                                                     visitExpr(left.object, $0);
                                                     visitExpr(left.property, $1);
-                                                    il.STORE($T, $0, $1);
+                                                    il.STORE($0, $1, $T);
                                                 });
                                             }
                                         }
@@ -153,29 +153,29 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
                                             }
                                             if (t.isIdentifier(expr.left)) {
                                                 let left = expr.left;
-                                                il.using($0 => {
+                                                il.withRegisters($0 => {
                                                     il.LOAD($0, il.ENV, left.name);
                                                     visitExpr(expr.right, $T);
                                                     operation(expr.operator, $T, $0);
                                                 });
-                                                il.STORE($T, il.ENV, left.name);
+                                                il.STORE(il.ENV, left.name, $T);
                                             }
                                             else {
                                                 let left = expr.left;
-                                                il.using(($0, $1, $2) => {
+                                                il.withRegisters(($0, $1, $2) => {
                                                     visitExpr(left.object, $1);
                                                     visitExpr(left.property, $2);
                                                     il.LOAD($0, $1, $2);
                                                     visitExpr(expr.right, $T);
                                                     operation(expr.operator, $T, $0);
-                                                    il.STORE($T, $1, $2);
+                                                    il.STORE($1, $2, $T);
                                                 });
                                             }
                                         }
                                     },
             BinaryExpression:       expr => {
                                         visitExpr(expr.left, $T);
-                                        il.using($0 => {
+                                        il.withRegisters($0 => {
                                             visitExpr(expr.right, $0);
                                             switch (expr.operator) {
                                                 case '+':   return il.ADD($T, $T, $0);
@@ -246,7 +246,7 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
             //                         },
             MemberExpression:       expr => {
                                         if (!expr.computed) {
-                                            il.using($0 => {
+                                            il.withRegisters($0 => {
                                                 // TODO: good example for TS assert(type) suggestion...
                                                 assert(t.isIdentifier(expr.property));
                                                 visitExpr(expr.object, $0);
@@ -255,13 +255,13 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
                                         }
                                         else if (t.isStringLiteral(expr.property) || t.isNumericLiteral(expr.property)) {
                                             let prop = expr.property;
-                                            il.using($0 => {
+                                            il.withRegisters($0 => {
                                                 visitExpr(expr.object, $0);
                                                 il.LOAD($T, $0, prop.value);
                                             });
                                         }
                                         else {
-                                            il.using(($0, $1) => {
+                                            il.withRegisters(($0, $1) => {
                                                 visitExpr(expr.object, $0);
                                                 visitExpr(expr.property, $1);
                                                 il.LOAD($T, $0, $1);

@@ -26,8 +26,8 @@ export default class IL implements VM {
     LOADC(tgt: Register, val: string|number|boolean|null) {
         this.addLine(`LOADC(${tgt.name}, ${JSON.stringify(val)})`);
     }
-    STORE(src: Register, obj: Register, key: Register|string|number) {
-        this.addLine(`STORE(${src.name}, ${obj.name}, ${key instanceof Register ? key.name : JSON.stringify(key)})`);
+    STORE(obj: Register, key: Register|string|number, src: Register) {
+        this.addLine(`STORE(${obj.name}, ${key instanceof Register ? key.name : JSON.stringify(key)}, ${src.name})`);
     }
     MOVE(tgt: Register, src: Register) {
         this.addLine(`MOVE(${tgt.name}, ${src.name})`);
@@ -73,7 +73,7 @@ export default class IL implements VM {
 
 
     /** Allocate registers for the duration of `callback`. */
-    using(callback: (...args: Register[]) => void) {
+    withRegisters(callback: (...args: Register[]) => void) {
         let args: Register[] = new Array(callback.length);
         for (let i = 0; i < callback.length; ++i) {
             args[i] = this.reserveRegister();
@@ -84,7 +84,7 @@ export default class IL implements VM {
 
 
     /** Create a new label. */
-    label(): Label {
+    newLabel(): Label {
         let value = `ℒѬҦℬℚℲℳⱵ${++this._labels}`; // Assume this string won't occur in any other way.
         let searchStartLine = this._lines.length;
         return <Label> {
