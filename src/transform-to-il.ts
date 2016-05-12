@@ -234,18 +234,13 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
             //                             il.push(expr.flags || '');
             //                             il.calli2(`%constructRegExp%`);
             // },
-            // LogicalExpression:      expr => {
-            //                             visitExpr(expr.left);
-            //                             if (expr.operator === '&&') {
-            //                                 il.bf(label`exit`);
-            //                             }
-            //                             else {
-            //                                 il.bt(label`exit`);
-            //                             }
-            //                             il.pop();
-            //                             visitExpr(expr.right);
-            //                             il.label(label`exit`);
-            //                         },
+            LogicalExpression:      expr => {
+                                        let L1 = il.newLabel();
+                                        visitExpr(expr.left, $T);
+                                        expr.operator === '&&' ? il.BF(L1, $T) : il.BT(L1, $T);
+                                        visitExpr(expr.right, $T);
+                                        L1.resolve();
+                                    },
             MemberExpression:       expr => {
                                         if (!expr.computed) {
                                             il.withRegisters($0 => {
