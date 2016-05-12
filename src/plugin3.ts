@@ -35,11 +35,11 @@ declare class Binding {
 
 // Export the plugin factory function
 export function transform(source: string): string {
+    let il = new IL(source);
     
     // Define a babel plugin.
     let babelPlugin = (b: typeof babel) => {
         let t = b.types;
-        let il = new IL();
         let scopes = new WeakMap<Node, BabelBinding[]>();
         return {
             visitor: <Visitor> {

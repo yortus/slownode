@@ -18,46 +18,49 @@ export interface Label {
 
 
 export default class IL implements VM {
+    constructor(source: string) {
+        this._sourceLines = source.split(/(?:\r\n)|\r|\n/);
+    }
 
     // Load/store/move
     LOAD(tgt: Register, obj: Register, key: Register|string|number) {
-        this.addLine(`LOAD(${tgt.name}, ${obj.name}, ${key instanceof Register ? key.name : JSON.stringify(key)})`);
+        this.addLine(`LOAD(${tgt.name}, ${obj.name}, ${key instanceof Register ? key.name : JSON.stringify(key)});`);
     }
     LOADC(tgt: Register, val: string|number|boolean|null) {
-        this.addLine(`LOADC(${tgt.name}, ${JSON.stringify(val)})`);
+        this.addLine(`LOADC(${tgt.name}, ${JSON.stringify(val)});`);
     }
     STORE(obj: Register, key: Register|string|number, src: Register) {
-        this.addLine(`STORE(${obj.name}, ${key instanceof Register ? key.name : JSON.stringify(key)}, ${src.name})`);
+        this.addLine(`STORE(${obj.name}, ${key instanceof Register ? key.name : JSON.stringify(key)}, ${src.name});`);
     }
     MOVE(tgt: Register, src: Register) {
-        this.addLine(`MOVE(${tgt.name}, ${src.name})`);
+        this.addLine(`MOVE(${tgt.name}, ${src.name});`);
     }
 
     // Arithmetic/logic
-    ADD(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`ADD(${tgt.name}, ${lhs.name}, ${rhs.name})`); }
-    SUB(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`SUB(${tgt.name}, ${lhs.name}, ${rhs.name})`); }
-    MUL(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`MUL(${tgt.name}, ${lhs.name}, ${rhs.name})`); }
-    DIV(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`DIV(${tgt.name}, ${lhs.name}, ${rhs.name})`); }
-    NEG(tgt: Register, arg: Register) { this.addLine(`NEG(${tgt.name}, ${arg.name})`); }
-    NOT(tgt: Register, arg: Register) { this.addLine(`NOT(${tgt.name}, ${arg.name})`); }
+    ADD(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`ADD(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
+    SUB(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`SUB(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
+    MUL(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`MUL(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
+    DIV(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`DIV(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
+    NEG(tgt: Register, arg: Register) { this.addLine(`NEG(${tgt.name}, ${arg.name});`); }
+    NOT(tgt: Register, arg: Register) { this.addLine(`NOT(${tgt.name}, ${arg.name});`); }
 
     // Compare
-    EQ(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`EQ(${tgt.name}, ${lhs.name}, ${rhs.name})`); }
-    NE(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`NE(${tgt.name}, ${lhs.name}, ${rhs.name})`); }
-    GE(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`GE(${tgt.name}, ${lhs.name}, ${rhs.name})`); }
-    GT(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`GT(${tgt.name}, ${lhs.name}, ${rhs.name})`); }
-    LE(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`LE(${tgt.name}, ${lhs.name}, ${rhs.name})`); }
-    LT(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`LT(${tgt.name}, ${lhs.name}, ${rhs.name})`); }
+    EQ(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`EQ(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
+    NE(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`NE(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
+    GE(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`GE(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
+    GT(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`GT(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
+    LE(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`LE(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
+    LT(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`LT(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
 
     // Control
-    B(line: Label|number) { this.addLine(`B(${line})`); }
-    BF(line: Label|number, arg: Register) { this.addLine(`BF(${line}, ${arg.name})`); }
-    BT(line: Label|number, arg: Register) { this.addLine(`BT(${line}, ${arg.name})`); }
+    B(line: Label|number) { this.addLine(`B(${line});`); }
+    BF(line: Label|number, arg: Register) { this.addLine(`BF(${line}, ${arg.name});`); }
+    BT(line: Label|number, arg: Register) { this.addLine(`BT(${line}, ${arg.name});`); }
 
     // Misc
-    NEWARR(tgt: Register) { this.addLine(`NEWARR(${tgt.name})`); }
-    NEWOBJ(tgt: Register) { this.addLine(`NEWAOB(${tgt.name})`); }
-    NOOP() { this.addLine(`NOOP()`); }
+    NEWARR(tgt: Register) { this.addLine(`NEWARR(${tgt.name});`); }
+    NEWOBJ(tgt: Register) { this.addLine(`NEWAOB(${tgt.name});`); }
+    NOOP() { this.addLine(`NOOP();`); }
 
     // Registers
     PC = 0;
@@ -70,6 +73,15 @@ export default class IL implements VM {
     $5 = new Register('$5');
     $6 = new Register('$6');
     $7 = new Register('$7');
+
+
+    // TODO: temp testing...
+    lineNumber(n: number) {
+        if (n > this._sourceLine) {
+            this.addLine(`//  ${this._sourceLines[n - 1]}`);
+            this._sourceLine = n;
+        }
+    }
 
 
     /** Allocate registers for the duration of `callback`. */
@@ -126,7 +138,7 @@ ${source}
 
 
     private addLine(line: string) {
-        line = `case ${`${this._lines.length}:'   `.slice(0, 6)}   ';${line};`;
+        line = `case ${`${this._lines.length}:'   `.slice(0, 6)}   ';${line}`;
         this._lines.push(line);
         return this;
     }
@@ -156,6 +168,10 @@ ${source}
 
 
     private _labels = 0;
+
+
+    private _sourceLines: string[];
+    private _sourceLine = 0;
 }
 
 

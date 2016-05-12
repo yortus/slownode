@@ -17,6 +17,7 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
     il.NOOP();
 
     function visitStmt(stmt: Node) {
+        if (stmt.loc) il.lineNumber(stmt.loc.start.line); // TODO: temp testing...
 
         // TODO: temp testing...
         // if (scopes.has(stmt)) {
