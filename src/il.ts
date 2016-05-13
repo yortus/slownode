@@ -153,7 +153,11 @@ export default class IL implements VM {
         let lines = this._lines.map((line, i) => {
             return `${line}${' '.repeat(Math.max(0, 58 - line.length))}  ${this._scopes[i].id}`;
         });
-        let source = prolog + lines.map(line => `                    ${line}`).join('\n') + epilog;
+
+        // TODO: doc...
+        let source = template
+            .replace(/[ ]*\$LINES/, lines.map(line => `            ${line}`).join('\n'))
+            .replace('$META', '// TODO: Scope info etc goes here...')
         return source;
     }
 
@@ -231,25 +235,20 @@ export default class IL implements VM {
 
 
 
-const prolog = `
-function (vm) {
-    while (true) {
-        try {
-            with (vm) {
-                switch (PC) {
-`;
-const epilog = `
-                    default: throw new Error('fin'); // TODO: ...
-                }
-            }
+const template = `{
+    meta: {
+        $META
+    },
+    code: () => {
+        switch (PC) {
+            $LINES
+            default: throw new Error('fin'); // TODO: ...
         }
-        catch (ex) {
-            // TODO: ...
-            break;
-        }
+    },
+    data: {
+        // TODO: ...
     }
-}
-`;
+}`;
 
 
 
