@@ -1,5 +1,6 @@
 'use strict';
 import * as assert from 'assert';
+import {SourceLocation} from "babel-types"; // Elided (used only for types)
 import Scope from './scope';
 import Register from './register';
 import {VM} from './vm';
@@ -76,12 +77,22 @@ export default class IL implements VM {
 
 
     // TODO: temp testing...
-    lineNumber(n: number) {
-        if (n > this._sourceLine) {
-            this.addLine(`//  ${this._sourceLines[n - 1]}`);
-            this._sourceLine = n;
-        }
+    pushSourceLocation(loc: SourceLocation) {
+        this._sourceLocations.push(loc);
     }
+    popSourceLocation() {
+        this._sourceLocations.pop();
+    }
+    private _sourceLocations: SourceLocation[] = [];
+
+
+    // TODO: temp testing...
+    // lineNumber(n: number) {
+    //     if (n > this._sourceLine) {
+    //         this.addLine(`//  ${this._sourceLines[n - 1]}`);
+    //         this._sourceLine = n;
+    //     }
+    // }
 
 
     /** Allocate registers for the duration of `callback`. */
@@ -113,8 +124,13 @@ export default class IL implements VM {
     }
 
 
-    compile(): string {
-        let source = this._lines.map(l => `                    ${l}`).join('\n');
+    compile(): string {name
+        let source = this._lines.map((line, i) => {
+            let loc = this._lineLocs[i];
+            line = `                    ${line}`;
+            line = `${line}${' '.repeat(Math.max(0, 78 - line.length))}  // (${loc.start.line}-${loc.end.line})`;
+            return line;
+        }).join('\n');
         source = `
 function (vm) {
     while (true) {
@@ -140,7 +156,8 @@ ${source}
     private addLine(line: string) {
         line = `case ${`${this._lines.length}:'   `.slice(0, 6)}   ';${line}`;
         this._lines.push(line);
-        return this;
+        let loc = this._sourceLocations[this._sourceLocations.length - 1] || <SourceLocation>{start: {line: 1}, end:{line:this._sourceLines.length}};
+        this._lineLocs.push(loc);
     }
 
 
@@ -165,6 +182,7 @@ ${source}
 
 
     private _lines: string[] = [];
+    private _lineLocs: SourceLocation[] = [];
 
 
     private _labels = 0;
