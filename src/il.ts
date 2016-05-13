@@ -78,12 +78,13 @@ export default class IL implements VM {
 
     // TODO: temp testing...
     pushSourceLocation(loc: SourceLocation) {
-        this._sourceLocations.push(loc);
+        this._sourceLine = loc.start.line;
+
     }
     popSourceLocation() {
-        this._sourceLocations.pop();
     }
-    private _sourceLocations: SourceLocation[] = [];
+    private _sourceLine = 0;
+    private _sourceLineNext = 1;
 
 
     // TODO: temp testing...
@@ -125,10 +126,14 @@ export default class IL implements VM {
 
 
     compile(): string {name
+
+        this._sourceLine = 99999999;
+        this.NOOP();
+        
         let source = this._lines.map((line, i) => {
-            let loc = this._lineLocs[i];
+            //let loc = this._lineLocs[i];
             line = `                    ${line}`;
-            line = `${line}${' '.repeat(Math.max(0, 78 - line.length))}  // (${loc.start.line}-${loc.end.line})`;
+            //line = `${line}${' '.repeat(Math.max(0, 78 - line.length))}  // (${loc.start.line}-${loc.end.line})`;
             return line;
         }).join('\n');
         source = `
@@ -154,10 +159,20 @@ ${source}
 
 
     private addLine(line: string) {
+
+        let ln = this._sourceLine;
+        while (this._sourceLineNext <= ln && this._sourceLineNext <= this._sourceLines.length) {
+            let line = `//  ${this._sourceLines[this._sourceLineNext - 1]}`;
+            line = `case ${`${this._lines.length}:'   `.slice(0, 6)}   ';${line}`;
+            this._lines.push(line);
+            ++this._sourceLineNext;
+        }
+
+
         line = `case ${`${this._lines.length}:'   `.slice(0, 6)}   ';${line}`;
         this._lines.push(line);
-        let loc = this._sourceLocations[this._sourceLocations.length - 1] || <SourceLocation>{start: {line: 1}, end:{line:this._sourceLines.length}};
-        this._lineLocs.push(loc);
+        //let loc = this._sourceLocations[this._sourceLocations.length - 1] || <SourceLocation>{start: {line: 1}, end:{line:this._sourceLines.length}};
+        //this._lineLocs.push(loc);
     }
 
 
@@ -182,14 +197,14 @@ ${source}
 
 
     private _lines: string[] = [];
-    private _lineLocs: SourceLocation[] = [];
+    //private _lineLocs: SourceLocation[] = [];
 
 
     private _labels = 0;
 
 
     private _sourceLines: string[];
-    private _sourceLine = 0;
+    //private _sourceLine = 0;
 }
 
 

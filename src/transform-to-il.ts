@@ -15,7 +15,6 @@ import IL from './il';
 export default function transformToIL({types: t}: typeof babel,  prog: types.Program, scopes: WeakMap<Node, BabelBinding[]>, il: IL) {
     let visitCounter = 0;
     visitStmt(prog);
-    il.NOOP();
 
     function visitStmt(stmt: Node) {
         if (stmt.loc) il.pushSourceLocation(stmt.loc); // TODO: temp testing...
