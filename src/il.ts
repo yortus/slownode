@@ -19,8 +19,25 @@ export interface Label {
 
 
 export default class IL implements VM {
-    constructor(source: string) {
-        this._sourceLines = source.split(/(?:\r\n)|\r|\n/);
+    constructor(source?: string) {
+        if (typeof source === 'string') {
+
+            // Keep track of the lines of source, and how many have been emitted so far.
+            this._sourceLines = source.split(/(?:\r\n)|\r|\n/);
+            this._sourceLinesEmitted = 0;
+
+            // Compute a SourceLocation that encompasses the entire source.
+            let lineCount = this._sourceLines.length;
+            this._sourceLocationAll = {
+                start: { line: 1, column: 0 },
+                end: { line: lineCount, column: this._sourceLines[lineCount - 1].length }
+            };
+        }
+        else {
+
+            // No source was provided. Set sourceLines to null to indicate that no source is to be emitted.
+            this._sourceLines = null;
+        }
     }
 
     // Load/store/move
@@ -76,26 +93,6 @@ export default class IL implements VM {
     $7 = new Register('$7');
 
 
-    // TODO: temp testing...
-    pushSourceLocation(loc: SourceLocation) {
-        this._sourceLine = loc.start.line;
-
-    }
-    popSourceLocation() {
-    }
-    private _sourceLine = 0;
-    private _sourceLineNext = 1;
-
-
-    // TODO: temp testing...
-    // lineNumber(n: number) {
-    //     if (n > this._sourceLine) {
-    //         this.addLine(`//  ${this._sourceLines[n - 1]}`);
-    //         this._sourceLine = n;
-    //     }
-    // }
-
-
     /** Allocate registers for the duration of `callback`. */
     withRegisters(callback: (...args: Register[]) => void) {
         let args: Register[] = new Array(callback.length);
@@ -125,9 +122,14 @@ export default class IL implements VM {
     }
 
 
-    compile(): string {name
+    /** TODO: doc... */
+    compile(): string {
 
-        this._sourceLine = 99999999;
+        // TODO: all done... cap off... doc...
+        this.sourceLocation = {
+            start: this._sourceLocationAll.end,
+            end: this._sourceLocationAll.end
+        };
         this.NOOP();
         
         let source = this._lines.map((line, i) => {
@@ -158,21 +160,26 @@ ${source}
     }
 
 
-    private addLine(line: string) {
+    /** TODO: doc... */
+    sourceLocation: SourceLocation;
 
-        let ln = this._sourceLine;
-        while (this._sourceLineNext <= ln && this._sourceLineNext <= this._sourceLines.length) {
-            let line = `//  ${this._sourceLines[this._sourceLineNext - 1]}`;
-            line = `case ${`${this._lines.length}:'   `.slice(0, 6)}   ';${line}`;
-            this._lines.push(line);
-            ++this._sourceLineNext;
+
+    private addLine(line: string) {
+        let lines: string[] = [];
+
+        // If source code is available, interleave lines of source for which IL has been emitted so far.
+        if (this._sourceLines) {
+            let currentSourceLine = (this.sourceLocation || this._sourceLocationAll).start.line;
+            while (this._sourceLinesEmitted < currentSourceLine) {
+                lines.push(`//  ${this._sourceLines[this._sourceLinesEmitted]}`);
+                ++this._sourceLinesEmitted;
+            }
         }
 
-
-        line = `case ${`${this._lines.length}:'   `.slice(0, 6)}   ';${line}`;
-        this._lines.push(line);
-        //let loc = this._sourceLocations[this._sourceLocations.length - 1] || <SourceLocation>{start: {line: 1}, end:{line:this._sourceLines.length}};
-        //this._lineLocs.push(loc);
+        // TODO: ...
+        lines.push(line);
+        lines = lines.map(line => `case ${`${this._lines.length}:'   `.slice(0, 6)}   ';${line}`);
+        this._lines.push(...lines);
     }
 
 
@@ -197,14 +204,14 @@ ${source}
 
 
     private _lines: string[] = [];
-    //private _lineLocs: SourceLocation[] = [];
 
 
     private _labels = 0;
 
 
     private _sourceLines: string[];
-    //private _sourceLine = 0;
+    private _sourceLinesEmitted: number;
+    private _sourceLocationAll: SourceLocation;
 }
 
 

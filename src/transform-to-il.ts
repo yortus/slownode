@@ -17,8 +17,8 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
     visitStmt(prog);
 
     function visitStmt(stmt: Node) {
-        if (stmt.loc) il.pushSourceLocation(stmt.loc); // TODO: temp testing...
-        // TODO: was... if (stmt.loc) il.lineNumber(stmt.loc.start.line); // TODO: temp testing...
+        let oldLoc = il.sourceLocation;
+        il.sourceLocation = stmt.loc;
 
         // TODO: temp testing...
         // if (scopes.has(stmt)) {
@@ -96,15 +96,17 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
             // ExportDefaultSpecifier: stmt => [***],
             // ExportNamespaceSpecifier: stmt => [***]
         });
+        il.sourceLocation = oldLoc;
 
-        if (stmt.loc) il.popSourceLocation(); // TODO: temp testing...
         // TODO: temp testing...
         // if (scopes.has(stmt)) {
         //     il.leaveScope();
         // }
     }
     function visitExpr(expr: Expression|SpreadElement, $T: Register) {
-        if (expr.loc) il.pushSourceLocation(expr.loc); // TODO: temp testing...
+        let oldLoc = il.sourceLocation;
+        il.sourceLocation = expr.loc;
+
         let label = ((i) => (strs) => `${strs[0]}-${i}`)(++visitCounter);
         matchNode<void>(expr, {
             // ------------------------- core -------------------------
@@ -333,7 +335,6 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
             // ------------------------- experimental -------------------------
             // AwaitExpression:     expr => [***]
         });
-
-        if (expr.loc) il.popSourceLocation(); // TODO: temp testing...
+        il.sourceLocation = oldLoc;
     }
 }
