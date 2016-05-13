@@ -6,24 +6,27 @@ import * as types from "babel-types";                                       // E
 import * as assert from 'assert';
 import matchNode from './match-node';
 import Register from './register';
+import Scope from './scope';
 import IL from './il';
 
 
 
 
 
-export default function transformToIL({types: t}: typeof babel,  prog: types.Program, scopes: WeakMap<Node, BabelBinding[]>, il: IL) {
+export default function transformToIL({types: t}: typeof babel,  prog: types.Program, scopes: WeakMap<Node, Scope>, il: IL) {
     let visitCounter = 0;
     visitStmt(prog);
 
     function visitStmt(stmt: Node) {
+
+        // TODO: temp testing...
         let oldLoc = il.sourceLocation;
         il.sourceLocation = stmt.loc;
 
         // TODO: temp testing...
-        // if (scopes.has(stmt)) {
-        //     il.enterScope(scopes.get(stmt));
-        // }
+        if (scopes.has(stmt)) {
+            il.enterScope(scopes.get(stmt));
+        }
         
         let label = ((i) => (strs) => `${strs[0]}-${i}`)(++visitCounter);
         matchNode<void>(stmt, {
@@ -96,12 +99,14 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
             // ExportDefaultSpecifier: stmt => [***],
             // ExportNamespaceSpecifier: stmt => [***]
         });
-        il.sourceLocation = oldLoc;
 
         // TODO: temp testing...
-        // if (scopes.has(stmt)) {
-        //     il.leaveScope();
-        // }
+        if (scopes.has(stmt)) {
+            il.leaveScope();
+        }
+
+        // TODO: temp testing...
+        il.sourceLocation = oldLoc;
     }
     function visitExpr(expr: Expression|SpreadElement, $T: Register) {
         let oldLoc = il.sourceLocation;

@@ -9,6 +9,7 @@ import {VM} from './vm';
 
 
 
+/** TODO: doc... */
 export interface Label {
     resolve(): void;
     toString(): string;
@@ -18,7 +19,11 @@ export interface Label {
 
 
 
+/** TODO: doc... */
 export default class IL implements VM {
+
+
+    /** TODO: doc... */
     constructor(source?: string) {
         if (typeof source === 'string') {
 
@@ -40,7 +45,7 @@ export default class IL implements VM {
         }
     }
 
-    // Load/store/move
+    // OPCODES: Load/store/move
     LOAD(tgt: Register, obj: Register, key: Register|string|number) {
         this.addLine(`LOAD(${tgt.name}, ${obj.name}, ${key instanceof Register ? key.name : JSON.stringify(key)});`);
     }
@@ -54,7 +59,7 @@ export default class IL implements VM {
         this.addLine(`MOVE(${tgt.name}, ${src.name});`);
     }
 
-    // Arithmetic/logic
+    // OPCODES: Arithmetic/logic
     ADD(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`ADD(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
     SUB(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`SUB(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
     MUL(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`MUL(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
@@ -62,7 +67,7 @@ export default class IL implements VM {
     NEG(tgt: Register, arg: Register) { this.addLine(`NEG(${tgt.name}, ${arg.name});`); }
     NOT(tgt: Register, arg: Register) { this.addLine(`NOT(${tgt.name}, ${arg.name});`); }
 
-    // Compare
+    // OPCODES: Compare
     EQ(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`EQ(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
     NE(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`NE(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
     GE(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`GE(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
@@ -70,17 +75,17 @@ export default class IL implements VM {
     LE(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`LE(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
     LT(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`LT(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
 
-    // Control
+    // OPCODES: Control
     B(line: Label|number) { this.addLine(`B(${line});`); }
     BF(line: Label|number, arg: Register) { this.addLine(`BF(${line}, ${arg.name});`); }
     BT(line: Label|number, arg: Register) { this.addLine(`BT(${line}, ${arg.name});`); }
 
-    // Misc
+    // OPCODES: Misc
     NEWARR(tgt: Register) { this.addLine(`NEWARR(${tgt.name});`); }
     NEWOBJ(tgt: Register) { this.addLine(`NEWOBJ(${tgt.name});`); }
     NOOP() { this.addLine(`NOOP();`); }
 
-    // Registers
+    // REGISTERS
     PC = 0;
     ENV = new Register('ENV');
     $0 = new Register('$0');
@@ -93,7 +98,19 @@ export default class IL implements VM {
     $7 = new Register('$7');
 
 
-    /** Allocate registers for the duration of `callback`. */
+    /** TODO: temp testing... */
+    enterScope(scope: Scope) {
+        this._outerScopes.push(this._currentScope);
+        this._currentScope = scope;
+    }
+    leaveScope() {
+        this._currentScope = this._outerScopes.pop();
+    }
+    private _currentScope: Scope = Scope.root;
+    private _outerScopes: Scope[] = [];
+
+
+    /** Allocate N registers for the duration of `callback`. */
     withRegisters(callback: (...args: Register[]) => void) {
         let args: Register[] = new Array(callback.length);
         for (let i = 0; i < callback.length; ++i) {
@@ -131,31 +148,12 @@ export default class IL implements VM {
             end: this._sourceLocationAll.end
         };
         this.NOOP();
-        
-        let source = this._lines.map((line, i) => {
-            //let loc = this._lineLocs[i];
-            line = `                    ${line}`;
-            //line = `${line}${' '.repeat(Math.max(0, 78 - line.length))}  // (${loc.start.line}-${loc.end.line})`;
-            return line;
-        }).join('\n');
-        source = `
-function (vm) {
-    while (true) {
-        try {
-            with (vm) {
-                switch (PC) {
-${source}
-                    default: throw new Error('fin'); // TODO: ...
-                }
-            }
-        }
-        catch (ex) {
-            // TODO: ...
-            break;
-        }
-    }
-}
-        `;
+
+        // TODO: doc...
+        let lines = this._lines.map((line, i) => {
+            return `${line}${' '.repeat(Math.max(0, 58 - line.length))}  ${this._scopes[i].id}`;
+        });
+        let source = prolog + lines.map(line => `                    ${line}`).join('\n') + epilog;
         return source;
     }
 
@@ -164,6 +162,7 @@ ${source}
     sourceLocation: SourceLocation;
 
 
+    /** TODO: doc... */
     private addLine(line: string) {
         let lines: string[] = [];
 
@@ -180,9 +179,11 @@ ${source}
         lines.push(line);
         lines = lines.map(line => `case ${`${this._lines.length}:'   `.slice(0, 6)}   ';${line}`);
         this._lines.push(...lines);
+        this._scopes.push(...lines.map(() => this._currentScope));
     }
 
 
+    /** TODO: doc... */
     private reserveRegister(): Register {
         for (let i = 0; i < 8; ++i) {
             let reg = this[`$${i}`];
@@ -194,26 +195,61 @@ ${source}
     }
 
 
+    /** TODO: doc... */
     private releaseRegister(reg: Register) {
         let i = this._reservedRegisters.indexOf(reg);
         this._reservedRegisters.splice(i, 1);
     }
 
 
+    /** TODO: doc... */
     private _reservedRegisters: Register[] = [];
 
 
+    /** TODO: doc... */
     private _lines: string[] = [];
+    private _scopes: Scope[] = [];
 
 
+    /** TODO: doc... */
     private _labels = 0;
 
 
+    /** TODO: doc... */
     private _sourceLines: string[];
+
+
+    /** TODO: doc... */
     private _sourceLinesEmitted: number;
+
+
+    /** TODO: doc... */
     private _sourceLocationAll: SourceLocation;
 }
 
+
+
+
+
+const prolog = `
+function (vm) {
+    while (true) {
+        try {
+            with (vm) {
+                switch (PC) {
+`;
+const epilog = `
+                    default: throw new Error('fin'); // TODO: ...
+                }
+            }
+        }
+        catch (ex) {
+            // TODO: ...
+            break;
+        }
+    }
+}
+`;
 
 
 

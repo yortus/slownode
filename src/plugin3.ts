@@ -4,6 +4,7 @@ import {Visitor, Binding as BabelBinding} from "babel-traverse";    // Elided (u
 import * as assert from 'assert';
 import IL from './il';
 import matchNode from './match-node';
+import Scope from './scope';
 import transformToIL from './transform-to-il';
 
 
@@ -40,7 +41,7 @@ export function transform(source: string): string {
     // Define a babel plugin.
     let babelPlugin = (b: typeof babel) => {
         let t = b.types;
-        let scopes = new WeakMap<Node, BabelBinding[]>();
+        let scopes = new WeakMap<Node, Scope>();
         return {
             visitor: <Visitor> {
 
@@ -61,7 +62,9 @@ export function transform(source: string): string {
 
                     let bindings = path.scope.bindings;
                     let bindingNames = Object.keys(bindings);
-                    scopes.set(path.node, bindingNames.map(name => bindings[name]));
+                    // TODO: temp testing...
+                    scopes.set(path.node, Scope.root.extend());
+                    // TODO: was...scopes.set(path.node, bindingNames.map(name => bindings[name]));
                 },
 
                 // Transform the program.
