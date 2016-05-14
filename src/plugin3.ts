@@ -4,7 +4,7 @@ import {Visitor, Binding as BabelBinding} from "babel-traverse";    // Elided (u
 import * as assert from 'assert';
 import IL from './il';
 import matchNode from './match-node';
-import Scope, {IdentifierList} from './scope';
+import {IdentifierList} from './scope';
 import transformToIL from './transform-to-il';
 
 

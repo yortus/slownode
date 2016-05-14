@@ -31,24 +31,6 @@ export type IdentifierList = {[name: string]: 'var'|'let'|'const'|'hoisted'|'par
 
 
 
-export default class Scope {
-
-    private constructor(index: number, identifiers: IdentifierList) {
-        this.index = index;
-        this.identifiers = identifiers;
-    }
-
-
-    index: number;
-
-
-    identifiers: IdentifierList;
-}
-
-
-
-
-
 // TODO: was... remove...
 // export default class Scope {
 //     start = 0;

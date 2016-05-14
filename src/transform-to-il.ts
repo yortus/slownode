@@ -6,7 +6,7 @@ import * as types from "babel-types";                                       // E
 import * as assert from 'assert';
 import matchNode from './match-node';
 import Register from './register';
-import Scope, {IdentifierList} from './scope';
+import {IdentifierList} from './scope';
 import IL from './il';
 
 
