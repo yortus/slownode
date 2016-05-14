@@ -6,14 +6,14 @@ import * as types from "babel-types";                                       // E
 import * as assert from 'assert';
 import matchNode from './match-node';
 import Register from './register';
-import Scope from './scope';
+import Scope, {IdentifierList} from './scope';
 import IL from './il';
 
 
 
 
 
-export default function transformToIL({types: t}: typeof babel,  prog: types.Program, scopes: WeakMap<Node, Scope>, il: IL) {
+export default function transformToIL({types: t}: typeof babel,  prog: types.Program, identifiers: WeakMap<Node, IdentifierList>, il: IL) {
     let visitCounter = 0;
     visitStmt(prog);
 
@@ -24,8 +24,8 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
         il.sourceLocation = stmt.loc;
 
         // TODO: temp testing...
-        if (scopes.has(stmt)) {
-            il.enterScope(scopes.get(stmt));
+        if (identifiers.has(stmt)) {
+            il.enterScope(identifiers.get(stmt));
         }
         
         let label = ((i) => (strs) => `${strs[0]}-${i}`)(++visitCounter);
@@ -53,6 +53,19 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
             VariableDeclaration:    stmt => {
                                         // TODO: handle initialisers (if present)...
                                         // nothing else to do...
+                                        // TODO: initial cut... check code below... complete? correct?
+                                        stmt.declarations.forEach(decl => {
+                                            if (!decl.init) return;
+                                            il.withRegisters(($0) => {
+                                                visitExpr(decl.init, $0);
+                                                if (t.isIdentifier(decl.id)) {
+                                                    il.STORE(il.ENV, decl.id.name, $0);
+                                                }
+                                                else {
+                                                    throw new Error(`Unsupported variable declarator type: '${decl.id.type}'`);
+                                                }
+                                            });
+                                        });
                                     },
             // ForStatement:        stmt => [***],
             // FunctionDeclaration: stmt => [***],
@@ -101,7 +114,7 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
         });
 
         // TODO: temp testing...
-        if (scopes.has(stmt)) {
+        if (identifiers.has(stmt)) {
             il.leaveScope();
         }
 

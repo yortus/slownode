@@ -4,7 +4,7 @@ import {Visitor, Binding as BabelBinding} from "babel-traverse";    // Elided (u
 import * as assert from 'assert';
 import IL from './il';
 import matchNode from './match-node';
-import Scope from './scope';
+import Scope, {IdentifierList} from './scope';
 import transformToIL from './transform-to-il';
 
 
@@ -41,7 +41,7 @@ export function transform(source: string): string {
     // Define a babel plugin.
     let babelPlugin = (b: typeof babel) => {
         let t = b.types;
-        let scopes = new WeakMap<Node, Scope>();
+        let identifiers = new WeakMap<Node, IdentifierList>();
         return {
             visitor: <Visitor> {
 
@@ -60,17 +60,16 @@ export function transform(source: string): string {
                     // TODO: temp replacement for above assertion:
                     if (path.scope.block !== path.node) return;
 
-                    let bindings = path.scope.bindings;
-                    let bindingNames = Object.keys(bindings);
-                    // TODO: temp testing...
-                    scopes.set(path.node, Scope.root.extend());
-                    // TODO: was...scopes.set(path.node, bindingNames.map(name => bindings[name]));
+                    let idNames = Object.keys(path.scope.bindings);
+                    let idTypes = idNames.map(name => path.scope.bindings[name].kind);
+                    let ids = idNames.reduce((ids, name, i) => (ids[name] = idTypes[i], ids), <IdentifierList> {});
+                    identifiers.set(path.node, ids);
                 },
 
                 // Transform the program.
                 Program: {
                     exit(path) {
-                        transformToIL(b, path.node, scopes, il);
+                        transformToIL(b, path.node, identifiers, il);
                         let newSrc = il.compile();
                         result = newSrc;
                     }

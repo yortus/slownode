@@ -1,7 +1,7 @@
 'use strict';
 import * as assert from 'assert';
 import {SourceLocation} from "babel-types"; // Elided (used only for types)
-import Scope from './scope';
+import {IdentifierList} from './scope';
 import Register from './register';
 import {VM} from './vm';
 
@@ -99,15 +99,24 @@ export default class IL implements VM {
 
 
     /** TODO: temp testing... */
-    enterScope(scope: Scope) {
-        this._outerScopes.push(this._currentScope);
-        this._currentScope = scope;
+    enterScope(identifiers: IdentifierList) {
+        let scopeCount = this._scopes.lineage.length;
+        this._scopes.lineage.push(this._currentScope);
+        this._scopes.identifiers[scopeCount] = identifiers;
+        this._currentScope = scopeCount;
     }
     leaveScope() {
-        this._currentScope = this._outerScopes.pop();
+        this._currentScope = this._scopes.lineage[this._currentScope];
     }
-    private _currentScope: Scope = Scope.root;
-    private _outerScopes: Scope[] = [];
+    private _scopes: {
+        lineage: number[];
+        identifiers: {[index: number]: IdentifierList};
+    } = {
+        lineage: [null],
+        identifiers: {0: {}}
+    };
+    private _currentScope: number = 0;
+
 
 
     /** Allocate N registers for the duration of `callback`. */
@@ -150,14 +159,20 @@ export default class IL implements VM {
         this.NOOP();
 
         // TODO: doc...
-        let lines = this._lines.map((line, i) => {
-            return `${line}${' '.repeat(Math.max(0, 58 - line.length))}  ${this._scopes[i].id}`;
+        let codeLines = this._lines.map((line, i) => {
+            return `${line}${' '.repeat(Math.max(0, 58 - line.length))}  ${this._lineScopes[i]}`;
         });
 
         // TODO: doc...
+        let meta = `lineage: [null, ${this._scopes.lineage.slice(1).join(', ')}],\n`;
+        meta += 'identifiers: ' + JSON.stringify(this._scopes.identifiers, null, 4);
+        let metaLines = meta.split('\n');
+        metaLines = [].concat('scopes: {', metaLines.map(line => `    ${line}`), '}');
+
+        // TODO: doc...
         let source = template
-            .replace(/[ ]*\$LINES/, lines.map(line => `            ${line}`).join('\n'))
-            .replace('$META', '// TODO: Scope info etc goes here...')
+            .replace(/[ ]*\$CODELINES/, codeLines.map(line => `            ${line}`).join('\n'))
+            .replace(/[ ]*\$METALINES/, metaLines.map(line => `    ${line}`).join('\n'));
         return source;
     }
 
@@ -183,7 +198,7 @@ export default class IL implements VM {
         lines.push(line);
         lines = lines.map(line => `case ${`${this._lines.length}:'   `.slice(0, 6)}   ';${line}`);
         this._lines.push(...lines);
-        this._scopes.push(...lines.map(() => this._currentScope));
+        this._lineScopes.push(...lines.map(() => this._currentScope));
     }
 
 
@@ -212,7 +227,7 @@ export default class IL implements VM {
 
     /** TODO: doc... */
     private _lines: string[] = [];
-    private _scopes: Scope[] = [];
+    private _lineScopes: number[] = [];
 
 
     /** TODO: doc... */
@@ -237,11 +252,11 @@ export default class IL implements VM {
 
 const template = `{
     meta: {
-        $META
+        $METALINES
     },
     code: () => {
         switch (PC) {
-            $LINES
+            $CODELINES
             default: throw new Error('fin'); // TODO: ...
         }
     },

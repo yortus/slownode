@@ -8,7 +8,7 @@
 let meta = {
     scopes: {
         lineage: [null, 0, 0],
-        bindings: {
+        identifiers: {
             0: {a: 'var'},
             1: {bbb: 'let', ccc: 'let'},
             2: {PI: 'const'}
@@ -25,30 +25,24 @@ let meta = {
 
 
 
+export type IdentifierList = {[name: string]: 'var'|'let'|'const'|'hoisted'|'param'};
+
+
+
+
+
 export default class Scope {
 
-    private constructor(parent: Scope) {
-        this.id = `§${Scope._counter || 0}`;
-        this.parent = parent;
-        ++Scope._counter;
+    private constructor(index: number, identifiers: IdentifierList) {
+        this.index = index;
+        this.identifiers = identifiers;
     }
 
 
-    extend() {
-        return new Scope(this);
-    }
+    index: number;
 
 
-    static root = new Scope(null);
-
-
-    id: string;
-
-
-    parent: Scope;
-
-
-    private static _counter = 0;
+    identifiers: IdentifierList;
 }
 
 
