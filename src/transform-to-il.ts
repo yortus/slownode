@@ -218,14 +218,25 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
             Identifier:             expr => {
                                         il.LOAD($T, il.ENV, expr.name);
                                     },
-            // CallExpression:         expr => {
-            //                             // TODO: BUG! Need to set `this` if callee is a member expression, need to check callee in general...
-            //                             assert(t.isIdentifier(expr.callee)); // TODO: temp testing...
-            //                             visitExpr(expr.callee);
-            //                             expr.arguments.forEach(visitExpr);
-            //                             il.roll(expr.arguments.length + 1);
-            //                             il.call(expr.arguments.length);
-            //                         },
+            CallExpression:         expr => {
+                                        if (t.isIdentifier(expr.callee)) {
+                                            let callee = expr.callee;
+                                            il.withRegisters(($0, $1) => {
+                                                il.LOAD($T, il.ENV, callee.name);
+                                                il.NEWARR($0);
+                                                expr.arguments.forEach((arg, i) => {
+                                                    visitExpr(arg, $1);
+                                                    il.STORE($0, i, $1);
+                                                });
+                                                il.LOADC($1, null); // TODO: set 'this' - should be what? global object? undefined?
+                                                il.CALL($T, $T, $1, $0);
+                                            });
+                                        }
+                                        else {
+                                            // TODO: MemberExpression, others? Need to set `this` if callee is a member expression...
+                                            throw new Error(`Unsupported callee type: '${expr.callee.type}'`);
+                                        }
+                                    },
             ConditionalExpression:  expr => {
                                         let L1 = il.newLabel();
                                         let L2 = il.newLabel();

@@ -33,6 +33,7 @@ export interface VM {
     B:      (line: number) => void;
     BF:     (line: number, arg: Register) => void;
     BT:     (line: number, arg: Register) => void;
+    CALL:   (tgt: Register, func: Register, thís: Register, args: Register) => void;
 
     // Misc
     NEWARR: (tgt: Register) => void; // TODO: really primitive? could use ctor
@@ -40,7 +41,7 @@ export interface VM {
     NOOP:   () => void;
 
     // Registers
-    PC:     number;
+    PC:     Register;
     ENV:    Register;
     $0:     Register;
     $1:     Register;
@@ -81,12 +82,13 @@ export function makeVM() {
         B:      (line) => jump(line),
         BF:     (line, arg) => arg.value ? null : jump(line),
         BT:     (line, arg) => arg.value ? jump(line) : null,
+        CALL:   (tgt, func, thís, args) => tgt.value = func.value.apply(thís.value, args.value),
 
         NEWARR: (tgt) => tgt.value = [],
         NEWOBJ: (tgt) => tgt.value = {},
         NOOP:   () => null,
 
-        PC:     0,
+        PC:     new Register('PC', 0),
         ENV:    new Register('ENV'),
         $0:     new Register('$0'),
         $1:     new Register('$1'),
@@ -100,7 +102,6 @@ export function makeVM() {
 
     function jump(line: number) {
         // TODO: scope enter/exit, finally blacks
-        vm.PC = line;
     }
 
     vm.ENV.value = {};

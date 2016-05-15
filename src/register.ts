@@ -7,8 +7,9 @@
 export default class Register {
 
 
-    constructor(name?: string) {
+    constructor(name?: string, value?: any) {
         this.name = name || 'Unnamed Register';
+        this.value = value;
     }
 
 

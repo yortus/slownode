@@ -20,6 +20,16 @@ export interface Label {
 
 
 /** TODO: doc... */
+export interface ScopeInfo {
+    lineage: number[];
+    identifiers: {[index: number]: IdentifierList};
+}
+
+
+
+
+
+/** TODO: doc... */
 export default class IL implements VM {
 
 
@@ -79,6 +89,9 @@ export default class IL implements VM {
     B(line: Label|number) { this.addLine(`B(${line});`); }
     BF(line: Label|number, arg: Register) { this.addLine(`BF(${line}, ${arg.name});`); }
     BT(line: Label|number, arg: Register) { this.addLine(`BT(${line}, ${arg.name});`); }
+    CALL(tgt: Register, func: Register, thís: Register, args: Register) {
+        this.addLine(`CALL(${tgt.name}, ${func.name}, ${thís.name}, ${args.name});`);
+    }
 
     // OPCODES: Misc
     NEWARR(tgt: Register) { this.addLine(`NEWARR(${tgt.name});`); }
@@ -86,16 +99,16 @@ export default class IL implements VM {
     NOOP() { this.addLine(`NOOP();`); }
 
     // REGISTERS
-    PC = 0;
+    PC = new Register('PC');
     ENV = new Register('ENV');
-    $0 = new Register('$0');
-    $1 = new Register('$1');
-    $2 = new Register('$2');
-    $3 = new Register('$3');
-    $4 = new Register('$4');
-    $5 = new Register('$5');
-    $6 = new Register('$6');
-    $7 = new Register('$7');
+    $0 = new Register('$0', FREE_REGISTER);
+    $1 = new Register('$1', FREE_REGISTER);
+    $2 = new Register('$2', FREE_REGISTER);
+    $3 = new Register('$3', FREE_REGISTER);
+    $4 = new Register('$4', FREE_REGISTER);
+    $5 = new Register('$5', FREE_REGISTER);
+    $6 = new Register('$6', FREE_REGISTER);
+    $7 = new Register('$7', FREE_REGISTER);
 
 
     /** TODO: temp testing... */
@@ -108,15 +121,8 @@ export default class IL implements VM {
     leaveScope() {
         this._currentScope = this._scopes.lineage[this._currentScope];
     }
-    private _scopes: {
-        lineage: number[];
-        identifiers: {[index: number]: IdentifierList};
-    } = {
-        lineage: [null],
-        identifiers: {0: {}}
-    };
+    private _scopes = <ScopeInfo> { lineage: [null], identifiers: {0: {}} };
     private _currentScope: number = 0;
-
 
 
     /** Allocate N registers for the duration of `callback`. */
@@ -127,6 +133,18 @@ export default class IL implements VM {
         }
         callback(...args);
         args.forEach(arg => this.releaseRegister(arg));
+    }
+
+
+    /** TODO: doc... */    
+    usedRegisters(): Register[] {
+        let result = [this.PC, this.ENV];
+        for (let i = 0; i < 8; ++i) {
+            let reg = <Register> this[`$${i}`];
+            if (reg.value === FREE_REGISTER) continue;
+            result.push(reg);
+        }
+        return result;
     }
 
 
@@ -205,9 +223,9 @@ export default class IL implements VM {
     /** TODO: doc... */
     private reserveRegister(): Register {
         for (let i = 0; i < 8; ++i) {
-            let reg = this[`$${i}`];
-            if (this._reservedRegisters.indexOf(reg) !== -1) continue;
-            this._reservedRegisters.push(reg);
+            let reg = <Register> this[`$${i}`];
+            if (reg.value === RESERVED_REGISTER) continue;
+            reg.value = RESERVED_REGISTER;
             return reg;
         }
         throw new Error(`Expression too complex - ran out of registers`);
@@ -216,13 +234,12 @@ export default class IL implements VM {
 
     /** TODO: doc... */
     private releaseRegister(reg: Register) {
-        let i = this._reservedRegisters.indexOf(reg);
-        this._reservedRegisters.splice(i, 1);
+        reg.value = FREE_REGISTER;
     }
 
 
     /** TODO: doc... */
-    private _reservedRegisters: Register[] = [];
+    //private _reservedRegisters: Register[] = [];
 
 
     /** TODO: doc... */
@@ -264,6 +281,14 @@ const template = `{
         // TODO: ...
     }
 }`;
+
+
+
+
+
+/** TODO: doc... sentinel value for unused registers */
+const RESERVED_REGISTER = {};
+const FREE_REGISTER = {};
 
 
 
