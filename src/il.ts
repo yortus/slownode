@@ -190,7 +190,7 @@ export default class IL implements VM {
         // TODO: doc...
         let source = template
             .replace(/[ ]*\$CODELINES/, codeLines.map(line => `            ${line}`).join('\n'))
-            .replace(/[ ]*\$METALINES/, metaLines.map(line => `    ${line}`).join('\n'));
+            .replace(/[ ]*\$METALINES/, metaLines.map(line => `        ${line}`).join('\n'));
         return source;
     }
 
