@@ -214,7 +214,7 @@ export default class IL implements VM {
 
         // TODO: ...
         lines.push(line);
-        lines = lines.map(line => `case ${`${this._lines.length}:'   `.slice(0, 6)}   ';${line}`);
+        lines = lines.map((line, i) => `case ${`${this._lines.length + i}:'   `.slice(0, 6)}   ';${line}`);
         this._lines.push(...lines);
         this._lineScopes.push(...lines.map(() => this._currentScope));
     }
