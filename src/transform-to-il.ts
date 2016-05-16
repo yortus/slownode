@@ -6,14 +6,13 @@ import * as types from "babel-types";                                       // E
 import * as assert from 'assert';
 import matchNode from './match-node';
 import Register from './register';
-import {IdentifierList} from './scope';
 import IL from './il';
 
 
 
 
 
-export default function transformToIL({types: t}: typeof babel,  prog: types.Program, identifiers: WeakMap<Node, IdentifierList>, il: IL) {
+export default function transformToIL({types: t}: typeof babel,  prog: types.Program, il: IL) {
     let visitCounter = 0;
     visitStmt(prog);
 
@@ -24,8 +23,8 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
         il.sourceLocation = stmt.loc;
 
         // TODO: temp testing...
-        if (identifiers.has(stmt)) {
-            il.enterScope(identifiers.get(stmt));
+        if (stmt.scope) {
+            il.enterScope(stmt.scope);
         }
         
         let label = ((i) => (strs) => `${strs[0]}-${i}`)(++visitCounter);
@@ -114,7 +113,7 @@ export default function transformToIL({types: t}: typeof babel,  prog: types.Pro
         });
 
         // TODO: temp testing...
-        if (identifiers.has(stmt)) {
+        if (stmt.scope) {
             il.leaveScope();
         }
 

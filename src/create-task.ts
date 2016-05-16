@@ -80,7 +80,6 @@ function transform(source: string): string {
     // Define a babel plugin.
     let babelPlugin = (b: typeof babel) => {
         let t = b.types;
-        let identifiers = new WeakMap<Node, IdentifierList>();
         return {
             visitor: <Visitor> {
 
@@ -101,14 +100,14 @@ function transform(source: string): string {
 
                     let idNames = Object.keys(path.scope.bindings);
                     let idKinds = idNames.map(name => path.scope.bindings[name].kind);
-                    let ids = idNames.reduce((ids, name, i) => (ids[name] = idKinds[i], ids), <IdentifierList> {});
-                    identifiers.set(path.node, ids);
+                    let scope = idNames.reduce((ids, name, i) => (ids[name] = idKinds[i], ids), <IdentifierList> {});
+                    path.node.scope = scope;
                 },
 
                 // Transform the program.
                 Program: {
                     exit(path) {
-                        transformToIL(b, path.node, identifiers, il);
+                        transformToIL(b, path.node, il);
                         let newSrc = il.compile();
                         result = newSrc;
                     }
