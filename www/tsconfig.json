@@ -7,8 +7,7 @@
         "outDir": "./built"
     },
     "files": [
-        "../src/plugin3.ts",
-        "../src/vm.ts",
+        "../src/index.ts",
         "../src/typings.d.ts"
     ]
 }

@@ -13,7 +13,7 @@
                     "util": "scripts/util"
                 }
             });
-            require(['knockout', 'built/plugin3', 'built/vm', 'codemirror', 'javascript-mode'], (ko, plugin, VM, cm) => {
+            require(['knockout', 'built/index', 'built/vm', 'codemirror', 'javascript-mode'], (ko, slownode, VM, cm) => {
 
                 // Set up a simple viewmodel with 'input' and 'output' properties.
                 let vm = {};
@@ -22,13 +22,8 @@
 
                     // When 'input' changes, recompute the 'output'.
                     try {
-                        let code = plugin.transform(vm.input());
-
-                        //let virtm = VM.makeVM();
-                        //let prog = eval(`(${code})`);
-                        //prog(virtm);
-                        
-                        return code;
+                        let task = slownode.createTask(vm.input());
+                        return task;
                     }
                     catch (ex) {
                         return ex.message;

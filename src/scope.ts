@@ -25,25 +25,4 @@ let meta = {
 
 
 
-export type IdentifierList = {[name: string]: 'var'|'let'|'const'|'hoisted'|'param'};
-
-
-
-
-
-// TODO: was... remove...
-// export default class Scope {
-//     start = 0;
-//     count = 0;
-//     depth = 0;
-//     parent = <Scope> null;
-//     children = <Scope[]> [];
-
-//     addChild() {
-//         let child = new Scope();
-//         child.depth = this.depth + 1;
-//         child.parent = this;
-//         this.children.push(child);
-//         return child;
-//     }
-// }
+export type IdentifierList = {[name: string]: 'var'|'let'|'const'|'hoisted'|'param'|'module'};
