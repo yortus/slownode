@@ -1,11 +1,27 @@
 'use strict';
 import * as babel from 'babel';
-import {Node, File} from "babel-types";             // Elided (used only for types)
+import {Node} from "babel-types";             // Elided (used only for types)
 import {Visitor, Binding} from "babel-traverse";    // Elided (used only for types)
 import IL from './il';
 import transformToIL from './transform-to-il';
 import Task from './task';
-import CreateTaskOptions from './create-task-options';
+
+
+
+
+
+// TODO: ... doc... Options param?
+export function parse(code: string): Node {
+
+    // TODO: Get the AST...
+    let plugins = [
+        'transform-es2015-destructuring',
+        augmentNodesWithScopeInfo
+    ];
+    let b: typeof babel; // TODO: hack!
+    let ast = babel.transform(code, {plugins}).ast;
+    return ast;
+}
 
 
 
@@ -30,7 +46,7 @@ export type ScopeInfo = {[name: string]: 'var'|'let'|'const'|'hoisted'|'param'|'
 
 
 // TODO: ...
-export default function createTask(code: string, options: CreateTaskOptions): Task {
+export default function createTask(code: string): Task {
 
     // TODO: Get the AST...
     let plugins = [
