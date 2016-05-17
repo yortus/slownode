@@ -6,7 +6,7 @@ import {StringLiteral, NumericLiteral, SpreadElement} from "babel-types";   // E
 import {types as t} from './babel';
 import IL from './il';
 import matchNode from './match-node';
-import Register from './register';
+import {Register} from './vm';
 import Task from './task';
 
 

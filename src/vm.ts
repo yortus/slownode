@@ -1,5 +1,23 @@
 'use strict';
-import Register from './register';
+
+
+
+
+
+export class Register {
+
+
+    constructor(name?: string, value?: any) {
+        this.name = name || 'Unnamed Register';
+        this.value = value;
+    }
+
+
+    name: string;
+
+
+    value: any;
+}
 
 
 

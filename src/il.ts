@@ -1,8 +1,7 @@
 'use strict';
 import * as assert from 'assert';
 import {SourceLocation} from "babel-types"; // Elided (used only for types)
-import Register from './register';
-import {VM} from './vm';
+import {Register, VM} from './vm';
 
 
 
