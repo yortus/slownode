@@ -1,8 +1,8 @@
-import * as babel from 'babel';
 import {Node, Statement, Expression, Identifier} from "babel-types";        // Elided (used only for types)
 import {StringLiteral, NumericLiteral, SpreadElement} from "babel-types";   // Elided (used only for types)
 import {Binding as BabelBinding} from "babel-traverse";                     // Elided (used only for types)
 import * as types from "babel-types";                                       // Elided (used only for types)
+import {types as t} from './babel';
 import * as assert from 'assert';
 import matchNode from './match-node';
 import Register from './register';
@@ -12,7 +12,7 @@ import IL from './il';
 
 
 
-export default function transformToIL({types: t}: typeof babel,  prog: types.Program, il: IL) {
+export default function transformToIL(prog: types.Program, il: IL) {
     let visitCounter = 0;
     visitStmt(prog);
 

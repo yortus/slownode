@@ -1,9 +1,7 @@
 'use strict';
-import * as babel from 'babel';
+import {transform} from './babel';
 import {Node} from "babel-types";             // Elided (used only for types)
-import {Visitor, Binding} from "babel-traverse";    // Elided (used only for types)
-import IL from './il';
-import transformToIL from './transform-to-il';
+import {Visitor} from "babel-traverse";    // Elided (used only for types)
 import Task from './task';
 
 
@@ -18,8 +16,7 @@ export function parse(code: string): Node {
         'transform-es2015-destructuring',
         augmentNodesWithScopeInfo
     ];
-    let b: typeof babel; // TODO: hack!
-    let ast = babel.transform(code, {plugins}).ast;
+    let ast = transform(code, {plugins}).ast;
     return ast;
 }
 
@@ -38,32 +35,8 @@ declare module 'babel-types' {
 
 
 
-// TODO: ...
-export type ScopeInfo = {[name: string]: 'var'|'let'|'const'|'hoisted'|'param'|'module'}; // TODO: improve this struct...
-
-
-
-
-
-// TODO: ...
-export default function createTask(code: string): Task {
-
-    // TODO: Get the AST...
-    let plugins = [
-        'transform-es2015-destructuring',
-        augmentNodesWithScopeInfo,
-        (babel) => (b = babel, {})
-    ];
-    let b: typeof babel; // TODO: hack!
-    let ast = <File> babel.transform(code, {plugins}).ast;
-
-    // TODO: Generate the task...
-    let il = new IL(code);
-    transformToIL(b, ast.program, il);
-    let newSrc = il.compile();
-    let result = newSrc;
-    return <any> result; // TODO: !!! not a task !!!
-}
+// TODO: improve this struct...
+export type ScopeInfo = {[name: string]: 'var'|'let'|'const'|'hoisted'|'param'|'module'};
 
 
 

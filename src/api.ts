@@ -8,9 +8,9 @@ import {emit} from './compiler-back-end';
 
 
 // TODO: ...
-export function createTask(code: string, options: CreateTaskOptions): Task {
+export function createTask(code: string, options?: CreateTaskOptions): Task {
     let ast = parse(code);
-    let task = emit(ast);
+    let task = emit(code, ast);
     return task;
 }
 
@@ -19,7 +19,7 @@ export function createTask(code: string, options: CreateTaskOptions): Task {
 
 
 // TODO: ...
-export function createTaskFromFile(filename: string, options: CreateTaskOptions): Task {
+export function createTaskFromFile(filename: string, options?: CreateTaskOptions): Task {
     throw new Error(`Not implemented`);
 }
 
