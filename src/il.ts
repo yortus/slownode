@@ -1,6 +1,6 @@
 'use strict';
 import * as assert from 'assert';
-import {SourceLocation} from "babel-types"; // Elided (used only for types)
+import {SourceLocation, BindingKind} from "babel-types"; // Elided (used only for types)
 import {Register, VM} from './vm';
 
 
@@ -20,7 +20,7 @@ export interface Label {
 /** TODO: doc... */
 export interface ScopeInfo {
     lineage: number[];
-    identifiers: {[index: number]: ScopeInfoXYZ};
+    identifiers: {[index: number]: {[name: string]: BindingKind}};
 }
 
 
@@ -110,7 +110,7 @@ export default class IL implements VM {
 
 
     /** TODO: temp testing... */
-    enterScope(identifiers: ScopeInfoXYZ) {
+    enterScope(identifiers: {[name: string]: BindingKind}) {
         let scopeCount = this._scopes.lineage.length;
         this._scopes.lineage.push(this._currentScope);
         this._scopes.identifiers[scopeCount] = identifiers;
