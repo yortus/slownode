@@ -4,10 +4,10 @@ import {Node, File, Program} from "babel-types";                            // E
 import {Statement, Expression, Identifier} from "babel-types";              // Elided (used only for types)
 import {StringLiteral, NumericLiteral, SpreadElement} from "babel-types";   // Elided (used only for types)
 import {types as t} from './babel';
-import IL from './il';
 import matchNode from './match-node';
 import {Register} from './vm';
 import Task from './task';
+import TaskBuilder from './task-builder';
 
 
 
@@ -15,9 +15,9 @@ import Task from './task';
 
 // TODO: ...
 export function emit(code: string, ast: Node): Task {
-    let il = new IL(code);
+    let il = new TaskBuilder(code);
     transformToIL((<File> ast).program, il);
-    let newSrc = il.compile();
+    let newSrc = il.build();
     let result = newSrc;
     return <any> result; // TODO: !!! not a task !!!
 }
@@ -27,7 +27,7 @@ export function emit(code: string, ast: Node): Task {
 
 
 // TODO: ...
-function transformToIL(prog: Program, il: IL) {
+function transformToIL(prog: Program, il: TaskBuilder) {
     let visitCounter = 0;
     visitStmt(prog);
 
