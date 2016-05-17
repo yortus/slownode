@@ -9,6 +9,7 @@
     "files": [
         "../src/api.ts",
         "../src/task-formatter.ts",
+        "../src/task-runner.ts",
         "../src/typings.d.ts"
     ]
 }

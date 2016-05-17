@@ -1,4 +1,5 @@
 'use strict';
+import Task from './task';
 import VirtualMachine, {Register} from './virtual-machine';
 
 
@@ -7,7 +8,41 @@ import VirtualMachine, {Register} from './virtual-machine';
 
 // TODO: ...
 export default class TaskRunner {
-    
+
+
+    // TODO: ...
+    constructor(task: Task) {
+        let vm = this.vm = makeVM();
+        let code = this.code = recompile(task.code, vm);
+    }
+
+
+    // TODO: ...
+    step() {
+        try {
+            this.code();
+            ++this.vm.PC.value;
+        }
+        catch (ex) {
+            
+            
+        }
+    }
+
+
+    // TODO: ...
+    private vm: VirtualMachine;
+    private code: () => void;
+}
+
+
+
+
+
+function recompile(code: () => void, vm: VirtualMachine) {
+    let makeCode = new Function('code', 'vm', `with (vm) return (${code})`);
+    let result: () => void = makeCode(code, vm);
+    return result;
 }
 
 
@@ -41,10 +76,10 @@ function makeVM() {
         BF:     (line, arg) => arg.value ? null : jump(line),
         BT:     (line, arg) => arg.value ? jump(line) : null,
         CALL:   (tgt, func, thís, args) => tgt.value = func.value.apply(thís.value, args.value),
+        QUIT:   () => { throw new Finish(); },
 
         NEWARR: (tgt) => tgt.value = [],
         NEWOBJ: (tgt) => tgt.value = {},
-        NOOP:   () => null,
 
         PC:     new Register('PC', 0),
         ENV:    new Register('ENV'),
@@ -59,9 +94,19 @@ function makeVM() {
     };
 
     function jump(line: number) {
-        // TODO: scope enter/exit, finally blacks
+        // TODO: scope enter/exit, finally blocks
+        vm.PC.value = line;
+        throw new Branch();
     }
 
     vm.ENV.value = {};
     return vm;
 }
+
+
+
+
+
+// TODO: ...
+class Branch extends Error { }
+class Finish extends Error { }

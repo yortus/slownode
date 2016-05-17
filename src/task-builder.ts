@@ -81,11 +81,11 @@ export default class TaskBuilder implements VirtualMachine {
     CALL(tgt: Register, func: Register, thís: Register, args: Register) {
         this.addLine(`CALL(${tgt.name}, ${func.name}, ${thís.name}, ${args.name});`);
     }
+    QUIT() { this.addLine(`QUIT();`); }
 
     // OPCODES: Misc
     NEWARR(tgt: Register) { this.addLine(`NEWARR(${tgt.name});`); }
     NEWOBJ(tgt: Register) { this.addLine(`NEWOBJ(${tgt.name});`); }
-    NOOP() { this.addLine(`NOOP();`); }
 
     // REGISTERS
     PC = new Register('PC');
@@ -163,16 +163,16 @@ export default class TaskBuilder implements VirtualMachine {
             start: this._sourceLocationAll.end,
             end: this._sourceLocationAll.end
         };
-        this.NOOP();
+        this.QUIT();
 
         // TODO: doc...
         let meta = { scopes: this._scopes };
 
         // TODO: doc...
         let codeLines = this._lines.map((line, i) => {
-            return `        ${line}${' '.repeat(Math.max(0, 58 - line.length))}  ${this._lineScopes[i]}`;
+            return `        ${line}${' '.repeat(Math.max(0, 58 - line.length))}  // ${this._lineScopes[i]}`;
         });
-        let code = eval(`(() => {\n    switch (PC) {\n${codeLines.join('\n')}\n    }\n})`);
+        let code = eval(`(() => {\n    debugger;\n    switch (PC.value) {\n${codeLines.join('\n')}\n    }\n})`); // TODO: remove debugger
 
         // TODO: ...
         let data = null;

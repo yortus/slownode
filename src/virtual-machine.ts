@@ -35,11 +35,11 @@ interface VirtualMachine {
     BF:     (line: number, arg: Register) => void;
     BT:     (line: number, arg: Register) => void;
     CALL:   (tgt: Register, func: Register, thís: Register, args: Register) => void;
+    QUIT:   () => void;
 
     // Misc
     NEWARR: (tgt: Register) => void; // TODO: really primitive? could use ctor
     NEWOBJ: (tgt: Register) => void; // TODO: really primitive? could use ctor
-    NOOP:   () => void;
 
     // Registers
     PC:     Register;
