@@ -11,3 +11,21 @@
 declare module 'babel' {
     export * from 'babel-core';
 }
+
+
+
+
+
+// TODO: augment nodes with scope info...
+declare module 'babel-types' {
+    interface Node {
+        scope?: ScopeInfoXYZ;
+    }
+}
+
+
+
+
+
+// TODO: improve this struct...
+declare type ScopeInfoXYZ = {[name: string]: 'var'|'let'|'const'|'hoisted'|'param'|'module'};

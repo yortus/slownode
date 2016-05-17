@@ -10,8 +10,6 @@ import Task from './task';
 
 // TODO: ... doc... Options param?
 export function parse(code: string): Node {
-
-    // TODO: Get the AST...
     let plugins = [
         'transform-es2015-destructuring',
         augmentNodesWithScopeInfo
@@ -19,24 +17,6 @@ export function parse(code: string): Node {
     let ast = transform(code, {plugins}).ast;
     return ast;
 }
-
-
-
-
-
-// TODO: augment nodes with scope info...
-declare module 'babel-types' {
-    interface Node {
-        scope?: ScopeInfo;
-    }
-}
-
-
-
-
-
-// TODO: improve this struct...
-export type ScopeInfo = {[name: string]: 'var'|'let'|'const'|'hoisted'|'param'|'module'};
 
 
 
