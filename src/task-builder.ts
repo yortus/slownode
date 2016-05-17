@@ -166,23 +166,19 @@ export default class TaskBuilder implements VirtualMachine {
         this.NOOP();
 
         // TODO: doc...
+        let meta = { scopes: this._scopes };
+
+        // TODO: doc...
         let codeLines = this._lines.map((line, i) => {
-            return `${line}${' '.repeat(Math.max(0, 58 - line.length))}  ${this._lineScopes[i]}`;
+            return `        ${line}${' '.repeat(Math.max(0, 58 - line.length))}  ${this._lineScopes[i]}`;
         });
+        let code = eval(`(() => {\n    switch (PC) {\n${codeLines.join('\n')}\n    }\n})`);
 
-        // TODO: doc...
-        let meta = `lineage: [null, ${this._scopes.lineage.slice(1).join(', ')}],\n`;
-        meta += 'identifiers: ' + JSON.stringify(this._scopes.identifiers, null, 4);
-        let metaLines = meta.split('\n');
-        metaLines = [].concat('scopes: {', metaLines.map(line => `    ${line}`), '}');
+        // TODO: ...
+        let data = null;
 
-        // TODO: doc...
-        let source = template
-            .replace(/[ ]*\$CODELINES/, codeLines.map(line => `            ${line}`).join('\n'))
-            .replace(/[ ]*\$METALINES/, metaLines.map(line => `        ${line}`).join('\n'));
-
-        // TODO: actually return a Task!!
-        return <Task> <any> source;
+        // TODO: ...
+        return { meta, code, data };
     }
 
 
@@ -249,25 +245,6 @@ export default class TaskBuilder implements VirtualMachine {
     /** TODO: doc... */
     private _sourceLocationAll: SourceLocation;
 }
-
-
-
-
-
-const template = `{
-    meta: {
-        $METALINES
-    },
-    code: () => {
-        switch (PC) {
-            $CODELINES
-            default: throw new Error('fin'); // TODO: ...
-        }
-    },
-    data: {
-        // TODO: ...
-    }
-}`;
 
 
 

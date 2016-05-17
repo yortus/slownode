@@ -13,7 +13,7 @@
                     "util": "scripts/util"
                 }
             });
-            require(['knockout', 'built/api', 'built/vm', 'codemirror', 'javascript-mode'], (ko, slownode, VM, cm) => {
+            require(['knockout', 'built/api', 'built/task-formatter', 'codemirror', 'javascript-mode'], (ko, slownode, fmt, cm) => {
 
                 // Set up a simple viewmodel with 'input' and 'output' properties.
                 let vm = {};
@@ -23,7 +23,8 @@
                     // When 'input' changes, recompute the 'output'.
                     try {
                         let task = slownode.createTask(vm.input());
-                        return task;
+                        let taskStr = fmt.toString(task);
+                        return taskStr;
                     }
                     catch (ex) {
                         return ex.message;
