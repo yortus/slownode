@@ -19,13 +19,20 @@ export default class TaskRunner {
 
     // TODO: ...
     step() {
-        try {
-            this.code();
-            ++this.vm.PC.value;
-        }
-        catch (ex) {
-            
-            
+        while (true) { // TODO: this loop doesn't belong here...
+            try {
+                this.code();
+                ++this.vm.PC.value;
+            }
+            catch (ex) {
+                if (ex instanceof Branch) {
+                    debugger;
+                }
+                else if (ex instanceof Finish) {
+                    debugger;
+                    return;
+                }
+            }
         }
     }
 
