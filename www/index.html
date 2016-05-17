@@ -13,7 +13,7 @@
                     "util": "scripts/util"
                 }
             });
-            require(['knockout', 'built/index', 'built/vm', 'codemirror', 'javascript-mode'], (ko, slownode, VM, cm) => {
+            require(['knockout', 'built/api', 'built/vm', 'codemirror', 'javascript-mode'], (ko, slownode, VM, cm) => {
 
                 // Set up a simple viewmodel with 'input' and 'output' properties.
                 let vm = {};

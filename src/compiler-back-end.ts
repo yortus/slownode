@@ -3,9 +3,9 @@ import * as assert from 'assert';
 import {Node, File, Program} from "babel-types";                            // Elided (used only for types)
 import {Statement, Expression, Identifier} from "babel-types";              // Elided (used only for types)
 import {StringLiteral, NumericLiteral, SpreadElement} from "babel-types";   // Elided (used only for types)
-import {types as t} from './babel';
-import matchNode from './match-node';
-import {Register} from './vm';
+import {types as t} from './util/babel';
+import matchNode from './util/match-node';
+import {Register} from './virtual-machine';
 import Task from './task';
 import TaskBuilder from './task-builder';
 
@@ -141,6 +141,7 @@ function visitStatement(tb: TaskBuilder, stmt: Statement|Program) {
 
 
 
+// TODO: ...
 function visitExpression(tb: TaskBuilder, expr: Expression|SpreadElement, $T: Register) {
 
     // TODO: ...

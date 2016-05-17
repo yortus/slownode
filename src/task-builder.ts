@@ -1,7 +1,7 @@
 'use strict';
 import * as assert from 'assert';
 import {SourceLocation, BindingKind} from "babel-types"; // Elided (used only for types)
-import {Register, VM} from './vm';
+import VirtualMachine, {Register} from './virtual-machine';
 import Task from './task';
 
 
@@ -28,8 +28,8 @@ export interface ScopeInfo {
 
 
 
-/** TODO: doc... */
-export default class TaskBuilder implements VM {
+/** TODO: doc... internal helper class used by compiler back end */
+export default class TaskBuilder implements VirtualMachine {
 
 
     /** TODO: doc... */
@@ -237,10 +237,6 @@ export default class TaskBuilder implements VM {
     private releaseRegister(reg: Register) {
         reg.value = FREE_REGISTER;
     }
-
-
-    /** TODO: doc... */
-    //private _reservedRegisters: Register[] = [];
 
 
     /** TODO: doc... */

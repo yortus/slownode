@@ -1,5 +1,5 @@
 'use strict';
-import {transform} from './babel';
+import {transform} from './util/babel';
 import {Node} from "babel-types";             // Elided (used only for types)
 import {Visitor} from "babel-traverse";    // Elided (used only for types)
 import Task from './task';
