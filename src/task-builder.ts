@@ -2,7 +2,7 @@
 import * as assert from 'assert';
 import {SourceLocation, BindingKind} from "babel-types"; // Elided (used only for types)
 import VirtualMachine, {Register} from './virtual-machine';
-import Task from './task';
+import Task, {ScopeInfo} from './task';
 
 
 
@@ -12,16 +12,6 @@ import Task from './task';
 export interface Label {
     resolve(): void;
     toString(): string;
-}
-
-
-
-
-
-/** TODO: doc... */
-export interface ScopeInfo {
-    lineage: number[];
-    identifiers: {[index: number]: {[name: string]: BindingKind}};
 }
 
 

@@ -1,4 +1,5 @@
 'use strict';
+import {BindingKind} from "babel-types";    // Elided (used only for types)
 export default Task;
 
 
@@ -10,12 +11,7 @@ interface Task {
 
 
     meta: {
-        scopes: {
-            lineage: number[];
-            identifiers: {
-                [index: number]: IdentifierList;
-            };
-        };
+        scopes: ScopeInfo;
     };
 
 
@@ -30,6 +26,7 @@ interface Task {
 
 
 /** TODO: doc... */
-export interface IdentifierList {
-    [name: string]: 'var'|'let'|'const'|'hoisted'|'param';
+export interface ScopeInfo {
+    lineage: number[];
+    identifiers: {[index: number]: {[name: string]: BindingKind}};
 }
