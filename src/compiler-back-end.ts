@@ -16,6 +16,7 @@ import TaskBuilder from './task-builder';
 // TODO: ...
 export function emit(code: string, ast: Node): Task {
     let tb = new TaskBuilder(code);
+    assert(t.isFile(ast));
     visitStatement(tb, (<File> ast).program);
     let newSrc = tb.build();
     let result = newSrc;
@@ -27,10 +28,10 @@ export function emit(code: string, ast: Node): Task {
 
 
 // TODO: ...
-function visitStatement(tb: TaskBuilder, stmt: Node) {
+function visitStatement(tb: TaskBuilder, stmt: Statement|Program) {
 
     // TODO: ...
-    let visitStmt = (stmt: Node) => visitStatement(tb, stmt);
+    let visitStmt = (stmt: Statement) => visitStatement(tb, stmt);
     let visitExpr = (expr: Expression|SpreadElement, $T: Register) => visitExpression(tb, expr, $T);
 
     // TODO: ...
