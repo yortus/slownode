@@ -42,21 +42,23 @@
 
                 // Run code...
                 function run() {
-                    console.log('running...');
                     rEditor.setValue('');
+                    log('TASK STARTED');
                     let runner = new Runner(task, {
-                        print(msg) {
-                            rEditor.replaceRange(`${msg}\n`, {line: Infinity});
-                            rEditor.scrollIntoView({line: rEditor.lastLine()});
-                        }
+                        print: msg => log(msg)
                     });
-                    try {
-                        debugger;
-                        runner.step();
-                    }
-                    catch (ex) {
-                        rEditor.replaceRange(`${ex.message}\n`, {line: Infinity});
-                        rEditor.scrollIntoView({line: rEditor.lastLine()});
+
+                    while (true) {
+                        let result = runner.step();
+                        if (result === true) {
+                            log('TASK COMPLETED');
+                            return;
+                        }
+                        if (result instanceof Error) {
+                            log('TASK FAILED');
+                            log(result.message);
+                            return;
+                        }
                     }
                 }
 
@@ -96,11 +98,16 @@
                 vm.output.subscribe(newValue => oEditor.setValue(newValue));
 
                 let rEditor = cm.fromTextArea(document.getElementById('runner'), {
-                    mode: 'javascript',
+                    mode: 'text/plain',
                     theme: 'ambiance',
                     lineNumbers: true,
                     readOnly: true
                 });
+
+                function log(msg) {
+                    rEditor.replaceRange(`${msg}\n`, {line: Infinity});
+                    rEditor.scrollIntoView({line: rEditor.lastLine()});
+                }                
             });
         </script>
         <style>
