@@ -11,8 +11,9 @@ export default class TaskRunner {
 
 
     // TODO: ...
-    constructor(task: Task) {
+    constructor(task: Task, globalObject?: {}) {
         let vm = this.vm = makeVM();
+        vm.ENV.value = globalObject || {};
         let code = this.code = recompile(task.code, vm);
     }
 
@@ -24,13 +25,17 @@ export default class TaskRunner {
                 this.code();
                 ++this.vm.PC.value;
             }
-            catch (ex) {
+            catch (err) {
+                let ex: Error = err;
                 if (ex instanceof Branch) {
-                    debugger;
+                    this.vm.PC.value = ex.nextLine;
                 }
                 else if (ex instanceof Finish) {
-                    debugger;
                     return;
+                }
+                else {
+                    // TODO: handle some other error...
+                    throw err;
                 }
             }
         }
@@ -102,11 +107,9 @@ function makeVM() {
 
     function jump(line: number) {
         // TODO: scope enter/exit, finally blocks
-        vm.PC.value = line;
-        throw new Branch();
+        throw new Branch(line);
     }
 
-    vm.ENV.value = {};
     return vm;
 }
 
@@ -115,5 +118,7 @@ function makeVM() {
 
 
 // TODO: ...
-class Branch extends Error { }
+class Branch extends Error {
+    constructor(public nextLine: number) { super(); }
+}
 class Finish extends Error { }

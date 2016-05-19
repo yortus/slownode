@@ -104,7 +104,18 @@ function visitStatement(tb: TaskBuilder, stmt: Statement|Program) {
         // ThrowStatement:      stmt => [***],
         // TryStatement:        stmt => [***],
         // VariableDeclarator:  stmt => [***],
-        // WhileStatement:      stmt => [***],
+        WhileStatement:         stmt => {
+                                    let L1 = tb.newLabel();
+                                    let L2 = tb.newLabel();
+                                    L1.resolve();
+                                    tb.withRegisters($0 => {
+                                        visitExpr(stmt.test, $0);
+                                        tb.BF(L2, $0);
+                                    });
+                                    visitStmt(stmt.body);
+                                    tb.B(L1);
+                                    L2.resolve();
+                                },
         // WithStatement:       stmt => [***],
 
         // ------------------------- es2015 -------------------------

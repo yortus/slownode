@@ -9,9 +9,6 @@
 *                                               *
 ************************************************/
 
-interface Error {
-    stack?: string;
-}
 
 
 // compat for TypeScript 1.8

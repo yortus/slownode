@@ -18,20 +18,19 @@
 
                 // Set up a simple viewmodel with 'input' and 'output' properties.
                 let vm = {};
+                let task;
                 vm.input = ko.observable('').extend({ rateLimit: 500 }),
                 vm.output = ko.computed(() => {
 
                     // When 'input' changes, recompute the 'output'.
                     try {
-                        let task = slownode.createTask(vm.input());
-
-
-                        // TODO: temp testing...
-                        let runner = new Runner(task);
-                        runner.step();
-
-
+                        task = slownode.createTask(vm.input());
                         let taskStr = fmt.toString(task);
+
+                        // TODO: temp testing... if task was successfully created, run it...
+                        // TODO: maybe trigger this differently / elsewhere
+                        setTimeout(run, 20);
+
                         return taskStr;
                     }
                     catch (ex) {
@@ -39,6 +38,28 @@
                     }
                 });
                 vm.runner = ko.observable('');
+
+
+                // Run code...
+                function run() {
+                    console.log('running...');
+                    rEditor.setValue('');
+                    let runner = new Runner(task, {
+                        print(msg) {
+                            rEditor.replaceRange(`${msg}\n`, {line: Infinity});
+                            rEditor.scrollIntoView({line: rEditor.lastLine()});
+                        }
+                    });
+                    try {
+                        debugger;
+                        runner.step();
+                    }
+                    catch (ex) {
+                        rEditor.replaceRange(`${ex.message}\n`, {line: Infinity});
+                        rEditor.scrollIntoView({line: rEditor.lastLine()});
+                    }
+                }
+
 
                 // Remember the value of the 'input' property using local storage.
                 let store = window.localStorage;

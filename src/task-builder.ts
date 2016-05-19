@@ -172,7 +172,7 @@ export default class TaskBuilder implements VirtualMachine {
         let codeLines = this._lines.map((line, i) => {
             return `        ${line}${' '.repeat(Math.max(0, 58 - line.length))}  // ${this._lineScopes[i]}`;
         });
-        let code = eval(`(() => {\n    debugger;\n    switch (PC.value) {\n${codeLines.join('\n')}\n    }\n})`); // TODO: remove debugger
+        let code = eval(`(() => {\n    switch (PC.value) {\n${codeLines.join('\n')}\n    }\n})`); // TODO: remove debugger
 
         // TODO: ...
         let data = null;
