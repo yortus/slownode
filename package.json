@@ -48,7 +48,7 @@
     "babel-traverse": "^6.7.4",
     "babel-types": "^6.7.2",
     "babylon": "^6.7.0",
-    "typescript": "^1.9.0-dev.20160501"
+    "typescript": "^1.9.0-dev.20160518-1.0"
   },
   "devDependencies": {
     "chai": "^3.2.0",
