@@ -1,5 +1,6 @@
 'use strict';
 import Interpreter from './bytecode/interpreter';
+import WorkflowOptions from './workflow-options';
 
 
 
@@ -8,16 +9,7 @@ import Interpreter from './bytecode/interpreter';
 export default class Workflow {
 
 
-    private constructor() {}
-
-
-    // TODO: doc... create new workflow from workflow script source code.
-    static create(code: string, options: WorkflowOptions): Workflow {
-        throw new Error(`Not implemented`);
-    }
-
-    // TODO: doc... load an existing workflow from disk...
-    static load(filename: string): Promise<Workflow> {
+    constructor(script: string, options: WorkflowOptions) {
         throw new Error(`Not implemented`);
     }
 
@@ -32,22 +24,10 @@ export default class Workflow {
     }
 
 
-    run(): Promise<void> {
-        throw new Error(`Not implemented`);
-    }
+    result: Promise<void>;
 
 
     private _filename: string;
-}
-
-
-
-
-
-export interface WorkflowOptions {
-    filename?: string;
-    preStep?: (interpreter: Interpreter) => void|Promise<void>;
-    postStep?: (interpreter: Interpreter) => void|Promise<void>;
 }
 
 
