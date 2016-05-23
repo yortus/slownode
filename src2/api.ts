@@ -1,7 +1,7 @@
 'use strict';
 import Program from './bytecode/program';
-import {parse} from './transpiler/frontend';
-import {emit} from './transpiler/backend';
+import {parse} from './compiler/frontend';
+import {emit} from './compiler/backend';
 
 
 
