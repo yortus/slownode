@@ -7,9 +7,9 @@
         "outDir": "./built"
     },
     "files": [
-        "../src/api.ts",
-        "../src/task-formatter.ts",
-        "../src/task-runner.ts",
-        "../src/typings.d.ts"
+        "../src2/api.ts",
+        "../src2/bytecode/formatter.ts",
+        "../src2/bytecode/interpreter.ts",
+        "../src2/typings.d.ts"
     ]
 }

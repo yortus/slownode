@@ -13,7 +13,7 @@
                     "util": "scripts/util"
                 }
             });
-            require(['knockout', 'built/api', 'built/task-formatter', 'built/task-runner', 'codemirror', 'javascript-mode'], (ko, slownode, fmt, Runner, cm) => {
+            require(['knockout', 'built/api', 'built/bytecode/formatter', 'built/bytecode/interpreter', 'codemirror', 'javascript-mode'], (ko, slownode, fmt, Runner, cm) => {
                 Runner = Runner.default; // TODO: ES6 modules/AMD mismatch crap...
 
                 // Set up a simple viewmodel with 'input' and 'output' properties.
@@ -24,7 +24,7 @@
 
                     // When 'input' changes, recompute the 'output'.
                     try {
-                        task = slownode.createTask(vm.input());
+                        task = slownode.createProgram(vm.input());
                         let taskStr = fmt.toString(task);
 
                         // TODO: temp testing... if task was successfully created, run it...
