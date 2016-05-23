@@ -1,5 +1,5 @@
 'use strict';
-import OpCodes from './opcodes';
+import Opcodes from './opcodes';
 import Program from './program';
 import Register from './register';
 import Registers from './registers';
@@ -15,9 +15,10 @@ export default class Interpreter {
     // TODO: ...
     constructor(program: Program, globalObject?: {}) {
         this.program = program;
-        let vm = this.vm = makeVM();
-        vm.ENV.value = globalObject || {};
-        let code = this.code = recompile(program.code, vm);
+        let opcodes = this.opcodes = makeOpcodes();
+        let registers = this.registers = makeRegisters();
+        registers.ENV.value = globalObject || {};
+        let code = this.code = recompile(program.code, opcodes, registers);
     }
 
 
@@ -31,7 +32,12 @@ export default class Interpreter {
             let ex: Error = err; // workaround for TS1196 (see https://github.com/Microsoft/TypeScript/issues/8677)
             if (ex instanceof Jump) {
                 // TODO: update the PC ready for the next call, and return to host...
-                this.vm.PC.value = ex.nextLine;
+                this.registers.PC.value = ex.nextLine;
+                return false;
+            }
+            else if (ex instanceof Next) {
+                // TODO: update the PC ready for the next call, and return to host...
+                ++this.registers.PC.value;
                 return false;
             }
             else if (ex instanceof Done) {
@@ -52,7 +58,11 @@ export default class Interpreter {
 
 
     // TODO: ...
-    vm: OpCodes & Registers;
+    opcodes: Opcodes;
+
+
+    // TODO: ...
+    registers: Registers;
 
 
     // TODO: ...
@@ -63,9 +73,9 @@ export default class Interpreter {
 
 
 
-function recompile(code: () => void, vm: OpCodes & Registers) {
-    let makeCode = new Function('code', 'vm', `with (vm) return (${code})`);
-    let result: () => void = makeCode(code, vm);
+function recompile(code: () => void, opcodes: Opcodes, registers: Registers) {
+    let makeCode = new Function('code', 'opcodes', 'registers', `with (opcodes) with (registers) return (${code})`);
+    let result: () => void = makeCode(code, opcodes, registers);
     return result;
 }
 
@@ -74,9 +84,9 @@ function recompile(code: () => void, vm: OpCodes & Registers) {
 
 
 // TODO: ...
-function makeVM() {
+function makeOpcodes() {
 
-    let vm: OpCodes & Registers = {
+    let opcodes: Opcodes = {
         LOAD:   (tgt, obj, key) => tgt.value = obj.value[key instanceof Register ? key.value : key],
         LOADC:  (tgt, val) => tgt.value = val,
         STORE:  (obj, key, src) => obj.value[key instanceof Register ? key.value : key] = src.value,
@@ -103,8 +113,34 @@ function makeVM() {
         QUIT:   () => { throw new Done(); },
 
         NEWARR: (tgt) => tgt.value = [],
-        NEWOBJ: (tgt) => tgt.value = {},
+        NEWOBJ: (tgt) => tgt.value = {}
+    };
 
+    function jumpTo(line: number) {
+        // TODO: scope enter/exit, finally blocks
+        throw new Jump(line);
+    }
+
+    // Inject prolog/epilog into all methods
+    Object.keys(opcodes).forEach(key => {
+        let oldMethod = opcodes[key];
+        let newMethod = (...args) => {
+            // TODO: prolog (none for now)
+            oldMethod(...args);
+            throw new Next();
+        }
+    });
+
+    return opcodes;
+}
+
+
+
+
+
+function makeRegisters() {
+
+    let registers: Registers = {
         PC:     new Register('PC', 0),
         ENV:    new Register('ENV'),
         $0:     new Register('$0'),
@@ -116,24 +152,7 @@ function makeVM() {
         $6:     new Register('$6'),
         $7:     new Register('$7')
     };
-
-    function jumpTo(line: number) {
-        // TODO: scope enter/exit, finally blocks
-        throw new Jump(line);
-    }
-
-    // Inject prolog/epilog into all methods
-    Object.keys(vm).forEach(key => {
-        let oldMethod = vm[key];
-        if (typeof oldMethod !== 'function') return;
-        let newMethod = (...args) => {
-            // TODO: prolog (none for now)
-            oldMethod(...args);
-            throw new Jump(vm.PC.value + 1);
-        }
-    });
-
-    return vm;
+    return registers;
 }
 
 
@@ -144,4 +163,5 @@ function makeVM() {
 class Jump extends Error {
     constructor(public nextLine: number) { super(); }
 }
+class Next extends Error { }
 class Done extends Error { }

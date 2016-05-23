@@ -1,7 +1,7 @@
 'use strict';
 import * as assert from 'assert';
 import {SourceLocation, BindingKind} from "babel-types"; // Elided (used only for types)
-import OpCodes from './opcodes';
+import Opcodes from './opcodes';
 import Program, {ScopeInfo} from './program';
 import Register from './register';
 import Registers from './registers';
@@ -21,7 +21,7 @@ export interface Label {
 
 
 /** TODO: doc... internal helper class used by compiler back end */
-export default class Emitter implements OpCodes, Registers {
+export default class Emitter implements Opcodes, Registers {
 
 
     /** TODO: doc... */

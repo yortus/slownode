@@ -1,13 +1,13 @@
 'use strict';
 import Register from './register';
-export default VirtualMachine;
+export default Opcodes;
 
 
 
 
 
 // TODO: ...
-interface VirtualMachine {
+interface Opcodes {
 
     // Load/store/move
     LOAD:   (tgt: Register, obj: Register, key: Register|string|number) => void;
