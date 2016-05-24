@@ -23,8 +23,12 @@ interface EpochOptions {
     onError?: (err: any, workflow: Workflow) => void;
 
 
+    // TODO...
+    globalFactory?: () => {};
+
+
     // Custom step() behaviour
-    step?: (interpreter: Interpreter) => void|Promise<void>;
+    step?: (interpreter: Interpreter) => Promise<boolean|Error>;
 
 
     // Custom trigger for when to save/park a workflow. Also support: 'everyStep', 'never' (default = ???)    

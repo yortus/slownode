@@ -1,10 +1,12 @@
 'use strict';
+import Interpreter from '../bytecode/interpreter';
+import Program from '../bytecode/program';
+export default Workflow;
 
 
 
 
 
 // TODO: ...
-export default class Workflow extends Promise<void> {
-    // other details...
+interface Workflow extends Promise<void> {
 }

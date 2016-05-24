@@ -8,7 +8,7 @@
 			// Type of configuration.
 			"type": "node",
 			// Workspace relative or absolute path to the program.
-			"program": "${workspaceRoot}/built/api.js",
+			"program": "${workspaceRoot}/built/index.js",
 			//"program": "${workspaceRoot}/scripts/run-unit-tests.js",
 			// Automatically stop program after launch.
 			"stopOnEntry": true,
