@@ -129,6 +129,7 @@ function makeOpcodes() {
             oldMethod(...args);
             throw new Next();
         }
+        opcodes[key] = newMethod;
     });
 
     return opcodes;
