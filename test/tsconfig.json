@@ -1,9 +1,9 @@
-﻿{
-    "compilerOptions": {
-        "target": "es6",
-        "module": "commonjs",
-        "removeComments": false,
-        "sourceMap": true,
-        "outDir": "../built/test"
-    }
-}
+﻿// {
+//     "compilerOptions": {
+//         "target": "es6",
+//         "module": "commonjs",
+//         "removeComments": false,
+//         "sourceMap": true,
+//         "outDir": "../built/test"
+//     }
+// }

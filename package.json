@@ -6,7 +6,7 @@
   "main": "built/api.js",
   "typings": "built/api.d.ts",
   "scripts": {
-    "build": "tsc -p src && tsc -p test && tsc -p www",
+    "build": "tsc -p src && tsc -p www",
     "clean": "rimraf built/",
     "prepublish": "npm run self-ref && npm run build",
     "test": "node ./scripts/run-unit-tests",
