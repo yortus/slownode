@@ -36,6 +36,8 @@ export default class Epoch {
 
         // TODO: ...
         this.workflows = [];
+
+        // TODO: load and resume in-flight workflows from options.dirname...
     }
 
 
@@ -55,6 +57,9 @@ export default class Epoch {
             runToCompletion();
 
             function runToCompletion() {
+
+                // TODO: shouldSave? then save...
+                
                 step(interpreter)
                     .then(val => {
                         if (val) {
@@ -66,6 +71,7 @@ export default class Epoch {
                     })
                     .catch(err => {
                         reject(err);
+                        // TODO: use options.onError...
                     });
             }
         });
