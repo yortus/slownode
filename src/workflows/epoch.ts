@@ -25,9 +25,10 @@ export default class Epoch {
             dirname: options.dirname || null,       // TODO
             onError: options.onError || null,       // TODO
             globalFactory: options.globalFactory || (() => ({})),
-            step: options.step || (interpreter => {
+            step: options.step || (async interpreter => {
                 let result = interpreter.step();
-                return result instanceof Error ? Promise.reject(result) : Promise.resolve(result);
+                if (result instanceof Error) throw result;
+                return result;
             }),
             shouldSave: options.shouldSave || null, // TODO
             replacer: options.replacer || null,     // TODO
