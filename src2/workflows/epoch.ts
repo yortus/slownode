@@ -1,67 +1,28 @@
 'use strict';
+import EpochOptions from './epoch-options';
 import Interpreter from '../bytecode/interpreter';
+import Workflow from './workflow';
 
 
 
 
 
-class Workflow extends Promise<void> {
-    // other details...
-}
+// TODO: ...
+export default class Epoch {
 
 
+    // TODO: ... use factory function?
+    constructor(options: EpochOptions) {
+        throw new Error(`Not implemented`);
+    }
 
 
-
-declare class Epoch {
-
-
-    constructor(options: EpochOptions);
-
-
-    add(script: string): Workflow;
+    // TODO: ... rename?
+    add(script: string): Workflow {
+        throw new Error(`Not implemented`);
+    }
 
 
+    // TODO: ... needed?
     workflows: Workflow[];
-
-
-    // And possibly:
-    // start(): void;
-    // stop(): void;
-    // destroy(): void;
-}
-
-
-
-
-
-// TODO: concept of parking:
-// - if a saved workflow is not 'parked', it can't be resumed
-interface EpochOptions {
-
-    // If provided, scripts will be interpreted as TypeScript, and type-checked with this file as the lib.d.ts
-    lib_d_ts?: string;
-
-    // If provided, state will be backed up to / restored from this directory
-    dirname?: string;
-
-    // Called if any workflow in the epoch throws an unhandled exception. If not provided, do errors just vanish? Or?
-    onError?: (err: any, workflow: Workflow) => void;
-
-
-    
-    step?: (interpreter: Interpreter) => void|Promise<void>;
-
-    shouldSave?: (interpreter: Interpreter) => boolean|Promise<boolean>;
-
-    replacer?: Function;
-
-    reviver?: Function;
-
-
-    // More options:
-    // - custom step() behaviour
-    // - custom trigger for when to save/park a workflow. Also support: 'everyStep', 'never' (default = ???)    
-    // - custom serializer for saving workflow state
-    // - custom deserializer for loading workflow state
 }
