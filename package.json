@@ -42,14 +42,8 @@
   },
   "homepage": "https://github.com/paypac/slownode",
   "dependencies": {
-    "babel-core": "^6.7.4",
-    "babel-generator": "^6.7.2",
     "babel-standalone": "^6.7.7",
-    "babel-template": "^6.7.0",
-    "babel-traverse": "^6.7.4",
-    "babel-types": "^6.7.2",
-    "babylon": "^6.7.0",
-    "typescript": "^1.9.0-dev.20160518-1.0"
+    "typescript": "^1.9.0-dev.20160524-1.0"
   },
   "devDependencies": {
     "chai": "^3.2.0",
