@@ -73,6 +73,7 @@ export default class Epoch {
                     .catch(err => {
                         reject(err);
                         // TODO: use options.onError...
+                        console.log(`An error occurred: ${err}`); // TODO: temp testing...
                     });
             }
         });

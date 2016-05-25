@@ -101,7 +101,12 @@ function visitStatement(tb: Emitter, stmt: Statement|ProgramNode) {
         // ReturnStatement:     stmt => [***],
         // SwitchCase:          stmt => [***],
         // SwitchStatement:     stmt => [***],
-        // ThrowStatement:      stmt => [***],
+        ThrowStatement:         stmt => {
+                                    tb.withRegisters($0 => {
+                                        visitExpr(stmt.argument, $0);
+                                        tb.THROW($0);
+                                    });
+                                },
         // TryStatement:        stmt => [***],
         // VariableDeclarator:  stmt => [***],
         WhileStatement:         stmt => {

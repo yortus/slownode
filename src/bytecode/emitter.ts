@@ -83,6 +83,7 @@ export default class Emitter implements Opcodes, Registers {
     CALL(tgt: Register, func: Register, thís: Register, args: Register) {
         this.addLine(`CALL(${tgt.name}, ${func.name}, ${thís.name}, ${args.name});`);
     }
+    THROW(err: Register) { this.addLine(`THROW(${err.name})`); }
     QUIT() { this.addLine(`QUIT();`); }
 
     // OPCODES: Misc

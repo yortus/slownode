@@ -110,6 +110,7 @@ function makeOpcodes() {
         BF:     (line, arg) => arg.value ? null : jumpTo(line),
         BT:     (line, arg) => arg.value ? jumpTo(line) : null,
         CALL:   (tgt, func, thís, args) => tgt.value = func.value.apply(thís.value, args.value),
+        THROW:  (err) => { throw err.value; }, // TODO: temporary soln... how to really implement this?
         QUIT:   () => { throw new Done(); },
 
         NEWARR: (tgt) => tgt.value = [],

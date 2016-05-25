@@ -19,9 +19,13 @@ let epoch = new Epoch({
             .find(reg => reg.value && typeof reg.value.then === 'function');
 
         if (register) {
-            // TODO: we need a THROW opcode to throw the error -into- the program
-            // BUT we definitely DON'T throw/reject here when this is implemented properly...
-            register.value = await register.value;
+            try {
+                register.value = await register.value;
+            }
+            catch (err) {
+                register.value = err;
+                interpreter.opcodes.THROW(register);
+            }
         }
 
         let result = interpreter.step();
@@ -32,9 +36,10 @@ let epoch = new Epoch({
 
 
 let wf = epoch.add(`
-    print('starting...');
-    sleep(1000);
-    print('...finished');
+//    print('starting...');
+//    sleep(1000);
+    throw 42;
+//    print('...finished');
 `);
 
 wf

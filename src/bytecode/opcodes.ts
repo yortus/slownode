@@ -36,6 +36,7 @@ interface Opcodes {
     BF:     (line: number, arg: Register) => void;
     BT:     (line: number, arg: Register) => void;
     CALL:   (tgt: Register, func: Register, thís: Register, args: Register) => void;
+    THROW:  (err: Register) => void;
     QUIT:   () => void;
 
     // Misc
