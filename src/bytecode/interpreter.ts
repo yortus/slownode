@@ -22,9 +22,10 @@ export default class Interpreter {
     }
 
 
+    // TODO: doc... unhandled exceptions in the script will be thrown here...
     // TODO: we are using exceptions for control flow in here. How awesome/insane is that? Non-rhetorical question...
     // TODO: what is step() is called again after task finished/errored? Expected behaviour? Undefined behaviour for now...
-    step(): boolean|Error {
+    step(): boolean {
         try {
             this.code(); // NB: guaranteed to throw...
         }
@@ -45,9 +46,8 @@ export default class Interpreter {
                 return true;
             }
             else {
-                // TODO: we should probably handle and wrap non-Error errors that may crop up here (eg if task throws a string)
                 // TODO: uncaught error - surface it to the host...
-                return err;
+                throw err;
             }
         }
     }
