@@ -3,6 +3,6 @@
 	"command": "npm",
 	"isShellCommand": true,
 	"showOutput": "silent",
-	"args": ["run", "build"],
+	"args": ["run", "was-build"],
 	"problemMatcher": "$tsc"
 }
