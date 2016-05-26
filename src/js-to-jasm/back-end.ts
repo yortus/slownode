@@ -5,9 +5,9 @@ import {Statement, Expression, Identifier} from "babel-types";              // E
 import {StringLiteral, NumericLiteral, SpreadElement} from "babel-types";   // Elided (used only for types)
 import {types as t} from '../util/babel';
 import matchNode from '../util/match-node';
-import Register from '../bytecode/register';
-import Program from '../bytecode/program';
-import Emitter from '../bytecode/emitter';
+import Register from '../jasm/register';
+import Program from '../jasm/program';
+import Emitter from '../jasm/emitter';
 
 
 

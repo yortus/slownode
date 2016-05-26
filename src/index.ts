@@ -1,6 +1,6 @@
 'use strict';
 import Epoch from './workflows/epoch';
-import Register from './bytecode/register';
+import Register from './jasm/register';
 
 
 

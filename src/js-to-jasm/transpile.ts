@@ -1,7 +1,7 @@
 'use strict';
 import {parse} from './front-end';
 import {emit} from './back-end';
-import Program from '../bytecode/program';
+import Program from '../jasm/program';
 
 
 

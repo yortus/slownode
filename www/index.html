@@ -13,7 +13,7 @@
                     "util": "scripts/util"
                 }
             });
-            require(['knockout', 'built/js-to-jasm/index', 'built/bytecode/formatter', 'built/bytecode/interpreter', 'codemirror', 'javascript-mode'], (ko, slownode, fmt, Runner, cm) => {
+            require(['knockout', 'built/js-to-jasm/index', 'built/jasm/formatter', 'built/jasm/interpreter', 'codemirror', 'javascript-mode'], (ko, slownode, fmt, Runner, cm) => {
                 Runner = Runner.default; // TODO: ES6 modules/AMD mismatch crap...
 
                 // Set up a simple viewmodel with 'input' and 'output' properties.

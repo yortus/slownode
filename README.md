@@ -4,11 +4,9 @@
 
 ## Glossary
 
-- **jasm/JASM**: TODO
+- **jasm/JASM**: TODO: target language, a kind of bytecode, easy to interpret using a JS engine
 
-- **Bytecode**: TODO
-
-- **Program**: TODO
+- **Program/Package**: TODO
 
 - **Emitter**: TODO
 

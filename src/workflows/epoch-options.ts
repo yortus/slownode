@@ -1,5 +1,5 @@
 'use strict';
-import Interpreter from '../bytecode/interpreter';
+import Interpreter from '../jasm/interpreter';
 import Workflow from './workflow';
 export default EpochOptions;
 

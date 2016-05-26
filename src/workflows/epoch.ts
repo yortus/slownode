@@ -1,6 +1,6 @@
 'use strict';
 import EpochOptions from './epoch-options';
-import Interpreter from '../bytecode/interpreter';
+import Interpreter from '../jasm/interpreter';
 import Workflow from './workflow';
 import {transpile} from '../js-to-jasm/index';
 
