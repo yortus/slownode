@@ -18,7 +18,7 @@ interface Options {
     dirname?: string;
 
 
-    // Called if any workflow in the epoch throws an unhandled exception. If not provided, do errors just vanish? Or?
+    // Called if any running script in the epoch throws an unhandled exception. If not provided, do errors just vanish? Or?
     // TODO: should this callback be passed some sort of reference to the script that errored?
     onError?: (err: any) => void;
 
@@ -31,14 +31,14 @@ interface Options {
     step?: (jasm: Interpreter) => boolean|Promise<boolean>;
 
 
-    // Custom trigger for when to save/park a workflow. Also support: 'everyStep', 'never' (default = ???)    
+    // Custom trigger for when to save/park a running script. Also support: 'everyStep', 'never' (default = ???)    
     shouldSave?: (jasm: Interpreter) => boolean|Promise<boolean>;
 
 
-    // Custom serializer for saving workflow state
+    // Custom serializer for saving running script state
     replacer?: Function;
 
 
-    // Custom deserializer for loading workflow state
+    // Custom deserializer for loading running script state
     reviver?: Function;
 }

@@ -26,19 +26,19 @@ export default class Epoch {
             reviver: options.reviver || null        // TODO
         };
 
-        // TODO: load and resume in-flight workflows from options.dirname...
+        // TODO: load and resume in-flight scripts from options.dirname...
     }
 
 
     // TODO: ... rename?
-    add(script: string): Promise<void> {
-        let program = transpile(script);
+    execute(script: string): Promise<void> {
+        let jasm = transpile(script);
         let globalObject = this._options.globalFactory();
-        let interpreter = new Interpreter(program, globalObject);
+        let interpreter = new Interpreter(jasm, globalObject);
         let step = this._options.step;
 
-        // TODO: do we need to keep a reference to the workflow after this? Why? Why not?
-        let workflow = (async () => {
+        // TODO: do we need to keep a reference to the script/jasm/interpreter/progress after this? Why? Why not?
+        let completed = (async () => {
 
             // TODO: run to completion...
             try {
@@ -49,7 +49,7 @@ export default class Epoch {
                 throw err;
             }
         })();
-        return workflow;
+        return completed;
     }
 
 

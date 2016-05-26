@@ -5,7 +5,7 @@ import {Epoch, EpochOptions} from 'slownode';
 
 
 
-let epoch = new Epoch({
+let slow = new Epoch({
     globalFactory: () => ({
         sleep: ms => new Promise(resolve => setTimeout(resolve, ms)),
         sleepThenFail: (ms, msg) => new Promise((_, reject) => setTimeout(() => reject(new Error(msg)), ms)),
@@ -34,7 +34,7 @@ let epoch = new Epoch({
 });
 
 
-let wf = epoch.add(`
+let wf = slow.execute(`
     print('starting...');
     sleep(1000);
     print('after one second...');
