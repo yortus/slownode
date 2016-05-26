@@ -6,7 +6,7 @@ import Program from './program';
 
 
 // TODO: ... should this go -in- Program class?
-export function toString(program: Program): string {
+export default function prettyPrint(program: Program): string {
 
     let scopes = program.meta.scopes;
 
@@ -47,21 +47,3 @@ const template = `{
         // TODO: ...
     }
 }`;
-
-
-
-
-
-// TODO: ...
-export function toJSON(task: Program): string {
-    throw new Error(`Not implemented`);
-}
-
-
-
-
-
-// TODO: ...
-export function fromJSON(json: string): Program {
-    throw new Error(`Not implemented`);
-}

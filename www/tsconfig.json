@@ -8,7 +8,7 @@
     },
     "files": [
         "../src/index.ts",
-        "../src/jasm/formatter.ts",
+        "../src/jasm/pretty-print.ts",
         "../src/jasm/interpreter.ts",
         "../src/typings.d.ts"
     ]

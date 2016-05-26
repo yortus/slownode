@@ -13,8 +13,11 @@
                     "util": "scripts/util"
                 }
             });
-            require(['knockout', 'built/js-to-jasm/index', 'built/jasm/formatter', 'built/jasm/interpreter', 'codemirror', 'javascript-mode'], (ko, slownode, fmt, Runner, cm) => {
-                Runner = Runner.default; // TODO: ES6 modules/AMD mismatch crap...
+            require(['knockout', 'built/js-to-jasm/index', 'built/jasm/pretty-print', 'built/jasm/interpreter', 'codemirror', 'javascript-mode'], (ko, slownode, prettyPrint, Runner, cm) => {
+                // TODO: ES6 modules/AMD mismatch crap...
+                Runner = Runner.default;
+                prettyPrint = prettyPrint.default;
+                
 
                 // Set up a simple viewmodel with 'input' and 'output' properties.
                 let vm = {};
@@ -25,7 +28,7 @@
                     // When 'input' changes, recompute the 'output'.
                     try {
                         program = slownode.transpile(vm.input());
-                        let taskStr = fmt.toString(program);
+                        let taskStr = prettyPrint(program);
 
                         // TODO: temp testing... if task was successfully created, run it...
                         // TODO: maybe trigger this differently / elsewhere
