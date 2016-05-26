@@ -3,14 +3,13 @@
   "version": "0.4.0",
   "description": "slownode",
   "readmeFilename": "README.md",
-  "main": "built/api.js",
-  "typings": "built/api.d.ts",
+  "main": "built/index.js",
+  "typings": "built/index.d.ts",
   "scripts": {
-    "build": "tsc -p src && tsc -p www",
+    "build": "tsc -p src && tsc -p test && tsc -p www",
     "clean": "rimraf built/",
     "prepublish": "npm run self-ref && npm run build",
     "test": "node ./scripts/run-unit-tests",
-    "test-promises-aplus": "node ./scripts/run-promises-aplus-tests",
     "self-ref": "node ./scripts/enable-self-reference"
   },
   "repository": {
@@ -48,7 +47,6 @@
   "devDependencies": {
     "chai": "^3.2.0",
     "mocha": "^2.2.5",
-    "promises-aplus-tests": "^2.1.1",
     "rimraf": "^2.5.2"
   }
 }

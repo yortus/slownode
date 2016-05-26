@@ -148,7 +148,7 @@ function makeInstructions() {
 
 function makeRegisters() {
 
-    let registers: RegisterSet = {
+    let registers: RegisterSet & {[name: string]: Register} = {
         PC:     new Register('PC', 0),
         ENV:    new Register('ENV'),
         $0:     new Register('$0'),
