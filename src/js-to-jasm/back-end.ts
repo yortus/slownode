@@ -3,8 +3,8 @@ import * as assert from 'assert';
 import {Node, File, Program as ProgramNode} from "babel-types";             // Elided (used only for types)
 import {Statement, Expression, Identifier} from "babel-types";              // Elided (used only for types)
 import {StringLiteral, NumericLiteral, SpreadElement} from "babel-types";   // Elided (used only for types)
-import {types as t} from '../util/babel';
-import matchNode from '../util/match-node';
+import {types as t} from './babel';
+import matchNode from './match-node';
 import Register from '../jasm/register';
 import Program from '../jasm/program';
 import Emitter from '../jasm/emitter';
