@@ -8,6 +8,7 @@ import {Epoch, EpochOptions} from 'slownode';
 let epoch = new Epoch({
     globalFactory: () => ({
         sleep: ms => new Promise(resolve => setTimeout(resolve, ms)),
+        sleepThenFail: (ms, msg) => new Promise((_, reject) => setTimeout(() => reject(new Error(msg)), ms)),
         print: msg => console.log(msg)
     }),
     step: async interpreter => {
@@ -23,8 +24,7 @@ let epoch = new Epoch({
                 register.value = await register.value;
             }
             catch (err) {
-                register.value = err;
-                interpreter.instructions.THROW(register);
+                interpreter.throwInto(err);
             }
         }
 
@@ -37,6 +37,8 @@ let epoch = new Epoch({
 let wf = epoch.add(`
     print('starting...');
     sleep(1000);
+    print('after one second...');
+    sleepThenFail(1000, 'oops!');
     throw 42;
     print('...finished');
 `);

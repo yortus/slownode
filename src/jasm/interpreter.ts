@@ -15,10 +15,10 @@ export default class Interpreter {
     // TODO: ...
     constructor(jasm: ObjectCode, globalObject?: {}) {
         this.jasm = jasm;
-        let instructions = this.instructions = makeInstructions();
-        let registers = this.registers = makeRegisters();
+        let virtualMachine = this._virtualMachine = makeVirtualMachine();
+        let registers = this.registers = <any> virtualMachine;
         registers.ENV.value = globalObject || {};
-        let code = this.code = recompile(jasm.code, instructions, registers);
+        let code = this._code = recompile(jasm.code, virtualMachine);
     }
 
 
@@ -27,7 +27,7 @@ export default class Interpreter {
     // TODO: what if step() is called again after task finished/errored? Expected behaviour? Undefined behaviour for now...
     step(): boolean {
         try {
-            this.code(); // NB: guaranteed to throw...
+            this._code(); // NB: guaranteed to throw...
         }
         catch (err) {
             let ex: Error = err; // workaround for TS1196 (see https://github.com/Microsoft/TypeScript/issues/8677)
@@ -53,12 +53,15 @@ export default class Interpreter {
     }
 
 
+    // TODO: doc... does this need to otherwise work like step(), return a value, etc? I think not, but think about it...
+    throwInto(err: any) {
+        let reg = new Register('temp', err);
+        this._virtualMachine.THROW(reg);
+    }
+
+
     // TODO: ...
     jasm: ObjectCode;
-
-
-    // TODO: ... really need this? Only for throwing into!
-    instructions: InstructionSet;
 
 
     // TODO: ...
@@ -66,16 +69,21 @@ export default class Interpreter {
 
 
     // TODO: ...
-    private code: () => void;
+    private _virtualMachine: InstructionSet & RegisterSet;
+
+
+    // TODO: ...
+    private _code: () => void;
 }
 
 
 
 
 
-function recompile(code: () => void, instructions: InstructionSet, registers: RegisterSet) {
-    let makeCode = new Function('code', 'instructions', 'registers', `with (instructions) with (registers) return (${code})`);
-    let result: () => void = makeCode(code, instructions, registers);
+// TODO: ...
+function recompile(code: () => void, virtualMachine: InstructionSet & RegisterSet) {
+    let makeCode = new Function('code', 'vm', `with (vm) return (${code})`);
+    let result: () => void = makeCode(code, virtualMachine);
     return result;
 }
 
@@ -84,7 +92,18 @@ function recompile(code: () => void, instructions: InstructionSet, registers: Re
 
 
 // TODO: ...
-function makeInstructions() {
+function makeVirtualMachine(): InstructionSet & RegisterSet {
+    let virtualMachine: InstructionSet & RegisterSet = <any> {};
+    let instructions = makeInstructions(virtualMachine);
+    let registers = makeRegisters(virtualMachine);
+    return virtualMachine;
+}
+
+
+
+
+// TODO: ...
+function makeInstructions(target: InstructionSet) {
 
     let instructions: InstructionSet = {
 
@@ -136,19 +155,18 @@ function makeInstructions() {
             oldMethod(...args);
             throw new Next();
         }
-        instructions[key] = newMethod;
+        target[key] = newMethod;
     });
-
-    return instructions;
 }
 
 
 
 
 
-function makeRegisters() {
+// TODO: ...
+function makeRegisters(target: RegisterSet) {
 
-    let registers: RegisterSet & {[name: string]: Register} = {
+    let registers: RegisterSet = {
         PC:     new Register('PC', 0),
         ENV:    new Register('ENV'),
         $0:     new Register('$0'),
@@ -160,7 +178,10 @@ function makeRegisters() {
         $6:     new Register('$6'),
         $7:     new Register('$7')
     };
-    return registers;
+
+    Object.keys(registers).forEach(key => {
+        target[key] = registers[key];
+    });
 }
 
 
