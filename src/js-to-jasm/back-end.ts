@@ -15,10 +15,10 @@ import Emitter from '../jasm/emitter';
 
 // TODO: ...
 export function emit(code: string, ast: Node): Program {
-    let tb = new Emitter(code);
+    let jasm = new Emitter(code);
     assert(t.isFile(ast));
-    visitStatement(tb, (<File> ast).program);
-    let newSrc = tb.build();
+    visitStatement(jasm, (<File> ast).program);
+    let newSrc = jasm.build();
     let result = newSrc;
     return result;
 }
@@ -28,19 +28,19 @@ export function emit(code: string, ast: Node): Program {
 
 
 // TODO: ...
-function visitStatement(tb: Emitter, stmt: Statement|ProgramNode) {
+function visitStatement(jasm: Emitter, stmt: Statement|ProgramNode) {
 
     // TODO: ...
-    let visitStmt = (stmt: Statement) => visitStatement(tb, stmt);
-    let visitExpr = (expr: Expression|SpreadElement, $T: Register) => visitExpression(tb, expr, $T);
+    let visitStmt = (stmt: Statement) => visitStatement(jasm, stmt);
+    let visitExpr = (expr: Expression|SpreadElement, $T: Register) => visitExpression(jasm, expr, $T);
 
     // TODO: ...
-    let oldLoc = tb.sourceLocation;
-    tb.sourceLocation = stmt.loc;
+    let oldLoc = jasm.sourceLocation;
+    jasm.sourceLocation = stmt.loc;
 
     // TODO: ...
     if (stmt.scope) {
-        tb.enterScope(stmt.scope);
+        jasm.enterScope(stmt.scope);
     }
     
     // TODO: ...
@@ -57,7 +57,7 @@ function visitStatement(tb: Emitter, stmt: Statement|ProgramNode) {
         // Statement:           stmt => [***],
         EmptyStatement:         stmt => {},
         ExpressionStatement:    stmt => {
-                                    tb.withRegisters($0 => {
+                                    jasm.withRegisters($0 => {
                                         visitExpr(stmt.expression, $0);
                                     });
                                 },
@@ -71,10 +71,10 @@ function visitStatement(tb: Emitter, stmt: Statement|ProgramNode) {
                                     // TODO: initial cut... check code below... complete? correct?
                                     stmt.declarations.forEach(decl => {
                                         if (!decl.init) return;
-                                        tb.withRegisters(($0) => {
+                                        jasm.withRegisters(($0) => {
                                             visitExpr(decl.init, $0);
                                             if (t.isIdentifier(decl.id)) {
-                                                tb.STORE(tb.ENV, decl.id.name, $0);
+                                                jasm.STORE(jasm.ENV, decl.id.name, $0);
                                             }
                                             else {
                                                 throw new Error(`Unsupported variable declarator type: '${decl.id.type}'`);
@@ -85,14 +85,14 @@ function visitStatement(tb: Emitter, stmt: Statement|ProgramNode) {
         // ForStatement:        stmt => [***],
         // FunctionDeclaration: stmt => [***],
         IfStatement:            stmt => {
-                                    let L1 = tb.newLabel();
-                                    let L2 = tb.newLabel();
-                                    tb.withRegisters($0 => {
+                                    let L1 = jasm.newLabel();
+                                    let L2 = jasm.newLabel();
+                                    jasm.withRegisters($0 => {
                                         visitExpr(stmt.test, $0);
-                                        tb.BF(L1, $0);
+                                        jasm.BF(L1, $0);
                                     });
                                     visitStmt(stmt.consequent);
-                                    if (stmt.alternate) tb.B(L2);
+                                    if (stmt.alternate) jasm.B(L2);
                                     L1.resolve();
                                     visitStmt(stmt.alternate || t.blockStatement([]));
                                     L2.resolve();
@@ -102,23 +102,23 @@ function visitStatement(tb: Emitter, stmt: Statement|ProgramNode) {
         // SwitchCase:          stmt => [***],
         // SwitchStatement:     stmt => [***],
         ThrowStatement:         stmt => {
-                                    tb.withRegisters($0 => {
+                                    jasm.withRegisters($0 => {
                                         visitExpr(stmt.argument, $0);
-                                        tb.THROW($0);
+                                        jasm.THROW($0);
                                     });
                                 },
         // TryStatement:        stmt => [***],
         // VariableDeclarator:  stmt => [***],
         WhileStatement:         stmt => {
-                                    let L1 = tb.newLabel();
-                                    let L2 = tb.newLabel();
+                                    let L1 = jasm.newLabel();
+                                    let L2 = jasm.newLabel();
                                     L1.resolve();
-                                    tb.withRegisters($0 => {
+                                    jasm.withRegisters($0 => {
                                         visitExpr(stmt.test, $0);
-                                        tb.BF(L2, $0);
+                                        jasm.BF(L2, $0);
                                     });
                                     visitStmt(stmt.body);
-                                    tb.B(L1);
+                                    jasm.B(L1);
                                     L2.resolve();
                                 },
         // WithStatement:       stmt => [***],
@@ -146,11 +146,11 @@ function visitStatement(tb: Emitter, stmt: Statement|ProgramNode) {
 
     // TODO: temp testing...
     if (stmt.scope) {
-        tb.leaveScope();
+        jasm.leaveScope();
     }
 
     // TODO: temp testing...
-    tb.sourceLocation = oldLoc;
+    jasm.sourceLocation = oldLoc;
 }
 
 
@@ -158,24 +158,24 @@ function visitStatement(tb: Emitter, stmt: Statement|ProgramNode) {
 
 
 // TODO: ...
-function visitExpression(tb: Emitter, expr: Expression|SpreadElement, $T: Register) {
+function visitExpression(jasm: Emitter, expr: Expression|SpreadElement, $T: Register) {
 
     // TODO: ...
-    let visitExpr = (expr: Expression|SpreadElement, $T: Register) => visitExpression(tb, expr, $T);
+    let visitExpr = (expr: Expression|SpreadElement, $T: Register) => visitExpression(jasm, expr, $T);
 
     // TODO: ...
-    let oldLoc = tb.sourceLocation;
-    tb.sourceLocation = expr.loc;
+    let oldLoc = jasm.sourceLocation;
+    jasm.sourceLocation = expr.loc;
 
     // TODO: ...
     matchNode<void>(expr, {
         // ------------------------- core -------------------------
         ArrayExpression:        expr => {
-                                    tb.NEWARR($T);
-                                    tb.withRegisters($0 => {
+                                    jasm.NEWARR($T);
+                                    jasm.withRegisters($0 => {
                                         expr.elements.forEach((el, i) => {
                                             visitExpr(el, $0);
-                                            tb.STORE($T, i, $0);
+                                            jasm.STORE($T, i, $0);
                                         });
                                     });
                                 },
@@ -191,14 +191,14 @@ function visitExpression(tb: Emitter, expr: Expression|SpreadElement, $T: Regist
                                     if (expr.operator === '=') {
                                         visitExpr(expr.right, $T);
                                         if (t.isIdentifier(expr.left)) {
-                                            tb.STORE(tb.ENV, expr.left.name, $T);
+                                            jasm.STORE(jasm.ENV, expr.left.name, $T);
                                         }
                                         else {
                                             let left = expr.left;
-                                            tb.withRegisters(($0, $1) => {
+                                            jasm.withRegisters(($0, $1) => {
                                                 visitExpr(left.object, $0);
                                                 visitExpr(left.property, $1);
-                                                tb.STORE($0, $1, $T);
+                                                jasm.STORE($0, $1, $T);
                                             });
                                         }
                                     }
@@ -207,71 +207,71 @@ function visitExpression(tb: Emitter, expr: Expression|SpreadElement, $T: Regist
                                     else {
                                         let operation = (operator: string, $T: Register, $0: Register) => {
                                             switch (operator) {
-                                                case '+=': return tb.ADD($T, $0, $T);
-                                                case '-=': return tb.SUB($T, $0, $T);
-                                                case '*=': return tb.MUL($T, $0, $T);
-                                                case '/=': return tb.DIV($T, $0, $T);
+                                                case '+=': return jasm.ADD($T, $0, $T);
+                                                case '-=': return jasm.SUB($T, $0, $T);
+                                                case '*=': return jasm.MUL($T, $0, $T);
+                                                case '/=': return jasm.DIV($T, $0, $T);
                                                 // TODO: "%=" | "<<=" | ">>=" | ">>>=" | "|=" | "^=" | "&=";
                                                 default: throw new Error(`Unsupported assignment operator: '${expr.operator}'`);
                                             }
                                         }
                                         if (t.isIdentifier(expr.left)) {
                                             let left = expr.left;
-                                            tb.withRegisters($0 => {
-                                                tb.LOAD($0, tb.ENV, left.name);
+                                            jasm.withRegisters($0 => {
+                                                jasm.LOAD($0, jasm.ENV, left.name);
                                                 visitExpr(expr.right, $T);
                                                 operation(expr.operator, $T, $0);
                                             });
-                                            tb.STORE(tb.ENV, left.name, $T);
+                                            jasm.STORE(jasm.ENV, left.name, $T);
                                         }
                                         else {
                                             let left = expr.left;
-                                            tb.withRegisters(($0, $1, $2) => {
+                                            jasm.withRegisters(($0, $1, $2) => {
                                                 visitExpr(left.object, $1);
                                                 visitExpr(left.property, $2);
-                                                tb.LOAD($0, $1, $2);
+                                                jasm.LOAD($0, $1, $2);
                                                 visitExpr(expr.right, $T);
                                                 operation(expr.operator, $T, $0);
-                                                tb.STORE($1, $2, $T);
+                                                jasm.STORE($1, $2, $T);
                                             });
                                         }
                                     }
                                 },
         BinaryExpression:       expr => {
                                     visitExpr(expr.left, $T);
-                                    tb.withRegisters($0 => {
+                                    jasm.withRegisters($0 => {
                                         visitExpr(expr.right, $0);
                                         switch (expr.operator) {
-                                            case '+':   return tb.ADD($T, $T, $0);
-                                            case '-':   return tb.SUB($T, $T, $0);
-                                            case '*':   return tb.MUL($T, $T, $0);
-                                            case '/':   return tb.DIV($T, $T, $0);
-                                            case '===': return tb.EQ($T, $T, $0);
-                                            case '!==': return tb.NE($T, $T, $0);
-                                            case '>=':  return tb.GE($T, $T, $0);
-                                            case '>':   return tb.GT($T, $T, $0);
-                                            case '<=':  return tb.LE($T, $T, $0);
-                                            case '<':   return tb.LT($T, $T, $0);
+                                            case '+':   return jasm.ADD($T, $T, $0);
+                                            case '-':   return jasm.SUB($T, $T, $0);
+                                            case '*':   return jasm.MUL($T, $T, $0);
+                                            case '/':   return jasm.DIV($T, $T, $0);
+                                            case '===': return jasm.EQ($T, $T, $0);
+                                            case '!==': return jasm.NE($T, $T, $0);
+                                            case '>=':  return jasm.GE($T, $T, $0);
+                                            case '>':   return jasm.GT($T, $T, $0);
+                                            case '<=':  return jasm.LE($T, $T, $0);
+                                            case '<':   return jasm.LT($T, $T, $0);
                                             // TODO: "%" | "**" | "&" | "|" | ">>" | ">>>" | "<<" | "^" | "==" | "!=" | "in" | "instanceof";
                                             default: throw new Error(`Unsupported binary operator: '${expr.operator}'`);
                                         }
                                     });
                                 },
         Identifier:             expr => {
-                                    tb.LOAD($T, tb.ENV, expr.name);
+                                    jasm.LOAD($T, jasm.ENV, expr.name);
                                 },
         CallExpression:         expr => {
                                     if (t.isIdentifier(expr.callee)) {
                                         let callee = expr.callee;
-                                        tb.withRegisters(($0, $1) => {
-                                            tb.LOAD($T, tb.ENV, callee.name);
-                                            tb.NEWARR($0);
+                                        jasm.withRegisters(($0, $1) => {
+                                            jasm.LOAD($T, jasm.ENV, callee.name);
+                                            jasm.NEWARR($0);
                                             expr.arguments.forEach((arg, i) => {
                                                 visitExpr(arg, $1);
-                                                tb.STORE($0, i, $1);
+                                                jasm.STORE($0, i, $1);
                                             });
-                                            tb.LOADC($1, null); // TODO: set 'this' - should be what? global object? undefined?
-                                            tb.CALL($T, $T, $1, $0);
+                                            jasm.LOADC($1, null); // TODO: set 'this' - should be what? global object? undefined?
+                                            jasm.CALL($T, $T, $1, $0);
                                         });
                                     }
                                     else {
@@ -280,34 +280,34 @@ function visitExpression(tb: Emitter, expr: Expression|SpreadElement, $T: Regist
                                     }
                                 },
         ConditionalExpression:  expr => {
-                                    let L1 = tb.newLabel();
-                                    let L2 = tb.newLabel();
+                                    let L1 = jasm.newLabel();
+                                    let L2 = jasm.newLabel();
                                     visitExpr(expr.test, $T);
-                                    tb.BF(L1, $T);
+                                    jasm.BF(L1, $T);
                                     visitExpr(expr.consequent, $T);
-                                    tb.B(L2);
+                                    jasm.B(L2);
                                     L1.resolve();
                                     visitExpr(expr.alternate, $T);
                                     L2.resolve();
                                 },
         // FunctionExpression:  expr => [***],
         StringLiteral:          expr => {
-                                    tb.LOADC($T, expr.value);
+                                    jasm.LOADC($T, expr.value);
                                 },
         NumericLiteral:         expr => {
-                                    tb.LOADC($T, expr.value);
+                                    jasm.LOADC($T, expr.value);
                                 },
         NullLiteral:            expr => {
-                                    tb.LOADC($T, null);
+                                    jasm.LOADC($T, null);
                                 },
         BooleanLiteral:         expr => {
-                                    tb.LOADC($T, expr.value);
+                                    jasm.LOADC($T, expr.value);
                                 },
         // RegExpLiteral:          expr => [***],
         LogicalExpression:      expr => {
-                                    let L1 = tb.newLabel();
+                                    let L1 = jasm.newLabel();
                                     visitExpr(expr.left, $T);
-                                    expr.operator === '&&' ? tb.BF(L1, $T) : tb.BT(L1, $T);
+                                    expr.operator === '&&' ? jasm.BF(L1, $T) : jasm.BT(L1, $T);
                                     visitExpr(expr.right, $T);
                                     L1.resolve();
                                 },
@@ -316,29 +316,29 @@ function visitExpression(tb: Emitter, expr: Expression|SpreadElement, $T: Regist
                                     if (!expr.computed) {
                                         // TODO: good example for TS assert(type) suggestion...
                                         assert(t.isIdentifier(expr.property));
-                                        tb.withRegisters($0 => {
+                                        jasm.withRegisters($0 => {
                                             visitExpr(expr.object, $0);
-                                            tb.LOAD($T, $0, (<Identifier> expr.property).name);
+                                            jasm.LOAD($T, $0, (<Identifier> expr.property).name);
                                         });
                                     }
                                     else if (t.isStringLiteral(expr.property) || t.isNumericLiteral(expr.property)) {
                                         let prop = expr.property;
-                                        tb.withRegisters($0 => {
+                                        jasm.withRegisters($0 => {
                                             visitExpr(expr.object, $0);
-                                            tb.LOAD($T, $0, prop.value);
+                                            jasm.LOAD($T, $0, prop.value);
                                         });
                                     }
                                     else {
-                                        tb.withRegisters(($0, $1) => {
+                                        jasm.withRegisters(($0, $1) => {
                                             visitExpr(expr.object, $0);
                                             visitExpr(expr.property, $1);
-                                            tb.LOAD($T, $0, $1);
+                                            jasm.LOAD($T, $0, $1);
                                         });
                                     }
                                 },
         // NewExpression:       expr => [***],
         ObjectExpression:       expr => {
-                                    tb.NEWOBJ($T);
+                                    jasm.NEWOBJ($T);
                                     expr.properties.forEach(property => {
                                         if (t.isObjectProperty(property)) {
                                             let prop = property;
@@ -350,16 +350,16 @@ function visitExpression(tb: Emitter, expr: Expression|SpreadElement, $T: Regist
                                                     case 'NumericLiteral':  key = (<NumericLiteral> prop.key).value; break;
                                                     default: throw new Error(`Unsupported property key: '${prop.key.type}'`);
                                                 }
-                                                tb.withRegisters($0 => {
+                                                jasm.withRegisters($0 => {
                                                     visitExpr(prop.value, $0);
-                                                    tb.STORE($T, key, $0);
+                                                    jasm.STORE($T, key, $0);
                                                 });
                                             }
                                             else {
-                                                tb.withRegisters(($0, $1) => {
+                                                jasm.withRegisters(($0, $1) => {
                                                     visitExpr(prop.key, $0);
                                                     visitExpr(prop.value, $1);
-                                                    tb.STORE($T, $0, $1);
+                                                    jasm.STORE($T, $0, $1);
                                                 });
                                             }
                                         }
@@ -378,8 +378,8 @@ function visitExpression(tb: Emitter, expr: Expression|SpreadElement, $T: Regist
         UnaryExpression:        expr => {
                                     visitExpr(expr.argument, $T);
                                     switch (expr.operator) {
-                                        case '-':   return tb.NEG($T, $T);
-                                        case '!':   return tb.NOT($T, $T);
+                                        case '-':   return jasm.NEG($T, $T);
+                                        case '!':   return jasm.NOT($T, $T);
                                         // TODO: "+" | "~" | "typeof" | "void" | "delete"
                                         default: throw new Error(`Unsupported unary operator: '${expr.operator}'`);
                                     }
@@ -401,5 +401,5 @@ function visitExpression(tb: Emitter, expr: Expression|SpreadElement, $T: Regist
         // ------------------------- experimental -------------------------
         // AwaitExpression:     expr => [***]
     });
-    tb.sourceLocation = oldLoc;
+    jasm.sourceLocation = oldLoc;
 }
