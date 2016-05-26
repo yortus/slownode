@@ -5,5 +5,8 @@
         "removeComments": false,
         "sourceMap": true,
         "outDir": "../built/test"
-    }
+    },
+    "exclude": [
+        "fixtures"
+    ]
 }
