@@ -62,7 +62,7 @@ export default class Interpreter {
 
 
     // TODO: ...
-    registers: RegisterSet;
+    registers: RegisterSet & {[name: string]: Register};
 
 
     // TODO: ...

@@ -1,6 +1,5 @@
 'use strict';
 import Epoch from './workflows/epoch';
-import Register from './jasm/register';
 
 
 
@@ -16,7 +15,7 @@ let epoch = new Epoch({
 
         // Find a register that contains a Promise instance (if any)
         let register = Object.keys(interpreter.registers)
-            .map(name => <Register> interpreter.registers[name])
+            .map(name => interpreter.registers[name])
             .find(reg => reg.value && typeof reg.value.then === 'function');
 
         if (register) {
