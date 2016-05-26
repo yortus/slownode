@@ -1,7 +1,7 @@
 'use strict';
 import {transform} from '../util/babel';
-import {Node} from "babel-types";             // Elided (used only for types)
-import {Visitor} from "babel-traverse";    // Elided (used only for types)
+import {Node} from "babel-types";       // Elided (used only for types)
+import {Visitor} from "babel-traverse"; // Elided (used only for types)
 
 
 
@@ -21,7 +21,7 @@ export function parse(code: string): Node {
 
 
 
-// TODO: doc... define a babel plugin that collects all scope info
+// TODO: doc... define a babel plugin that collects all scope info and injects it into the AST
 let augmentNodesWithScopeInfo = () => ({
     visitor: <Visitor> {
         // Collect info for all block-scopes that have their own bindings.

@@ -20,7 +20,7 @@ export function emit(code: string, ast: Node): Program {
     visitStatement(tb, (<File> ast).program);
     let newSrc = tb.build();
     let result = newSrc;
-    return <any> result; // TODO: !!! not a task !!!
+    return result;
 }
 
 

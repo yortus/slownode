@@ -13,19 +13,19 @@
                     "util": "scripts/util"
                 }
             });
-            require(['knockout', 'built/api', 'built/bytecode/formatter', 'built/bytecode/interpreter', 'codemirror', 'javascript-mode'], (ko, slownode, fmt, Runner, cm) => {
+            require(['knockout', 'built/js-to-jasm/index', 'built/bytecode/formatter', 'built/bytecode/interpreter', 'codemirror', 'javascript-mode'], (ko, slownode, fmt, Runner, cm) => {
                 Runner = Runner.default; // TODO: ES6 modules/AMD mismatch crap...
 
                 // Set up a simple viewmodel with 'input' and 'output' properties.
                 let vm = {};
-                let task;
+                let program;
                 vm.input = ko.observable('').extend({ rateLimit: 500 }),
                 vm.output = ko.computed(() => {
 
                     // When 'input' changes, recompute the 'output'.
                     try {
-                        task = slownode.createProgram(vm.input());
-                        let taskStr = fmt.toString(task);
+                        program = slownode.transpile(vm.input());
+                        let taskStr = fmt.toString(program);
 
                         // TODO: temp testing... if task was successfully created, run it...
                         // TODO: maybe trigger this differently / elsewhere
@@ -44,7 +44,7 @@
                 function run() {
                     rEditor.setValue('');
                     log('TASK STARTED');
-                    let runner = new Runner(task, {
+                    let runner = new Runner(program, {
                         print: msg => log(msg)
                     });
 

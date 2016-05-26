@@ -4,6 +4,8 @@
 
 ## Glossary
 
+- **jasm/JASM**: TODO
+
 - **Bytecode**: TODO
 
 - **Program**: TODO

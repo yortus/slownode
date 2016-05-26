@@ -2,11 +2,7 @@
 import EpochOptions from './epoch-options';
 import Interpreter from '../bytecode/interpreter';
 import Workflow from './workflow';
-
-
-// TODO: temp testing...
-import {parse} from '../compiler/frontend';
-import {emit} from '../compiler/backend';
+import {transpile} from '../js-to-jasm/index';
 
 
 
@@ -40,9 +36,7 @@ export default class Epoch {
 
     // TODO: ... rename?
     add(script: string): Workflow {
-
-        let ast = parse(script);
-        let program = emit(script, ast);
+        let program = transpile(script);
         let globalObject = this._options.globalFactory();
         let interpreter = new Interpreter(program, globalObject);
         let step = this._options.step;
