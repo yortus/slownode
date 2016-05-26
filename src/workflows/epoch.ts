@@ -25,11 +25,7 @@ export default class Epoch {
             dirname: options.dirname || null,       // TODO
             onError: options.onError || null,       // TODO
             globalFactory: options.globalFactory || (() => ({})),
-            step: options.step || (async interpreter => {
-                let result = interpreter.step();
-                if (result instanceof Error) throw result;
-                return result;
-            }),
+            step: options.step || (interpreter => interpreter.step()),
             shouldSave: options.shouldSave || null, // TODO
             replacer: options.replacer || null,     // TODO
             reviver: options.reviver || null        // TODO
@@ -52,31 +48,17 @@ export default class Epoch {
         let step = this._options.step;
 
 
+        let workflow: Workflow = (async () => {
 
-        let workflow: Workflow = new Promise<void>((resolve, reject) => {
-
-            runToCompletion();
-
-            function runToCompletion() {
-
-                // TODO: shouldSave? then save...
-                
-                step(interpreter)
-                    .then(val => {
-                        if (val) {
-                            resolve();
-                        }
-                        else {
-                            runToCompletion();
-                        }
-                    })
-                    .catch(err => {
-                        reject(err);
-                        // TODO: use options.onError...
-                        console.log(`An error occurred: ${err}`); // TODO: temp testing...
-                    });
+            // TODO: run to completion...
+            try {
+                while (!(await step(interpreter))) {/* no-op */}
             }
-        });
+            catch (err) {
+                console.log(`An error occurred: ${err}`); // TODO: temp testing...
+                throw err;
+            }
+        })();
 
         this.workflows.push(workflow);
         return workflow;

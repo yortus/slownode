@@ -28,7 +28,7 @@ interface EpochOptions {
 
 
     // Custom step() behaviour
-    step?: (interpreter: Interpreter) => Promise<boolean>;
+    step?: (interpreter: Interpreter) => boolean|Promise<boolean>;
 
 
     // Custom trigger for when to save/park a workflow. Also support: 'everyStep', 'never' (default = ???)    
