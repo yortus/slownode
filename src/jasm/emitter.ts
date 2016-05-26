@@ -1,7 +1,7 @@
 'use strict';
 import * as assert from 'assert';
 import {SourceLocation, BindingKind} from "babel-types"; // Elided (used only for types)
-import Opcodes from './opcodes';
+import InstructionSet from './instruction-set';
 import Program, {ScopeInfo} from './program';
 import Register from './register';
 import Registers from './registers';
@@ -21,7 +21,7 @@ export interface Label {
 
 
 /** TODO: doc... internal helper class used by compiler back end */
-export default class Emitter implements Opcodes, Registers {
+export default class Emitter implements InstructionSet, Registers {
 
 
     /** TODO: doc... */
@@ -46,7 +46,7 @@ export default class Emitter implements Opcodes, Registers {
         }
     }
 
-    // OPCODES: Load/store/move
+    // InstructionSet: Load/store/move
     LOAD(tgt: Register, obj: Register, key: Register|string|number) {
         this.addLine(`LOAD(${tgt.name}, ${obj.name}, ${key instanceof Register ? key.name : JSON.stringify(key)});`);
     }
@@ -60,7 +60,7 @@ export default class Emitter implements Opcodes, Registers {
         this.addLine(`MOVE(${tgt.name}, ${src.name});`);
     }
 
-    // OPCODES: Arithmetic/logic
+    // InstructionSet: Arithmetic/logic
     ADD(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`ADD(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
     SUB(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`SUB(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
     MUL(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`MUL(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
@@ -68,7 +68,7 @@ export default class Emitter implements Opcodes, Registers {
     NEG(tgt: Register, arg: Register) { this.addLine(`NEG(${tgt.name}, ${arg.name});`); }
     NOT(tgt: Register, arg: Register) { this.addLine(`NOT(${tgt.name}, ${arg.name});`); }
 
-    // OPCODES: Compare
+    // InstructionSet: Relational
     EQ(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`EQ(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
     NE(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`NE(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
     GE(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`GE(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
@@ -76,7 +76,7 @@ export default class Emitter implements Opcodes, Registers {
     LE(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`LE(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
     LT(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`LT(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
 
-    // OPCODES: Control
+    // InstructionSet: Control
     B(line: Label|number) { this.addLine(`B(${line});`); }
     BF(line: Label|number, arg: Register) { this.addLine(`BF(${line}, ${arg.name});`); }
     BT(line: Label|number, arg: Register) { this.addLine(`BT(${line}, ${arg.name});`); }
@@ -86,7 +86,7 @@ export default class Emitter implements Opcodes, Registers {
     THROW(err: Register) { this.addLine(`THROW(${err.name})`); }
     QUIT() { this.addLine(`QUIT();`); }
 
-    // OPCODES: Misc
+    // InstructionSet: Misc
     NEWARR(tgt: Register) { this.addLine(`NEWARR(${tgt.name});`); }
     NEWOBJ(tgt: Register) { this.addLine(`NEWOBJ(${tgt.name});`); }
 

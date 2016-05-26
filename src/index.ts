@@ -25,7 +25,7 @@ let epoch = new Epoch({
             }
             catch (err) {
                 register.value = err;
-                interpreter.opcodes.THROW(register);
+                interpreter.instructions.THROW(register);
             }
         }
 

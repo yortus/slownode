@@ -1,5 +1,5 @@
 'use strict';
-import Opcodes from './opcodes';
+import InstructionSet from './instruction-set';
 import Program from './program';
 import Register from './register';
 import Registers from './registers';
@@ -15,10 +15,10 @@ export default class Interpreter {
     // TODO: ...
     constructor(program: Program, globalObject?: {}) {
         this.program = program;
-        let opcodes = this.opcodes = makeOpcodes();
+        let instructions = this.instructions = makeInstructions();
         let registers = this.registers = makeRegisters();
         registers.ENV.value = globalObject || {};
-        let code = this.code = recompile(program.code, opcodes, registers);
+        let code = this.code = recompile(program.code, instructions, registers);
     }
 
 
@@ -58,7 +58,7 @@ export default class Interpreter {
 
 
     // TODO: ...
-    opcodes: Opcodes;
+    instructions: InstructionSet;
 
 
     // TODO: ...
@@ -73,9 +73,9 @@ export default class Interpreter {
 
 
 
-function recompile(code: () => void, opcodes: Opcodes, registers: Registers) {
-    let makeCode = new Function('code', 'opcodes', 'registers', `with (opcodes) with (registers) return (${code})`);
-    let result: () => void = makeCode(code, opcodes, registers);
+function recompile(code: () => void, instructions: InstructionSet, registers: Registers) {
+    let makeCode = new Function('code', 'instructions', 'registers', `with (instructions) with (registers) return (${code})`);
+    let result: () => void = makeCode(code, instructions, registers);
     return result;
 }
 
@@ -84,14 +84,17 @@ function recompile(code: () => void, opcodes: Opcodes, registers: Registers) {
 
 
 // TODO: ...
-function makeOpcodes() {
+function makeInstructions() {
 
-    let opcodes: Opcodes = {
+    let instructions: InstructionSet = {
+
+        // Load/store/move
         LOAD:   (tgt, obj, key) => tgt.value = obj.value[key instanceof Register ? key.value : key],
         LOADC:  (tgt, val) => tgt.value = val,
         STORE:  (obj, key, src) => obj.value[key instanceof Register ? key.value : key] = src.value,
         MOVE:   (tgt, src) => tgt.value = src.value,
 
+        // Arithmetic/logic
         ADD:    (tgt, lhs, rhs) => tgt.value = lhs.value + rhs.value,
         SUB:    (tgt, lhs, rhs) => tgt.value = lhs.value - rhs.value,
         MUL:    (tgt, lhs, rhs) => tgt.value = lhs.value * rhs.value,
@@ -99,6 +102,7 @@ function makeOpcodes() {
         NEG:    (tgt, arg) => tgt.value = -arg.value,
         NOT:    (tgt, arg) => tgt.value = !arg.value,
 
+        // Relational
         EQ:     (tgt, lhs, rhs) => tgt.value = lhs.value === rhs.value,
         GE:     (tgt, lhs, rhs) => tgt.value = lhs.value >= rhs.value,
         GT:     (tgt, lhs, rhs) => tgt.value = lhs.value > rhs.value,
@@ -106,6 +110,7 @@ function makeOpcodes() {
         LT:     (tgt, lhs, rhs) => tgt.value = lhs.value < rhs.value,
         NE:     (tgt, lhs, rhs) => tgt.value = lhs.value !== rhs.value,
 
+        // Control
         B:      (line) => jumpTo(line),
         BF:     (line, arg) => arg.value ? null : jumpTo(line),
         BT:     (line, arg) => arg.value ? jumpTo(line) : null,
@@ -113,6 +118,7 @@ function makeOpcodes() {
         THROW:  (err) => { throw err.value; }, // TODO: temporary soln... how to really implement this?
         QUIT:   () => { throw new Done(); },
 
+        // Misc
         NEWARR: (tgt) => tgt.value = [],
         NEWOBJ: (tgt) => tgt.value = {}
     };
@@ -123,17 +129,17 @@ function makeOpcodes() {
     }
 
     // Inject prolog/epilog into all methods
-    Object.keys(opcodes).forEach(key => {
-        let oldMethod = opcodes[key];
+    Object.keys(instructions).forEach(key => {
+        let oldMethod = instructions[key];
         let newMethod = (...args) => {
             // TODO: prolog (none for now)
             oldMethod(...args);
             throw new Next();
         }
-        opcodes[key] = newMethod;
+        instructions[key] = newMethod;
     });
 
-    return opcodes;
+    return instructions;
 }
 
 

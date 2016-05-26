@@ -1,13 +1,13 @@
 'use strict';
 import Register from './register';
-export default Opcodes;
+export default InstructionSet;
 
 
 
 
 
 // TODO: ...
-interface Opcodes {
+interface InstructionSet {
 
     // Load/store/move
     LOAD:   (tgt: Register, obj: Register, key: Register|string|number) => void;
@@ -23,7 +23,7 @@ interface Opcodes {
     NEG:    (tgt: Register, arg: Register) => void;
     NOT:    (tgt: Register, arg: Register) => void;
 
-    // Compare
+    // Relational
     EQ:     (tgt: Register, lhs: Register, rhs: Register) => void;
     GE:     (tgt: Register, lhs: Register, rhs: Register) => void;
     GT:     (tgt: Register, lhs: Register, rhs: Register) => void;
