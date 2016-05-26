@@ -2,7 +2,7 @@
 import InstructionSet from './instruction-set';
 import Program from './program';
 import Register from './register';
-import Registers from './registers';
+import RegisterSet from './register-set';
 
 
 
@@ -62,7 +62,7 @@ export default class Interpreter {
 
 
     // TODO: ...
-    registers: Registers;
+    registers: RegisterSet;
 
 
     // TODO: ...
@@ -73,7 +73,7 @@ export default class Interpreter {
 
 
 
-function recompile(code: () => void, instructions: InstructionSet, registers: Registers) {
+function recompile(code: () => void, instructions: InstructionSet, registers: RegisterSet) {
     let makeCode = new Function('code', 'instructions', 'registers', `with (instructions) with (registers) return (${code})`);
     let result: () => void = makeCode(code, instructions, registers);
     return result;
@@ -148,7 +148,7 @@ function makeInstructions() {
 
 function makeRegisters() {
 
-    let registers: Registers = {
+    let registers: RegisterSet = {
         PC:     new Register('PC', 0),
         ENV:    new Register('ENV'),
         $0:     new Register('$0'),

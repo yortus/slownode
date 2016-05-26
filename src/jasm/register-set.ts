@@ -1,13 +1,13 @@
 'use strict';
 import Register from './register';
-export default Registers;
+export default RegisterSet;
 
 
 
 
 
 // TODO: ...
-interface Registers {
+interface RegisterSet {
     PC:     Register;
     ENV:    Register;
     $0:     Register;

@@ -4,7 +4,7 @@ import {SourceLocation, BindingKind} from "babel-types"; // Elided (used only fo
 import InstructionSet from './instruction-set';
 import Program, {ScopeInfo} from './program';
 import Register from './register';
-import Registers from './registers';
+import RegisterSet from './register-set';
 
 
 
@@ -21,7 +21,7 @@ export interface Label {
 
 
 /** TODO: doc... internal helper class used by compiler back end */
-export default class Emitter implements InstructionSet, Registers {
+export default class Emitter implements InstructionSet, RegisterSet {
 
 
     /** TODO: doc... */
@@ -46,7 +46,7 @@ export default class Emitter implements InstructionSet, Registers {
         }
     }
 
-    // InstructionSet: Load/store/move
+    // Instructions: Load/store/move
     LOAD(tgt: Register, obj: Register, key: Register|string|number) {
         this.addLine(`LOAD(${tgt.name}, ${obj.name}, ${key instanceof Register ? key.name : JSON.stringify(key)});`);
     }
@@ -60,7 +60,7 @@ export default class Emitter implements InstructionSet, Registers {
         this.addLine(`MOVE(${tgt.name}, ${src.name});`);
     }
 
-    // InstructionSet: Arithmetic/logic
+    // Instructions: Arithmetic/logic
     ADD(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`ADD(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
     SUB(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`SUB(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
     MUL(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`MUL(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
@@ -68,7 +68,7 @@ export default class Emitter implements InstructionSet, Registers {
     NEG(tgt: Register, arg: Register) { this.addLine(`NEG(${tgt.name}, ${arg.name});`); }
     NOT(tgt: Register, arg: Register) { this.addLine(`NOT(${tgt.name}, ${arg.name});`); }
 
-    // InstructionSet: Relational
+    // Instructions: Relational
     EQ(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`EQ(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
     NE(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`NE(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
     GE(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`GE(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
@@ -76,7 +76,7 @@ export default class Emitter implements InstructionSet, Registers {
     LE(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`LE(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
     LT(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`LT(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
 
-    // InstructionSet: Control
+    // Instructions: Control
     B(line: Label|number) { this.addLine(`B(${line});`); }
     BF(line: Label|number, arg: Register) { this.addLine(`BF(${line}, ${arg.name});`); }
     BT(line: Label|number, arg: Register) { this.addLine(`BT(${line}, ${arg.name});`); }
@@ -86,11 +86,11 @@ export default class Emitter implements InstructionSet, Registers {
     THROW(err: Register) { this.addLine(`THROW(${err.name})`); }
     QUIT() { this.addLine(`QUIT();`); }
 
-    // InstructionSet: Misc
+    // Instructions: Misc
     NEWARR(tgt: Register) { this.addLine(`NEWARR(${tgt.name});`); }
     NEWOBJ(tgt: Register) { this.addLine(`NEWOBJ(${tgt.name});`); }
 
-    // REGISTERS
+    // Registers
     PC = new Register('PC');
     ENV = new Register('ENV');
     $0 = new Register('$0', FREE_REGISTER);
