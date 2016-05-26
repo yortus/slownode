@@ -1,6 +1,6 @@
 'use strict';
 import {BindingKind} from "babel-types";    // Elided (used only for types)
-export default Program;
+export default ObjectCode;
 // TODO: make this type suitable for JSON ser/deser without further work (ie code as string, not function)
 
 
@@ -8,7 +8,7 @@ export default Program;
 
 
 /** TODO: doc... */
-interface Program {
+interface ObjectCode {
 
 
     meta: {

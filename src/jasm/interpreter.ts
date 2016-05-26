@@ -1,6 +1,6 @@
 'use strict';
 import InstructionSet from './instruction-set';
-import JASM from './program';
+import ObjectCode from './object-code';
 import Register from './register';
 import RegisterSet from './register-set';
 
@@ -13,12 +13,12 @@ export default class Interpreter {
 
 
     // TODO: ...
-    constructor(program: JASM, globalObject?: {}) {
-        this.program = program;
+    constructor(jasm: ObjectCode, globalObject?: {}) {
+        this.jasm = jasm;
         let instructions = this.instructions = makeInstructions();
         let registers = this.registers = makeRegisters();
         registers.ENV.value = globalObject || {};
-        let code = this.code = recompile(program.code, instructions, registers);
+        let code = this.code = recompile(jasm.code, instructions, registers);
     }
 
 
@@ -54,10 +54,10 @@ export default class Interpreter {
 
 
     // TODO: ...
-    program: JASM;
+    jasm: ObjectCode;
 
 
-    // TODO: ...
+    // TODO: ... really need this? Only for throwing into!
     instructions: InstructionSet;
 
 

@@ -1,14 +1,13 @@
 'use strict';
 import Interpreter from '../jasm/interpreter';
-import Workflow from './workflow';
-export default EpochOptions;
+export default Options;
 
 
 
 
 
 // TODO: ...
-interface EpochOptions {
+interface Options {
 
 
     // If provided, scripts will be interpreted as TypeScript, and type-checked with this file as the lib.d.ts
@@ -20,7 +19,8 @@ interface EpochOptions {
 
 
     // Called if any workflow in the epoch throws an unhandled exception. If not provided, do errors just vanish? Or?
-    onError?: (err: any, workflow: Workflow) => void;
+    // TODO: should this callback be passed some sort of reference to the script that errored?
+    onError?: (err: any) => void;
 
 
     // TODO...
@@ -28,11 +28,11 @@ interface EpochOptions {
 
 
     // Custom step() behaviour
-    step?: (interpreter: Interpreter) => boolean|Promise<boolean>;
+    step?: (jasm: Interpreter) => boolean|Promise<boolean>;
 
 
     // Custom trigger for when to save/park a workflow. Also support: 'everyStep', 'never' (default = ???)    
-    shouldSave?: (interpreter: Interpreter) => boolean|Promise<boolean>;
+    shouldSave?: (jasm: Interpreter) => boolean|Promise<boolean>;
 
 
     // Custom serializer for saving workflow state

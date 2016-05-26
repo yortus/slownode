@@ -1,3 +1,3 @@
 'use strict';
-export {default as Epoch} from './workflows/epoch';
-export {default as EpochOptions} from './workflows/epoch-options';
+export {default as Epoch} from './epochs/epoch';
+export {default as EpochOptions} from './epochs/options';

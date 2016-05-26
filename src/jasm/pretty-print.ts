@@ -1,14 +1,14 @@
 'use strict';
-import JASM from './program';
+import ObjectCode from './object-code';
 
 
 
 
 
 // TODO: ... should this go -in- Program class?
-export default function prettyPrint(program: JASM): string {
+export default function prettyPrint(jasm: ObjectCode): string {
 
-    let scopes = program.meta.scopes;
+    let scopes = jasm.meta.scopes;
 
     // TODO: doc...
     let meta = `lineage: [null, ${scopes.lineage.slice(1).join(', ')}],\n`;
@@ -17,7 +17,7 @@ export default function prettyPrint(program: JASM): string {
     metaLines = [].concat('scopes: {', metaLines.map(line => `    ${line}`), '}');
 
     // TODO: doc...
-    let codeLines = program.code.toString().split('\n').slice(1, -1);
+    let codeLines = jasm.code.toString().split('\n').slice(1, -1);
 
 
 

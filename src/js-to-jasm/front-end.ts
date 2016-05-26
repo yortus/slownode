@@ -8,12 +8,12 @@ import {Visitor} from "babel-traverse"; // Elided (used only for types)
 
 
 // TODO: ... doc... Options param?
-export function parse(code: string): Node {
+export function parse(javaScriptSource: string): Node {
     let plugins = [
         'transform-es2015-destructuring',
         augmentNodesWithScopeInfo
     ];
-    let ast = transform(code, {plugins}).ast;
+    let ast = transform(javaScriptSource, {plugins}).ast;
     return ast;
 }
 

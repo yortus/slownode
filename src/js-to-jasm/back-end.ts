@@ -6,7 +6,7 @@ import {StringLiteral, NumericLiteral, SpreadElement} from "babel-types";   // E
 import {types as t} from './babel';
 import matchNode from './match-node';
 import Register from '../jasm/register';
-import Program from '../jasm/program';
+import ObjectCode from '../jasm/object-code';
 import Emitter from '../jasm/emitter';
 
 
@@ -14,8 +14,8 @@ import Emitter from '../jasm/emitter';
 
 
 // TODO: ...
-export function emit(code: string, ast: Node): Program {
-    let jasm = new Emitter(code);
+export function emit(javaScriptSource: string, ast: Node): ObjectCode {
+    let jasm = new Emitter(javaScriptSource);
     assert(t.isFile(ast));
     visitStatement(jasm, (<File> ast).program);
     let newSrc = jasm.build();

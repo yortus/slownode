@@ -2,7 +2,7 @@
 import * as assert from 'assert';
 import {SourceLocation, BindingKind} from "babel-types"; // Elided (used only for types)
 import InstructionSet from './instruction-set';
-import JASM, {ScopeInfo} from './program';
+import ObjectCode, {ScopeInfo} from './object-code';
 import Register from './register';
 import RegisterSet from './register-set';
 
@@ -159,7 +159,7 @@ export default class Emitter implements InstructionSet, RegisterSet {
 
 
     /** TODO: doc... */
-    build(): JASM {
+    build(): ObjectCode {
 
         // TODO: all done... cap off... doc...
         this.sourceLocation = {
