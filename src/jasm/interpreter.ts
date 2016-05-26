@@ -1,6 +1,6 @@
 'use strict';
 import InstructionSet from './instruction-set';
-import Program from './program';
+import JASM from './program';
 import Register from './register';
 import RegisterSet from './register-set';
 
@@ -13,7 +13,7 @@ export default class Interpreter {
 
 
     // TODO: ...
-    constructor(program: Program, globalObject?: {}) {
+    constructor(program: JASM, globalObject?: {}) {
         this.program = program;
         let instructions = this.instructions = makeInstructions();
         let registers = this.registers = makeRegisters();
@@ -54,7 +54,7 @@ export default class Interpreter {
 
 
     // TODO: ...
-    program: Program;
+    program: JASM;
 
 
     // TODO: ...

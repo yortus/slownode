@@ -2,7 +2,7 @@
 import EpochOptions from './epoch-options';
 import Interpreter from '../jasm/interpreter';
 import Workflow from './workflow';
-import {transpile} from '../js-to-jasm/index';
+import transpile from '../js-to-jasm/transpile';
 
 
 

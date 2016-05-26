@@ -1,12 +1,12 @@
 'use strict';
-import Program from './program';
+import JASM from './program';
 
 
 
 
 
 // TODO: ... should this go -in- Program class?
-export default function prettyPrint(program: Program): string {
+export default function prettyPrint(program: JASM): string {
 
     let scopes = program.meta.scopes;
 

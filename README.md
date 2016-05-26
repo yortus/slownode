@@ -4,23 +4,21 @@
 
 ## Glossary
 
-- **jasm/JASM**: TODO: target language, a kind of bytecode, easy to interpret using a JS engine
+- **JASM**: TODO: target language, a kind of bytecode, easy to interpret using a JS engine
 
-- **Program/Package**: TODO
+- **JASM Program**: TODO
 
-- **Emitter**: TODO
+- **JASM Emitter**: TODO
 
-- **Interpreter**: TODO
+- **JASM Interpreter**: TODO
 
 - **Step**: TODO
 
-- **Formatter**: TODO
+- **Instruction Set**: TODO
 
-- **Opcode**: TODO
+- **Register Set**: TODO
 
-- **Register**: TODO
-
-- **Compiler**: TODO
+- **JS to JASM transpiler**: TODO
 
 - **Epoch**: TODO
 

@@ -1,14 +1,14 @@
 'use strict';
 import {parse} from './front-end';
 import {emit} from './back-end';
-import Program from '../jasm/program';
+import JASM from '../jasm/program';
 
 
 
 
 
-export default function transpile(javaScript: string): Program {
-    let ast = parse(javaScript);
-    let result = emit(javaScript, ast);
+export default function transpile(javaScriptSource: string): JASM {
+    let ast = parse(javaScriptSource);
+    let result = emit(javaScriptSource, ast);
     return result;
 }
