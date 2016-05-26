@@ -26,7 +26,6 @@ export default function prettyPrint(jasm: ObjectCode): string {
         .replace(/[ ]*\$CODELINES/, codeLines.map(line => `    ${line}`).join('\n'))
         .replace(/[ ]*\$METALINES/, metaLines.map(line => `        ${line}`).join('\n'));
 
-    // TODO: actually return a Task!!
     return source;
 
 

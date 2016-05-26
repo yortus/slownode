@@ -29,13 +29,13 @@
                     // When 'input' changes, recompute the 'output'.
                     try {
                         program = transpile(vm.input());
-                        let taskStr = prettyPrint(program);
+                        let jasmStr = prettyPrint(program);
 
-                        // TODO: temp testing... if task was successfully created, run it...
+                        // TODO: temp testing... if jasm was successfully created, run it...
                         // TODO: maybe trigger this differently / elsewhere
                         setTimeout(run, 20);
 
-                        return taskStr;
+                        return jasmStr;
                     }
                     catch (ex) {
                         return ex.message;
@@ -47,7 +47,7 @@
                 // Run code...
                 function run() {
                     rEditor.setValue('');
-                    log('TASK STARTED');
+                    log('SCRIPT STARTED');
                     let runner = new Runner(program, {
                         print: msg => log(msg)
                     });
@@ -55,11 +55,11 @@
                     while (true) {
                         let result = runner.step();
                         if (result === true) {
-                            log('TASK COMPLETED');
+                            log('SCRIPT COMPLETED');
                             return;
                         }
                         if (result instanceof Error) {
-                            log('TASK FAILED');
+                            log('SCRIPT FAILED');
                             log(result.message);
                             return;
                         }
