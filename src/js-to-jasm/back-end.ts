@@ -71,10 +71,11 @@ function visitStatement(jasm: Emitter, stmt: Statement|ProgramNode) {
                                     // TODO: initial cut... check code below... complete? correct?
                                     stmt.declarations.forEach(decl => {
                                         if (!decl.init) return;
-                                        jasm.withRegisters(($0) => {
+                                        jasm.withRegisters(($0, $1) => {
                                             visitExpr(decl.init, $0);
                                             if (t.isIdentifier(decl.id)) {
-                                                jasm.STORE(jasm.ENV, decl.id.name, $0);
+                                                jasm.STRING($1, decl.id.name);
+                                                jasm.STORE(jasm.ENV, $1, $0);
                                             }
                                             else {
                                                 throw new Error(`Unsupported variable declarator type: '${decl.id.type}'`);
@@ -172,10 +173,11 @@ function visitExpression(jasm: Emitter, expr: Expression|SpreadElement, $T: Regi
         // ------------------------- core -------------------------
         ArrayExpression:        expr => {
                                     jasm.ARRAY($T);
-                                    jasm.withRegisters($0 => {
+                                    jasm.withRegisters(($0, $1) => {
                                         expr.elements.forEach((el, i) => {
                                             visitExpr(el, $0);
-                                            jasm.STORE($T, i, $0);
+                                            jasm.NUMBER($1, i);
+                                            jasm.STORE($T, $1, $0);
                                         });
                                     });
                                 },
@@ -191,7 +193,11 @@ function visitExpression(jasm: Emitter, expr: Expression|SpreadElement, $T: Regi
                                     if (expr.operator === '=') {
                                         visitExpr(expr.right, $T);
                                         if (t.isIdentifier(expr.left)) {
-                                            jasm.STORE(jasm.ENV, expr.left.name, $T);
+                                            let left = expr.left;
+                                            jasm.withRegisters($0 => {
+                                                jasm.STRING($0, left.name);
+                                                jasm.STORE(jasm.ENV, $0, $T);
+                                            });
                                         }
                                         else {
                                             let left = expr.left;
@@ -203,7 +209,7 @@ function visitExpression(jasm: Emitter, expr: Expression|SpreadElement, $T: Regi
                                         }
                                     }
 
-                                    // Handle compound assignment + operation
+                                    // Handle compound arithmetic/assignment operation
                                     else {
                                         let operation = (operator: string, $T: Register, $0: Register) => {
                                             switch (operator) {
@@ -218,11 +224,14 @@ function visitExpression(jasm: Emitter, expr: Expression|SpreadElement, $T: Regi
                                         if (t.isIdentifier(expr.left)) {
                                             let left = expr.left;
                                             jasm.withRegisters($0 => {
-                                                jasm.LOAD($0, jasm.ENV, left.name);
-                                                visitExpr(expr.right, $T);
-                                                operation(expr.operator, $T, $0);
+                                                jasm.STRING($0, left.name);
+                                                jasm.withRegisters($1 => {
+                                                    jasm.LOAD($1, jasm.ENV, $0);
+                                                    visitExpr(expr.right, $T);
+                                                    operation(expr.operator, $T, $1);
+                                                });
+                                                jasm.STORE(jasm.ENV, $0, $T);
                                             });
-                                            jasm.STORE(jasm.ENV, left.name, $T);
                                         }
                                         else {
                                             let left = expr.left;
@@ -258,17 +267,22 @@ function visitExpression(jasm: Emitter, expr: Expression|SpreadElement, $T: Regi
                                     });
                                 },
         Identifier:             expr => {
-                                    jasm.LOAD($T, jasm.ENV, expr.name);
+                                    jasm.withRegisters($0 => {
+                                        jasm.STRING($0, expr.name);
+                                        jasm.LOAD($T, jasm.ENV, $0);
+                                    });
                                 },
         CallExpression:         expr => {
                                     if (t.isIdentifier(expr.callee)) {
                                         let callee = expr.callee;
-                                        jasm.withRegisters(($0, $1) => {
-                                            jasm.LOAD($T, jasm.ENV, callee.name);
+                                        jasm.withRegisters(($0, $1, $2) => {
+                                            jasm.STRING($T, callee.name);
+                                            jasm.LOAD($T, jasm.ENV, $T);
                                             jasm.ARRAY($0);
                                             expr.arguments.forEach((arg, i) => {
                                                 visitExpr(arg, $1);
-                                                jasm.STORE($0, i, $1);
+                                                jasm.NUMBER($2, i);
+                                                jasm.STORE($0, $2, $1);
                                             });
                                             jasm.NULL($1); // TODO: set 'this' - should be what? global object? undefined?
                                             jasm.CALL($T, $T, $1, $0);
@@ -318,16 +332,23 @@ function visitExpression(jasm: Emitter, expr: Expression|SpreadElement, $T: Regi
                                     if (!expr.computed) {
                                         // TODO: good example for TS assert(type) suggestion...
                                         assert(t.isIdentifier(expr.property));
-                                        jasm.withRegisters($0 => {
+                                        jasm.withRegisters(($0, $1) => {
                                             visitExpr(expr.object, $0);
-                                            jasm.LOAD($T, $0, (<Identifier> expr.property).name);
+                                            jasm.STRING($1, (<Identifier> expr.property).name);
+                                            jasm.LOAD($T, $0, $1);
                                         });
                                     }
                                     else if (t.isStringLiteral(expr.property) || t.isNumericLiteral(expr.property)) {
                                         let prop = expr.property;
-                                        jasm.withRegisters($0 => {
+                                        jasm.withRegisters(($0, $1) => {
                                             visitExpr(expr.object, $0);
-                                            jasm.LOAD($T, $0, prop.value);
+                                            if (t.isStringLiteral(prop)) {
+                                                jasm.STRING($1, prop.value);
+                                            }
+                                            else {
+                                                jasm.NUMBER($1, prop.value);
+                                            }
+                                            jasm.LOAD($T, $0, $1);
                                         });
                                     }
                                     else {
@@ -352,9 +373,15 @@ function visitExpression(jasm: Emitter, expr: Expression|SpreadElement, $T: Regi
                                                     case 'NumericLiteral':  key = (<NumericLiteral> prop.key).value; break;
                                                     default: throw new Error(`Unsupported property key: '${prop.key.type}'`);
                                                 }
-                                                jasm.withRegisters($0 => {
+                                                jasm.withRegisters(($0, $1) => {
                                                     visitExpr(prop.value, $0);
-                                                    jasm.STORE($T, key, $0);
+                                                    if (typeof key === 'string') {
+                                                        jasm.STRING($1, key);
+                                                    }
+                                                    else {
+                                                        jasm.NUMBER($1, key);
+                                                    }
+                                                    jasm.STORE($T, $1, $0);
                                                 });
                                             }
                                             else {

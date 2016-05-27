@@ -108,8 +108,8 @@ function makeInstructions(target: InstructionSet) {
     let instructions: InstructionSet = {
 
         // Load/store
-        LOAD:   (tgt, obj, key) => tgt.value = obj.value[key instanceof Register ? key.value : key],
-        STORE:  (obj, key, src) => obj.value[key instanceof Register ? key.value : key] = src.value,
+        LOAD:   (tgt, obj, key) => tgt.value = obj.value[key.value],
+        STORE:  (obj, key, src) => obj.value[key.value] = src.value,
 
         // Arithmetic/logic
         ADD:    (tgt, lhs, rhs) => tgt.value = lhs.value + rhs.value,

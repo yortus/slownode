@@ -48,10 +48,10 @@ export default class Emitter implements InstructionSet, RegisterSet {
 
 
     // Instructions: Load/store
-    LOAD(tgt: Register, obj: Register, key: Register|string|number) {
+    LOAD(tgt: Register, obj: Register, key: Register) {
         this.addLine(`LOAD(${tgt.name}, ${obj.name}, ${key instanceof Register ? key.name : JSON.stringify(key)});`);
     }
-    STORE(obj: Register, key: Register|string|number, src: Register) {
+    STORE(obj: Register, key: Register, src: Register) {
         this.addLine(`STORE(${obj.name}, ${key instanceof Register ? key.name : JSON.stringify(key)}, ${src.name});`);
     }
 
@@ -90,6 +90,33 @@ export default class Emitter implements InstructionSet, RegisterSet {
     TRUE(tgt: Register) { this.addLine(`TRUE(${tgt.name})`); }
     FALSE(tgt: Register) { this.addLine(`FALSE(${tgt.name})`); }
     NULL(tgt: Register) { this.addLine(`NULL(${tgt.name})`); }
+    // STRING(tgt: Register, val: string) { this.emit('STRING', 'r,v', tgt, val); }
+    // NUMBER(tgt: Register, val: number) { this.emit('STRING', 'r,v', tgt, val); }
+    // REGEXP(tgt: Register, pattern: string, flags: string) { this.emit('STRING', 'r,v,v', tgt, pattern, flags); }
+    // ARRAY(tgt: Register) { this.addLine(`ARRAY(${tgt.name})`); }
+    // OBJECT(tgt: Register) { this.addLine(`OBJECT(${tgt.name})`); }
+    // TRUE(tgt: Register) { this.addLine(`TRUE(${tgt.name})`); }
+    // FALSE(tgt: Register) { this.addLine(`FALSE(${tgt.name})`); }
+    // NULL(tgt: Register) { this.emit('NULL', 'r', tgt); }
+
+
+    private emit(name: string, signature: string, ...args) {
+        signature.split(',').map(param => {
+            param.split('|').map(type => {
+                switch (type) {
+                    case 'r': break; // register
+                    case 'v': break; // literal value
+                    case 'l': break; // label
+                    default: throw new Error(`TODO...`); // TODO: ...
+                }
+            });
+        });
+        
+    }
+
+
+
+
 
     // Registers
     PC = new Register('PC');

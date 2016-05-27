@@ -10,8 +10,8 @@ export default InstructionSet;
 interface InstructionSet {
 
     // Load/store
-    LOAD:   (tgt: Register, obj: Register, key: Register|string|number) => void;
-    STORE:  (obj: Register, key: Register|string|number, src: Register) => void;
+    LOAD:   (tgt: Register, obj: Register, key: Register) => void;
+    STORE:  (obj: Register, key: Register, src: Register) => void;
 
     // Arithmetic/logic
     ADD:    (tgt: Register, lhs: Register, rhs: Register) => void;
