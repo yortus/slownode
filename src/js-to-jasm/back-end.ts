@@ -171,7 +171,7 @@ function visitExpression(jasm: Emitter, expr: Expression|SpreadElement, $T: Regi
     matchNode<void>(expr, {
         // ------------------------- core -------------------------
         ArrayExpression:        expr => {
-                                    jasm.NEWARR($T);
+                                    jasm.ARRAY($T);
                                     jasm.withRegisters($0 => {
                                         expr.elements.forEach((el, i) => {
                                             visitExpr(el, $0);
@@ -265,12 +265,12 @@ function visitExpression(jasm: Emitter, expr: Expression|SpreadElement, $T: Regi
                                         let callee = expr.callee;
                                         jasm.withRegisters(($0, $1) => {
                                             jasm.LOAD($T, jasm.ENV, callee.name);
-                                            jasm.NEWARR($0);
+                                            jasm.ARRAY($0);
                                             expr.arguments.forEach((arg, i) => {
                                                 visitExpr(arg, $1);
                                                 jasm.STORE($0, i, $1);
                                             });
-                                            jasm.LOADC($1, null); // TODO: set 'this' - should be what? global object? undefined?
+                                            jasm.NULL($1); // TODO: set 'this' - should be what? global object? undefined?
                                             jasm.CALL($T, $T, $1, $0);
                                         });
                                     }
@@ -292,18 +292,20 @@ function visitExpression(jasm: Emitter, expr: Expression|SpreadElement, $T: Regi
                                 },
         // FunctionExpression:  expr => [***],
         StringLiteral:          expr => {
-                                    jasm.LOADC($T, expr.value);
+                                    jasm.STRING($T, expr.value);
                                 },
         NumericLiteral:         expr => {
-                                    jasm.LOADC($T, expr.value);
+                                    jasm.NUMBER($T, expr.value);
                                 },
         NullLiteral:            expr => {
-                                    jasm.LOADC($T, null);
+                                    jasm.NULL($T);
                                 },
         BooleanLiteral:         expr => {
-                                    jasm.LOADC($T, expr.value);
+                                    expr.value ? jasm.TRUE($T) : jasm.FALSE($T);
                                 },
-        // RegExpLiteral:          expr => [***],
+        RegExpLiteral:          expr => {
+                                    jasm.REGEXP($T, expr.pattern, expr.flags);
+                                },
         LogicalExpression:      expr => {
                                     let L1 = jasm.newLabel();
                                     visitExpr(expr.left, $T);
@@ -338,7 +340,7 @@ function visitExpression(jasm: Emitter, expr: Expression|SpreadElement, $T: Regi
                                 },
         // NewExpression:       expr => [***],
         ObjectExpression:       expr => {
-                                    jasm.NEWOBJ($T);
+                                    jasm.OBJECT($T);
                                     expr.properties.forEach(property => {
                                         if (t.isObjectProperty(property)) {
                                             let prop = property;

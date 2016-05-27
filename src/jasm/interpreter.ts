@@ -107,11 +107,9 @@ function makeInstructions(target: InstructionSet) {
 
     let instructions: InstructionSet = {
 
-        // Load/store/move
+        // Load/store
         LOAD:   (tgt, obj, key) => tgt.value = obj.value[key instanceof Register ? key.value : key],
-        LOADC:  (tgt, val) => tgt.value = val,
         STORE:  (obj, key, src) => obj.value[key instanceof Register ? key.value : key] = src.value,
-        MOVE:   (tgt, src) => tgt.value = src.value,
 
         // Arithmetic/logic
         ADD:    (tgt, lhs, rhs) => tgt.value = lhs.value + rhs.value,
@@ -137,9 +135,15 @@ function makeInstructions(target: InstructionSet) {
         THROW:  (err) => { throw err.value; }, // TODO: temporary soln... how to really implement this?
         QUIT:   () => { throw new Done(); },
 
-        // Misc
-        NEWARR: (tgt) => tgt.value = [],
-        NEWOBJ: (tgt) => tgt.value = {}
+        // Data
+        STRING: (tgt, val) => tgt.value = val,
+        NUMBER: (tgt, val) => tgt.value = val,
+        REGEXP: (tgt, pattern, flags) => tgt.value = new RegExp(pattern, flags),
+        ARRAY:  (tgt) => tgt.value = [],
+        OBJECT: (tgt) => tgt.value = {},
+        TRUE:   (tgt) => tgt.value = true,
+        FALSE:  (tgt) => tgt.value = false,
+        NULL:   (tgt) => tgt.value = null
     };
 
     function jumpTo(line: number) {
@@ -167,6 +171,7 @@ function makeInstructions(target: InstructionSet) {
 function makeRegisters(target: RegisterSet) {
 
     let registers: RegisterSet = {
+        // TODO: add ERR register for exception in flight? (can only be one)
         PC:     new Register('PC', 0),
         ENV:    new Register('ENV'),
         $0:     new Register('$0'),

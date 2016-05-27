@@ -9,11 +9,9 @@ export default InstructionSet;
 // TODO: ...
 interface InstructionSet {
 
-    // Load/store/move
+    // Load/store
     LOAD:   (tgt: Register, obj: Register, key: Register|string|number) => void;
-    LOADC:  (tgt: Register, val: string|number|boolean|null) => void;
     STORE:  (obj: Register, key: Register|string|number, src: Register) => void;
-    MOVE:   (tgt: Register, src: Register) => void;
 
     // Arithmetic/logic
     ADD:    (tgt: Register, lhs: Register, rhs: Register) => void;
@@ -23,7 +21,7 @@ interface InstructionSet {
     NEG:    (tgt: Register, arg: Register) => void;
     NOT:    (tgt: Register, arg: Register) => void;
 
-    // Relational
+    // Comparison
     EQ:     (tgt: Register, lhs: Register, rhs: Register) => void;
     GE:     (tgt: Register, lhs: Register, rhs: Register) => void;
     GT:     (tgt: Register, lhs: Register, rhs: Register) => void;
@@ -39,7 +37,13 @@ interface InstructionSet {
     THROW:  (err: Register) => void;
     QUIT:   () => void;
 
-    // Misc
-    NEWARR: (tgt: Register) => void; // TODO: really primitive? could use ctor
-    NEWOBJ: (tgt: Register) => void; // TODO: really primitive? could use ctor
+    // Data
+    STRING: (tgt: Register, val: string) => void;
+    NUMBER: (tgt: Register, val: number) => void;
+    REGEXP: (tgt: Register, pattern: string, flags: string) => void;
+    ARRAY:  (tgt: Register) => void;
+    OBJECT: (tgt: Register) => void;
+    TRUE:   (tgt: Register) => void;
+    FALSE:  (tgt: Register) => void;
+    NULL:   (tgt: Register) => void;
 }

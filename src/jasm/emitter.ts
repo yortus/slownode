@@ -46,18 +46,13 @@ export default class Emitter implements InstructionSet, RegisterSet {
         }
     }
 
-    // Instructions: Load/store/move
+
+    // Instructions: Load/store
     LOAD(tgt: Register, obj: Register, key: Register|string|number) {
         this.addLine(`LOAD(${tgt.name}, ${obj.name}, ${key instanceof Register ? key.name : JSON.stringify(key)});`);
     }
-    LOADC(tgt: Register, val: string|number|boolean|null) {
-        this.addLine(`LOADC(${tgt.name}, ${JSON.stringify(val)});`);
-    }
     STORE(obj: Register, key: Register|string|number, src: Register) {
         this.addLine(`STORE(${obj.name}, ${key instanceof Register ? key.name : JSON.stringify(key)}, ${src.name});`);
-    }
-    MOVE(tgt: Register, src: Register) {
-        this.addLine(`MOVE(${tgt.name}, ${src.name});`);
     }
 
     // Instructions: Arithmetic/logic
@@ -86,9 +81,15 @@ export default class Emitter implements InstructionSet, RegisterSet {
     THROW(err: Register) { this.addLine(`THROW(${err.name})`); }
     QUIT() { this.addLine(`QUIT();`); }
 
-    // Instructions: Misc
-    NEWARR(tgt: Register) { this.addLine(`NEWARR(${tgt.name});`); }
-    NEWOBJ(tgt: Register) { this.addLine(`NEWOBJ(${tgt.name});`); }
+    // Instructions: Data
+    STRING(tgt: Register, val: string) { this.addLine(`STRING(${tgt.name}, ${JSON.stringify(val)})`); }
+    NUMBER(tgt: Register, val: number) { this.addLine(`NUMBER(${tgt.name}, ${JSON.stringify(val)})`); }
+    REGEXP(tgt: Register, pattern: string, flags: string) { this.addLine(`REGEXP(${tgt.name}, ${JSON.stringify(pattern)}, ${JSON.stringify(flags)})`); }
+    ARRAY(tgt: Register) { this.addLine(`ARRAY(${tgt.name})`); }
+    OBJECT(tgt: Register) { this.addLine(`OBJECT(${tgt.name})`); }
+    TRUE(tgt: Register) { this.addLine(`TRUE(${tgt.name})`); }
+    FALSE(tgt: Register) { this.addLine(`FALSE(${tgt.name})`); }
+    NULL(tgt: Register) { this.addLine(`NULL(${tgt.name})`); }
 
     // Registers
     PC = new Register('PC');
