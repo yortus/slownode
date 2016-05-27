@@ -5,6 +5,20 @@ import {Epoch, EpochOptions} from 'slownode';
 
 
 
+// TODO: temp testing APIs...
+// var slownode2: any;
+// let slow2 = slownode2.connect({
+//     misc: '',           // onError
+//     preproc: 'tsc',     // lib_d_ts
+//     storage: 'fs',      // dirname, replacer, reviver
+//     runtime: 'blocking' // globalFactory, step, shouldSave
+// });
+// slow2.execute("'script'");
+
+
+
+
+
 let slow = new Epoch({
     globalFactory: () => ({
         sleep: ms => new Promise(resolve => setTimeout(resolve, ms)),
