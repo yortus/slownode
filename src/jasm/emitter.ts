@@ -2,19 +2,10 @@
 import * as assert from 'assert';
 import {SourceLocation, BindingKind} from "babel-types"; // Elided (used only for types)
 import InstructionSet from './instruction-set';
+import Label from './label';
 import ObjectCode, {ScopeInfo} from './object-code';
 import Register from './register';
 import RegisterSet from './register-set';
-
-
-
-
-
-/** TODO: doc... */
-export interface Label {
-    resolve(): void;
-    toString(): string;
-}
 
 
 
@@ -72,9 +63,9 @@ export default class Emitter implements InstructionSet, RegisterSet {
     LT(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`LT(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
 
     // Instructions: Control
-    B(line: Label|number) { this.addLine(`B(${line});`); }
-    BF(line: Label|number, arg: Register) { this.addLine(`BF(${line}, ${arg.name});`); }
-    BT(line: Label|number, arg: Register) { this.addLine(`BT(${line}, ${arg.name});`); }
+    B(line: Label) { this.addLine(`B(${line});`); }
+    BF(line: Label, arg: Register) { this.addLine(`BF(${line}, ${arg.name});`); }
+    BT(line: Label, arg: Register) { this.addLine(`BT(${line}, ${arg.name});`); }
     CALL(tgt: Register, func: Register, thís: Register, args: Register) {
         this.addLine(`CALL(${tgt.name}, ${func.name}, ${thís.name}, ${args.name});`);
     }

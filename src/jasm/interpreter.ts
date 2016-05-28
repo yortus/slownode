@@ -1,5 +1,6 @@
 'use strict';
 import InstructionSet from './instruction-set';
+import Label from './label';
 import ObjectCode from './object-code';
 import Register from './register';
 import RegisterSet from './register-set';
@@ -33,7 +34,7 @@ export default class Interpreter {
             let ex: Error = err; // workaround for TS1196 (see https://github.com/Microsoft/TypeScript/issues/8677)
             if (ex instanceof Jump) {
                 // TODO: update the PC ready for the next call, and return to host...
-                this.registers.PC.value = ex.nextLine;
+                this.registers.PC.value = +ex.nextLine;
                 return false;
             }
             else if (ex instanceof Next) {
@@ -146,7 +147,7 @@ function makeInstructions(target: InstructionSet) {
         NULL:   (tgt) => tgt.value = null
     };
 
-    function jumpTo(line: number) {
+    function jumpTo(line: Label) {
         // TODO: scope enter/exit, finally blocks
         throw new Jump(line);
     }
@@ -195,7 +196,7 @@ function makeRegisters(target: RegisterSet) {
 
 // TODO: ...
 class Jump extends Error {
-    constructor(public nextLine: number) { super(); }
+    constructor(public nextLine: Label) { super(); }
 }
 class Next extends Error { }
 class Done extends Error { }
