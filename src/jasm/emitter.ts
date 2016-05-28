@@ -39,74 +39,42 @@ export default class Emitter implements InstructionSet, RegisterSet {
 
 
     // Instructions: Load/store
-    LOAD(tgt: Register, obj: Register, key: Register) {
-        this.addLine(`LOAD(${tgt.name}, ${obj.name}, ${key instanceof Register ? key.name : JSON.stringify(key)});`);
-    }
-    STORE(obj: Register, key: Register, src: Register) {
-        this.addLine(`STORE(${obj.name}, ${key instanceof Register ? key.name : JSON.stringify(key)}, ${src.name});`);
-    }
+    LOAD(tgt: Register, obj: Register, key: Register) { this.addInstr('LOAD', tgt, obj, key); }
+    STORE(obj: Register, key: Register, src: Register) { this.addInstr('STORE', obj, key, src); }
 
     // Instructions: Arithmetic/logic
-    ADD(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`ADD(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
-    SUB(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`SUB(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
-    MUL(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`MUL(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
-    DIV(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`DIV(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
-    NEG(tgt: Register, arg: Register) { this.addLine(`NEG(${tgt.name}, ${arg.name});`); }
-    NOT(tgt: Register, arg: Register) { this.addLine(`NOT(${tgt.name}, ${arg.name});`); }
+    ADD(tgt: Register, lhs: Register, rhs: Register) { this.addInstr('ADD', tgt, lhs, rhs); }
+    SUB(tgt: Register, lhs: Register, rhs: Register) { this.addInstr('SUB', tgt, lhs, rhs); }
+    MUL(tgt: Register, lhs: Register, rhs: Register) { this.addInstr('MUL', tgt, lhs, rhs); }
+    DIV(tgt: Register, lhs: Register, rhs: Register) { this.addInstr('DIV', tgt, lhs, rhs); }
+    NEG(tgt: Register, arg: Register) { this.addInstr('NEG', tgt, arg); }
+    NOT(tgt: Register, arg: Register) { this.addInstr('NOT', tgt, arg); }
 
     // Instructions: Relational
-    EQ(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`EQ(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
-    NE(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`NE(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
-    GE(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`GE(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
-    GT(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`GT(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
-    LE(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`LE(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
-    LT(tgt: Register, lhs: Register, rhs: Register) { this.addLine(`LT(${tgt.name}, ${lhs.name}, ${rhs.name});`); }
+    EQ(tgt: Register, lhs: Register, rhs: Register) { this.addInstr('EQ', tgt, lhs, rhs); }
+    NE(tgt: Register, lhs: Register, rhs: Register) { this.addInstr('NE', tgt, lhs, rhs); }
+    GE(tgt: Register, lhs: Register, rhs: Register) { this.addInstr('GE', tgt, lhs, rhs); }
+    GT(tgt: Register, lhs: Register, rhs: Register) { this.addInstr('GT', tgt, lhs, rhs); }
+    LE(tgt: Register, lhs: Register, rhs: Register) { this.addInstr('LE', tgt, lhs, rhs); }
+    LT(tgt: Register, lhs: Register, rhs: Register) { this.addInstr('LT', tgt, lhs, rhs); }
 
     // Instructions: Control
-    B(line: Label) { this.addLine(`B(${line});`); }
-    BF(line: Label, arg: Register) { this.addLine(`BF(${line}, ${arg.name});`); }
-    BT(line: Label, arg: Register) { this.addLine(`BT(${line}, ${arg.name});`); }
-    CALL(tgt: Register, func: Register, thís: Register, args: Register) {
-        this.addLine(`CALL(${tgt.name}, ${func.name}, ${thís.name}, ${args.name});`);
-    }
-    THROW(err: Register) { this.addLine(`THROW(${err.name})`); }
-    QUIT() { this.addLine(`QUIT();`); }
+    B(label: Label) { this.addInstr('B', label); }
+    BF(label: Label, arg: Register) { this.addInstr('BF', label, arg); }
+    BT(label: Label, arg: Register) { this.addInstr('BT', label, arg); }
+    CALL(tgt: Register, func: Register, thís: Register, args: Register) { this.addInstr('CALL', tgt, func, thís, args); }
+    THROW(err: Register) { this.addInstr('THROW', err); }
+    QUIT() { this.addInstr('QUIT'); }
 
     // Instructions: Data
-    STRING(tgt: Register, val: string) { this.addLine(`STRING(${tgt.name}, ${JSON.stringify(val)})`); }
-    NUMBER(tgt: Register, val: number) { this.addLine(`NUMBER(${tgt.name}, ${JSON.stringify(val)})`); }
-    REGEXP(tgt: Register, pattern: string, flags: string) { this.addLine(`REGEXP(${tgt.name}, ${JSON.stringify(pattern)}, ${JSON.stringify(flags)})`); }
-    ARRAY(tgt: Register) { this.addLine(`ARRAY(${tgt.name})`); }
-    OBJECT(tgt: Register) { this.addLine(`OBJECT(${tgt.name})`); }
-    TRUE(tgt: Register) { this.addLine(`TRUE(${tgt.name})`); }
-    FALSE(tgt: Register) { this.addLine(`FALSE(${tgt.name})`); }
-    NULL(tgt: Register) { this.addLine(`NULL(${tgt.name})`); }
-    // STRING(tgt: Register, val: string) { this.emit('STRING', 'r,v', tgt, val); }
-    // NUMBER(tgt: Register, val: number) { this.emit('STRING', 'r,v', tgt, val); }
-    // REGEXP(tgt: Register, pattern: string, flags: string) { this.emit('STRING', 'r,v,v', tgt, pattern, flags); }
-    // ARRAY(tgt: Register) { this.addLine(`ARRAY(${tgt.name})`); }
-    // OBJECT(tgt: Register) { this.addLine(`OBJECT(${tgt.name})`); }
-    // TRUE(tgt: Register) { this.addLine(`TRUE(${tgt.name})`); }
-    // FALSE(tgt: Register) { this.addLine(`FALSE(${tgt.name})`); }
-    // NULL(tgt: Register) { this.emit('NULL', 'r', tgt); }
-
-
-    private emit(name: string, signature: string, ...args) {
-        signature.split(',').map(param => {
-            param.split('|').map(type => {
-                switch (type) {
-                    case 'r': break; // register
-                    case 'v': break; // literal value
-                    case 'l': break; // label
-                    default: throw new Error(`TODO...`); // TODO: ...
-                }
-            });
-        });
-        
-    }
-
-
-
+    STRING(tgt: Register, val: string) { this.addInstr('STRING', tgt, val); }
+    NUMBER(tgt: Register, val: number) { this.addInstr('NUMBER', tgt, val); }
+    REGEXP(tgt: Register, pattern: string, flags: string) { this.addInstr('REGEXP', tgt, pattern, flags); }
+    ARRAY(tgt: Register) { this.addInstr('ARRAY', tgt); }
+    OBJECT(tgt: Register) { this.addInstr('OBJECT', tgt); }
+    TRUE(tgt: Register) { this.addInstr('TRUE', tgt); }
+    FALSE(tgt: Register) { this.addInstr('FALSE', tgt); }
+    NULL(tgt: Register) { this.addInstr('NULL', tgt); }
 
 
     // Registers
@@ -203,6 +171,18 @@ export default class Emitter implements InstructionSet, RegisterSet {
 
     /** TODO: doc... */
     sourceLocation: SourceLocation;
+
+
+    /** TODO: doc... */
+    private addInstr(name: string, ...args: Array<Register|Label|string|number>) {
+        let argStrs = args.map(arg => {
+            if (arg instanceof Register) return arg.name;
+            else if (typeof arg === 'string') return JSON.stringify(arg);
+            else if (typeof arg === 'number') return JSON.stringify(arg);
+            else return arg.toString();
+        });
+        this.addLine(`${name}(${argStrs.join(', ')})`);
+    }
 
 
     /** TODO: doc... */

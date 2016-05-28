@@ -31,9 +31,9 @@ interface InstructionSet {
     NE:     (tgt: Register, lhs: Register, rhs: Register) => void;
 
     // Control
-    B:      (line: Label) => void;
-    BF:     (line: Label, arg: Register) => void;
-    BT:     (line: Label, arg: Register) => void;
+    B:      (label: Label) => void;
+    BF:     (label: Label, arg: Register) => void;
+    BT:     (label: Label, arg: Register) => void;
     CALL:   (tgt: Register, func: Register, thís: Register, args: Register) => void;
     THROW:  (err: Register) => void;
     QUIT:   () => void;

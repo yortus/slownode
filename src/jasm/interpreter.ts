@@ -34,7 +34,7 @@ export default class Interpreter {
             let ex: Error = err; // workaround for TS1196 (see https://github.com/Microsoft/TypeScript/issues/8677)
             if (ex instanceof Jump) {
                 // TODO: update the PC ready for the next call, and return to host...
-                this.registers.PC.value = +ex.nextLine;
+                this.registers.PC.value = +ex.label.toString();
                 return false;
             }
             else if (ex instanceof Next) {
@@ -129,9 +129,9 @@ function makeInstructions(target: InstructionSet) {
         NE:     (tgt, lhs, rhs) => tgt.value = lhs.value !== rhs.value,
 
         // Control
-        B:      (line) => jumpTo(line),
-        BF:     (line, arg) => arg.value ? null : jumpTo(line),
-        BT:     (line, arg) => arg.value ? jumpTo(line) : null,
+        B:      (label) => jumpTo(label),
+        BF:     (label, arg) => arg.value ? null : jumpTo(label),
+        BT:     (label, arg) => arg.value ? jumpTo(label) : null,
         CALL:   (tgt, func, thís, args) => tgt.value = func.value.apply(thís.value, args.value),
         THROW:  (err) => { throw err.value; }, // TODO: temporary soln... how to really implement this?
         QUIT:   () => { throw new Done(); },
@@ -147,9 +147,9 @@ function makeInstructions(target: InstructionSet) {
         NULL:   (tgt) => tgt.value = null
     };
 
-    function jumpTo(line: Label) {
+    function jumpTo(label: Label) {
         // TODO: scope enter/exit, finally blocks
-        throw new Jump(line);
+        throw new Jump(label);
     }
 
     // Inject prolog/epilog into all methods
@@ -196,7 +196,7 @@ function makeRegisters(target: RegisterSet) {
 
 // TODO: ...
 class Jump extends Error {
-    constructor(public nextLine: Label) { super(); }
+    constructor(public label: Label) { super(); }
 }
 class Next extends Error { }
 class Done extends Error { }
