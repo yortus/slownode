@@ -49,12 +49,14 @@ let slow = new Epoch({
 
 
 let wf = slow.execute(`
+while (true) {
     print('starting...');
     sleep(1000);
     print('after one second...');
     sleepThenFail(1000, 'oops!');
     throw 42;
     print('...finished');
+}
 `);
 
 wf

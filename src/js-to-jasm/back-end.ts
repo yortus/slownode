@@ -5,6 +5,7 @@ import {Statement, Expression, Identifier} from "babel-types";              // E
 import {StringLiteral, NumericLiteral, SpreadElement} from "babel-types";   // Elided (used only for types)
 import {types as t} from './babel';
 import matchNode from './match-node';
+import Label from '../jasm/label';
 import Register from '../jasm/register';
 import ObjectCode from '../jasm/object-code';
 import Emitter from '../jasm/emitter';
@@ -86,17 +87,17 @@ function visitStatement(jasm: Emitter, stmt: Statement|ProgramNode) {
         // ForStatement:        stmt => [***],
         // FunctionDeclaration: stmt => [***],
         IfStatement:            stmt => {
-                                    let L1 = jasm.newLabel();
-                                    let L2 = jasm.newLabel();
+                                    let L1 = new Label();
+                                    let L2 = new Label();
                                     jasm.withRegisters($0 => {
                                         visitExpr(stmt.test, $0);
                                         jasm.BF(L1, $0);
                                     });
                                     visitStmt(stmt.consequent);
                                     if (stmt.alternate) jasm.B(L2);
-                                    L1.resolve();
+                                    jasm.LABEL(L1);
                                     visitStmt(stmt.alternate || t.blockStatement([]));
-                                    L2.resolve();
+                                    jasm.LABEL(L2);
                                 },
         // LabeledStatement:    stmt => [***],
         // ReturnStatement:     stmt => [***],
@@ -111,16 +112,16 @@ function visitStatement(jasm: Emitter, stmt: Statement|ProgramNode) {
         // TryStatement:        stmt => [***],
         // VariableDeclarator:  stmt => [***],
         WhileStatement:         stmt => {
-                                    let L1 = jasm.newLabel();
-                                    let L2 = jasm.newLabel();
-                                    L1.resolve();
+                                    let L1 = new Label();
+                                    let L2 = new Label();
+                                    jasm.LABEL(L1);
                                     jasm.withRegisters($0 => {
                                         visitExpr(stmt.test, $0);
                                         jasm.BF(L2, $0);
                                     });
                                     visitStmt(stmt.body);
                                     jasm.B(L1);
-                                    L2.resolve();
+                                    jasm.LABEL(L2);
                                 },
         // WithStatement:       stmt => [***],
 
@@ -294,15 +295,15 @@ function visitExpression(jasm: Emitter, expr: Expression|SpreadElement, $T: Regi
                                     }
                                 },
         ConditionalExpression:  expr => {
-                                    let L1 = jasm.newLabel();
-                                    let L2 = jasm.newLabel();
+                                    let L1 = new Label();
+                                    let L2 = new Label();
                                     visitExpr(expr.test, $T);
                                     jasm.BF(L1, $T);
                                     visitExpr(expr.consequent, $T);
                                     jasm.B(L2);
-                                    L1.resolve();
+                                    jasm.LABEL(L1);
                                     visitExpr(expr.alternate, $T);
-                                    L2.resolve();
+                                    jasm.LABEL(L2);
                                 },
         // FunctionExpression:  expr => [***],
         StringLiteral:          expr => {
@@ -321,11 +322,11 @@ function visitExpression(jasm: Emitter, expr: Expression|SpreadElement, $T: Regi
                                     jasm.REGEXP($T, expr.pattern, expr.flags);
                                 },
         LogicalExpression:      expr => {
-                                    let L1 = jasm.newLabel();
+                                    let L1 = new Label();
                                     visitExpr(expr.left, $T);
                                     expr.operator === '&&' ? jasm.BF(L1, $T) : jasm.BT(L1, $T);
                                     visitExpr(expr.right, $T);
-                                    L1.resolve();
+                                    jasm.LABEL(L1);
                                 },
         MemberExpression:       expr => {
                                     // TODO: refactor common code out of the following cases...

@@ -90,6 +90,10 @@ export default class Emitter implements InstructionSet, RegisterSet {
     $7 = new Register('$7', FREE_REGISTER);
 
 
+    // TODO: doc...
+    LABEL(label: Label) { this.addLabel(label); }
+
+
     /** TODO: temp testing... */
     enterScope(identifiers: {[name: string]: BindingKind}) {
         let scopeCount = this._scopes.lineage.length;
@@ -127,24 +131,6 @@ export default class Emitter implements InstructionSet, RegisterSet {
     }
 
 
-    /** Create a new label. */
-    newLabel(): Label {
-        let value = `ℒѬҦℬℚℲℳⱵ${++this._labels}`; // Assume this string won't occur in any other way.
-        let searchStartLine = this._lines.length;
-        return <Label> {
-            resolve: () => {
-                let currentLine = this._lines.length;
-                let oldValue = value;
-                value = currentLine.toString();
-                for (let i = searchStartLine; i < currentLine; ++i) {
-                    this._lines[i] = this._lines[i].replace(oldValue, value); // Assume max one occurence per line.
-                }
-            },
-            toString: () => value
-        }
-    }
-
-
     /** TODO: doc... */
     build(): ObjectCode {
 
@@ -155,12 +141,32 @@ export default class Emitter implements InstructionSet, RegisterSet {
         };
         this.QUIT();
 
+
+        this._lines = this._lines.map(line => line.trim());
+
+
+        // TODO: resolve all labels
+        let labels: {[name: string]: number} = {};
+        let labelCount = 0;
+        this._lines.forEach((line, i) => {
+            let matches = line.match(/^(#[a-z0-9]+):$/i);
+            if (!matches) return;
+            labels[matches[1]] = i - labelCount;
+            ++labelCount;
+        });
+        this._lines = this._lines.filter(line => !line.startsWith('#'));
+        this._lines = this._lines.map(line => line.replace(/#[a-z0-9]+/, name => labels[name].toString()));
+
+
         // TODO: doc...
         let meta = { scopes: this._scopes };
 
+// TODO: temp testing...
+console.log(this._lines.join('\n'));        
+
         // TODO: doc...
         let codeLines = this._lines.map((line, i) => {
-            return `        ${line}${' '.repeat(Math.max(0, 58 - line.length))}  // ${this._lineScopes[i]}`;
+            return `        case ${`${i}:    `.slice(0, 6)} ${line}${' '.repeat(Math.max(0, 58 - line.length))}  // ${this._lineScopes[i]}`;
         });
         let code = eval(`(() => {\n    switch (PC.value) {\n${codeLines.join('\n')}\n    }\n})`); // TODO: remove debugger
 
@@ -174,12 +180,19 @@ export default class Emitter implements InstructionSet, RegisterSet {
 
 
     /** TODO: doc... */
+    private addLabel(label: Label) {
+        this._lines.push(`${label.name}:`);
+        this._lineScopes.push(this._currentScope);
+    }
+
+
+    /** TODO: doc... */
     private addInstr(name: string, ...args: Array<Register|Label|string|number>) {
         let argStrs = args.map(arg => {
             if (arg instanceof Register) return arg.name;
-            else if (typeof arg === 'string') return JSON.stringify(arg).replace(/#/g, '\\u0023');
+            else if (typeof arg === 'string') return JSON.stringify(arg).replace(/#/g, '\\u0023'); // TODO: doc... '#' is special (used for labels)
             else if (typeof arg === 'number') return JSON.stringify(arg);
-            else return arg.toString();
+            else return `${arg.name}`;
         });
         this.addLine(`${name}(${argStrs.join(', ')})`);
     }
@@ -193,14 +206,15 @@ export default class Emitter implements InstructionSet, RegisterSet {
         if (this._sourceLines) {
             let currentSourceLine = (this.sourceLocation || this._sourceLocationAll).start.line;
             while (this._sourceLinesEmitted < currentSourceLine) {
-                lines.push(`//  ${this._sourceLines[this._sourceLinesEmitted]}`);
+                lines.push(`// ${this._sourceLines[this._sourceLinesEmitted]}`);
                 ++this._sourceLinesEmitted;
             }
         }
 
         // TODO: ...
         lines.push(line);
-        lines = lines.map((line, i) => `case ${`${this._lines.length + i}:'   `.slice(0, 6)}   ';${line}`);
+        lines = lines.map(line => `    ${line}`);
+        //TODO: was... lines = lines.map((line, i) => `case ${`${this._lines.length + i}:'   `.slice(0, 6)}   ';${line}`);
         this._lines.push(...lines);
         this._lineScopes.push(...lines.map(() => this._currentScope));
     }

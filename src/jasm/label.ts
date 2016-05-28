@@ -1,5 +1,4 @@
 'use strict';
-export default Label;
 
 
 
@@ -7,7 +6,16 @@ export default Label;
 
 // TODO: review how labels work...
 /** TODO: doc... */
-interface Label {
-    resolve(): void;
-    toString(): string;
+export default class Label {
+
+
+    constructor() {
+        this.name = `#${++Label._counter}`;
+    }
+
+
+    name: string;
+
+
+    private static _counter = 0;
 }
