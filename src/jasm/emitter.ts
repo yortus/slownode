@@ -177,7 +177,7 @@ export default class Emitter implements InstructionSet, RegisterSet {
     private addInstr(name: string, ...args: Array<Register|Label|string|number>) {
         let argStrs = args.map(arg => {
             if (arg instanceof Register) return arg.name;
-            else if (typeof arg === 'string') return JSON.stringify(arg);
+            else if (typeof arg === 'string') return JSON.stringify(arg).replace(/#/g, '\\u0023');
             else if (typeof arg === 'number') return JSON.stringify(arg);
             else return arg.toString();
         });
