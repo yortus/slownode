@@ -7,6 +7,30 @@
 
 
 
+
+```ts
+let slow = slownode.connect({
+    preproc: 'tsc',
+    storage: {
+        mode: 'fs',
+        opts: {
+            dirname: './slownode'
+        }
+    },
+    runtime: 'pseudo-blocking',
+
+    onError: null
+});
+
+
+slow.eval('1+1');
+
+
+
+```
+
+
+
 ## New New Scheme
 
 1. tsc --noEmit

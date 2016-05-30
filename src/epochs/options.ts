@@ -26,11 +26,11 @@ interface Options {
 
 
     // Custom serializer for saving running script state
-    replacer?: Function;
+    replacer?: (this: any, key: string|number, val: any) => any;
 
 
     // Custom deserializer for loading running script state
-    reviver?: Function;
+    reviver?: (this: any, key: string|number, val: any) => any;
 
 
     //========================= RUNTIME =========================
