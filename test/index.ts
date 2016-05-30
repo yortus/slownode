@@ -48,7 +48,7 @@ let slow = new Epoch({
 });
 
 
-let wf = slow.execute(`
+let wf = slow.eval(`
 while (true) {
     print('starting...');
     sleep(1000);

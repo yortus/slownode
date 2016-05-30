@@ -31,7 +31,7 @@ export default class Epoch {
 
 
     // TODO: ... rename?
-    execute(script: string): Promise<void> {
+    eval(script: string): Promise<void> {
         let jasm = transpile(script);
         let globalObject = this._options.globalFactory();
         let interpreter = new Interpreter(jasm, globalObject);
