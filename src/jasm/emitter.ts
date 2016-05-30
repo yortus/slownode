@@ -63,7 +63,6 @@ export default class Emitter implements InstructionSet, RegisterSet {
     BF(label: Label, arg: Register) { this.addInstr('BF', label, arg); }
     BT(label: Label, arg: Register) { this.addInstr('BT', label, arg); }
     CALL(tgt: Register, func: Register, thís: Register, args: Register) { this.addInstr('CALL', tgt, func, thís, args); }
-    NOOP() { this.addInstr('NOOP'); }
     THROW(err: Register) { this.addInstr('THROW', err); }
     QUIT() { this.addInstr('QUIT'); }
 

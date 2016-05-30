@@ -80,31 +80,28 @@ export default class Interpreter {
 // TODO: ...
 function compile(codeLines: string[], virtualMachine: InstructionSet & RegisterSet) {
 
-
-    // TODO: doc...
-    // codeLines = codeLines.map((line, i) => {
-    //     return `        case ${`${i+1}:    `.slice(0, 6)} ${line}`;
-    // });
-    // let func = `(() => {\n    switch (PC.value) {\n${codeLines.join('\n')}\n    }\n})`;
-// TODO: add default case to catch illegal PC values (this is an internal error - should never happen, but may do during dev - goes into infinite loop otherwise)
-
-
-    // TODO: reformat lines as switch cases
-    let lines = codeLines.map((line, i) => {
-        let isFirstLine = i === 0;
+    // TODO: re-format lines as switch cases
+    let lines: string[] = [];
+    let prevIsCommentLine = false;
+    codeLines.forEach((line, i) => {
         let isCommentLine = line.startsWith('//');
-        let result = isFirstLine ? '' : '                ';
-        result += `case ${`${i+1}:    `.slice(0, 6)} `;
-        result += isCommentLine ? `NOOP(); break;    ${line}` : `${line}; break;`;
-        return result;
+        let result = '';
+        if (isCommentLine) {
+            if (!prevIsCommentLine) lines.push('');
+            result += `            ${line}`;
+        }
+        else {
+            result += `case ${`${i+1}:    `.slice(0, 6)} ${line};`;
+            result += ' '.repeat(Math.max(0, 74 - result.length)) + 'break;';
+        }
+        lines.push(result);
+        prevIsCommentLine = isCommentLine;
     });
 
     let makeCode = new Function('vm', `
         with (vm) return (() => {
-            debugger;
             switch (PC.value) {
-                ${lines.join('\n')}
-                default:    throw new Error('Illegal PC value');
+                ${lines.map(line => `${' '.repeat(16)}${line}`).join('\n').slice(16)}
             }
             ++PC.value;
         })`);
@@ -161,7 +158,6 @@ function makeInstructions(target: InstructionSet) {
         BF:     (label, arg) => arg.value ? null : jumpTo(label),
         BT:     (label, arg) => arg.value ? jumpTo(label) : null,
         CALL:   (tgt, func, thís, args) => tgt.value = func.value.apply(thís.value, args.value),
-        NOOP:   () => { },
         THROW:  (err) => { throw err.value; }, // TODO: temporary soln... how to really implement this?
         QUIT:   () => { throw new Done(); },
 

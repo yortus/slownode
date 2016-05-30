@@ -35,7 +35,6 @@ interface InstructionSet {
     BF:     (label: Label, arg: Register) => void;
     BT:     (label: Label, arg: Register) => void;
     CALL:   (tgt: Register, func: Register, thís: Register, args: Register) => void;
-    NOOP:   () => void;
     THROW:  (err: Register) => void;
     QUIT:   () => void;
 
