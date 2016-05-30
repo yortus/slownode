@@ -18,30 +18,14 @@ export default class Interpreter {
         let virtualMachine = this._virtualMachine = makeVirtualMachine();
         let registers = this.registers = <any> virtualMachine;
         registers.ENV.value = globalObject || {};
-        let code = this._code = compile(jasm.code, virtualMachine);
+        this.step = compile(jasm.code, virtualMachine);
     }
 
 
     // TODO: doc... unhandled exceptions in the script will be thrown here...
     // TODO: we are using exceptions for control flow in here. How awesome/insane is that? Non-rhetorical question...
     // TODO: what if step() is called again after jasm finished/errored? Expected behaviour? Undefined behaviour for now...
-    step(): boolean {
-        try {
-            this._code();
-            return false;
-        }
-        catch (err) {
-            let ex: Error = err; // workaround for TS1196 (see https://github.com/Microsoft/TypeScript/issues/8677)
-            if (ex instanceof Done) {
-                // TODO: jasm completed without (uncaught) error...
-                return true;
-            }
-            else {
-                // TODO: uncaught error - surface it to the host...
-                throw err;
-            }
-        }
-    }
+    step: () => boolean;
 
 
     // TODO: doc... does this need to otherwise work like step(), return a value, etc? I think not, but think about it...
@@ -61,10 +45,6 @@ export default class Interpreter {
 
     // TODO: ...
     private _virtualMachine: InstructionSet & RegisterSet;
-
-
-    // TODO: ...
-    private _code: () => void;
 }
 
 
@@ -97,8 +77,9 @@ function compile(codeLines: string[], virtualMachine: InstructionSet & RegisterS
             switch (PC.value++) {
                 ${lines.map(line => `${' '.repeat(16)}${line}`).join('\n').slice(16)}
             }
+            return PC.value > ${codeLines.length};
         })`);
-    let result: () => void = makeCode(virtualMachine);
+    let result: () => boolean = makeCode(virtualMachine);
 
 // TODO: temp testing...
 console.log(result.toString())
@@ -152,7 +133,7 @@ function makeInstructions(target: InstructionSet, goto: (line: number) => void) 
         BT:     (line: number, arg) => arg.value ? goto(line) : null,
         CALL:   (tgt, func, thís, args) => tgt.value = func.value.apply(thís.value, args.value),
         THROW:  (err) => { throw err.value; }, // TODO: temporary soln... how to really implement this?
-        STOP:   () => { throw new Done(); },
+        STOP:   () => goto(Infinity),
 
         // Data
         STRING: (tgt, val) => tgt.value = val,
@@ -197,10 +178,3 @@ function makeRegisters(target: RegisterSet) {
         target[key] = registers[key];
     });
 }
-
-
-
-
-
-// TODO: ...
-class Done extends Error { }
