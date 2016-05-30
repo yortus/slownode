@@ -18,12 +18,11 @@ export default class Interpreter {
         let virtualMachine = this._virtualMachine = makeVirtualMachine();
         let registers = this.registers = <any> virtualMachine;
         registers.ENV.value = globalObject || {};
-        this.step = compile(jasm.code, virtualMachine);
+        this.step = makeStepFunction(jasm.code, virtualMachine);
     }
 
 
     // TODO: doc... unhandled exceptions in the script will be thrown here...
-    // TODO: we are using exceptions for control flow in here. How awesome/insane is that? Non-rhetorical question...
     // TODO: what if step() is called again after jasm finished/errored? Expected behaviour? Undefined behaviour for now...
     step: () => boolean;
 
@@ -52,7 +51,7 @@ export default class Interpreter {
 
 
 // TODO: ...
-function compile(codeLines: string[], virtualMachine: InstructionSet & RegisterSet) {
+function makeStepFunction(codeLines: string[], virtualMachine: InstructionSet & RegisterSet) {
 
     // TODO: re-format lines as switch cases
     let lines: string[] = [];
@@ -81,8 +80,8 @@ function compile(codeLines: string[], virtualMachine: InstructionSet & RegisterS
         })`);
     let result: () => boolean = makeCode(virtualMachine);
 
-// TODO: temp testing...
-console.log(result.toString())
+// TODO: temp testing... remove...
+//console.log(result.toString())
 
     return result;
 }
