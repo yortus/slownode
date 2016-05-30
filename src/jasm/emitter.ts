@@ -155,7 +155,7 @@ export default class Emitter implements InstructionSet, RegisterSet {
             ++labelCount;
         });
         this._lines = this._lines.filter(line => !line.startsWith('#'));
-        this._lines = this._lines.map(line => line.replace(/#[a-z0-9]+/, name => labels[name].toString()));
+        this._lines = this._lines.map(line => line.replace(/#[a-z0-9]+/, name => (labels[name] || name).toString()));
 
 
         // TODO: doc...
