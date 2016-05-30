@@ -9,13 +9,6 @@ export default ObjectCode;
 
 /** TODO: doc... */
 interface ObjectCode {
-
-
-    meta: {
-        scopes: ScopeInfo;
-    };
-
-
     code: () => void;
 }
 

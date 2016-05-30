@@ -96,12 +96,20 @@ export default class Emitter implements InstructionSet, RegisterSet {
 
     /** TODO: temp testing... */
     enterScope(identifiers: {[name: string]: BindingKind}) {
+
+        // TODO: temp testing...
+        this.addLine(`// ===== ENTER SCOPE ===== { ${Object.keys(identifiers).map(id => `${id}: ${identifiers[id]}`).join(', ')} }`);
+        
         let scopeCount = this._scopes.lineage.length;
         this._scopes.lineage.push(this._currentScope);
         this._scopes.identifiers[scopeCount] = identifiers;
         this._currentScope = scopeCount;
     }
     leaveScope() {
+
+        // TODO: temp testing...
+        this.addLine(`// ===== LEAVE SCOPE =====`);
+
         this._currentScope = this._scopes.lineage[this._currentScope];
     }
     private _scopes = <ScopeInfo> { lineage: [null], identifiers: {0: {}} };
@@ -157,21 +165,14 @@ export default class Emitter implements InstructionSet, RegisterSet {
         this._lines = this._lines.filter(line => !line.startsWith('#'));
         this._lines = this._lines.map(line => line.replace(/#[a-z0-9]+/, name => (labels[name] || name).toString()));
 
-
-        // TODO: doc...
-        let meta = { scopes: this._scopes };
-
-// TODO: temp testing...
-console.log(this._lines.join('\n'));        
-
         // TODO: doc...
         let codeLines = this._lines.map((line, i) => {
-            return `        case ${`${i}:    `.slice(0, 6)} ${line}${' '.repeat(Math.max(0, 58 - line.length))}  // ${this._lineScopes[i]}`;
+            return `        case ${`${i}:    `.slice(0, 6)} ${line}`;
         });
         let code = eval(`(() => {\n    switch (PC.value) {\n${codeLines.join('\n')}\n    }\n})`); // TODO: remove debugger
 
         // TODO: ...
-        return { meta, code };
+        return { code };
     }
 
 
@@ -182,7 +183,6 @@ console.log(this._lines.join('\n'));
     /** TODO: doc... */
     private addLabel(label: Label) {
         this._lines.push(`${label.name}:`);
-        this._lineScopes.push(this._currentScope);
     }
 
 
@@ -214,9 +214,7 @@ console.log(this._lines.join('\n'));
         // TODO: ...
         lines.push(line);
         lines = lines.map(line => `    ${line}`);
-        //TODO: was... lines = lines.map((line, i) => `case ${`${this._lines.length + i}:'   `.slice(0, 6)}   ';${line}`);
         this._lines.push(...lines);
-        this._lineScopes.push(...lines.map(() => this._currentScope));
     }
 
 
@@ -240,7 +238,6 @@ console.log(this._lines.join('\n'));
 
     /** TODO: doc... */
     private _lines: string[] = [];
-    private _lineScopes: number[] = [];
 
 
     /** TODO: doc... */
