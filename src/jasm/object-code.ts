@@ -9,7 +9,7 @@ export default ObjectCode;
 
 /** TODO: doc... */
 interface ObjectCode {
-    code: () => void;
+    code: string[]; // NB: 1-based line numbering
 }
 
 

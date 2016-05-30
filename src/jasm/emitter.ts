@@ -63,6 +63,7 @@ export default class Emitter implements InstructionSet, RegisterSet {
     BF(label: Label, arg: Register) { this.addInstr('BF', label, arg); }
     BT(label: Label, arg: Register) { this.addInstr('BT', label, arg); }
     CALL(tgt: Register, func: Register, thís: Register, args: Register) { this.addInstr('CALL', tgt, func, thís, args); }
+    NOOP() { this.addInstr('NOOP'); }
     THROW(err: Register) { this.addInstr('THROW', err); }
     QUIT() { this.addInstr('QUIT'); }
 
@@ -96,19 +97,19 @@ export default class Emitter implements InstructionSet, RegisterSet {
 
     /** TODO: temp testing... */
     enterScope(identifiers: {[name: string]: BindingKind}) {
-
-        // TODO: temp testing...
-        this.addLine(`// ===== ENTER SCOPE ===== { ${Object.keys(identifiers).map(id => `${id}: ${identifiers[id]}`).join(', ')} }`);
         
         let scopeCount = this._scopes.lineage.length;
         this._scopes.lineage.push(this._currentScope);
         this._scopes.identifiers[scopeCount] = identifiers;
         this._currentScope = scopeCount;
+
+        // TODO: temp testing...
+        this.addLine(`// ===== ENTER SCOPE ${this._currentScope} ===== { ${Object.keys(identifiers).map(id => `${id}: ${identifiers[id]}`).join(', ')} }`);
     }
     leaveScope() {
 
         // TODO: temp testing...
-        this.addLine(`// ===== LEAVE SCOPE =====`);
+        this.addLine(`// ===== LEAVE SCOPE ${this._currentScope} =====`);
 
         this._currentScope = this._scopes.lineage[this._currentScope];
     }
@@ -150,6 +151,8 @@ export default class Emitter implements InstructionSet, RegisterSet {
         this.QUIT();
 
 
+
+
         this._lines = this._lines.map(line => line.trim());
 
 
@@ -159,20 +162,14 @@ export default class Emitter implements InstructionSet, RegisterSet {
         this._lines.forEach((line, i) => {
             let matches = line.match(/^(#[a-z0-9]+):$/i);
             if (!matches) return;
-            labels[matches[1]] = i - labelCount;
+            labels[matches[1]] = i - labelCount + 1;
             ++labelCount;
         });
         this._lines = this._lines.filter(line => !line.startsWith('#'));
         this._lines = this._lines.map(line => line.replace(/#[a-z0-9]+/, name => (labels[name] || name).toString()));
 
-        // TODO: doc...
-        let codeLines = this._lines.map((line, i) => {
-            return `        case ${`${i}:    `.slice(0, 6)} ${line}`;
-        });
-        let code = eval(`(() => {\n    switch (PC.value) {\n${codeLines.join('\n')}\n    }\n})`); // TODO: remove debugger
 
-        // TODO: ...
-        return { code };
+        return { code: this._lines };
     }
 
 
@@ -237,7 +234,7 @@ export default class Emitter implements InstructionSet, RegisterSet {
 
 
     /** TODO: doc... */
-    private _lines: string[] = [];
+    private _lines: string[] = []; // NB: 1-based line numbering
 
 
     /** TODO: doc... */

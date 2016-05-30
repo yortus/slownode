@@ -19,7 +19,7 @@ export default class Interpreter {
         let virtualMachine = this._virtualMachine = makeVirtualMachine();
         let registers = this.registers = <any> virtualMachine;
         registers.ENV.value = globalObject || {};
-        let code = this._code = recompile(jasm.code, virtualMachine);
+        let code = this._code = compile(jasm.code, virtualMachine);
     }
 
 
@@ -28,18 +28,14 @@ export default class Interpreter {
     // TODO: what if step() is called again after jasm finished/errored? Expected behaviour? Undefined behaviour for now...
     step(): boolean {
         try {
-            this._code(); // NB: guaranteed to throw...
+            this._code();
+            return false;
         }
         catch (err) {
             let ex: Error = err; // workaround for TS1196 (see https://github.com/Microsoft/TypeScript/issues/8677)
             if (ex instanceof Jump) {
                 // TODO: update the PC ready for the next call, and return to host...
                 this.registers.PC.value = +ex.label.toString();
-                return false;
-            }
-            else if (ex instanceof Next) {
-                // TODO: update the PC ready for the next call, and return to host...
-                ++this.registers.PC.value;
                 return false;
             }
             else if (ex instanceof Done) {
@@ -82,9 +78,41 @@ export default class Interpreter {
 
 
 // TODO: ...
-function recompile(code: () => void, virtualMachine: InstructionSet & RegisterSet) {
-    let makeCode = new Function('code', 'vm', `with (vm) return (${code})`);
-    let result: () => void = makeCode(code, virtualMachine);
+function compile(codeLines: string[], virtualMachine: InstructionSet & RegisterSet) {
+
+
+    // TODO: doc...
+    // codeLines = codeLines.map((line, i) => {
+    //     return `        case ${`${i+1}:    `.slice(0, 6)} ${line}`;
+    // });
+    // let func = `(() => {\n    switch (PC.value) {\n${codeLines.join('\n')}\n    }\n})`;
+// TODO: add default case to catch illegal PC values (this is an internal error - should never happen, but may do during dev - goes into infinite loop otherwise)
+
+
+    // TODO: reformat lines as switch cases
+    let lines = codeLines.map((line, i) => {
+        let isFirstLine = i === 0;
+        let isCommentLine = line.startsWith('//');
+        let result = isFirstLine ? '' : '                ';
+        result += `case ${`${i+1}:    `.slice(0, 6)} `;
+        result += isCommentLine ? `NOOP(); break;    ${line}` : `${line}; break;`;
+        return result;
+    });
+
+    let makeCode = new Function('vm', `
+        with (vm) return (() => {
+            debugger;
+            switch (PC.value) {
+                ${lines.join('\n')}
+                default:    throw new Error('Illegal PC value');
+            }
+            ++PC.value;
+        })`);
+    let result: () => void = makeCode(virtualMachine);
+
+// TODO: temp testing...
+console.log(result.toString())
+
     return result;
 }
 
@@ -133,6 +161,7 @@ function makeInstructions(target: InstructionSet) {
         BF:     (label, arg) => arg.value ? null : jumpTo(label),
         BT:     (label, arg) => arg.value ? jumpTo(label) : null,
         CALL:   (tgt, func, thís, args) => tgt.value = func.value.apply(thís.value, args.value),
+        NOOP:   () => { },
         THROW:  (err) => { throw err.value; }, // TODO: temporary soln... how to really implement this?
         QUIT:   () => { throw new Done(); },
 
@@ -154,13 +183,7 @@ function makeInstructions(target: InstructionSet) {
 
     // Inject prolog/epilog into all methods
     Object.keys(instructions).forEach(key => {
-        let oldMethod = instructions[key];
-        let newMethod = (...args) => {
-            // TODO: prolog (none for now)
-            oldMethod(...args);
-            throw new Next();
-        }
-        target[key] = newMethod;
+        target[key] = instructions[key];
     });
 }
 
@@ -173,7 +196,7 @@ function makeRegisters(target: RegisterSet) {
 
     let registers: RegisterSet = {
         // TODO: add ERR register for exception in flight? (can only be one)
-        PC:     new Register('PC', 0),
+        PC:     new Register('PC', 1),
         ENV:    new Register('ENV'),
         $0:     new Register('$0'),
         $1:     new Register('$1'),
@@ -198,5 +221,4 @@ function makeRegisters(target: RegisterSet) {
 class Jump extends Error {
     constructor(public label: Label) { super(); }
 }
-class Next extends Error { }
 class Done extends Error { }

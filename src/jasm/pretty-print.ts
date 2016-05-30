@@ -16,30 +16,18 @@ export default function prettyPrint(jasm: ObjectCode): string {
     // let metaLines = meta.split('\n');
     // metaLines = [].concat('scopes: {', metaLines.map(line => `    ${line}`), '}');
 
-    // TODO: doc...
-    let codeLines = jasm.code.toString().split('\n').slice(1, -1);
-
-
 
     // TODO: doc...
     let source = template
-        .replace(/[ ]*\$CODELINES/, codeLines.map(line => `    ${line}`).join('\n'))
+        .replace(/[ ]*\$CODELINES/, jasm.code/*.map((line, i) => `${`${i+1}:      `.slice(0, 8)}${line}`)*/.join('\n'))
         //.replace(/[ ]*\$METALINES/, metaLines.map(line => `        ${line}`).join('\n'));
 
     return source;
-
-
-
-
-
-
 }
+
+
 // TODO: temp testing...
-const template = `{
-    code: () => {
-        $CODELINES
-    }
-}`;
+const template = `$CODELINES`;
 
 
 // TODO: was...
