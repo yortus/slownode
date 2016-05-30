@@ -64,7 +64,7 @@ export default class Emitter implements InstructionSet, RegisterSet {
     BT(label: Label, arg: Register) { this.addInstr('BT', label, arg); }
     CALL(tgt: Register, func: Register, thís: Register, args: Register) { this.addInstr('CALL', tgt, func, thís, args); }
     THROW(err: Register) { this.addInstr('THROW', err); }
-    QUIT() { this.addInstr('QUIT'); }
+    STOP() { this.addInstr('STOP'); }
 
     // Instructions: Data
     STRING(tgt: Register, val: string) { this.addInstr('STRING', tgt, val); }
@@ -147,7 +147,7 @@ export default class Emitter implements InstructionSet, RegisterSet {
             start: this._sourceLocationAll.end,
             end: this._sourceLocationAll.end
         };
-        this.QUIT();
+        this.STOP();
 
 
 

@@ -36,7 +36,7 @@ interface InstructionSet {
     BT:     (label: Label, arg: Register) => void;
     CALL:   (tgt: Register, func: Register, thís: Register, args: Register) => void;
     THROW:  (err: Register) => void;
-    QUIT:   () => void;
+    STOP:   () => void;
 
     // Data
     STRING: (tgt: Register, val: string) => void;

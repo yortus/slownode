@@ -159,7 +159,7 @@ function makeInstructions(target: InstructionSet) {
         BT:     (label, arg) => arg.value ? jumpTo(label) : null,
         CALL:   (tgt, func, thís, args) => tgt.value = func.value.apply(thís.value, args.value),
         THROW:  (err) => { throw err.value; }, // TODO: temporary soln... how to really implement this?
-        QUIT:   () => { throw new Done(); },
+        STOP:   () => { throw new Done(); },
 
         // Data
         STRING: (tgt, val) => tgt.value = val,
