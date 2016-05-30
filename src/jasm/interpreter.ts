@@ -1,6 +1,5 @@
 'use strict';
 import InstructionSet from './instruction-set';
-import Label from './label';
 import ObjectCode from './object-code';
 import Register from './register';
 import RegisterSet from './register-set';
@@ -33,12 +32,7 @@ export default class Interpreter {
         }
         catch (err) {
             let ex: Error = err; // workaround for TS1196 (see https://github.com/Microsoft/TypeScript/issues/8677)
-            if (ex instanceof Jump) {
-                // TODO: update the PC ready for the next call, and return to host...
-                this.registers.PC.value = +ex.label.toString();
-                return false;
-            }
-            else if (ex instanceof Done) {
+            if (ex instanceof Done) {
                 // TODO: jasm completed without (uncaught) error...
                 return true;
             }
@@ -100,10 +94,9 @@ function compile(codeLines: string[], virtualMachine: InstructionSet & RegisterS
 
     let makeCode = new Function('vm', `
         with (vm) return (() => {
-            switch (PC.value) {
+            switch (PC.value++) {
                 ${lines.map(line => `${' '.repeat(16)}${line}`).join('\n').slice(16)}
             }
-            ++PC.value;
         })`);
     let result: () => void = makeCode(virtualMachine);
 
@@ -120,8 +113,8 @@ console.log(result.toString())
 // TODO: ...
 function makeVirtualMachine(): InstructionSet & RegisterSet {
     let virtualMachine: InstructionSet & RegisterSet = <any> {};
-    let instructions = makeInstructions(virtualMachine);
-    let registers = makeRegisters(virtualMachine);
+    makeRegisters(virtualMachine);
+    makeInstructions(virtualMachine, line => virtualMachine.PC.value = +line);
     return virtualMachine;
 }
 
@@ -129,7 +122,7 @@ function makeVirtualMachine(): InstructionSet & RegisterSet {
 
 
 // TODO: ...
-function makeInstructions(target: InstructionSet) {
+function makeInstructions(target: InstructionSet, goto: (line: number) => void) {
 
     let instructions: InstructionSet = {
 
@@ -154,9 +147,9 @@ function makeInstructions(target: InstructionSet) {
         NE:     (tgt, lhs, rhs) => tgt.value = lhs.value !== rhs.value,
 
         // Control
-        B:      (label) => jumpTo(label),
-        BF:     (label, arg) => arg.value ? null : jumpTo(label),
-        BT:     (label, arg) => arg.value ? jumpTo(label) : null,
+        B:      (line: number) => goto(line),
+        BF:     (line: number, arg) => arg.value ? null : goto(line),
+        BT:     (line: number, arg) => arg.value ? goto(line) : null,
         CALL:   (tgt, func, thís, args) => tgt.value = func.value.apply(thís.value, args.value),
         THROW:  (err) => { throw err.value; }, // TODO: temporary soln... how to really implement this?
         STOP:   () => { throw new Done(); },
@@ -172,12 +165,7 @@ function makeInstructions(target: InstructionSet) {
         NULL:   (tgt) => tgt.value = null
     };
 
-    function jumpTo(label: Label) {
-        // TODO: scope enter/exit, finally blocks
-        throw new Jump(label);
-    }
-
-    // Inject prolog/epilog into all methods
+    // TODO: copy to target...
     Object.keys(instructions).forEach(key => {
         target[key] = instructions[key];
     });
@@ -204,6 +192,7 @@ function makeRegisters(target: RegisterSet) {
         $7:     new Register('$7')
     };
 
+    // TODO: copy to target...
     Object.keys(registers).forEach(key => {
         target[key] = registers[key];
     });
@@ -214,7 +203,4 @@ function makeRegisters(target: RegisterSet) {
 
 
 // TODO: ...
-class Jump extends Error {
-    constructor(public label: Label) { super(); }
-}
 class Done extends Error { }

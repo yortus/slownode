@@ -1,5 +1,4 @@
 'use strict';
-import Label from './label';
 import Register from './register';
 export default InstructionSet;
 
@@ -31,9 +30,9 @@ interface InstructionSet {
     NE:     (tgt: Register, lhs: Register, rhs: Register) => void;
 
     // Control
-    B:      (label: Label) => void;
-    BF:     (label: Label, arg: Register) => void;
-    BT:     (label: Label, arg: Register) => void;
+    B:      (line: number) => void;
+    BF:     (line: number, arg: Register) => void;
+    BT:     (line: number, arg: Register) => void;
     CALL:   (tgt: Register, func: Register, thís: Register, args: Register) => void;
     THROW:  (err: Register) => void;
     STOP:   () => void;
