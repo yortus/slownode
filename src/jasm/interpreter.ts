@@ -53,7 +53,7 @@ export default class Interpreter {
 // TODO: ...
 function makeStepFunction(codeLines: string[], virtualMachine: InstructionSet & RegisterSet) {
 
-    // TODO: re-format lines as switch cases
+    // TODO: re-format lines as switch cases...
     let lines: string[] = [];
     let prevIsCommentLine = false;
     codeLines.forEach((line, i) => {
@@ -71,6 +71,7 @@ function makeStepFunction(codeLines: string[], virtualMachine: InstructionSet & 
         prevIsCommentLine = isCommentLine;
     });
 
+    // TODO: Eval up the step() function...
     let makeCode = new Function('vm', `
         with (vm) return (() => {
             switch (PC.value++) {
@@ -80,9 +81,8 @@ function makeStepFunction(codeLines: string[], virtualMachine: InstructionSet & 
         })`);
     let result: () => boolean = makeCode(virtualMachine);
 
-// TODO: temp testing... remove...
-//console.log(result.toString())
-
+    // TODO: temp testing... remove...
+    //console.log(result.toString())
     return result;
 }
 
@@ -94,7 +94,7 @@ function makeStepFunction(codeLines: string[], virtualMachine: InstructionSet & 
 function makeVirtualMachine(): InstructionSet & RegisterSet {
     let virtualMachine: InstructionSet & RegisterSet = <any> {};
     makeRegisters(virtualMachine);
-    makeInstructions(virtualMachine, line => virtualMachine.PC.value = +line);
+    makeInstructions(virtualMachine, virtualMachine.PC);
     return virtualMachine;
 }
 
@@ -102,8 +102,7 @@ function makeVirtualMachine(): InstructionSet & RegisterSet {
 
 
 // TODO: ...
-function makeInstructions(target: InstructionSet, goto: (line: number) => void) {
-
+function makeInstructions(target: InstructionSet, pc: Register) {
     let instructions: InstructionSet = {
 
         // Load/store
@@ -127,12 +126,12 @@ function makeInstructions(target: InstructionSet, goto: (line: number) => void) 
         NE:     (tgt, lhs, rhs) => tgt.value = lhs.value !== rhs.value,
 
         // Control
-        B:      (line: number) => goto(line),
-        BF:     (line: number, arg) => arg.value ? null : goto(line),
-        BT:     (line: number, arg) => arg.value ? goto(line) : null,
+        B:      (line: number) => pc.value = line,
+        BF:     (line: number, arg) => arg.value ? null : pc.value = line,
+        BT:     (line: number, arg) => arg.value ? pc.value = line : null,
         CALL:   (tgt, func, thís, args) => tgt.value = func.value.apply(thís.value, args.value),
         THROW:  (err) => { throw err.value; }, // TODO: temporary soln... how to really implement this?
-        STOP:   () => goto(Infinity),
+        STOP:   () => pc.value = Infinity,
 
         // Data
         STRING: (tgt, val) => tgt.value = val,
