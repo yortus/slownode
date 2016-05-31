@@ -12,9 +12,11 @@
 let slow = slownode({
     preprocess: ['tsc'],
     behaviours: {
-        'use-file-storage': true,
+        'use-file-storage': {
+            dirname: './slownode-running-scripts'
+        },
         'pseudo-blocking': true
-    }
+    ]
 });
 slow.on('error', (err, scriptId) => {
     console.log(...);
