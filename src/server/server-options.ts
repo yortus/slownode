@@ -1,12 +1,42 @@
-// 'use strict';
-// import Interpreter from '../jasm/interpreter';
-// export default Options;
+'use strict';
+import Interpreter from '../jasm/interpreter';
+import RuntimePlugin from './plugins/runtime-plugin';
+export default ServerOptions;
 
 
 
 
 
-// // TODO: ...
+interface ServerOptions {
+
+
+    // TODO: ...
+    onError?: (err: any, scriptName: string) => void;
+
+
+    // TODO: ...
+    preproc?: void;
+
+
+    // TODO: ...
+    storage?: void;
+
+
+    // TODO: ...
+    runtime?: RuntimePlugin; // TODO: |string|Array<string|RuntimePlugin>...
+}
+
+
+
+
+
+
+
+
+
+
+// TODO: was...
+// TODO: ...
 // interface Options {
 
 //     //========================= MISC =========================

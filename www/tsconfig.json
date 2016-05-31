@@ -4,7 +4,8 @@
         "module": "amd",
         "removeComments": false,
         "sourceMap": false,
-        "outDir": "./built"
+        "outDir": "./built",
+        "moduleResolution": "node" // TODO: won't work in browser!! Use electron instead...
     },
     "files": [
         "../src/index.ts",
