@@ -9,21 +9,23 @@
 
 
 ```ts
-let slow = slownode.connect({
-    preproc: 'tsc',
-    storage: {
-        mode: 'fs',
-        opts: {
-            dirname: './slownode'
-        }
-    },
-    runtime: 'pseudo-blocking',
-
-    onError: null
+let slow = slownode({
+    preprocess: ['tsc'],
+    behaviours: {
+        'use-file-storage': true,
+        'pseudo-blocking': true
+    }
+});
+slow.on('error', (err, scriptId) => {
+    console.log(...);
 });
 
 
+
+
+
 slow.eval('1+1');
+
 
 
 

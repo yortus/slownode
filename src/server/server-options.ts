@@ -11,18 +11,6 @@ interface ServerOptions {
 
 
     // TODO: ...
-    onError?: (err: any, scriptName: string) => void;
-
-
-    // TODO: ...
-    preproc?: void;
-
-
-    // TODO: ...
-    storage?: void;
-
-
-    // TODO: ...
     runtime?: RuntimePlugin; // TODO: |string|Array<string|RuntimePlugin>...
 }
 

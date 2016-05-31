@@ -1,4 +1,5 @@
 'use strict';
+import {EventEmitter} from 'events';
 import ServerOptions from './server-options';
 import Interpreter from '../jasm/interpreter';
 import transpile from '../js-to-jasm/transpile';
@@ -7,18 +8,14 @@ import transpile from '../js-to-jasm/transpile';
 
 
 
-export default class Server {
+export default class Server extends EventEmitter {
     
 
     // TODO: doc...
     constructor(options?: ServerOptions) {
+        super();
+        
         options = options || {};
-        this._onError = options.onError || ((err, scriptName) => {
-            // TODO: ...
-            console.log(`Error evaluating script '${scriptName}':`);
-            console.log(err);
-            process.exit(-1); // TODO: really need to kill whole process?
-        });
 
         // TODO: temp testing...
         this._globalFactory = () => ({});
@@ -32,8 +29,8 @@ export default class Server {
 
 
     // TODO: doc...
-    eval(script: string, scriptName?: string): void {
-        scriptName = scriptName || 'Unnamed Script';
+    eval(script: string, scriptId?: string): void {
+        scriptId = scriptId || '«unidentified script»';
         let jasm = transpile(script);
         let globalObject = this._globalFactory();
         let interpreter = new Interpreter(jasm, globalObject);
@@ -45,14 +42,10 @@ export default class Server {
                 while (!(await this._step(interpreter))) {/* no-op */}
             }
             catch (err) {
-                this._onError(err, scriptName);
+                this.emit('error', err, scriptId);
             }
         })();
     }
-
-
-    // TODO: doc...
-    private _onError: (err: any, scriptName: string) => void;
     
 
     // TODO: doc...

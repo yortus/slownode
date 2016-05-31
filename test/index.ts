@@ -5,22 +5,7 @@ import * as slownode from 'slownode';
 
 
 
-// TODO: temp testing APIs...
-// var slownode2: any;
-// let slow2 = slownode2.connect({
-//     misc: '',           // onError
-//     preproc: 'tsc',     // lib_d_ts
-//     storage: 'fs',      // dirname, replacer, reviver
-//     runtime: 'blocking' // globalFactory, step, shouldSave
-// });
-// slow2.execute("'script'");
-
-
-
-
 let slow = slownode.connect({
-    onError: null,
-    preproc: null,
     runtime: () => ({
         globalFactory: () => ({
             sleep: ms => new Promise(resolve => setTimeout(resolve, ms)),
@@ -50,6 +35,7 @@ let slow = slownode.connect({
     })
 });
 
+
 slow.eval(`
     print('starting...');
     sleep(1000);
@@ -58,3 +44,9 @@ slow.eval(`
     throw 42;
     print('...finished');
 `);
+
+
+slow.on('error', (err, scriptId) => {
+    console.log(`Error evaluating script '${scriptId}':`);
+    console.log(err);
+});
