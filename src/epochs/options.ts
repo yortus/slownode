@@ -25,12 +25,6 @@ interface Options {
     dirname?: string;
 
 
-    // Custom serializer for saving running script state
-    replacer?: (this: any, key: string|number, val: any) => any;
-
-
-    // Custom deserializer for loading running script state
-    reviver?: (this: any, key: string|number, val: any) => any;
 
 
     //========================= RUNTIME =========================
@@ -44,4 +38,13 @@ interface Options {
 
     // Custom trigger for when to save/park a running script. Also support: 'everyStep', 'never' (default = ???)    
     shouldSave?: (jasm: Interpreter) => boolean|Promise<boolean>;
+
+
+    // Custom serializer for saving running script state
+    replacer?: (this: any, key: string|number, val: any) => any;
+
+
+    // Custom deserializer for loading running script state
+    reviver?: (this: any, key: string|number, val: any) => any;
+
 }

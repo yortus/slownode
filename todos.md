@@ -27,6 +27,34 @@ slow.eval('1+1');
 
 
 
+
+slownode
+|
+|---src
+|   |
+|   |---index.ts
+|   |
+|   |---client
+|   |   |
+|   |   |---connect.ts
+|   |   |
+|   |   |---connect-options.ts
+|   |
+|   |---server
+|   |   |
+|   |   |---options
+|   |   |
+|   |   |---jasm
+|   |   |
+|   |   |---js-to-jasm
+|   |   |
+|   |   |---plugins
+|   |   |   |---tsc           // type: preproc
+|   |   |   |---fs            // type: storage
+|   |   |   |---pseudo-sync   // type: runtime
+
+
+
 ```
 
 
