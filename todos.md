@@ -9,18 +9,23 @@
 
 
 ```ts
-interface API {
-    (middleware: MiddlewareOptions): SlowClient;
+// top-level API
+namespace API {
+    let default: Epoch;
+    class Epoch extends EventEmitter {
+        use(middleware: MiddlewareOptions): void;
+        eval(script: string, scriptId?: string): void;
+    };
+    interface Middleware {
+        
+    }
 }
-
-
 interface MiddlewareOptions {
     typeCheck?: boolean|TypeCheckMiddlewareOptions;
     fileStore?: boolean|FileStoreMiddlewareOptions;
     autoAwait?: boolean|AutoAwaitMiddlewareOptions;
+    custom?: (...) => {...}
 }
-
-
 interface TypeCheckMiddlewareOptions {
     // TODO: ...
     lib; //...
@@ -30,14 +35,6 @@ interface FileStoreMiddlewareOptions {
 }
 interface AutoAwaitMiddlewareOptions {
 }
-
-
-
-interface Epoch extends EventEmitter {
-    use(middleware: Middleware): void;
-    eval(script: string, scriptId?: string): void;
-}
-
 
 
 // 'Default' Epoch
