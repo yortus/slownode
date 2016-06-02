@@ -1,8 +1,17 @@
+///<reference path="./middleware.ts" />
 'use strict';
-//export {default as Epoch} from './epochs/epoch';
-//export {default as EpochOptions} from './epochs/options';
+
+
 
 
 
 // TODO: temp testing...
 export {connect, ConnectOptions} from './client';
+
+
+
+
+
+// TODO: temp testing...
+export {Epoch} from './epoch';
+export {MiddlewareOptions} from 'slownode/middleware';

@@ -1,5 +1,22 @@
 'use strict';
 import * as slownode from 'slownode';
+import {Epoch, MiddlewareOptions} from 'slownode';
+import * as yyy from 'slownode/index';
+
+
+let m: MiddlewareOptions;
+
+
+
+
+let x = new Epoch();
+x.use({
+    test: null,
+    xyz: 123,
+    fileStore: {
+        
+    }
+});
 
 
 
