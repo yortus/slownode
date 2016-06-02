@@ -1,7 +1,53 @@
 'use strict';
 import * as slownode from 'slownode';
 import {Epoch, MiddlewareOptions} from 'slownode';
-import * as yyy from 'slownode/index';
+
+
+
+
+
+
+
+
+
+
+// TODO: =========================================
+`
+// node_modules/zzz/index.d.ts:
+export function foo(): string;
+export function bar(): string;
+
+// node_modules/zzz/baz.d.ts:
+import {foo, bar} from './index';
+export interface API {
+    baz: boolean;
+}
+`;
+
+// Augment
+declare module 'zzz/baz' {
+    interface API {
+        extra: number;
+    }
+}
+
+// All works!
+import {foo, bar} from 'zzz';
+import * as baz from 'zzz/baz';
+foo();
+bar();
+
+let api: baz.API;
+
+// TODO: =========================================
+
+
+
+
+
+
+
+
 
 
 let m: MiddlewareOptions;
