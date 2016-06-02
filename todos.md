@@ -70,12 +70,12 @@ epoch
   index.ts
   use.ts
   eval.ts
-  middleware
-    options.ts
-    builtin
-      type-check.ts
-      file-store-ts
-      auto-await.ts
+middleware
+  options.ts
+  builtins
+    type-check.ts
+    file-store-ts
+    auto-await.ts
       
 
 
