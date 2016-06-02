@@ -9,24 +9,74 @@
 
 
 ```ts
-let slow = slownode({
-    preprocess: ['tsc'],
-    behaviours: {
-        'use-file-storage': {
-            dirname: './slownode-running-scripts'
-        },
-        'pseudo-blocking': true
-    ]
+// top-level API
+namespace API {
+    let default: Epoch;
+    class Epoch extends EventEmitter {
+        use(middleware: MiddlewareOptions): void;
+        eval(script: string, scriptId?: string): void;
+    };
+    interface Middleware {
+        
+    }
+}
+interface MiddlewareOptions {
+    typeCheck?: boolean|TypeCheckMiddlewareOptions;
+    fileStore?: boolean|FileStoreMiddlewareOptions;
+    autoAwait?: boolean|AutoAwaitMiddlewareOptions;
+    custom?: (...) => {...}
+}
+interface TypeCheckMiddlewareOptions {
+    // TODO: ...
+    lib; //...
+}
+interface FileStoreMiddlewareOptions {
+    dirname?: string;
+}
+interface AutoAwaitMiddlewareOptions {
+}
+
+
+// 'Default' Epoch
+import slownode from 'slownode';
+slownode.use({
+    typeCheck: true,
+    fileStore: {dirname: './slowfiles'},
+    autoAwait: true
 });
-slow.on('error', (err, scriptId) => {
+slownode.on('error', (err, scriptId) => {
     console.log(...);
 });
+slownode.eval('1+1');
+
+
+
+// Isolated Epoch
+let epoch = new slownode.Epoch();
+epoch.use(...);
+epoch.on(...);
+epoch.eval(...);
 
 
 
 
 
-slow.eval('1+1');
+index.ts
+jasm
+  ...
+js-to-jasm
+  ...
+epoch
+  index.ts
+  use.ts
+  eval.ts
+  middleware
+    options.ts
+    builtin
+      type-check.ts
+      file-store-ts
+      auto-await.ts
+      
 
 
 
