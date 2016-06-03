@@ -1,6 +1,6 @@
 'use strict';
 import Interpreter from '../jasm/interpreter';
-import RuntimePlugin from './plugins/runtime-plugin';
+//import RuntimePlugin from './plugins/runtime-plugin';
 export default ServerOptions;
 
 
@@ -11,7 +11,7 @@ interface ServerOptions {
 
 
     // TODO: ...
-    runtime?: RuntimePlugin; // TODO: |string|Array<string|RuntimePlugin>...
+    runtime?: any;//RuntimePlugin; // TODO: |string|Array<string|RuntimePlugin>...
 }
 
 

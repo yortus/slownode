@@ -1,6 +1,6 @@
 'use strict';
 import {EventEmitter} from 'events';
-import {MiddlewareOptions} from 'slownode/middleware';
+import {Extension} from './extensibility';
 
 
 
@@ -18,15 +18,13 @@ export default class Epoch extends EventEmitter {
 
 
     // TODO: ...
-    use(middleware: MiddlewareOptions) {
-        middleware
-
+    use(extension: Extension): Epoch {
         throw new Error(`Not implemented`);
     }
 
 
     // TODO: ...
-    eval(script: string, scriptId?: string) {
+    eval(script: string, scriptId?: string): Epoch {
         throw new Error(`Not implemented`);
     }
 }
