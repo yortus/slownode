@@ -24,9 +24,9 @@ slownode.init({
 
 slownode.eval(`
     print('starting...');
-    sleep(1000);
+    await sleep(1000);
     print('after one second...');
-    sleepThenFail(1000, 'oops!');
+    await sleepThenFail(1000, 'oops!');
     throw 42;
     print('...finished');
 `);

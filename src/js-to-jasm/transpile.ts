@@ -8,7 +8,17 @@ import ObjectCode from '../jasm/object-code';
 
 
 export default function transpile(javaScriptSource: string): ObjectCode {
-    let ast = parse(javaScriptSource);
+
+    // TODO: temp testing... wrap code inside IIAFE...
+    javaScriptSource = `(async () => {\n\n${javaScriptSource}\n\n})();`;
+
+    // TODO: parse JS->AST...
+    let ast: any = parse(javaScriptSource);
+
+    // TODO: cut the IIAFE wrapper out of the AST...
+    ast.program.body[0] = ast.program.body[0].expression.callee.body;
+
+    // TODO: emit AST->JASM...
     let result = emit(javaScriptSource, ast);
     return result;
 }

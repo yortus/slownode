@@ -9,7 +9,10 @@ import {Visitor} from "babel-traverse"; // Elided (used only for types)
 
 // TODO: ... doc... Options param?
 export function parse(javaScriptSource: string): Node {
+
+    // TODO: ...
     let plugins = [
+        'syntax-async-functions',
         'transform-es2015-destructuring',
         augmentNodesWithScopeInfo
     ];

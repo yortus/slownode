@@ -24,7 +24,7 @@ export default class Interpreter {
 
     // TODO: doc... unhandled exceptions in the script will be thrown here...
     // TODO: what if step() is called again after jasm finished/errored? Expected behaviour? Undefined behaviour for now...
-    step: () => boolean;
+    step: () => Promise<boolean>;
 
 
     // TODO: doc... does this need to otherwise work like step(), return a value, etc? I think not, but think about it...
@@ -64,7 +64,7 @@ function makeStepFunction(codeLines: string[], virtualMachine: InstructionSet & 
             result += `            ${line}`;
         }
         else {
-            result += `case ${`${i+1}:    `.slice(0, 6)} ${line};`;
+            result += `case ${`${i+1}:    `.slice(0, 6)} p = ${line};`;
             result += ' '.repeat(Math.max(0, 74 - result.length)) + 'break;';
         }
         lines.push(result);
@@ -72,17 +72,19 @@ function makeStepFunction(codeLines: string[], virtualMachine: InstructionSet & 
     });
 
     // TODO: Eval up the step() function...
+    // TODO: what if an AWAIT op rejects? It's not handled properly in the current VM code...
     let makeCode = new Function('vm', `
         with (vm) return (() => {
+            let p;
             switch (PC.value++) {
                 ${lines.map(line => `${' '.repeat(16)}${line}`).join('\n').slice(16)}
             }
-            return PC.value > ${codeLines.length};
+            return Promise.resolve(p).then(() => PC.value > ${codeLines.length});
         })`);
-    let result: () => boolean = makeCode(virtualMachine);
+    let result: () => Promise<boolean> = makeCode(virtualMachine);
 
     // TODO: temp testing... remove...
-    //console.log(result.toString())
+    console.log(result.toString())
     return result;
 }
 
@@ -131,6 +133,7 @@ function makeInstructions(target: InstructionSet, pc: Register) {
         BT:     (line: number, arg) => arg.value ? pc.value = line : null,
         CALL:   (tgt, func, thís, args) => tgt.value = func.value.apply(thís.value, args.value),
         THROW:  (err) => { throw err.value; }, // TODO: temporary soln... how to really implement this?
+        AWAIT:  async (tgt, arg) => tgt.value = await arg.value,
         STOP:   () => pc.value = Infinity,
 
         // Data

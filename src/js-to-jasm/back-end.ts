@@ -429,7 +429,10 @@ function visitExpression(jasm: Emitter, expr: Expression|SpreadElement, $T: Regi
         // YieldExpression:     expr => [***],
 
         // ------------------------- experimental -------------------------
-        // AwaitExpression:     expr => [***]
+        AwaitExpression:        expr => {
+                                    visitExpr(expr.argument, $T);
+                                    jasm.AWAIT($T, $T);
+                                }
     });
     jasm.sourceLocation = oldLoc;
 }

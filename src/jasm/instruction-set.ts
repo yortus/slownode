@@ -35,6 +35,7 @@ interface InstructionSet {
     BT:     (line: number, arg: Register) => void;
     CALL:   (tgt: Register, func: Register, thís: Register, args: Register) => void;
     THROW:  (err: Register) => void;
+    AWAIT:  (tgt: Register, arg: Register) => Promise<void>;
     STOP:   () => void;
 
     // Data
