@@ -1,12 +1,12 @@
 'use strict';
-import {Extension, ExtensibilityAPI} from '../extensibility';
+//import {Extension, ExtensibilityAPI} from '../extensibility';
 
 
 
 
 
 // TODO: ...
-export default function makeExtension(): Extension {
+export default function makeExtension() {
     return api => ({
         step: async interpreter => {
 

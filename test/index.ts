@@ -1,27 +1,25 @@
 'use strict';
-import slownode, {Epoch, autoAwait} from 'slownode';
+import slownode, {Epoch} from 'slownode';
 
 
 
 
 
-slownode.use(autoAwait());
 
 // TODO: ...
-slownode.use({
-    patch: api => ({
-        
-    })
+slownode.init({
+    storage: {
+        type: 'file',
+        dirname: './slowfiles'
+    },
+    createGlobal: () => ({
+        sleep: ms => new Promise(resolve => setTimeout(resolve, ms)),
+        sleepThenFail: (ms, msg) => new Promise((_, reject) => setTimeout(() => reject(new Error(msg)), ms)),
+        print: msg => console.log(msg)
+    }),
+    replacer: null,
+    reviver: null,
 });
-
-let globalFactory = () => ({
-    sleep: ms => new Promise(resolve => setTimeout(resolve, ms)),
-    sleepThenFail: (ms, msg) => new Promise((_, reject) => setTimeout(() => reject(new Error(msg)), ms)),
-    print: msg => console.log(msg)
-});
-
-
-
 
 
 slownode.eval(`
@@ -32,9 +30,6 @@ slownode.eval(`
     throw 42;
     print('...finished');
 `);
-
-
-
 
 
 slownode.on('error', (err, scriptId) => {

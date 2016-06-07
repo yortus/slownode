@@ -13,36 +13,48 @@
 namespace API {
     let default: Epoch;
     class Epoch extends EventEmitter {
-        use(middleware: MiddlewareOptions): void;
+        init(options: EpochOptions): void;
         eval(script: string, scriptId?: string): void;
     };
-    interface Middleware {
-        
-    }
 }
-interface MiddlewareOptions {
-    typeCheck?: boolean|TypeCheckMiddlewareOptions;
-    fileStore?: boolean|FileStoreMiddlewareOptions;
-    autoAwait?: boolean|AutoAwaitMiddlewareOptions;
-    custom?: (...) => {...}
-}
-interface TypeCheckMiddlewareOptions {
+interface EpochOptions {
+
     // TODO: ...
-    lib; //...
+    persistence?: FileStoreOptions; // TODO: Add others to union later...
+
+    // TODO: ...
+    createGlobal?: () => {};
+
+    // Custom serializer for saving running script state
+    replacer?: (this: any, key: string|number, val: any) => any;
+
+    // Custom deserializer for loading running script state
+    reviver?: (this: any, key: string|number, val: any) => any;
+
+    // TODO: add type-checking support later (custom lib.d.ts, etc)...
 }
-interface FileStoreMiddlewareOptions {
-    dirname?: string;
-}
-interface AutoAwaitMiddlewareOptions {
+
+
+interface FileStoreOptions {
+    type: 'fileStore';
+    dirname: string;
 }
 
 
 // 'Default' Epoch
 import slownode from 'slownode';
-slownode.use({
-    typeCheck: true,
-    fileStore: {dirname: './slowfiles'},
-    autoAwait: true
+slownode.init({
+    persistence: {
+        type: 'fileStore',
+        dirname: './slowfiles'
+    }
+    createGlobal: () => {
+        sleep: ms => new Promise(resolve => setTimeout(resolve, ms)),
+        sleepThenFail: (ms, msg) => new Promise((_, reject) => setTimeout(() => reject(new Error(msg)), ms)),
+        print: msg => console.log(msg)
+    },
+    replacer: null, // TODO: ...
+    reviver: null   // TODO: ...
 });
 slownode.on('error', (err, scriptId) => {
     console.log(...);
@@ -112,6 +124,25 @@ slownode
 ```
 
 
+
+## Slow Scripting
+
+- [ ] don't provide/allow primitives/globals/builtins that execute a callback asynchronously
+  - e.g. setTimeout, node-style APIs, event emitters, observables, Promise#then, etc
+- [ ] treat Promise instances specially
+  - the only operation allowed on a promise instance `p` is `await p` (must be checked at runtime at every expression evaluation)
+  - corralary of previous: promise instances cannot be assigned, passed as args, have members called, etc... How to enforce?
+  - promise values cannot be simply discarded without use (could add a DISCARD #REG opcode to indicate a register is being released from use.)
+  - NB: Is this true?: promise instances can only be produced as the return value from a function call, or from new Promise(...).
+    - this truth may help narrow down where to check for promises entering the VM
+- [ ] what about FRP? Might be convenient to be able to do `source.on('data', data => ...)` in a slow script.
+  - but what about missed events? If the process went down/restarted... unreliable...
+  - perhaps support sources that are themselves 'slow' in some way... What does this mean?
+    - the slow scripts in a epoch could be an interacting ecosystem...
+    - some of the scripts are event sources - internally they may poll, externally they emit events
+    - some of the scripts are event sinks - they consume the events produced from the slow event sources
+    - as long as they are all in the same epoch, and the scripts are 'robust' (define this!), no events will get lost.
+    - robust event source - if an erorr occurs, it either recovers and continues, or it takes down the whole epoch... or...?
 
 ## New New Scheme
 
