@@ -72,7 +72,7 @@ function makeStepFunction(codeLines: string[], virtualMachine: InstructionSet & 
     });
 
     // TODO: Eval up the step() function...
-    // TODO: what if an AWAIT op rejects? It's not handled properly in the current VM code...
+    // TODO: what if an THROW/AWAIT op rejects? It's not handled properly in the current VM code...
     let makeCode = new Function('vm', `
         with (vm) return (() => {
             let p;
@@ -132,7 +132,7 @@ function makeInstructions(target: InstructionSet, pc: Register) {
         BF:     (line: number, arg) => arg.value ? null : pc.value = line,
         BT:     (line: number, arg) => arg.value ? pc.value = line : null,
         CALL:   (tgt, func, thís, args) => tgt.value = func.value.apply(thís.value, args.value),
-        THROW:  (err) => { throw err.value; }, // TODO: temporary soln... how to really implement this?
+        THROW:  (err) => Promise.reject(err.value), // TODO: temporary soln... how to really implement this?
         AWAIT:  async (tgt, arg) => tgt.value = await arg.value,
         STOP:   () => pc.value = Infinity,
 

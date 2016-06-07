@@ -33,7 +33,7 @@
 
                         // TODO: temp testing... if jasm was successfully created, run it...
                         // TODO: maybe trigger this differently / elsewhere
-                        setTimeout(run, 20);
+                        //setTimeout(run, 20);
 
                         return jasmStr;
                     }
@@ -45,7 +45,7 @@
 
 
                 // Run code...
-                function run() {
+                function run() { // TODO: fix this - step is now async...
                     rEditor.setValue('');
                     log('SCRIPT STARTED');
                     let runner = new Runner(program, {
