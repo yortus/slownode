@@ -15,7 +15,6 @@ export default class Epoch extends EventEmitter {
     // TODO: ...
     constructor() {
         super();
-        throw new Error(`Not implemented`);
     }
 
 
@@ -46,7 +45,7 @@ export default class Epoch extends EventEmitter {
             try {
                 // TODO: step() is NOT async... are we adding an AWAIT opcode? Changing step() to return a promise?
                 // TODO: saving at await points...
-                while (!(await interpreter.step())) {/* no-op */}
+                while (!(await autoAwaitStep(interpreter))) {/* no-op */}
             }
             catch (err) {
                 this.emit('error', err, scriptId);
@@ -60,4 +59,38 @@ export default class Epoch extends EventEmitter {
     createGlobal() {
         return {}; // TODO: what 'global' to return by default??
     }    
+}
+
+
+
+
+
+
+
+
+
+
+// TODO: temp testing...
+async function autoAwaitStep(interpreter: Interpreter) {
+
+    if (interpreter.step()) return true;
+
+    // Find a register that contains a Promise instance (if any).
+    // TODO: doc... there can be at most one such register... explain why...
+    let register = Object.keys(interpreter.registers)
+        .map(name => interpreter.registers[name])
+        .find(reg => reg.value && typeof reg.value.then === 'function');
+
+    // TODO: ...
+    if (register) {
+        try {
+            register.value = await register.value;
+        }
+        catch (err) {
+            interpreter.throwInto(err); // TODO: what to do after this?
+        }
+    }
+
+    // TODO: ...
+    return false;
 }
