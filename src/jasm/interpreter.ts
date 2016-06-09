@@ -114,6 +114,8 @@ function makeVirtualMachine(): InstructionSet & RegisterSet {
 function makeInstructions(target: InstructionSet, pc: Register, park: () => Promise<void>) {
     let instructions: InstructionSet = {
 
+// TODO: convert all to method shorthand - too risky with return value otherwise, in case a Promise shows up (eg in CALL)...
+
         // Load/store
         LOAD:   (tgt, obj, key) => tgt.value = obj.value[key.value],
         STORE:  (obj, key, src) => obj.value[key.value] = src.value,
@@ -138,7 +140,7 @@ function makeInstructions(target: InstructionSet, pc: Register, park: () => Prom
         B:      (line: number) => pc.value = line,
         BF:     (line: number, arg) => arg.value ? null : pc.value = line,
         BT:     (line: number, arg) => arg.value ? pc.value = line : null,
-        CALL:   (tgt, func, thís, args) => tgt.value = func.value.apply(thís.value, args.value),
+        CALL    (tgt, func, thís, args) { tgt.value = func.value.apply(thís.value, args.value); },
         THROW:  (err) => Promise.reject(err.value), // TODO: temporary soln... how to really implement this?
         AWAIT:  async (tgt, arg) => tgt.value = await arg.value,
         STOP:   () => pc.value = Infinity,
