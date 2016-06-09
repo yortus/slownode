@@ -431,6 +431,7 @@ function visitExpression(jasm: Emitter, expr: Expression|SpreadElement, $T: Regi
         // ------------------------- experimental -------------------------
         AwaitExpression:        expr => {
                                     visitExpr(expr.argument, $T);
+                                    jasm.PARK();
                                     jasm.AWAIT($T, $T);
                                 }
     });

@@ -95,8 +95,15 @@ function makeStepFunction(codeLines: string[], virtualMachine: InstructionSet & 
 // TODO: ...
 function makeVirtualMachine(): InstructionSet & RegisterSet {
     let virtualMachine: InstructionSet & RegisterSet = <any> {};
+
+    // TODO: implement properly...
+    function park() {
+        console.log('PARKING...');
+        return Promise.resolve();
+    }
+
     makeRegisters(virtualMachine);
-    makeInstructions(virtualMachine, virtualMachine.PC);
+    makeInstructions(virtualMachine, virtualMachine.PC, park);
     return virtualMachine;
 }
 
@@ -104,7 +111,7 @@ function makeVirtualMachine(): InstructionSet & RegisterSet {
 
 
 // TODO: ...
-function makeInstructions(target: InstructionSet, pc: Register) {
+function makeInstructions(target: InstructionSet, pc: Register, park: () => Promise<void>) {
     let instructions: InstructionSet = {
 
         // Load/store
@@ -144,7 +151,10 @@ function makeInstructions(target: InstructionSet, pc: Register) {
         OBJECT: (tgt) => tgt.value = {},
         TRUE:   (tgt) => tgt.value = true,
         FALSE:  (tgt) => tgt.value = false,
-        NULL:   (tgt) => tgt.value = null
+        NULL:   (tgt) => tgt.value = null,
+
+        // Meta
+        PARK:   () => park()
     };
 
     // TODO: copy to target...

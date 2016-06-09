@@ -77,6 +77,9 @@ export default class Emitter implements InstructionSet, RegisterSet {
     FALSE(tgt: Register) { this.addInstr('FALSE', tgt); }
     NULL(tgt: Register) { this.addInstr('NULL', tgt); }
 
+    // Instructions: Meta
+    PARK() { this.addInstr('PARK'); }
+
 
     // Registers
     PC = new Register('PC');

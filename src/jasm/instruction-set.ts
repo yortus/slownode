@@ -47,4 +47,7 @@ interface InstructionSet {
     TRUE:   (tgt: Register) => void;
     FALSE:  (tgt: Register) => void;
     NULL:   (tgt: Register) => void;
+
+    // Meta
+    PARK:   () => void;
 }
