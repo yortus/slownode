@@ -127,6 +127,15 @@ slownode
 
 ## Slow Scripting
 
+- [ ] slow.lib.d.ts and the global object are built-in and controlled by the slownode library. Allow options later.
+  - [ ] support sleep function / SleepPromise type
+  - [ ] Promises as 'opaque' objects
+  - [ ] support for DB access (use wrapped 'knex')
+  - [ ] support for FD access (use wrapped 'fs')
+- [ ] type-checking (via tsc) is automatically on by default for script evaluation. Allow options later.
+- [ ] replacer/reviver types are builtin by default. Allow options later.
+- [ ] persistence is filesystem-based by default. Directory may be specified as an option. Allow other options later.
+
 - [ ] don't provide/allow primitives/globals/builtins that execute a callback asynchronously
   - e.g. setTimeout, node-style APIs, event emitters, observables, Promise#then, etc
 - [ ] treat Promise instances specially
