@@ -1,37 +1,22 @@
 'use strict';
+import * as fs from 'fs';
+import * as path from 'path';
 import slownode, {Epoch} from 'slownode';
 
 
 
 
 
+// TODO: ...
+let script01 = fs.readFileSync(path.join(__dirname, './fixtures/script01.ts'), 'utf8');
+
+
+
+
 
 // TODO: ...
-slownode.init({
-    storage: {
-        type: 'file',
-        dirname: './slowfiles'
-    },
-    createGlobal: () => ({
-        sleep: ms => new Promise(resolve => setTimeout(resolve, ms)),
-        sleepThenFail: (ms, msg) => new Promise((_, reject) => setTimeout(() => reject(new Error(msg)), ms)),
-        print: msg => console.log(msg)
-    }),
-    replacer: null,
-    reviver: null,
-});
-
-
-slownode.eval(`
-    print('starting...');
-    await sleep(1000);
-    print('after one second...');
-    await sleepThenFail(1000, 'oops!');
-    throw 42;
-    //print('...finished');
-`);
-
-
+slownode.init({});
+slownode.eval(script01);
 slownode.on('error', (err, scriptId) => {
     console.log(`Error evaluating script '${scriptId}':`);
     console.log(err);

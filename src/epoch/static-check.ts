@@ -1,4 +1,6 @@
 'use strict';
+import * as fs from 'fs';
+import * as path from 'path';
 import * as ts from 'typescript';
 
 
@@ -11,22 +13,7 @@ export function staticCheck(scriptSource: string, logError: LogError): boolean {
     // TODO: wrap in IIAFE, and account for this in error line numbers...
     scriptSource = `(async () => {\n${scriptSource}\n})()`;
 
-    // TODO: move this slow.lib.d.ts into its own file...
-    let libSource = `
-        interface Array<T> {}
-        interface Boolean {}
-        interface Function {}
-        interface IArguments {}
-        interface Number {}
-        interface Object {}
-        interface RegExp {}
-        interface String {}
-        interface Promise<T> {}
-
-        declare function print(message: string);
-        declare function sleep(ms: number): Promise<void>;
-        declare function sleepThenFail(ms: number, message: string): Promise<void>;
-    `;
+    let libSource = fs.readFileSync(path.join(__dirname, '../../lib.slow.d.ts'), 'utf8');
     let host = createCompilerHost(compilerOptions, scriptSource, libSource);
     let program = ts.createProgram(['script.ts', 'lib.d.ts'], compilerOptions, host);
     let emitResult = program.emit();
@@ -37,6 +24,7 @@ export function staticCheck(scriptSource: string, logError: LogError): boolean {
             var message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
             if (diagnostic.file) {
                 // NB: lines are 1-based, chars are 0-based
+                // NB: take 1 off line to account for IIAFE prolog
                 var { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
                 logError(message, line - 1, character + 1);
             }
@@ -82,30 +70,13 @@ function createCompilerHost(options: ts.CompilerOptions, scriptSource: string, l
         getCanonicalFileName: filename => filename,
         getNewLine: () => ts.sys.newLine,
         useCaseSensitiveFileNames: () => false,
-        fileExists,
-        readFile,
+        fileExists: () => { throw new Error('Not implemented') },
+        readFile: () => { throw new Error('Not implemented') },
         resolveModuleNames: () => { throw new Error('Not implemented'); }
     }
 
     function getSourceFile(filename: string, languageVersion: ts.ScriptTarget, onError?: (message: string) => void) {
-        let sourceText: string;
-        if (filename === 'script.ts') {
-            sourceText = scriptSource;
-        }
-        else if (filename === 'lib.d.ts') {
-            sourceText = libSource;
-        }
+        let sourceText = filename === 'script.ts' ? scriptSource : libSource;
         return sourceText !== undefined ? ts.createSourceFile(filename, sourceText, languageVersion) : undefined;
-    }
-
-    function fileExists(filename: string): boolean {
-        throw new Error('Not implemented');
-        // return filename === 'script.ts' || filename === 'lib.d.ts'
-    }
-
-    function readFile(filename: string): string {
-        throw new Error('Not implemented');
-        // if (filename === 'script.ts') return scriptSource;
-        // if (filename === 'lib.d.ts') return libSource;
     }
 }
