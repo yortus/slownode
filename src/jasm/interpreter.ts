@@ -97,10 +97,9 @@ function makeVirtualMachine(): InstructionSet & RegisterSet {
     let virtualMachine: InstructionSet & RegisterSet = <any> {};
 
     // TODO: implement properly...
-    function park(state: any) {
+    async function park(state: any) {
         let s = JSON.stringify(state, replacer);
         console.log(`PARK: ${s}`);
-        return Promise.resolve();
 
         // TODO: temp testing...
         // - support circular references
@@ -173,7 +172,7 @@ function makeInstructions(target: InstructionSet, pc: Register, park: (state: an
         NULL:   (tgt) => { tgt.value = null; },
 
         // Meta
-        PARK:   (...regs) => { park(regs.reduce((state, reg) => (state[reg.name] = reg.value, state), {})); }
+        PARK:   (...regs) => park(regs.reduce((state, reg) => (state[reg.name] = reg.value, state), {}))
     };
 
     // TODO: copy to target...
