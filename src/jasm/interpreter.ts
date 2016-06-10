@@ -115,46 +115,46 @@ function makeInstructions(target: InstructionSet, pc: Register, park: () => Prom
     let instructions: InstructionSet = {
 
         // Load/store
-        LOAD:   (tgt, obj, key) => tgt.value = obj.value[key.value],
-        STORE:  (obj, key, src) => obj.value[key.value] = src.value,
+        LOAD:   (tgt, obj, key) => { tgt.value = obj.value[key.value]; },
+        STORE:  (obj, key, src) => { obj.value[key.value] = src.value; },
 
         // Arithmetic/logic
-        ADD:    (tgt, lhs, rhs) => tgt.value = lhs.value + rhs.value,
-        SUB:    (tgt, lhs, rhs) => tgt.value = lhs.value - rhs.value,
-        MUL:    (tgt, lhs, rhs) => tgt.value = lhs.value * rhs.value,
-        DIV:    (tgt, lhs, rhs) => tgt.value = lhs.value / rhs.value,
-        NEG:    (tgt, arg) => tgt.value = -arg.value,
-        NOT:    (tgt, arg) => tgt.value = !arg.value,
+        ADD:    (tgt, lhs, rhs) => { tgt.value = lhs.value + rhs.value; },
+        SUB:    (tgt, lhs, rhs) => { tgt.value = lhs.value - rhs.value; },
+        MUL:    (tgt, lhs, rhs) => { tgt.value = lhs.value * rhs.value; },
+        DIV:    (tgt, lhs, rhs) => { tgt.value = lhs.value / rhs.value; },
+        NEG:    (tgt, arg) => { tgt.value = -arg.value; },
+        NOT:    (tgt, arg) => { tgt.value = !arg.value; },
 
         // Relational
-        EQ:     (tgt, lhs, rhs) => tgt.value = lhs.value === rhs.value,
-        GE:     (tgt, lhs, rhs) => tgt.value = lhs.value >= rhs.value,
-        GT:     (tgt, lhs, rhs) => tgt.value = lhs.value > rhs.value,
-        LE:     (tgt, lhs, rhs) => tgt.value = lhs.value <= rhs.value,
-        LT:     (tgt, lhs, rhs) => tgt.value = lhs.value < rhs.value,
-        NE:     (tgt, lhs, rhs) => tgt.value = lhs.value !== rhs.value,
+        EQ:     (tgt, lhs, rhs) => { tgt.value = lhs.value === rhs.value; },
+        GE:     (tgt, lhs, rhs) => { tgt.value = lhs.value >= rhs.value; },
+        GT:     (tgt, lhs, rhs) => { tgt.value = lhs.value > rhs.value; },
+        LE:     (tgt, lhs, rhs) => { tgt.value = lhs.value <= rhs.value; },
+        LT:     (tgt, lhs, rhs) => { tgt.value = lhs.value < rhs.value; },
+        NE:     (tgt, lhs, rhs) => { tgt.value = lhs.value !== rhs.value; },
 
         // Control
-        B:      (line: number) => pc.value = line,
-        BF:     (line: number, arg) => arg.value ? null : pc.value = line,
-        BT:     (line: number, arg) => arg.value ? pc.value = line : null,
-        CALL:   (tgt, func, thís, args) => tgt.value = func.value.apply(thís.value, args.value),
+        B:      (line: number) => { pc.value = line; },
+        BF:     (line: number, arg) => { arg.value ? null : pc.value = line; },
+        BT:     (line: number, arg) => { arg.value ? pc.value = line : null; },
+        CALL:   (tgt, func, thís, args) => { tgt.value = func.value.apply(thís.value, args.value); },
         THROW:  (err) => Promise.reject(err.value), // TODO: temporary soln... how to really implement this?
         AWAIT:  async (tgt, arg) => tgt.value = await arg.value,
-        STOP:   () => pc.value = Infinity,
+        STOP:   () => { pc.value = Infinity; },
 
         // Data
-        STRING: (tgt, val) => tgt.value = val,
-        NUMBER: (tgt, val) => tgt.value = val,
-        REGEXP: (tgt, pattern, flags) => tgt.value = new RegExp(pattern, flags),
-        ARRAY:  (tgt) => tgt.value = [],
-        OBJECT: (tgt) => tgt.value = {},
-        TRUE:   (tgt) => tgt.value = true,
-        FALSE:  (tgt) => tgt.value = false,
-        NULL:   (tgt) => tgt.value = null,
+        STRING: (tgt, val) => { tgt.value = val; },
+        NUMBER: (tgt, val) => { tgt.value = val; },
+        REGEXP: (tgt, pattern, flags) => { tgt.value = new RegExp(pattern, flags); },
+        ARRAY:  (tgt) => { tgt.value = []; },
+        OBJECT: (tgt) => { tgt.value = {}; },
+        TRUE:   (tgt) => { tgt.value = true; },
+        FALSE:  (tgt) => { tgt.value = false; },
+        NULL:   (tgt) => { tgt.value = null; },
 
         // Meta
-        PARK:   () => park()
+        PARK:   () => { park(); }
     };
 
     // TODO: copy to target...
