@@ -103,6 +103,16 @@ function makeVirtualMachine(): InstructionSet & RegisterSet {
         return Promise.resolve();
 
         // TODO: temp testing...
+        // - support circular references
+        // - support instances of:
+        //   - RegExp
+        //   - Date
+        //   - SleepPromise
+        //   - undefined
+        //   - NaN
+        //   - Infinity
+        //   - others ???
+        // - support special storage of Promise that rejects with 'EpochRestartError' on revival (or ExtinctionError?, UnrevivableError?, RevivalError?)
         function replacer(key: string, value: any) {
             if (value && typeof value.then === 'function') {
                 return { _type: 'Promise', value: ['???'] };
