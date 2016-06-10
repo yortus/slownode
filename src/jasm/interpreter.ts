@@ -97,8 +97,9 @@ function makeVirtualMachine(): InstructionSet & RegisterSet {
     let virtualMachine: InstructionSet & RegisterSet = <any> {};
 
     // TODO: implement properly...
-    function park() {
-        console.log('PARKING...');
+    function park(state: any) {
+        let s = JSON.stringify(state);
+        console.log(`PARK: ${s}`);
         return Promise.resolve();
     }
 
@@ -111,7 +112,7 @@ function makeVirtualMachine(): InstructionSet & RegisterSet {
 
 
 // TODO: ...
-function makeInstructions(target: InstructionSet, pc: Register, park: () => Promise<void>) {
+function makeInstructions(target: InstructionSet, pc: Register, park: (state: any) => Promise<void>) {
     let instructions: InstructionSet = {
 
         // Load/store
@@ -154,7 +155,7 @@ function makeInstructions(target: InstructionSet, pc: Register, park: () => Prom
         NULL:   (tgt) => { tgt.value = null; },
 
         // Meta
-        PARK:   () => { park(); }
+        PARK:   (...regs) => { park(regs); }
     };
 
     // TODO: copy to target...

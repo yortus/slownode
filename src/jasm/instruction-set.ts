@@ -49,5 +49,5 @@ interface InstructionSet {
     NULL:   (tgt: Register) => void;
 
     // Meta
-    PARK:   () => void;
+    PARK:   (...regs: Register[]) => void;
 }
