@@ -44,7 +44,7 @@ export default class Epoch extends EventEmitter {
         // TODO: ...
         let jasm = transpile(script);
         let globalObject = createGlobal();
-        let interpreter = new Interpreter(jasm, globalObject);
+        let interpreter = new Interpreter(jasm, globalObject, park);
 
         // TODO: do we need to keep a reference to the script/jasm/interpreter/progress after this? Why? Why not?
         (async () => {
@@ -58,5 +58,33 @@ export default class Epoch extends EventEmitter {
             }
         })();
 
+    }
+}
+
+
+
+
+
+// TODO: implement properly...
+async function park(state: any) {
+    let s = JSON.stringify(state, replacer);
+    console.log(`PARK: ${s}`);
+
+    // TODO: temp testing...
+    // - support circular references
+    // - support instances of:
+    //   - RegExp
+    //   - Date
+    //   - SleepPromise
+    //   - undefined
+    //   - NaN
+    //   - Infinity
+    //   - others ???
+    // - support special storage of Promise that rejects with 'EpochRestartError' on revival (or ExtinctionError?, UnrevivableError?, RevivalError?)
+    function replacer(key: string, value: any) {
+        if (value && typeof value.then === 'function') {
+            return { _type: 'Promise', value: ['???'] };
+        }
+        return value;
     }
 }

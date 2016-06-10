@@ -13,9 +13,10 @@ export default class Interpreter {
 
 
     // TODO: ...
-    constructor(jasm: ObjectCode, globalObject?: {}) {
+    constructor(jasm: ObjectCode, globalObject?: {}, park?: (state: any) => Promise<void>) {
+        park = park || (async () => {});
         this.jasm = jasm;
-        let virtualMachine = this._virtualMachine = makeVirtualMachine();
+        let virtualMachine = this._virtualMachine = makeVirtualMachine(park);
         let registers = this.registers = <any> virtualMachine;
         registers.ENV.value = globalObject || {};
         this.step = makeStepFunction(jasm.code, virtualMachine);
@@ -93,33 +94,8 @@ function makeStepFunction(codeLines: string[], virtualMachine: InstructionSet & 
 
 
 // TODO: ...
-function makeVirtualMachine(): InstructionSet & RegisterSet {
+function makeVirtualMachine(park: (state: any) => Promise<void>): InstructionSet & RegisterSet {
     let virtualMachine: InstructionSet & RegisterSet = <any> {};
-
-    // TODO: implement properly...
-    async function park(state: any) {
-        let s = JSON.stringify(state, replacer);
-        console.log(`PARK: ${s}`);
-
-        // TODO: temp testing...
-        // - support circular references
-        // - support instances of:
-        //   - RegExp
-        //   - Date
-        //   - SleepPromise
-        //   - undefined
-        //   - NaN
-        //   - Infinity
-        //   - others ???
-        // - support special storage of Promise that rejects with 'EpochRestartError' on revival (or ExtinctionError?, UnrevivableError?, RevivalError?)
-        function replacer(key: string, value: any) {
-            if (value && typeof value.then === 'function') {
-                return { _type: 'Promise', value: ['???'] };
-            }
-            return value;
-        }
-    }
-
     makeRegisters(virtualMachine);
     makeInstructions(virtualMachine, virtualMachine.PC, park);
     return virtualMachine;
