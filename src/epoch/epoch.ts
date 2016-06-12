@@ -3,6 +3,7 @@ import {EventEmitter} from 'events';
 import createGlobal from './create-global';
 import EpochOptions from './epoch-options';
 import Interpreter from '../jasm/interpreter';
+import * as JSONEX from './jsonex';
 import {staticCheck} from './static-check';
 import transpile from '../js-to-jasm/transpile';
 
@@ -67,7 +68,7 @@ export default class Epoch extends EventEmitter {
 
 // TODO: implement properly...
 async function park(state: any) {
-    let s = JSON.stringify(state, replacer);
+    let s = JSONEX.stringify(state, replacer);
     console.log(`PARK: ${s}`);
 
     // TODO: temp testing...
