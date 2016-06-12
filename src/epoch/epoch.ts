@@ -79,6 +79,7 @@ async function park(state: any) {
     //   - undefined
     //   - NaN
     //   - Infinity
+    //   - weird arrays (eg holey, etra props, etc)
     //   - others ???
     // - support special storage of Promise that rejects with 'EpochRestartError' on revival (or ExtinctionError?, UnrevivableError?, RevivalError?)
     function replacer(key: string, value: any) {
