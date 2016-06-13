@@ -13,9 +13,10 @@ export default class Interpreter {
 
 
     // TODO: ...
-    constructor(jasm: ObjectCode, globalObject?: {}) {
+    constructor(jasm: ObjectCode, globalObject?: {}, park?: (state: any) => Promise<void>) {
+        park = park || (async () => {});
         this.jasm = jasm;
-        let virtualMachine = this._virtualMachine = makeVirtualMachine();
+        let virtualMachine = this._virtualMachine = makeVirtualMachine(park);
         let registers = this.registers = <any> virtualMachine;
         registers.ENV.value = globalObject || {};
         this.step = makeStepFunction(jasm.code, virtualMachine);
@@ -93,15 +94,8 @@ function makeStepFunction(codeLines: string[], virtualMachine: InstructionSet & 
 
 
 // TODO: ...
-function makeVirtualMachine(): InstructionSet & RegisterSet {
+function makeVirtualMachine(park: (state: any) => Promise<void>): InstructionSet & RegisterSet {
     let virtualMachine: InstructionSet & RegisterSet = <any> {};
-
-    // TODO: implement properly...
-    function park() {
-        console.log('PARKING...');
-        return Promise.resolve();
-    }
-
     makeRegisters(virtualMachine);
     makeInstructions(virtualMachine, virtualMachine.PC, park);
     return virtualMachine;
@@ -111,52 +105,52 @@ function makeVirtualMachine(): InstructionSet & RegisterSet {
 
 
 // TODO: ...
-function makeInstructions(target: InstructionSet, pc: Register, park: () => Promise<void>) {
+function makeInstructions(target: InstructionSet, pc: Register, park: (state: any) => Promise<void>) {
     let instructions: InstructionSet = {
 
 // TODO: convert all to method shorthand - too risky with return value otherwise, in case a Promise shows up (eg in CALL)...
 
         // Load/store
-        LOAD:   (tgt, obj, key) => tgt.value = obj.value[key.value],
-        STORE:  (obj, key, src) => obj.value[key.value] = src.value,
+        LOAD:   (tgt, obj, key) => { tgt.value = obj.value[key.value]; },
+        STORE:  (obj, key, src) => { obj.value[key.value] = src.value; },
 
         // Arithmetic/logic
-        ADD:    (tgt, lhs, rhs) => tgt.value = lhs.value + rhs.value,
-        SUB:    (tgt, lhs, rhs) => tgt.value = lhs.value - rhs.value,
-        MUL:    (tgt, lhs, rhs) => tgt.value = lhs.value * rhs.value,
-        DIV:    (tgt, lhs, rhs) => tgt.value = lhs.value / rhs.value,
-        NEG:    (tgt, arg) => tgt.value = -arg.value,
-        NOT:    (tgt, arg) => tgt.value = !arg.value,
+        ADD:    (tgt, lhs, rhs) => { tgt.value = lhs.value + rhs.value; },
+        SUB:    (tgt, lhs, rhs) => { tgt.value = lhs.value - rhs.value; },
+        MUL:    (tgt, lhs, rhs) => { tgt.value = lhs.value * rhs.value; },
+        DIV:    (tgt, lhs, rhs) => { tgt.value = lhs.value / rhs.value; },
+        NEG:    (tgt, arg) => { tgt.value = -arg.value; },
+        NOT:    (tgt, arg) => { tgt.value = !arg.value; },
 
         // Relational
-        EQ:     (tgt, lhs, rhs) => tgt.value = lhs.value === rhs.value,
-        GE:     (tgt, lhs, rhs) => tgt.value = lhs.value >= rhs.value,
-        GT:     (tgt, lhs, rhs) => tgt.value = lhs.value > rhs.value,
-        LE:     (tgt, lhs, rhs) => tgt.value = lhs.value <= rhs.value,
-        LT:     (tgt, lhs, rhs) => tgt.value = lhs.value < rhs.value,
-        NE:     (tgt, lhs, rhs) => tgt.value = lhs.value !== rhs.value,
+        EQ:     (tgt, lhs, rhs) => { tgt.value = lhs.value === rhs.value; },
+        GE:     (tgt, lhs, rhs) => { tgt.value = lhs.value >= rhs.value; },
+        GT:     (tgt, lhs, rhs) => { tgt.value = lhs.value > rhs.value; },
+        LE:     (tgt, lhs, rhs) => { tgt.value = lhs.value <= rhs.value; },
+        LT:     (tgt, lhs, rhs) => { tgt.value = lhs.value < rhs.value; },
+        NE:     (tgt, lhs, rhs) => { tgt.value = lhs.value !== rhs.value; },
 
         // Control
-        B:      (line: number) => pc.value = line,
-        BF:     (line: number, arg) => arg.value ? null : pc.value = line,
-        BT:     (line: number, arg) => arg.value ? pc.value = line : null,
-        CALL    (tgt, func, thís, args) { tgt.value = func.value.apply(thís.value, args.value); },
+        B:      (line: number) => { pc.value = line; },
+        BF:     (line: number, arg) => { arg.value ? null : pc.value = line; },
+        BT:     (line: number, arg) => { arg.value ? pc.value = line : null; },
+        CALL:   (tgt, func, thís, args) => { tgt.value = func.value.apply(thís.value, args.value); },
         THROW:  (err) => Promise.reject(err.value), // TODO: temporary soln... how to really implement this?
         AWAIT:  async (tgt, arg) => tgt.value = await arg.value,
-        STOP:   () => pc.value = Infinity,
+        STOP:   () => { pc.value = Infinity; },
 
         // Data
-        STRING: (tgt, val) => tgt.value = val,
-        NUMBER: (tgt, val) => tgt.value = val,
-        REGEXP: (tgt, pattern, flags) => tgt.value = new RegExp(pattern, flags),
-        ARRAY:  (tgt) => tgt.value = [],
-        OBJECT: (tgt) => tgt.value = {},
-        TRUE:   (tgt) => tgt.value = true,
-        FALSE:  (tgt) => tgt.value = false,
-        NULL:   (tgt) => tgt.value = null,
+        STRING: (tgt, val) => { tgt.value = val; },
+        NUMBER: (tgt, val) => { tgt.value = val; },
+        REGEXP: (tgt, pattern, flags) => { tgt.value = new RegExp(pattern, flags); },
+        ARRAY:  (tgt) => { tgt.value = []; },
+        OBJECT: (tgt) => { tgt.value = {}; },
+        TRUE:   (tgt) => { tgt.value = true; },
+        FALSE:  (tgt) => { tgt.value = false; },
+        NULL:   (tgt) => { tgt.value = null; },
 
         // Meta
-        PARK:   () => park()
+        PARK:   (...regs) => park(regs.reduce((state, reg) => (state[reg.name] = reg.value, state), {}))
     };
 
     // TODO: copy to target...

@@ -49,5 +49,5 @@ interface InstructionSet {
     NULL:   (tgt: Register) => void;
 
     // Meta
-    PARK:   () => void;
+    PARK:   (...regs: Register[]) => void; // TODO: better name? SNAPSHOT, CHECKPOINT, CAPTURE, COMMIT
 }
