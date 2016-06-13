@@ -42,12 +42,14 @@
   "homepage": "https://github.com/paypac/slownode",
   "dependencies": {
     "babel-standalone": "^6.7.7",
+    "circular-json": "^0.3.0",
     "typescript": "^1.9.0-dev.20160613-1.0"
   },
   "devDependencies": {
     "@types/babel-core": "^6.7.8-alpha",
     "@types/babel-types": "^6.7.8-alpha",
     "@types/chai": "^3.4.22-alpha",
+    "@types/circular-json": "^0.1.23-alpha",
     "@types/mocha": "^2.2.21-alpha",
     "@types/node": "^4.0.22-alpha",
     "chai": "^3.2.0",
