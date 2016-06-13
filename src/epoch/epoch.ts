@@ -1,6 +1,6 @@
 'use strict';
 import {EventEmitter} from 'events';
-import createGlobal from './create-global';
+import {createGlobal} from './global';
 import EpochOptions from './epoch-options';
 import Interpreter from '../jasm/interpreter';
 import * as JSONEX from './jsonex';

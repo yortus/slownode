@@ -3,36 +3,62 @@
 // - http://nullprogram.com/blog/2013/03/28/
 // TODO: this is a pure util - move to a util folder or separate module
 'use strict';
+import {isGlobal} from './global';
+
+
+
+
+
+// TODO: document/enforce/error/implement the many corner cases. Above all avoid silent changes in revived objects.
+// - arrays with holes / sparse arrays
+// - builtins with added props (Number, String, Array, etc etc)
+// - non-enumerable own props
+// - symbol-keyed props
+// - subclasses of builtins
+// - deleted props
 
 
 
 
 
 // TODO: ...
-export function stringify(value: any, replacer?: ReplacerReviver, space?: string|number) {
-    // switch (typeof value) {
-    //     case 'undefined':
-    //     case 'string':
-    //     case 'number':
-    //     case 'boolean':
-    //     case 'symbol':
-    //     case 'function':
-    //     case 'object': /* includes null and arrays */
-    //         // TODO: weird arrays? subclasses, added props, holey...?
-    //     default: /* else host-defined object, ever get here with V8? */
-    // }
+export function myReplacer(this: Object, key: string|number, value: any) {
 
+}
+
+function regExpReplacer(this: Object, key: string|number, value: RegExp): any {
+
+    // If `value` is not a RegExp instance, return it unchanged.
+    if (!value || Object.getPrototypeOf(value) !== RegExp.prototype) return value;
+
+    // Return a JSON representation of the RegExp instance.
+    return { type: 'RegExp', pattern: value.source, flags: value.flags, lastIndex: value.lastIndex };
+}
+
+function regExpReviver(this: Object, key: string|number, value: any): any {
+
+    // If `value` is not a RegExp instance, return it unchanged.
+    if (!value || Object.getPrototypeOf(value) !== RegExp.prototype) return value;
+
+    // Return a JSON representation of the RegExp instance.
+    return { type: 'RegExp', pattern: value.source, flags: value.flags, lastIndex: value.lastIndex };
+}
+
+
+
+// TODO: ...
+export function stringify(value: any, replacer?: ReplacerReviver, space?: string|number) {
+
+    // TODO: ...
     let buffer = [];
     let visited = new Map<any, number>();
 
-
+    // TODO: ...
     encode(value);
     let y = JSON.stringify(buffer, null, 4);
     return y;
 
-
-
-
+    // TODO: ...
     function encode(value: {}): number {
 
         // TODO: Check/update 'visited'...
@@ -55,15 +81,34 @@ export function stringify(value: any, replacer?: ReplacerReviver, space?: string
 
         // TODO: ...
         else if (typeof value === 'object') {
-            let obj = {};
+            let obj = { type: '', keys: [], vals: [] };
             buffer.push(obj);
-            let keys = Object.keys(value);
-            for (let i = 0; i < keys.length; ++i) {
-                obj[keys[i]] = encode(value[keys[i]]);
+            let ownKeys = Object.keys(value); // NB: own enumerable keys only
+            obj.keys = ownKeys;
+            obj.vals = ownKeys.map(key => encode(value[key]));
+
+            if (Object.getPrototypeOf(value) === Object.prototype) {
+                obj.type = 'pojo';
+            }
+            else if (isGlobal(value)) {
+                obj.type = 'global';
+            }
+            else if (value instanceof Date) {
+                obj.type = 'Date';
+            }
+            else if (value instanceof RegExp) {
+                obj.type = 'RegExp';
+            }
+            else if (value instanceof Promise) {
+                obj.type = 'Promise';
+            }
+            else {
+                // TODO: temp testing...
+                obj.type = `!!!don't know how to encode '${value}'`;
             }
         }
 
-        // TODO: ...
+        // TODO: ... handle undefined...
         else {
             // TODO: temp testing...
             buffer.push(`!!!don't know how to encode '${value}'`);
