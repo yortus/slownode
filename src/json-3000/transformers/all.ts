@@ -1,6 +1,16 @@
 'use strict';
 import * as regexp from './regexp';
-
+// TODO: others:
+// - global (and all its std props)
+// - generator
+// - generator-function
+// - typed-array
+// - array-buffer
+// - String, Number, Boolean
+// - reflect, proxy, getters & setters
+// - all std error types
+// - class instances
+// - subclassed builtins
 
 
 
