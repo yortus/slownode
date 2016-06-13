@@ -1,6 +1,8 @@
-///<reference path="../typings/babel-core/babel-core.d.ts" />
-///<reference path="../typings/babel-types/babel-types.d.ts" />
-///<reference path="../typings/node/node.d.ts" />
+///<reference path="../node_modules/@types/babel-core/index.d.ts" />
+///<reference path="../node_modules/@types/babel-types/index.d.ts" />
+///<reference path="../node_modules/@types/chai/index.d.ts" />
+///<reference path="../node_modules/@types/mocha/index.d.ts" />
+///<reference path="../node_modules/@types/node/index.d.ts" />
 
 
 

@@ -3,7 +3,7 @@ import {EventEmitter} from 'events';
 import {createGlobal, isGlobal} from './global';
 import EpochOptions from './epoch-options';
 import Interpreter from '../jasm/interpreter';
-import * as KVON from 'kvon';
+import * as JSON3000 from '../json-3000';
 import {staticCheck} from './static-check';
 import transpile from '../js-to-jasm/transpile';
 
@@ -68,7 +68,7 @@ export default class Epoch extends EventEmitter {
 
 // TODO: implement properly...
 async function park(state: any) {
-    let s = KVON.stringify(state, replacer, 4);
+    let s = JSON3000.stringify(state, replacer, 4);
     console.log(`PARK: ${s}`);
 
     // TODO: temp testing...
