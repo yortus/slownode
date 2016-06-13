@@ -1,9 +1,9 @@
 'use strict';
 import {EventEmitter} from 'events';
-import {createGlobal} from './global';
+import {createGlobal, isGlobal} from './global';
 import EpochOptions from './epoch-options';
 import Interpreter from '../jasm/interpreter';
-import * as JSONEX from './jsonex';
+import * as KVON from 'kvon';
 import {staticCheck} from './static-check';
 import transpile from '../js-to-jasm/transpile';
 
@@ -68,7 +68,7 @@ export default class Epoch extends EventEmitter {
 
 // TODO: implement properly...
 async function park(state: any) {
-    let s = JSONEX.stringify(state, replacer);
+    let s = KVON.stringify(state, replacer, 4);
     console.log(`PARK: ${s}`);
 
     // TODO: temp testing...
@@ -83,10 +83,14 @@ async function park(state: any) {
     //   - weird arrays (eg holey, etra props, etc)
     //   - others ???
     // - support special storage of Promise that rejects with 'EpochRestartError' on revival (or ExtinctionError?, UnrevivableError?, RevivalError?)
-    function replacer(key: string, value: any) {
-        if (value && typeof value.then === 'function') {
+    function replacer(key: string, val: any) {
+        if (isGlobal(val)) {
+            let keys = Object.keys(val);
+            return { _type: 'Global', keys, vals: keys.map(key => val[key]) };
+        }
+        if (val && typeof val.then === 'function') {
             return { _type: 'Promise', value: ['???'] };
         }
-        return value;
+        return val;
     }
 }
