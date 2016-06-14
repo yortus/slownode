@@ -10,7 +10,7 @@ export function replacer(key, val) {
     if (!val.hasOwnProperty('type')) return val;
 
     let result = Object.keys(val).reduce((res, key) => (res[key] = val[key], res), <any> {});
-    result.type = { type: ['builtin.Object', val.type] };
+    result.type = ['builtin.Object', val.type];
     return result;
 
 
