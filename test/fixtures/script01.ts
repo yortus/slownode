@@ -5,6 +5,11 @@ a.self = a;
 
 let b;
 
+let node = {
+    type: 'Identifier',
+    name: 'x'
+}
+
 let re = /^fo+o$/gm;
 
 await sleep(1);

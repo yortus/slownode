@@ -16,6 +16,10 @@ export default function transform(value: {}, replacer: Replacer): any {
     // TODO: ...
     function traverse(obj: {}, key: string|number, val: {}): Serializable {
 
+if (val && val['type'] === 'Identifier') {
+    debugger;
+}
+
         // TODO: ...
         if (visited.has(val)) return visited.get(val);// TODO: was... new Reference(val);
 
@@ -31,6 +35,9 @@ export default function transform(value: {}, replacer: Replacer): any {
 
         // TODO: For plain objects and arrays, recursively traverse their own enumerable properties...
         else if (isPlainObject(newVal) || isPlainArray(newVal)) {
+
+
+
             let result = isPlainObject(newVal) ? {} : [];
             visited.set(oldVal, result);
             Object.keys(newVal).forEach(key => {
@@ -41,9 +48,14 @@ export default function transform(value: {}, replacer: Replacer): any {
 
         // TODO: Replacement value is not yet serializable - treat this as an error.
         // TODO: relax this restriction? Could recurse until we have something serializable...
-        else {
+        else if (oldVal !== newVal) {
             throw new Error(`Replacer function returned a non-serializable value`);
         }
+
+        // TODO: replacer didn't change the value. What to do???
+        else {
+            return newVal; // TODO: temp testing... probably not the behaviour we want - will silently fail on revival
+        }        
     }
 }
 

@@ -6,9 +6,15 @@
 
 
 export function replacer(key, val) {
-    return val;
+    if (!val || Object.getPrototypeOf(val) !== Object.prototype) return val;
+    if (!val.hasOwnProperty('type')) return val;
 
-    // if (!val || Object.getPrototypeOf(val) !== Object.prototype) return val;
+    let result = Object.keys(val).reduce((res, key) => (res[key] = val[key], res), <any> {});
+    result.type = { type: ['builtin.Object', val.type] };
+    return result;
+
+
+
     // if (finalized.has(val)) return val;
 
     // finalized.add(val);
