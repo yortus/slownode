@@ -111,6 +111,7 @@ function makeInstructions(target: InstructionSet, pc: Register, park: (state: an
 // TODO: convert all to method shorthand - too risky with return value otherwise, in case a Promise shows up (eg in CALL)...
 
         // Load/store
+        // TODO: properly handle use before assignment for block-scoped vars, prevent re-assignment of consts, etc
         LOAD:   (tgt, obj, key) => { tgt.value = obj.value[key.value]; },
         STORE:  (obj, key, src) => { obj.value[key.value] = src.value; },
 
@@ -148,6 +149,7 @@ function makeInstructions(target: InstructionSet, pc: Register, park: (state: an
         TRUE:   (tgt) => { tgt.value = true; },
         FALSE:  (tgt) => { tgt.value = false; },
         NULL:   (tgt) => { tgt.value = null; },
+        UNDEFD:   (tgt) => { tgt.value = void 0; },
 
         // Meta
         PARK:   (...regs) => park(regs.reduce((state, reg) => (state[reg.name] = reg.value, state), {}))

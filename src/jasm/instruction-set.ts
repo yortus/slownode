@@ -47,6 +47,7 @@ interface InstructionSet {
     TRUE:   (tgt: Register) => void;
     FALSE:  (tgt: Register) => void;
     NULL:   (tgt: Register) => void;
+    UNDEFD: (tgt: Register) => void;
 
     // Meta
     PARK:   (...regs: Register[]) => void; // TODO: better name? SNAPSHOT, CHECKPOINT, CAPTURE, COMMIT

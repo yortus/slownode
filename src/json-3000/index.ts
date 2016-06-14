@@ -1,5 +1,7 @@
 'use strict';
 import * as CircularJSON from 'circular-json';
+import Replacer from './replacer';
+import transform from './transform';
 import * as tranformers from './transformers/all';
 
 
@@ -7,15 +9,15 @@ import * as tranformers from './transformers/all';
 
 
 // TODO: fix signatures/pass-through...
-export function stringify(value, replacer?, space?) {
+export function stringify(value: any, replacer?: Replacer, space?) {
 
+    let compositeReplacer: Replacer;
     if (!replacer) {
-        replacer = tranformers.replacer;
+        compositeReplacer = tranformers.replacer;
     }
     else if (typeof replacer === 'function') {
-        const old = replacer;
-        replacer = function (this, key, val) {
-            let newVal = old.call(this, key, val);
+        compositeReplacer = function (this, key, val) {
+            let newVal = replacer.call(this, key, val);
             if (val === newVal) newVal = tranformers.replacer.call(this, key, val);
             return newVal;
         }
@@ -25,7 +27,9 @@ export function stringify(value, replacer?, space?) {
         throw new Error(`Not implemented`);
     }
 
-    return CircularJSON.stringify(value, tranformers.replacer, space);
+    let transformed = transform(value, compositeReplacer);
+    let result = CircularJSON.stringify(transformed, null, space);
+    return result;
 }
 
 

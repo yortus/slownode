@@ -5,7 +5,10 @@
 
 
 export function replacer(key, val) {
-    throw new Error(`Not implemented`);
+    if (val !== void 0) return val;
+    return {
+        type: 'builtin.undefined'
+    };
 }
 
 

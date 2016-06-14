@@ -71,9 +71,8 @@ function visitStatement(jasm: Emitter, stmt: Statement|ProgramNode) {
                                     // nothing else to do...
                                     // TODO: initial cut... check code below... complete? correct?
                                     stmt.declarations.forEach(decl => {
-                                        if (!decl.init) return;
                                         jasm.withRegisters(($0, $1) => {
-                                            visitExpr(decl.init, $0);
+                                            decl.init ? visitExpr(decl.init, $0) : jasm.UNDEFD($0);
                                             if (t.isIdentifier(decl.id)) {
                                                 jasm.STRING($1, decl.id.name);
                                                 jasm.STORE(jasm.ENV, $1, $0);

@@ -1,5 +1,7 @@
 'use strict';
+import * as object from './object';
 import * as regexp from './regexp';
+import * as undefd from './undefined';
 // TODO: others:
 // - global (and all its std props)
 // - generator
@@ -16,7 +18,7 @@ import * as regexp from './regexp';
 
 
 // TODO: ...
-const allTransformers = [regexp];
+const allTransformers = [object, regexp, undefd];
 
 
 

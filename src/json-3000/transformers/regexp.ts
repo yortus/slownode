@@ -9,7 +9,7 @@ export function replacer(key, val) {
     return {
         type: 'builtin.RegExp',
         pattern: val.source,
-        flags: 'TODO', // TODO: ...
+        flags: val.toString().match(/[gimuy]*$/)[0], // NB: RegExp#flags is only available in ES6+
         lastIndex: val.lastIndex
     };
 }

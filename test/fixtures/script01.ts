@@ -1,9 +1,11 @@
 
 
-let a = {foo: 'FOO', bar: 'BAR', self: null};
+let a = {foo: 'FOO', bar: 'BAR', baz: undefined, self: null};
 a.self = a;
 
-let re = /.*/g;
+let b;
+
+let re = /^fo+o$/gm;
 
 await sleep(1);
 
