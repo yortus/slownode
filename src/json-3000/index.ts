@@ -1,7 +1,10 @@
+// TODO: doc JSON3000 (in README?)
+// - strictness - ie no silent roundtrip failures - parse(stringify(x)) must result in something that is observably identical to x, otherwise stringify/parse must throw
 'use strict';
-import * as CircularJSON from 'circular-json';
 import Replacer from './replacer';
-import transform from './transform';
+import Reviver from './reviver';
+import preStringify from './pre-stringify';
+import postParse from './post-parse';
 import * as tranformers from './transformers/all';
 
 
@@ -9,7 +12,7 @@ import * as tranformers from './transformers/all';
 
 
 // TODO: fix signatures/pass-through...
-export function stringify(value: any, replacer?: Replacer, space?) {
+export function stringify(value: any, replacer?: Replacer, space?: string|number) {
 
     let compositeReplacer: Replacer;
     if (!replacer) {
@@ -23,12 +26,12 @@ export function stringify(value: any, replacer?: Replacer, space?) {
         }
     }
     else {
-        // TODO: ...
+        // TODO: JSON replacer may also be an array of string|number...
         throw new Error(`Not implemented`);
     }
 
-    let transformed = transform(value, compositeReplacer);
-    let result = CircularJSON.stringify(transformed, null, space);
+    let transformed = preStringify(value, compositeReplacer);
+    let result = JSON.stringify(transformed, null, space);
     return result;
 }
 
@@ -37,4 +40,27 @@ export function stringify(value: any, replacer?: Replacer, space?) {
 
 
 // TODO: fix signatures/pass-through...
-let parse = CircularJSON.parse;
+export function parse(text: string, reviver?: Reviver) {
+
+    let compositeReviver: Reviver;
+    if (!reviver) {
+        compositeReviver = tranformers.reviver;
+    }
+    else if (typeof reviver === 'function') {
+        compositeReviver = function (this, key, val) {
+            // TODO: swap call order below? which order is correct/consistent? examples?
+            let newVal = reviver.call(this, key, val);
+            if (val === newVal) newVal = tranformers.reviver.call(this, key, val);
+            return newVal;
+        }
+    }
+    else {
+        // TODO: JSON reviver may *only* be a function, so this error is correct (but needs finalizing)
+        throw new Error(`Bad arg`);
+    }
+
+
+    let value = JSON.parse(text);
+    let result = postParse(value, compositeReviver);
+    return result;
+}

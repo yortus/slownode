@@ -6,8 +6,9 @@ a.self = a;
 let b;
 
 let node = {
-    type: 'Identifier',
-    name: 'x'
+    $type: 'Identifier',
+    name: 'FOO',
+    acopy: a
 }
 
 let re = /^fo+o$/gm;

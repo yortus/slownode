@@ -86,10 +86,10 @@ async function park(state: any) {
     function replacer(key: string, val: any) {
         if (isGlobal(val)) {
             let keys = Object.keys(val);
-            return { type: 'builtin.Global', props: keys.reduce((props, key) => (props[key] = val[key], props), {}) };
+            return { $type: 'Global', props: keys.reduce((props, key) => (props[key] = val[key], props), {}) };
         }
         if (val && typeof val.then === 'function') {
-            return { _type: 'Promise', value: ['???'] };
+            return { $type: 'Promise', value: ['???'] };
         }
         return val;
     }
