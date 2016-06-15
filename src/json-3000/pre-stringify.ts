@@ -6,47 +6,66 @@ import Replacer from './replacer';
 
 
 // TODO: ...
-export default function preStringify(value: {}, replacer: Replacer): any {
+export default function preStringify(value: {}, replacer: Replacer): Serializable {
 
     // TODO: ...
-    let visited = new Map();
+    let canonicalPaths = new Map<any, string[]>();
     let result = traverse({'':value}, '', value, []);
     return result;
 
     // TODO: ...
     function traverse(obj: {}, key: string|number, val: {}, path: string[]): Serializable {
 
-        // TODO: temp testing...
-        console.log(`TRAVERSAL AT ${path.join('.')}`);
+        // Check if we have already encoded this `val` instance into the output object graph. If so, return
+        // a special 'ref' encoding referring to the canonical location in the graph of the object's encoding.
+        // This ensures the output object graph retains object identities, and supports circular references.
+        if (canonicalPaths.has(val)) return {
+            $type: 'ref',
+            path: canonicalPaths.get(val).join('.')
+        };
 
-        // TODO: ...
-        if (visited.has(val)) return visited.get(val);
-
-        // TODO: ...
+        // Run the value through the replacer function. Let's call the before and after values `oldVal` and `newVal`.
         let oldVal = val;
         let newVal: Serializable = replacer.call(obj, key, oldVal);
 
-        // TODO: For serializable literals, return them as-is, and don't dedupe them...
-        if (isNullLiteral(newVal) || isStringLiteral(newVal) || isNumberLiteral(newVal) || isBooleanLiteral(newVal)) {
+        // If we are serializing a primitive value, it simply encodes to itself. Primitive values retain
+        // their identity even under duplication, so there is no need to record canonical paths for them.
+        if (isSerializablePrimitive(newVal)) {
             return newVal;
         }
 
-        // TODO: Else ensure plain object or array. If not, the replacer returned a non-serializable value.
-        // TODO: relax this restriction? Could recurse until we have something serializable...
-        if (!isPlainObject(newVal) && !isPlainArray(newVal)) {
-            throw new Error(`Replacer function returned a non-serializable value`);
+        // After replacement, the value *must* be serializable. We've already covered serializable primitives,
+        // leaving just plain object and array instances. If the value is *not* either of these, then we have one
+        // of two possible errors:
+        // (a) an error in the replacer function. Replacer functions are contracted to either leave the value unchanged,
+        //     or return a serializable equivalent. So if the replacer returned a modified value, which is not
+        //     serializable, then we can blame the replacer function.
+        // (b) a non-serializable input value. If the replacer left the input value unchanged, then the input value
+        //     must be unserializable with no replacer case that deals with it. That's a problem with the input value.
+        // TODO: relax this restriction? Could try to recurse until we have something serializable... But may loop to infinity...
+        if (!isSerializableObject(newVal)) {
+            if (oldVal !== newVal) throw new Error(`Replacer function returned a non-serializable value: ${newVal}`);
+            throw new Error(`No known serialization available for value: ${oldVal}`);
         }
 
-        // TODO: dedupe subsequent occurances of this instance in the graph...
-        visited.set(oldVal, {$type: 'ref', path: path.join('.')});
+        // We definitely have a plain object or array, and one that we haven't encountered before. Record the current
+        // path as the canonical path for this value, so any subsequent occurrences in the object graph will ref to it.
+        canonicalPaths.set(val, path);
 
-        // TODO: For plain objects and arrays, recursively traverse their own enumerable properties...
-        let result = isPlainObject(newVal) ? {} : [];
+        // Create a serialized equivalent of the plain object/array in the output object graph. This involves
+        // enumerating its own enumerable properties, and recursively traversing them to create the output object.
+        // TODO: what about non-enum properties? Getters? etc? Such props, if present, may break the roundtrip guarantees...
+        let result = Array.isArray(newVal) ? [] : {};
         Object.keys(newVal).forEach(key => {
-            result[key] = traverse(newVal, key, newVal[key], path.concat(key)); // NB: recurses here
+            result[key] = traverse(newVal, key, newVal[key], path.concat(key));
         });
 
-        // TODO: if original object was unchanged and contains a $type property, escape it
+        // Finally, we must consider the special case where the original object contains a property called '$type',
+        // and the replacer didn't change it. '$type' is a special property key reserved for serialized encodings.
+        // Replacers are allowed to return objects with a '$type' property, and we leave those unchanged. But if the
+        // *original* value contains a '$type' property, then it must be 'escaped', otherwise under deserialization
+        // it may be mistaken for a reviver discriminant and decoded incorrectly. We escape by wrapping the original
+        // object in an envelope with a special '$type': 'esc' property to distinguish it to the deserializer.
         if (oldVal === newVal && oldVal.hasOwnProperty('$type')) {
             result = <any> {$type: 'esc', raw: result};
         }
@@ -60,23 +79,26 @@ export default function preStringify(value: {}, replacer: Replacer): any {
 
 
 // TODO: ...
-type NullLiteral = null;
-type StringLiteral = string;
-type NumberLiteral = number;
-type BooleanLiteral = boolean;
-interface PlainObject extends Object { }
-interface PlainArray extends Array<any> { }
-type Serializable = NullLiteral|StringLiteral|NumberLiteral|BooleanLiteral|PlainObject|PlainArray;
+export type Serializable = null|string|number|boolean|Object|Array<any>;
 
 
 
 
 
-// TODO: ...
-const gpo = Object.getPrototypeOf;
-function isNullLiteral(x: any): x is NullLiteral { return x === null; }
-function isStringLiteral(x: any): x is StringLiteral { return typeof x === 'string'; }
-function isNumberLiteral(x: any): x is NumberLiteral { return typeof x === 'number'; }
-function isBooleanLiteral(x: any): x is BooleanLiteral { return typeof x === 'boolean'; }
-function isPlainObject(x: any): x is PlainObject { return x && gpo(x) === Object.prototype; }
-function isPlainArray(x: any): x is PlainArray { return x && gpo(x) === Array.prototype; }
+// TODO: doc... NB will return false for new String, new Number, etc
+function isSerializablePrimitive(x: any): x is null|string|number|boolean {
+    if (x === null) return true;
+    let t = typeof x;
+    return t === 'string' || t === 'number' || t === 'boolean';
+}
+
+
+
+
+
+// TODO: doc... NB will return false for 'subclassed' Object and Array instances
+function isSerializableObject(x: any): x is Object|Array<any> {
+    if (!x) return false;
+    let proto = Object.getPrototypeOf(x);
+    return proto === Object.prototype || proto === Array.prototype;
+}
