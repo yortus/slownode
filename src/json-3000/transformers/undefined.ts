@@ -5,9 +5,7 @@
 
 export function replacer(key, val) {
     if (val !== void 0) return val;
-    return {
-        type: 'builtin.undefined'
-    };
+    return {$type: 'undefined'};
 }
 
 
@@ -15,5 +13,6 @@ export function replacer(key, val) {
 
 
 export function reviver(key, val) {
-    throw new Error(`Not implemented`);
+    if (!val || val.$type !== 'undefined') return val;
+    return void 0;
 }

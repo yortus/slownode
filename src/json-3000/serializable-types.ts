@@ -4,8 +4,9 @@
 
 
 // TODO: ...
-export default Serializable;
-type Serializable = null|string|number|boolean|Object|Array<any>;
+export type Serializable = null|string|number|boolean|Object|Array<any>;
+export type Escaped = {$type: 'esc', raw: {}};
+export type Reference = {$type: 'ref', path: string};
 
 
 
@@ -27,4 +28,22 @@ export function isSerializableObject(x: any): x is Object|Array<any> {
     if (!x) return false;
     let proto = Object.getPrototypeOf(x);
     return proto === Object.prototype || proto === Array.prototype;
+}
+
+
+
+
+
+// TODO: ...
+export function isEscaped(x: any): x is Escaped {
+    return isSerializableObject(x) && x.$type === 'esc';
+}
+
+
+
+
+
+// TODO: ...
+export function isReference(x: any): x is Reference {
+    return isSerializableObject(x) && x.$type === 'ref';
 }

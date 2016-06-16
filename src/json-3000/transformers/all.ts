@@ -1,4 +1,3 @@
-import * as object from './object';
 import * as regexp from './regexp';
 import * as undefd from './undefined';
 // TODO: others:
@@ -17,7 +16,7 @@ import * as undefd from './undefined';
 
 
 // TODO: ...
-const allTransformers = [object, regexp, undefd];
+const allTransformers = [regexp, undefd];
 
 
 

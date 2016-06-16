@@ -69,18 +69,13 @@ export default class Epoch extends EventEmitter {
 async function park(state: any) {
     let s = JSON3000.stringify(state, replacer, 4);
     console.log(`PARK: ${s}`);
+// TODO: temp testing...
+let o = JSON3000.parse(s, reviver);
+console.log(`UNPARK:`);
+console.log(o);
+
 
     // TODO: temp testing...
-    // - support circular references
-    // - support instances of:
-    //   - RegExp
-    //   - Date
-    //   - SleepPromise
-    //   - undefined
-    //   - NaN
-    //   - Infinity
-    //   - weird arrays (eg holey, etra props, etc)
-    //   - others ???
     // - support special storage of Promise that rejects with 'EpochRestartError' on revival (or ExtinctionError?, UnrevivableError?, RevivalError?)
     function replacer(key: string, val: any) {
         if (isGlobal(val)) {
@@ -89,6 +84,18 @@ async function park(state: any) {
         }
         if (val && typeof val.then === 'function') {
             return { $type: 'Promise', value: ['???'] };
+        }
+        return val;
+    }
+    function reviver(key: string, val: any) {
+        if (!val || Object.getPrototypeOf(val) !== Object.prototype || ! val.$type) return val;
+        if (val.$type === 'Global') {
+            let g = createGlobal();
+            Object.keys(val.props).forEach(key => g[key] = val.props[key]);
+            return g;
+        }
+        else if (val.$type === 'Promise') {
+            return Promise.resolve(42);
         }
         return val;
     }

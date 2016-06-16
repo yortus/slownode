@@ -1,32 +1,32 @@
 import Replacer from './replacer';
-import Serializable, {isSerializablePrimitive, isSerializableObject} from './serializable';
+import {Serializable, Escaped, Reference, isSerializablePrimitive, isSerializableObject} from './serializable-types';
 
 
 
 
 
 // TODO: ...
+// TODO: what about symbol-keyed props? either handle them, or throw when encountered...
 export default function preStringify(value: {}, replacer: Replacer): Serializable {
 
     // TODO: ...
     let canonicalPaths = new Map<any, string[]>();
-    let result = traverse({'':value}, '', value, []);
-    return result;
+    return traverse({'':value}, '', value, []);
 
     // TODO: ...
-    function traverse(obj: {}, key: string|number, val: {}, path: string[]): Serializable {
+    function traverse(obj: {}, key: string, val: {}, path: string[]): Serializable {
 
         // Check if we have already encoded this `val` instance into the output object graph. If so, return
         // a special 'ref' encoding referring to the canonical location in the graph of the object's encoding.
         // This ensures the output object graph retains object identities, and supports circular references.
-        if (canonicalPaths.has(val)) return {
+        if (canonicalPaths.has(val)) return <Reference> {
             $type: 'ref',
             path: canonicalPaths.get(val).join('.')
         };
 
         // Run the value through the replacer function. Let's call the before and after values `oldVal` and `newVal`.
         let oldVal = val;
-        let newVal: Serializable = replacer.call(obj, key, oldVal);
+        let newVal: {} = replacer.call(obj, key, oldVal);
 
         // If we are serializing a primitive value, it simply encodes to itself. Primitive values retain
         // their identity even under duplication, so there is no need to record canonical paths for them.
@@ -55,7 +55,8 @@ export default function preStringify(value: {}, replacer: Replacer): Serializabl
         // Create a serialized equivalent of the plain object/array in the output object graph. This involves
         // enumerating its own enumerable properties, and recursively traversing them to create the output object.
         // TODO: what about non-enum properties? Getters? etc? Such props, if present, may break the roundtrip guarantees...
-        let result = Array.isArray(newVal) ? [] : {};
+// TODO: array handling is useless... need to encode array as an object so JSON.stringify preserves hols/extra props
+        let result: any = Array.isArray(newVal) ? [] : {};
         Object.keys(newVal).forEach(key => {
             result[key] = traverse(newVal, key, newVal[key], path.concat(key));
         });
@@ -67,7 +68,7 @@ export default function preStringify(value: {}, replacer: Replacer): Serializabl
         // it may be mistaken for a reviver discriminant and decoded incorrectly. We escape by wrapping the original
         // object in an envelope with a special '$type': 'esc' property to distinguish it to the deserializer.
         if (oldVal === newVal && oldVal.hasOwnProperty('$type')) {
-            result = <any> {$type: 'esc', raw: result};
+            result = <Escaped> {$type: 'esc', raw: result};
         }
 
         return result;

@@ -4,4 +4,4 @@ export default Replacer;
 
 
 
-type Replacer = (this: {}, key: string|number, val: {}) => {};
+type Replacer = (this: {}, key: string, val: {}) => {};
