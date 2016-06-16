@@ -1,4 +1,3 @@
-'use strict';
 import * as assert from 'assert';
 import {SourceLocation, BindingKind} from "babel-types"; // Elided (used only for types)
 import InstructionSet from './instruction-set';

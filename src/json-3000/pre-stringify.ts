@@ -1,4 +1,3 @@
-'use strict';
 import Replacer from './replacer';
 import Serializable, {isSerializablePrimitive, isSerializableObject} from './serializable';
 

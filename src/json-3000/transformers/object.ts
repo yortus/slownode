@@ -1,5 +1,4 @@
 // TODO: this only handles plain objects, should it more derived objects?
-'use strict';
 
 
 

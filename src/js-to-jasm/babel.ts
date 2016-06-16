@@ -1,5 +1,4 @@
 // TODO: doc... this papers over some peculiarities of babel-core (for node) vs babel-standalone (for browsers)
-'use strict';
 import {transform, transformFile} from 'babel-standalone';
 import * as t from 'babel-types';
 

@@ -1,4 +1,3 @@
-'use strict';
 import Register from './register';
 export default InstructionSet;
 

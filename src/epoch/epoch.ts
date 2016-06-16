@@ -1,4 +1,3 @@
-'use strict';
 import {EventEmitter} from 'events';
 import {createGlobal, isGlobal} from './global';
 import EpochOptions from './epoch-options';

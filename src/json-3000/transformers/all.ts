@@ -1,4 +1,3 @@
-'use strict';
 import * as object from './object';
 import * as regexp from './regexp';
 import * as undefd from './undefined';

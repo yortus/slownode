@@ -1,4 +1,3 @@
-'use strict'; // TODO: remove 'use strict' in ALL source files
 
 
 

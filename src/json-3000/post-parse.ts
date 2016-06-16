@@ -1,4 +1,3 @@
-'use strict';
 import Reviver from './reviver';
 import Serializable, {isSerializablePrimitive, isSerializableObject} from './serializable';
 

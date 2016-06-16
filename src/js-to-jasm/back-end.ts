@@ -1,4 +1,3 @@
-'use strict';
 import * as assert from 'assert';
 import {Node, File, Program as ProgramNode} from "babel-types";             // Elided (used only for types)
 import {Statement, Expression, Identifier} from "babel-types";              // Elided (used only for types)

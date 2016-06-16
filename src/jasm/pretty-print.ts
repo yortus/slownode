@@ -1,4 +1,3 @@
-'use strict';
 import ObjectCode from './object-code';
 
 

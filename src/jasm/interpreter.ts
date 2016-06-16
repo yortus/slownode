@@ -1,4 +1,3 @@
-'use strict';
 import InstructionSet from './instruction-set';
 import ObjectCode from './object-code';
 import Register from './register';
