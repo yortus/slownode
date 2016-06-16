@@ -199,13 +199,13 @@ function visitExpression(jasm: Emitter, expr: Expression|SpreadElement, $T: Regi
                                             });
                                         }
                                         else {
-                                            if (!t.isIdentifier(expr.left.property)) {
+                                            if (!t.isIdentifier(expr.left.property) &&!t.isStringLiteral(expr.left.property)) {
                                                 throw new Error(`Unsupported property type: '${expr.left.property.type}'`);
                                             }
                                             let left = expr.left, prop = expr.left.property;
                                             jasm.withRegisters(($0, $1) => {
                                                 visitExpr(left.object, $0);
-                                                jasm.STRING($1, prop.name);
+                                                jasm.STRING($1, t.isIdentifier(prop) ? prop.name : prop.value);
                                                 jasm.STORE($0, $1, $T);
                                             });
                                         }
