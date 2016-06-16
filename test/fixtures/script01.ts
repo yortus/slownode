@@ -7,9 +7,10 @@ let b;
 
 let node = {
     $type: 'Identifier',
-    name: 'FOO',
-    acopy: a
+    'n.a.m.e.': ['FOO'],
+    'a.copy': a
 }
+node['name'] = node['n.a.m.e.'];
 
 let re = /^fo+o$/gm;
 
