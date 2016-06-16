@@ -16,12 +16,12 @@ export default function postParse(value: Serializable, reviver: Reviver): any {
     // TODO: ...
     function traverse(obj: Serializable, key: string|number, val: Serializable): any {
 
-        // TODO: ...
+        // TODO: ... stopping case
         if (isSerializablePrimitive(val)) {
             return val;
         }
 
-        // TODO: ...
+        // TODO: ... recursive cases, and 'ref'/'esc' cases...
         if (val.hasOwnProperty('$type')) {
 
         }
