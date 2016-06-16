@@ -1,3 +1,4 @@
+import encodePathSegment from './encode-path-segment';
 import Replacer from './replacer';
 import {Serializable, Escaped, Reference, isSerializablePrimitive, isSerializableObject} from './serializable-types';
 
@@ -58,8 +59,7 @@ export default function preStringify(value: {}, replacer: Replacer): Serializabl
 // TODO: array handling is useless... need to encode array as an object so JSON.stringify preserves hols/extra props
         let result: any = Array.isArray(newVal) ? [] : {};
         Object.keys(newVal).forEach(key => {
-            let pathSegment = JSON.stringify(key).slice(1, -1).replace(/\./g, '\\u002e');
-            result[key] = traverse(newVal, key, newVal[key], path.concat(pathSegment));
+            result[key] = traverse(newVal, key, newVal[key], path.concat(encodePathSegment(key)));
         });
 
         // Finally, we must consider the special case where the original object contains a property called '$type',
