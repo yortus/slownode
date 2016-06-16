@@ -60,19 +60,20 @@ const compilerOptions = <ts.CompilerOptions> {
 
 
 // TODO: ...
-function createCompilerHost(options: ts.CompilerOptions, scriptSource: string, libSource: string): ts.CompilerHost {
-    return {
+function createCompilerHost(options: ts.CompilerOptions, scriptSource: string, libSource: string) {
+    return <ts.CompilerHost> {
         getSourceFile,
         getDefaultLibFileName: () => "lib.d.ts",
-        writeFile: () => { throw new Error('Not implemented') },
+        getDirectories: () => [],
         getCurrentDirectory: () => '',
         getCanonicalFileName: filename => filename,
         getNewLine: () => ts.sys.newLine,
         useCaseSensitiveFileNames: () => false,
         fileExists: () => { throw new Error('Not implemented') },
         readFile: () => { throw new Error('Not implemented') },
+        writeFile: () => { throw new Error('Not implemented') },
         resolveModuleNames: () => { throw new Error('Not implemented'); }
-    }
+    };
 
     function getSourceFile(filename: string, languageVersion: ts.ScriptTarget, onError?: (message: string) => void) {
         let sourceText = filename === 'script.ts' ? scriptSource : libSource;

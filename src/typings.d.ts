@@ -1,6 +1,4 @@
-///<reference path="../node_modules/@types/babel-core/index.d.ts" />
-///<reference path="../node_modules/@types/babel-types/index.d.ts" />
-///<reference path="../node_modules/@types/chai/index.d.ts" />
+// Ambients still need triple-slash references... See https://github.com/Microsoft/TypeScript/issues/9208
 ///<reference path="../node_modules/@types/mocha/index.d.ts" />
 ///<reference path="../node_modules/@types/node/index.d.ts" />
 
