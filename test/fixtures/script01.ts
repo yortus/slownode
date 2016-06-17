@@ -18,6 +18,9 @@ let $type = [
     Infinity,
     {$type:444222},
     NaN,
+    0,
+    -0,
+    undefined,
     undefined
 ];
 
