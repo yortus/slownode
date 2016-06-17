@@ -9,6 +9,6 @@
         "noImplicitAny": false,
         "strictNullChecks": false,
         "listFiles": false,
-        "typeRoots": ["../node_modules/@types"]
+        "types" : ["node"]
     }
 }
