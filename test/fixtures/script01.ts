@@ -14,6 +14,8 @@ node['name'] = node['n.a.m.e.'];
 
 let re = /^fo+o$/gm;
 
+let $type = {$type:444222};
+
 await sleep(1);
 
 
