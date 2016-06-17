@@ -1,3 +1,4 @@
+// TODO: freeze the prototypes of builtins so they can't be monkey patched? (since JSON3000 can't handle that)
 
 
 

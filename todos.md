@@ -6,6 +6,31 @@
 - [ ] fix current non-robust handling around disallowing/escaping '#' characters in JASM, and label substitution
 
 
+## Structure
+
+
+src/
+|
+|-- api/
+|
+|-- transforms/
+|   |
+|   |-- runnable-to-storable/
+|   |   |
+|   |   |-- <??? goes here...>
+|   |
+|   |-- storable-to-runnable/
+|   |   |
+|   |   |-- <??? goes here...>
+|   |
+|   |-- typescript-to-storable/
+|   |   |
+|   |   |-- <static checker, compiler front-end, compiler back-end goes here...>
+
+Where?
+- interpreter (like a generator object, with next())
+- runtime environment (global object, global typings, etc)
+
 
 
 ```ts
