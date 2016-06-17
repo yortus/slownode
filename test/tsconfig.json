@@ -4,7 +4,8 @@
         "module": "commonjs",
         "removeComments": false,
         "sourceMap": true,
-        "outDir": "../built/test"
+        "outDir": "../built/test",
+        "typeRoots": ["../node_modules/@types"]
     },
     "exclude": [
         "fixtures"

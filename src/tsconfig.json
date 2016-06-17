@@ -8,6 +8,7 @@
         "outDir": "../built",
         "noImplicitAny": false,
         "strictNullChecks": false,
-        "listFiles": false
+        "listFiles": false,
+        "typeRoots": ["../node_modules/@types"]
     }
 }
