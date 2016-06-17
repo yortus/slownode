@@ -8,6 +8,8 @@ interface Object {}
 interface RegExp {}
 interface String {}
 interface Promise<T> {}
+declare var Infinity;
+declare var NaN;
 
 
 declare function print(message: string);

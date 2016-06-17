@@ -4,7 +4,8 @@
 
 
 export function replacer(key, val) {
-    throw new Error(`Not implemented`);
+    if (Number.isNaN(val)) return {$type: 'NaN'};
+    return val;
 }
 
 
@@ -12,5 +13,6 @@ export function replacer(key, val) {
 
 
 export function reviver(key, val) {
-    throw new Error(`Not implemented`);
+    if (val && val.$type === 'NaN') return NaN;
+    return val;
 }

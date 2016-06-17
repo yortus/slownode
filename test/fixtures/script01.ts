@@ -14,7 +14,12 @@ node['name'] = node['n.a.m.e.'];
 
 let re = /^fo+o$/gm;
 
-let $type = {$type:444222};
+let $type = [
+    Infinity,
+    {$type:444222},
+    NaN,
+    undefined
+];
 
 await sleep(1);
 

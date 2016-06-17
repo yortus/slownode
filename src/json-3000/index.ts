@@ -25,7 +25,8 @@ export function stringify(value: any, replacer?: Replacer, space?: string|number
     else if (typeof replacer === 'function') {
         compositeReplacer = function (this, key, val) {
             let newVal = replacer.call(this, key, val);
-            if (val === newVal) newVal = tranformers.replacer.call(this, key, val);
+            let untouched = val === newVal || (Number.isNaN(<any> val) && Number.isNaN(newVal)); // TODO: doc tricky bug. Need this check elsewhere?
+            if (untouched) newVal = tranformers.replacer.call(this, key, val);
             return newVal;
         }
     }

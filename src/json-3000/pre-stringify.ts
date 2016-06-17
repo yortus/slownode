@@ -57,6 +57,9 @@ export default function preStringify(value: {}, replacer: Replacer): Serializabl
         // enumerating its own enumerable properties, and recursively traversing them to create the output object.
         // TODO: what about non-enum properties? Getters? etc? Such props, if present, may break the roundtrip guarantees...
 // TODO: array handling is useless... need to encode array as an object so JSON.stringify preserves hols/extra props
+if (Array.isArray(newVal)) {
+    debugger;
+}
         let result: any = Array.isArray(newVal) ? [] : {};
         Object.keys(newVal).forEach(key => {
             result[key] = traverse(newVal, key, newVal[key], path.concat(encodePathSegment(key)));

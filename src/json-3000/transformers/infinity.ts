@@ -4,7 +4,9 @@
 
 
 export function replacer(key, val) {
-    throw new Error(`Not implemented`);
+    if (val === Infinity) return {$type: 'Infinity'};
+    if (val === -Infinity) return {$type: '-Infinity'};
+    return val;
 }
 
 
@@ -12,5 +14,7 @@ export function replacer(key, val) {
 
 
 export function reviver(key, val) {
-    throw new Error(`Not implemented`);
+    if (val && val.$type === 'Infinity') return Infinity;
+    if (val && val.$type === '-Infinity') return -Infinity;
+    return val;
 }

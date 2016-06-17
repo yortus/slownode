@@ -25,6 +25,9 @@ export function isGlobal(obj: any) {
 // TODO: ...
 export class Global {
 
+    Infinity = Infinity;
+
+    NaN = NaN;
 
     print(msg) {
         console.log(msg);
