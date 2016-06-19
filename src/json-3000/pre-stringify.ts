@@ -1,3 +1,4 @@
+// TODO: does this function need to handle toJSON? See https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#toJSON()_behavior
 import encodePathSegment from './encode-path-segment';
 import Replacer from './replacer';
 import {Serializable, Escaped, Reference, isSerializablePrimitive, isSerializableObject} from './serializable-types';

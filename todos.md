@@ -17,11 +17,13 @@ src/
 |   |
 |   |-- runnable-to-storable/
 |   |   |
+|   |   |-- function r_to_s(runnable: Runnable): string;
 |   |   |-- <??? goes here...>
 |   |
 |   |-- storable-to-runnable/
 |   |   |
-|   |   |-- <??? goes here...>
+|   |   |-- function s_to_r(storable: string): Runnable;
+|   |   |-- <makeGlobal, makeVM, interpreter goes here...>
 |   |
 |   |-- typescript-to-storable/
 |   |   |
