@@ -1,33 +1,71 @@
+{
+`
+.CODE
+
+
+L3:
+    string $0, "blah"
+    bf L3
+
+
+
+
+
+
+
+.DATA
+
+{
+  "$type": "foo-type",
+  "other": [
+    1,
+    "blah\nblah",
+    true,
+    false,
+    null
+
+  ]
+}
+`
+}
+
+
+Jasm
+=   CodeSection   DataSection
+
+
+CodeSection
+=   ".CODE"   (!".DATA"   .)+   { return text(); }
+
+
+DataSection
+=   ".DATA"   WS   Json   { return text(); }
+
+
+
+
 
 
 Json                =   WS   Value   WS   { return text(); }
-Value               =   "null" / Boolean / String / Number / Array / Object
+Value               =   "true" / "false" / "null" / Object / Array / Number / String
 
+Object              =   "{"   WS   ObjectProperties?   WS   "}"
+ObjectProperties    =   ObjectProperty   (WS   ","   WS   ObjectProperty)*
+ObjectProperty      =   String   WS   ":"   WS   Value
 
-Boolean             =   "true" / "false"
+Array               =   "["   WS   ArrayElements?   WS   "]"
+ArrayElements       =   Value   (WS   ","   WS   Value)*
 
+Number "number"     =   "-"?   IntegerPart   FractionPart?   ExponentPart?
+IntegerPart         =   "0"   /   [1-9]   DIGIT*
+FractionPart        =   "."   DIGIT+
+ExponentPart        =   [eE]   ("+" / "-")?   DIGIT+
 
 String "string"     =   '"'   Character*   '"'
 Character           =   [^\0-\x1F\x22\x5C]
                     /   "\\"   ["\\/bfnrt]
                     /   "\\u"   HEXDIGIT   HEXDIGIT   HEXDIGIT   HEXDIGIT
 
-
-Number "number"     =   "-"?   IntegerPart   FractionPart?   ExponentPart?
-IntegerPart         =   "0"   /   [1-9]   DIGIT*
-FractionPart        =   "."   DIGIT+
-ExponentPart        =   [eE]   ("+" / "-")?   DIGIT+
-DIGIT               =   [0-9]
-HEXDIGIT            =   [0-9a-f]i
-
-
-Array               =   "["   WS   ArrayElements?   WS   "]"
-ArrayElements       =   Value   (WS   ","   WS   Value)*
-
-
-Object              =   "{"   WS   ObjectProperties?   WS   "}"
-ObjectProperties    =   ObjectProperty   (WS   ","   WS   ObjectProperty)*
-ObjectProperty      =   String   WS   ":"   WS   Value
-
-
-WS "whitespace"     =   [ \t\n\r]*
+DIGIT               = [0-9]
+HEXDIGIT            = [0-9a-f]i
+WS "whitespace"     = [ \t\n\r]*
