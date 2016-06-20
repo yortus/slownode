@@ -1,4 +1,15 @@
 
+let s = `
+    <foo bar="baz's">
+        &nbsp;
+        \r\n\r\n
+    </foo>
+`;
+
+let i = 10;
+while (i) {
+    i = i - 1;
+}
 
 let a = {foo: 'FOO', bar: 'BAR', baz: undefined, self: null};
 a.self = a;

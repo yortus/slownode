@@ -107,12 +107,12 @@ export default class Emitter implements InstructionSet, RegisterSet {
         this._currentScope = scopeCount;
 
         // TODO: temp testing...
-        this.addLine(`// ===== ENTER SCOPE ${this._currentScope} ===== { ${Object.keys(identifiers).map(id => `${id}: ${identifiers[id]}`).join(', ')} }`);
+        this.addLine(`; ===== ENTER SCOPE ${this._currentScope} ===== { ${Object.keys(identifiers).map(id => `${id}: ${identifiers[id]}`).join(', ')} }`);
     }
     leaveScope() {
 
         // TODO: temp testing...
-        this.addLine(`// ===== LEAVE SCOPE ${this._currentScope} =====`);
+        this.addLine(`; ===== LEAVE SCOPE ${this._currentScope} =====`);
 
         this._currentScope = this._scopes.lineage[this._currentScope];
     }
@@ -154,6 +154,10 @@ export default class Emitter implements InstructionSet, RegisterSet {
         this.STOP();
 
 
+// TODO: temp testing...
+console.log(`\n\n\n\n.CODE\n`);
+this._lines.forEach(line => console.log(line));
+console.log(`\n\n\n\n`);
 
 
         this._lines = this._lines.map(line => line.trim());
@@ -170,7 +174,6 @@ export default class Emitter implements InstructionSet, RegisterSet {
         });
         this._lines = this._lines.filter(line => !line.startsWith('#'));
         this._lines = this._lines.map(line => line.replace(/#[a-z0-9]+/, name => (labels[name] || name).toString()));
-
 
         return { code: this._lines };
     }
@@ -194,7 +197,7 @@ export default class Emitter implements InstructionSet, RegisterSet {
             else if (typeof arg === 'number') return JSON.stringify(arg);
             else return `${arg.name}`;
         });
-        this.addLine(`${name}(${argStrs.join(', ')})`);
+        this.addLine(`${name.toLowerCase()}${' '.repeat(Math.max(0, 8 - name.length))}${argStrs.join(', ')}`);
     }
 
 
@@ -206,7 +209,7 @@ export default class Emitter implements InstructionSet, RegisterSet {
         if (this._sourceLines) {
             let currentSourceLine = (this.sourceLocation || this._sourceLocationAll).start.line;
             while (this._sourceLinesEmitted < currentSourceLine) {
-                lines.push(`// ${this._sourceLines[this._sourceLinesEmitted]}`);
+                lines.push(`${' '.repeat(40)};|  ${this._sourceLines[this._sourceLinesEmitted]}`);
                 ++this._sourceLinesEmitted;
             }
         }

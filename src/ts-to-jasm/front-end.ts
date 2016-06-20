@@ -13,6 +13,7 @@ export function parse(javaScriptSource: string): Node {
     let plugins = [
         'syntax-async-functions',
         'transform-es2015-destructuring',
+        'transform-es2015-template-literals',
         augmentNodesWithScopeInfo
     ];
     let ast = transform(javaScriptSource, {plugins}).ast;
