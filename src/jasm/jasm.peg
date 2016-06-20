@@ -1,0 +1,69 @@
+
+
+
+Json
+=   WS   Value   WS   { return text(); }
+
+
+Value
+=   "true"
+/   "false"
+/   "null"
+/   Object
+/   Array
+/   Number
+/   String
+
+
+Object
+=   WS   "{"   WS
+    (
+        Member
+        (WS   ","   WS   Member)*
+    )?
+    WS   "}"   WS
+
+
+Member
+=   String   WS   ":"   WS   Value
+
+
+Array
+  = WS   "["   WS
+    (
+        Value
+        (WS   ","   WS   Value)*
+    )?
+    WS   "]"   WS
+
+
+Number "number"
+=   "-"?   Int   Frac?   Exp?
+
+
+Int
+=   "0"
+/   ([1-9] DIGIT*)
+
+
+Frac
+=   "."   DIGIT+
+
+
+Exp
+=   [eE]   ("+" / "-")?   DIGIT+
+
+
+String "string"
+=   '"' Char* '"'
+
+
+Char
+=   [^\0-\x1F\x22\x5C]
+/   "\\"   ["\\/bfnrt]
+/   "\\u"   HEXDIGIT   HEXDIGIT   HEXDIGIT   HEXDIGIT
+
+
+DIGIT           = [0-9]
+HEXDIGIT        = [0-9a-f]i
+WS "whitespace" = [ \t\n\r]*
