@@ -1,69 +1,33 @@
 
 
-
-Json
-=   WS   Value   WS   { return text(); }
-
-
-Value
-=   "true"
-/   "false"
-/   "null"
-/   Object
-/   Array
-/   Number
-/   String
+Json                =   WS   Value   WS   { return text(); }
+Value               =   "null" / Boolean / String / Number / Array / Object
 
 
-Object
-=   WS   "{"   WS
-    (
-        Member
-        (WS   ","   WS   Member)*
-    )?
-    WS   "}"   WS
+Boolean             =   "true" / "false"
 
 
-Member
-=   String   WS   ":"   WS   Value
+String "string"     =   '"'   Character*   '"'
+Character           =   [^\0-\x1F\x22\x5C]
+                    /   "\\"   ["\\/bfnrt]
+                    /   "\\u"   HEXDIGIT   HEXDIGIT   HEXDIGIT   HEXDIGIT
 
 
-Array
-  = WS   "["   WS
-    (
-        Value
-        (WS   ","   WS   Value)*
-    )?
-    WS   "]"   WS
+Number "number"     =   "-"?   IntegerPart   FractionPart?   ExponentPart?
+IntegerPart         =   "0"   /   [1-9]   DIGIT*
+FractionPart        =   "."   DIGIT+
+ExponentPart        =   [eE]   ("+" / "-")?   DIGIT+
+DIGIT               =   [0-9]
+HEXDIGIT            =   [0-9a-f]i
 
 
-Number "number"
-=   "-"?   Int   Frac?   Exp?
+Array               =   "["   WS   ArrayElements?   WS   "]"
+ArrayElements       =   Value   (WS   ","   WS   Value)*
 
 
-Int
-=   "0"
-/   ([1-9] DIGIT*)
+Object              =   "{"   WS   ObjectProperties?   WS   "}"
+ObjectProperties    =   ObjectProperty   (WS   ","   WS   ObjectProperty)*
+ObjectProperty      =   String   WS   ":"   WS   Value
 
 
-Frac
-=   "."   DIGIT+
-
-
-Exp
-=   [eE]   ("+" / "-")?   DIGIT+
-
-
-String "string"
-=   '"' Char* '"'
-
-
-Char
-=   [^\0-\x1F\x22\x5C]
-/   "\\"   ["\\/bfnrt]
-/   "\\u"   HEXDIGIT   HEXDIGIT   HEXDIGIT   HEXDIGIT
-
-
-DIGIT           = [0-9]
-HEXDIGIT        = [0-9a-f]i
-WS "whitespace" = [ \t\n\r]*
+WS "whitespace"     =   [ \t\n\r]*
