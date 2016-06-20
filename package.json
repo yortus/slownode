@@ -42,7 +42,7 @@
   "homepage": "https://github.com/paypac/slownode",
   "dependencies": {
     "babel-standalone": "^6.7.7",
-    "typescript": "^1.9.0-dev.20160616-1.0"
+    "typescript": "^1.9.0-dev.20160619-1.0"
   },
   "devDependencies": {
     "@types/babel-core": "^6.7.8-alpha",
