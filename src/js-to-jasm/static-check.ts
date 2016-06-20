@@ -7,12 +7,9 @@ import * as ts from 'typescript';
 
 
 // TODO: adapted from: https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API
-export function staticCheck(scriptSource: string, logError: LogError): boolean {
+export default function staticCheck(scriptSource: string, logError: LogError): boolean {
 
-    // TODO: wrap in IIAFE, and account for this in error line numbers...
-    scriptSource = `(async () => {\n${scriptSource}\n})()`;
-
-    let libSource = fs.readFileSync(path.join(__dirname, '../../lib.slow.d.ts'), 'utf8');
+    let libSource = fs.readFileSync(path.join(__dirname, '../../lib.slow.d.ts'), 'utf8'); // TODO: move lib file to proper place...
     let host = createCompilerHost(compilerOptions, scriptSource, libSource);
     let program = ts.createProgram(['script.ts', 'lib.d.ts'], compilerOptions, host);
     let emitResult = program.emit();
@@ -22,10 +19,9 @@ export function staticCheck(scriptSource: string, logError: LogError): boolean {
         allDiagnostics.forEach(diagnostic => {
             var message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
             if (diagnostic.file) {
-                // NB: lines are 1-based, chars are 0-based
-                // NB: take 1 off line to account for IIAFE prolog
+                // NB: lines are 0-based, chars are 0-based; convert both to 1-based Lines/Cols
                 var { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
-                logError(message, line - 1, character + 1);
+                logError(message, line + 1, character + 1);
             }
             else {
                 logError(message, 0, 0);

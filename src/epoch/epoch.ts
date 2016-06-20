@@ -3,7 +3,6 @@ import {createGlobal, isGlobal} from './global-object';
 import EpochOptions from './epoch-options';
 import Interpreter from '../jasm/interpreter';
 import * as JSON3000 from '../json-3000';
-import {staticCheck} from './static-check';
 import transpile from '../js-to-jasm/transpile';
 
 
@@ -31,15 +30,6 @@ export default class Epoch extends EventEmitter {
     // TODO: ...
     eval(script: string, scriptId?: string) {
         scriptId = scriptId || '«unidentified script»';
-
-        // TODO: temp testing... do static checking...
-        let valid = staticCheck(script, (msg, line, col) => {
-            console.log(`L${line}C${col}   ${msg}`);
-            // TODO: should be... this.emit('error', `L${line}C${col}   ${msg}`, scriptId);
-        });
-        if (!valid) {
-            return;
-        }
 
         // TODO: ...
         let jasm = transpile(script);
