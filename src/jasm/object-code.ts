@@ -1,5 +1,5 @@
 import {BindingKind} from "babel-types";    // Elided (used only for types)
-export default ObjectCode;
+// export default ObjectCode;
 // TODO: make this type suitable for JSON ser/deser without further work (ie code as string, not function)
 
 
@@ -7,9 +7,9 @@ export default ObjectCode;
 
 
 /** TODO: doc... */
-interface ObjectCode {
-    code: string[]; // NB: 1-based line numbering
-}
+// interface ObjectCode {
+//     code: string[]; // NB: 1-based line numbering
+// }
 
 
 

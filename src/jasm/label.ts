@@ -9,7 +9,7 @@ export default class Label {
 
 
     constructor() {
-        this.name = `#${++Label._counter}`;
+        this.name = `L${++Label._counter}`;
     }
 
 

@@ -1,13 +1,13 @@
 import {parse} from './front-end';
 import {emit} from './back-end';
-import ObjectCode from '../jasm/object-code';
+import {Jasm} from '../jasm/jasm-to-js';
 import staticCheck from './static-check';
 
 
 
 
 
-export default function transpile(typeScriptSource: string): ObjectCode {
+export default function transpile(typeScriptSource: string): Jasm {
 
     // TODO: wrap in IIAFE, and account for this in error line numbers...
     typeScriptSource = `(async () => {\n${typeScriptSource}\n})()`;

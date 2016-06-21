@@ -1,5 +1,5 @@
 import InstructionSet from './instruction-set';
-import ObjectCode from './object-code';
+import {Jasm} from './jasm-to-js';
 import Register from './register';
 import RegisterSet from './register-set';
 
@@ -12,13 +12,13 @@ export default class Interpreter {
 
 
     // TODO: ...
-    constructor(jasm: ObjectCode, globalObject?: {}, park?: (state: any) => Promise<void>) {
+    constructor(jasm: Jasm, globalObject?: {}, park?: (state: any) => Promise<void>) {
         park = park || (async () => {});
         this.jasm = jasm;
         let virtualMachine = this._virtualMachine = makeVirtualMachine(park);
         let registers = this.registers = <any> virtualMachine;
         registers.ENV.value = globalObject || {};
-        this.step = makeStepFunction(jasm.code, virtualMachine);
+        this.step = makeStepFunction(jasm, virtualMachine);
     }
 
 
@@ -35,7 +35,7 @@ export default class Interpreter {
 
 
     // TODO: ...
-    jasm: ObjectCode;
+    jasm: Jasm;
 
 
     // TODO: ...
@@ -51,7 +51,40 @@ export default class Interpreter {
 
 
 // TODO: ...
-function makeStepFunction(codeLines: string[], virtualMachine: InstructionSet & RegisterSet) {
+function makeStepFunction(jasm: Jasm, virtualMachine: InstructionSet & RegisterSet) {
+
+    // TODO: Associate each label with it's one-based line number...
+    let labels = jasm.code.reduce((labels, line, i) => {
+        if (line.type === 'label') labels[line.name] = i + 1;
+        return labels;
+    }, {});
+
+    // TODO: ...
+    let codeLines = jasm.code.map(line => {
+        switch (line.type) {
+            case 'blank':
+                return `// ${line.comment}`;
+            case 'label':
+                return `// ${line.name}:`;
+            case 'instruction':
+                return `${line.opcode.toUpperCase()}(${line.arguments.map(arg => {
+                    switch (arg.type) {
+                        case 'register':
+                            return arg.name;
+                        case 'label':
+                            return labels[arg.name];
+                        case 'const':
+                            return JSON.stringify(arg.value);
+                        default:
+                            // NB: Runtime exhaustiveness check. We can only get here if argument types were added to other code but not here.
+                            throw new Error(`Unhandled JASM instruction argument type`);
+                    }
+                })})`;
+            default:
+                // NB: Runtime exhaustiveness check. We can only get here if lines types were added to other code but not here.
+                throw new Error(`Unhandled JASM code line type`);
+        }
+    });
 
     // TODO: re-format lines as switch cases...
     let lines: string[] = [];

@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import {SourceLocation, BindingKind} from "babel-types"; // Elided (used only for types)
 import InstructionSet from './instruction-set';
 import Label from './label';
-import ObjectCode, {ScopeInfo} from './object-code';
+import {ScopeInfo} from './object-code';
 import Register from './register';
 import RegisterSet from './register-set';
 
@@ -144,7 +144,7 @@ export default class Emitter implements InstructionSet, RegisterSet {
 
 
     /** TODO: doc... */
-    build(): ObjectCode {
+    build(): string {
 
         // TODO: all done... cap off... doc...
         this.sourceLocation = {
@@ -153,29 +153,22 @@ export default class Emitter implements InstructionSet, RegisterSet {
         };
         this.STOP();
 
-
-// TODO: temp testing...
-console.log(`\n\n\n\n.CODE\n`);
-this._lines.forEach(line => console.log(line));
-console.log(`\n\n\n\n`);
-
-
         this._lines = this._lines.map(line => line.trim());
 
 
         // TODO: resolve all labels
-        let labels: {[name: string]: number} = {};
-        let labelCount = 0;
-        this._lines.forEach((line, i) => {
-            let matches = line.match(/^(#[a-z0-9]+):$/i);
-            if (!matches) return;
-            labels[matches[1]] = i - labelCount + 1;
-            ++labelCount;
-        });
-        this._lines = this._lines.filter(line => !line.startsWith('#'));
-        this._lines = this._lines.map(line => line.replace(/#[a-z0-9]+/, name => (labels[name] || name).toString()));
+        // let labels: {[name: string]: number} = {};
+        // let labelCount = 0;
+        // this._lines.forEach((line, i) => {
+        //     let matches = line.match(/^(#[a-z0-9]+):$/i);
+        //     if (!matches) return;
+        //     labels[matches[1]] = i - labelCount + 1;
+        //     ++labelCount;
+        // });
+        // this._lines = this._lines.filter(line => !line.startsWith('#'));
+        // this._lines = this._lines.map(line => line.replace(/#[a-z0-9]+/, name => (labels[name] || name).toString()));
 
-        return { code: this._lines };
+        return `\n\n\n\n.CODE\n${this._lines.join('\n')}\n\n\n\n.DATA\nnull\n`;
     }
 
 
@@ -193,7 +186,7 @@ console.log(`\n\n\n\n`);
     private addInstr(name: string, ...args: Array<Register|Label|string|number>) {
         let argStrs = args.map(arg => {
             if (arg instanceof Register) return arg.name;
-            else if (typeof arg === 'string') return JSON.stringify(arg).replace(/#/g, '\\u0023'); // TODO: doc... '#' is special (used for labels)
+            else if (typeof arg === 'string') return JSON.stringify(arg).replace(/#/g, '\\u0023'); // TODO: doc... '#' is special (used for labels) - don't need this replace any more, can remove it
             else if (typeof arg === 'number') return JSON.stringify(arg);
             else return `${arg.name}`;
         });
