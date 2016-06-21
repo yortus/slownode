@@ -1,0 +1,104 @@
+{
+`
+.CODE
+
+
+; jkjh
+
+lllll:
+;L3:      ; sdasasd
+;    string $0, "blah"
+    ;bf L3
+
+
+
+
+
+
+
+.DATA
+
+{
+  "$type": "foo-type",
+  "other": [
+    1,
+    "blah\nblah",
+    true,
+    false,
+    null
+
+  ]
+}
+`
+}
+
+
+Jasm
+=   CodeSection   DataSection
+
+
+CodeSection
+=   ".CODE"   EOL   (BlankLine / LabelLine / Instruction)*   { return text(); }
+
+
+BlankLine
+=   WS1?   Comment?   EOL
+
+
+LabelLine
+=   WS1?   [a-z]i    [a-z0-9]i*   ":"   WS1?   Comment?   EOL
+
+
+Instruction
+=   WS1?   OpCode   WS1   Arguments   WS1?   Comment?   EOL
+OpCode
+=   [a-z]i+
+Arguments
+=   Argument   (WS1?   ","   WS1?   Argument)*
+Argument
+=   Register / Label / String / Number / Boolean
+Register
+=   "$"   [0-7]
+Label
+=   [a-z]i   [a-z0-9]i
+
+
+Comment
+=   ";"   (!EOL .)*
+
+
+DataSection
+=   ".DATA"   WS   Json   { return text(); }
+
+
+
+
+
+
+Json                =   WS?   Value   WS?   { return text(); }
+Value               =   "null" / Boolean / String / Number / Object / Array
+
+Boolean             =   "true" / "false"
+
+String "string"     =   '"'   Character*   '"'
+Character           =   [^\0-\x1F\x22\x5C]
+                    /   "\\"   ["\\/bfnrt]
+                    /   "\\u"   HEXDIGIT   HEXDIGIT   HEXDIGIT   HEXDIGIT
+
+Number "number"     =   "-"?   IntegerPart   FractionPart?   ExponentPart?
+IntegerPart         =   "0"   /   [1-9]   DIGIT*
+FractionPart        =   "."   DIGIT+
+ExponentPart        =   [eE]   ("+" / "-")?   DIGIT+
+
+Object              =   "{"   WS?   ObjectProperties?   WS?   "}"
+ObjectProperties    =   ObjectProperty   (WS?   ","   WS?   ObjectProperty)*
+ObjectProperty      =   String   WS?   ":"   WS?   Value
+
+Array               =   "["   WS?   ArrayElements?   WS?   "]"
+ArrayElements       =   Value   (WS?   ","   WS?   Value)*
+
+DIGIT               = [0-9]
+EOL					= "\r\n" / "\r" / "\n"
+HEXDIGIT            = [0-9a-f]i
+WS "whitespace"     = [ \t\r\n]+
+WS1 "whitespace"    = [ \t]+
