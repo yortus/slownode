@@ -153,7 +153,7 @@ export default class Emitter implements InstructionSet, RegisterSet {
         };
         this.STOP();
 
-        this._lines = this._lines.map(line => line.trim());
+        // TODO: was... remove... this._lines = this._lines.map(line => line.trim());
 
 
         // TODO: resolve all labels
