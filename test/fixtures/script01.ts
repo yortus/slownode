@@ -26,6 +26,11 @@ node['name'] = node['n.a.m.e.'];
 let re = /^fo+o$/gm;
 
 let $type = [
+    null,
+    true,
+    false,
+    42,
+    '42\n',
     Infinity,
     {$type:444222},
     NaN,
