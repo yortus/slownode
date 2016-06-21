@@ -1,4 +1,5 @@
 
+
 let s = `
     <foo bar="baz's">
         &nbsp;

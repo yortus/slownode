@@ -30,75 +30,88 @@ lllll:
   ]
 }
 `
+	function blank(comment) {
+    	let line = {type: 'blank'};
+        if (comment) line.comment = comment;
+        return line;
+    }
+	function label(name, comment) {
+    	let line = {type: 'label', name};
+        if (comment) line.comment = comment;
+        return line;
+    }
+	function instr(opcode, args, comment) {
+    	let line = {type: 'instruction', opcode, arguments: args || []};
+        if (comment) line.comment = comment;
+        return line;
+    }
 }
 
 
-Jasm
-=   CodeSection   DataSection
+//========================= START RULE ==============================
+File                  =   BlankLine*   code:CodeSection   data:DataSection   EOF   { return {code, data}; }
 
 
-CodeSection
-=   ".CODE"   EOL   (BlankLine / LabelLine / Instruction)*   { return text(); }
+//========================= CODE SECTION ==============================
+CodeSection           =   ".CODE"   SPC?   Comment?   EOL   lines:CodeLine*   { return lines; }
+CodeLine              =   BlankLine   /   LabelLine   /   InstructionLine
+
+// ---------- blank line ----------
+BlankLine             =   SPC?   c:Comment?   EOL   { return blank(c); }
+
+// ---------- label line ----------
+LabelLine             =   SPC?   name:LabelName   ":"   SPC?   c:Comment?   EOL   { return label(name, c); }
+LabelName             =   [a-z]i    [a-z0-9]i*   { return text(); }
+
+// ---------- instruction line ----------
+InstructionLine       =   SPC?   o:OpCode   SPC?   a:ArgumentList?   SPC?   c:Comment?   EOL   { return instr(o, a, c); }
+OpCode "opcode"       =   [a-z]i+   { return text(); }
+ArgumentList          =   first:Argument   rest:NextArgument*   { return [first].concat(rest); }
+NextArgument          =   SPC?   ","   SPC?   arg:Argument   { return arg; }
+Argument              =   RegisterArgument   /   LabelArgument   /   StringArgument   /   NumberArgument
+RegisterArgument      =   "$"   [0-7]   { return {type: 'register', name: text()}; }
+LabelArgument "label" =   [a-z]i   [a-z0-9]i   { return {type: 'label', name: text()}; }
+StringArgument        =   String   { return {type:'const', value: text().slice(1, -1)}; }
+NumberArgument        =   Number   { return {type:'const', value: parseFloat(text())}; }
+
+// ---------- comment ----------
+Comment "comment"     =   ";"   (!EOL .)*   { return text().slice(1); }
 
 
-BlankLine
-=   WS1?   Comment?   EOL
+//========================= DATA SECTION ==============================
+DataSection           =   ".DATA"   SPC?   Comment?   EOL   json:Json   { return json; }
+Json                  =   WS?   Value   WS?   { return text(); }
+Value                 =   NULL   /   TRUE   /   FALSE   /   String   /   Number   /   Object   /   Array
+
+// ---------- string literal ----------
+String "string"       =   '"'   Character*   '"'
+Character             =   [^\0-\x1F\x22\x5C]
+                      /   "\\"   ["\\/bfnrt]
+                      /   "\\u"   HEXDIGIT   HEXDIGIT   HEXDIGIT   HEXDIGIT
+
+// ---------- number literal ----------
+Number "number"       =   "-"?   IntegerPart   FractionPart?   ExponentPart?
+IntegerPart           =   "0"   /   [1-9]   DIGIT*
+FractionPart          =   "."   DIGIT+
+ExponentPart          =   [eE]   ("+" / "-")?   DIGIT+
+
+// ---------- object literal ----------
+Object                =   "{"   WS?   ObjectProperties?   WS?   "}"
+ObjectProperties      =   ObjectProperty   (WS?   ","   WS?   ObjectProperty)*
+ObjectProperty        =   String   WS?   ":"   WS?   Value
+
+// ---------- array literal ----------
+Array                 =   "["   WS?   ArrayElements?   WS?   "]"
+ArrayElements         =   Value   (WS?   ","   WS?   Value)*
 
 
-LabelLine
-=   WS1?   [a-z]i    [a-z0-9]i*   ":"   WS1?   Comment?   EOL
-
-
-Instruction
-=   WS1?   OpCode   WS1   Arguments   WS1?   Comment?   EOL
-OpCode
-=   [a-z]i+
-Arguments
-=   Argument   (WS1?   ","   WS1?   Argument)*
-Argument
-=   Register / Label / String / Number / Boolean
-Register
-=   "$"   [0-7]
-Label
-=   [a-z]i   [a-z0-9]i
-
-
-Comment
-=   ";"   (!EOL .)*
-
-
-DataSection
-=   ".DATA"   WS   Json   { return text(); }
-
-
-
-
-
-
-Json                =   WS?   Value   WS?   { return text(); }
-Value               =   "null" / Boolean / String / Number / Object / Array
-
-Boolean             =   "true" / "false"
-
-String "string"     =   '"'   Character*   '"'
-Character           =   [^\0-\x1F\x22\x5C]
-                    /   "\\"   ["\\/bfnrt]
-                    /   "\\u"   HEXDIGIT   HEXDIGIT   HEXDIGIT   HEXDIGIT
-
-Number "number"     =   "-"?   IntegerPart   FractionPart?   ExponentPart?
-IntegerPart         =   "0"   /   [1-9]   DIGIT*
-FractionPart        =   "."   DIGIT+
-ExponentPart        =   [eE]   ("+" / "-")?   DIGIT+
-
-Object              =   "{"   WS?   ObjectProperties?   WS?   "}"
-ObjectProperties    =   ObjectProperty   (WS?   ","   WS?   ObjectProperty)*
-ObjectProperty      =   String   WS?   ":"   WS?   Value
-
-Array               =   "["   WS?   ArrayElements?   WS?   "]"
-ArrayElements       =   Value   (WS?   ","   WS?   Value)*
-
-DIGIT               = [0-9]
-EOL					= "\r\n" / "\r" / "\n"
-HEXDIGIT            = [0-9a-f]i
-WS "whitespace"     = [ \t\r\n]+
-WS1 "whitespace"    = [ \t]+
+//========================= TERMINALS ==============================
+DIGIT                 = [0-9]
+EOF "end of file"     = !.
+EOL "end of line"     = "\r\n"   /   "\r"   /   "\n"
+FALSE                 = "false"
+HEXDIGIT              = [0-9a-f]i
+NULL                  = "null"
+SPC "space"           = [ \t]+
+TRUE                  = "true"
+WS "whitespace"       = (SPC / EOL)+
