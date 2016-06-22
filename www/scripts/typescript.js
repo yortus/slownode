@@ -1,3 +1,12 @@
+// NB: customised! Search for <TG>...
+// <TG>
+define(function (require, exports, module) {
+// </TG>
+
+
+
+
+
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation. All rights reserved. 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use
@@ -1933,10 +1942,12 @@ var ts;
             };
         }
         function getNodeSystem() {
-            var _fs = require("fs");
-            var _path = require("path");
-            var _os = require("os");
-            var _crypto = require("crypto");
+            // <TG>
+            // var _fs = require("fs");
+            // var _path = require("path");
+            // var _os = require("os");
+            // var _crypto = require("crypto");
+            // </TG>
             var useNonPollingWatchers = process.env["TSC_NONPOLLING_WATCHER"];
             function createWatchedFileSet() {
                 var dirWatchers = {};
@@ -59315,3 +59326,11 @@ var TypeScript;
 /* @internal */
 var toolsVersion = "1.9";
 /* tslint:enable:no-unused-variable */
+
+
+
+
+
+// <TG>
+});
+// </TG>

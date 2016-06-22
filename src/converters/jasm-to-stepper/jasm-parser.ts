@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import Jasm from '../../formats/jasm';
-const parser = require('./jasm-grammar');
+import * as parser from './jasm-grammar';
 
 
 

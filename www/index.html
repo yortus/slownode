@@ -12,9 +12,7 @@
                     "knockout": "scripts/knockout",
                     "typescript": "scripts/typescript",
                     "util": "scripts/util",
-                    "built/json3000": "built/json3000/index",
-                    "built/pre-stringify": "built/json3000/pre-stringify",
-                    "built/post-parse": "built/json3000/post-parse",
+                    "built/converters/jasm-to-stepper/jasm-grammar": "scripts/jasm-grammar",
                 }
             });
             require(['knockout', 'built/converters/typescript-to-jasm/index', 'built/converters/jasm-to-stepper/index', 'codemirror', 'javascript-mode'], (ko, toJasm, toStepper, cm) => {

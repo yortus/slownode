@@ -1,7 +1,7 @@
 import {createGlobal, isGlobal} from '../../formats/stepper/global-object';
 import InstructionSet from '../../formats/jasm/instruction-set';
 import Jasm from '../../formats/jasm';
-import * as JSON3000 from '../../json3000';
+import * as JSON3000 from '../../json3000/index'; // TODO: explicit index, so it works with AMD too
 import {parse} from './jasm-parser';
 import Register from '../../formats/jasm/register';
 import RegisterSet from '../../formats/jasm/register-set';

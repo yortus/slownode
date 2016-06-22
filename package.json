@@ -9,7 +9,8 @@
     "build": "npm run build-ts && npm run build-peg && npm run build-copy",
     "build-ts": "tsc -p src && tsc -p test && tsc -p www",
     "build-peg": "pegjs src/converters/jasm-to-stepper/jasm-grammar.peg built/converters/jasm-to-stepper/jasm-grammar.js",
-    "build-copy": "ncp built/converters/jasm-to-stepper/jasm-grammar.js www/built/converters/jasm-to-stepper/jasm-grammar.js  && ncp test/fixtures/ built/test/fixtures/",
+    "build-copy": "ncp test/fixtures/ built/test/fixtures/",
+    "TODO": "copy jasm-grammar.js to www/built/ and convert it to AMD (currently done manually)",
 
     "clean": "rimraf built/",
     "prepublish": "npm run self-ref && npm run build",
