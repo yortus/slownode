@@ -7,7 +7,7 @@ import staticCheck from './static-check';
 
 
 
-export default function typescriptToJasm(typeScriptSource: string): Jasm {
+export default function typeScriptToJasm(typeScriptSource: string): Jasm {
 
     // TODO: wrap in IIAFE, and account for this in error line numbers...
     typeScriptSource = `(async () => {\n${typeScriptSource}\n})()`;

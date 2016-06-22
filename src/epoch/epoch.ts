@@ -3,7 +3,7 @@ import {createGlobal, isGlobal} from './global-object';
 import EpochOptions from './epoch-options';
 import Interpreter from '../jasm/interpreter';
 import * as JSON3000 from '../json3000';
-import typeScriptToJasm from '../converters/typescript-to-jasm';
+import {typeScriptToJasm} from '../converters';
 
 
 
