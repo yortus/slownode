@@ -3,11 +3,11 @@ import {Node, File, Program as ProgramNode} from "babel-types";             // E
 import {Statement, Expression, Identifier} from "babel-types";              // Elided (used only for types)
 import {StringLiteral, NumericLiteral, SpreadElement} from "babel-types";   // Elided (used only for types)
 import {types as t} from './babel';
-import jasmToJs, {Jasm} from '../jasm/jasm-to-js';
+import jasmToJs, {Jasm} from '../../jasm/jasm-to-js';
 import matchNode from './match-node';
-import Label from '../jasm/label';
-import Register from '../jasm/register';
-import Emitter from '../jasm/emitter';
+import Label from '../../jasm/label';
+import Register from '../../jasm/register';
+import Emitter from '../../jasm/emitter';
 
 
 

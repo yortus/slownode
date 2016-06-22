@@ -2,7 +2,7 @@ import {EventEmitter} from 'events';
 import {createGlobal, isGlobal} from './global-object';
 import EpochOptions from './epoch-options';
 import Interpreter from '../jasm/interpreter';
-import * as JSON3000 from '../json-3000';
+import * as JSON3000 from '../json3000';
 import transpile from '../ts-to-jasm/transpile';
 
 
