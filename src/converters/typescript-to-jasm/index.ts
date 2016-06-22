@@ -1,6 +1,6 @@
 import {parse} from './front-end';
 import {emit} from './back-end';
-import {Jasm} from '../../jasm/jasm-to-js';
+import Jasm from '../../formats/jasm';
 import staticCheck from './static-check';
 
 

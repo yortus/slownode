@@ -1,5 +1,7 @@
+import {createGlobal, isGlobal} from '../../formats/stepper/global-object';
 import InstructionSet from '../../formats/jasm/instruction-set';
 import Jasm from '../../formats/jasm';
+import * as JSON3000 from '../../json3000';
 import {parse} from './jasm-parser';
 import Register from '../../formats/jasm/register';
 import RegisterSet from '../../formats/jasm/register-set';
@@ -9,12 +11,10 @@ import RegisterSet from '../../formats/jasm/register-set';
 
 
 // TODO: ...
-export default function jasmToStepper(jasm: Jasm) {
-
-    let globalObject = null;
-    let park = null;
-    let stepper = new Stepper(jasm, globalObject, park);
-    return Stepper;
+export default function jasmToStepper(jasm: Jasm): Stepper {
+    let globalObject = createGlobal();
+    let stepper = new Stepper(jasm, globalObject, tempPark);
+    return stepper;
 }
 
 
@@ -59,6 +59,47 @@ export class Stepper {
     // TODO: ...
     private _virtualMachine: InstructionSet & RegisterSet;
 }
+
+
+
+
+
+// TODO: implement properly...
+async function tempPark(state: any) {
+    let s = JSON3000.stringify(state, replacer, 4);
+    console.log(`PARK: ${s}`);
+// TODO: temp testing...
+let o = JSON3000.parse(s, reviver);
+console.log(`UNPARK:`);
+console.log(o);
+
+
+    // TODO: temp testing...
+    // - support special storage of Promise that rejects with 'EpochRestartError' on revival (or ExtinctionError?, UnrevivableError?, RevivalError?)
+    function replacer(key: string, val: any) {
+        if (isGlobal(val)) {
+            let keys = Object.keys(val);
+            return { $type: 'Global', props: keys.reduce((props, key) => (props[key] = val[key], props), {}) };
+        }
+        if (val && typeof val.then === 'function') {
+            return { $type: 'Promise', value: ['???'] };
+        }
+        return val;
+    }
+    function reviver(key: string, val: any) {
+        if (!val || Object.getPrototypeOf(val) !== Object.prototype || ! val.$type) return val;
+        if (val.$type === 'Global') {
+            let g = createGlobal();
+            Object.keys(val.props).forEach(key => g[key] = val.props[key]);
+            return g;
+        }
+        else if (val.$type === 'Promise') {
+            return Promise.resolve(42);
+        }
+        return val;
+    }
+}
+
 
 
 
