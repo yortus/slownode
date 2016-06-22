@@ -9,13 +9,14 @@
                     "babel-standalone": "../node_modules/babel-standalone/babel",
                     "codemirror": "scripts/codemirror",
                     "javascript-mode": "scripts/javascript-mode",
+                    "z80-mode": "scripts/z80-mode",
                     "knockout": "scripts/knockout",
                     "typescript": "scripts/typescript",
                     "util": "scripts/util",
                     "built/converters/jasm-to-stepper/jasm-grammar": "scripts/jasm-grammar",
                 }
             });
-            require(['knockout', 'built/converters/typescript-to-jasm/index', 'built/converters/jasm-to-stepper/index', 'codemirror', 'javascript-mode'], (ko, toJasm, toStepper, cm) => {
+            require(['knockout', 'built/converters/typescript-to-jasm/index', 'built/converters/jasm-to-stepper/index', 'codemirror', 'javascript-mode', 'z80-mode'], (ko, toJasm, toStepper, cm) => {
                 // TODO: ES6 modules/AMD mismatch crap...
                 toJasm = toJasm.default;
                 toStepper = toStepper.default;
@@ -95,7 +96,7 @@
                 });
 
                 let oEditor = cm.fromTextArea(document.getElementById('output'), {
-                    mode: 'javascript',
+                    mode: 'z80',
                     theme: 'ambiance',
                     lineNumbers: true,
                     readOnly: true
