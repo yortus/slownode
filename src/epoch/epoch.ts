@@ -3,7 +3,7 @@ import {createGlobal, isGlobal} from './global-object';
 import EpochOptions from './epoch-options';
 import Interpreter from '../jasm/interpreter';
 import * as JSON3000 from '../json3000';
-import transpile from '../ts-to-jasm/transpile';
+import typeScriptToJasm from '../converters/typescript-to-jasm';
 
 
 
@@ -32,7 +32,7 @@ export default class Epoch extends EventEmitter {
         scriptId = scriptId || '«unidentified script»';
 
         // TODO: ...
-        let jasm = transpile(script);
+        let jasm = typeScriptToJasm(script);
         let globalObject = createGlobal();
         let interpreter = new Interpreter(jasm, globalObject, park);
 

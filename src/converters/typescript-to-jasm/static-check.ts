@@ -9,7 +9,7 @@ import * as ts from 'typescript';
 // TODO: adapted from: https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API
 export default function staticCheck(scriptSource: string, logError: LogError): boolean {
 
-    let libSource = fs.readFileSync(path.join(__dirname, '../../lib.slow.d.ts'), 'utf8'); // TODO: move lib file to proper place...
+    let libSource = fs.readFileSync(path.join(__dirname, '../../../lib.slow.d.ts'), 'utf8'); // TODO: move lib file to proper place...
     let host = createCompilerHost(compilerOptions, scriptSource, libSource);
     let program = ts.createProgram(['script.ts', 'lib.d.ts'], compilerOptions, host);
     let emitResult = program.emit();
