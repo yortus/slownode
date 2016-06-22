@@ -10,26 +10,29 @@
                     "codemirror": "scripts/codemirror",
                     "javascript-mode": "scripts/javascript-mode",
                     "knockout": "scripts/knockout",
-                    "util": "scripts/util"
+                    "typescript": "scripts/typescript",
+                    "util": "scripts/util",
+                    "built/json3000": "built/json3000/index",
+                    "built/pre-stringify": "built/json3000/pre-stringify",
+                    "built/post-parse": "built/json3000/post-parse",
                 }
             });
-            require(['knockout', 'built/js-to-jasm/transpile', 'built/jasm/pretty-print', 'built/jasm/interpreter', 'codemirror', 'javascript-mode'], (ko, transpile, prettyPrint, Runner, cm) => {
+            require(['knockout', 'built/converters/typescript-to-jasm/index', 'built/converters/jasm-to-stepper/index', 'codemirror', 'javascript-mode'], (ko, toJasm, toStepper, cm) => {
                 // TODO: ES6 modules/AMD mismatch crap...
-                transpile = transpile.default;
-                prettyPrint = prettyPrint.default;
-                Runner = Runner.default;
+                toJasm = toJasm.default;
+                toStepper = toStepper.default;
 
 
                 // Set up a simple viewmodel with 'input' and 'output' properties.
                 let vm = {};
-                let program;
+                let jasm;
                 vm.input = ko.observable('').extend({ rateLimit: 500 }),
                 vm.output = ko.computed(() => {
 
                     // When 'input' changes, recompute the 'output'.
                     try {
-                        program = transpile(vm.input());
-                        let jasmStr = prettyPrint(program);
+                        jasm = toJasm(vm.input());
+                        let jasmStr = jasm.toString();
 
                         // TODO: temp testing... if jasm was successfully created, run it...
                         // TODO: maybe trigger this differently / elsewhere
@@ -44,27 +47,27 @@
                 vm.runner = ko.observable('');
 
 
-                // Run code...
-                function run() { // TODO: fix this - step is now async...
-                    rEditor.setValue('');
-                    log('SCRIPT STARTED');
-                    let runner = new Runner(program, {
-                        print: msg => log(msg)
-                    });
+                // // Run code...
+                // function run() { // TODO: fix this - step is now async...
+                //     rEditor.setValue('');
+                //     log('SCRIPT STARTED');
+                //     let runner = new Runner(program, {
+                //         print: msg => log(msg)
+                //     });
 
-                    while (true) {
-                        let result = runner.step();
-                        if (result === true) {
-                            log('SCRIPT COMPLETED');
-                            return;
-                        }
-                        if (result instanceof Error) {
-                            log('SCRIPT FAILED');
-                            log(result.message);
-                            return;
-                        }
-                    }
-                }
+                //     while (true) {
+                //         let result = runner.step();
+                //         if (result === true) {
+                //             log('SCRIPT COMPLETED');
+                //             return;
+                //         }
+                //         if (result instanceof Error) {
+                //             log('SCRIPT FAILED');
+                //             log(result.message);
+                //             return;
+                //         }
+                //     }
+                // }
 
 
                 // Remember the value of the 'input' property using local storage.

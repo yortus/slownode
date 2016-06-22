@@ -1,5 +1,5 @@
-import * as fs from 'fs';
-import * as path from 'path';
+// import * as fs from 'fs';
+// import * as path from 'path';
 import * as ts from 'typescript';
 
 
@@ -9,7 +9,12 @@ import * as ts from 'typescript';
 // TODO: adapted from: https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API
 export default function staticCheck(scriptSource: string, logError: LogError): boolean {
 
-    let libSource = fs.readFileSync(path.join(__dirname, '../../../lib.slow.d.ts'), 'utf8'); // TODO: move lib file to proper place...
+    let libSource = getLibSource();
+    if (libSource === null) {
+        // TODO: kludge to work client-side - fix this!!!
+        console.log(`===== RUNNING IN BROWSER: SKIPPING STATIC CHECKS... =====`);
+        return true;
+    }
     let host = createCompilerHost(compilerOptions, scriptSource, libSource);
     let program = ts.createProgram(['script.ts', 'lib.d.ts'], compilerOptions, host);
     let emitResult = program.emit();
@@ -30,6 +35,26 @@ export default function staticCheck(scriptSource: string, logError: LogError): b
     }
 
     return allDiagnostics.length === 0;
+}
+
+
+
+
+
+// TODO: make this work both server- and client-side...
+function getLibSource(): string {
+    let fs, path;
+    try {
+        fs = require('fs');
+        path = require('path');
+    }
+    catch (ex) {
+        // Must be running client-side, just return null to skip checks for now...
+        return null;
+    }
+
+    let libSource = fs.readFileSync(path.join(__dirname, '../../../lib.slow.d.ts'), 'utf8'); // TODO: move lib file to proper place...
+    return libSource;
 }
 
 
