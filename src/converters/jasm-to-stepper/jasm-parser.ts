@@ -1,23 +1,17 @@
 import * as fs from 'fs';
 import * as path from 'path';
-let pegjs  = require('pegjs');
-
-
-
-
-
-let grammar = fs.readFileSync(path.join(__dirname, 'jasm.peg'), 'utf8'); // TODO: filename in const?
-let parser = pegjs.buildParser(grammar);
+import Jasm from '../../formats/jasm';
+const parser = require('./jasm-grammar');
 
 
 
 
 
 // TODO: doc, remove/improve try/catch
-export default function parse(jasmSource: string): Jasm {
+export function parse(jasm: Jasm): JasmAst {
     try {
-        let jasm = parser.parse(jasmSource);
-        return jasm;
+        let jasmAst = parser.parse(jasm.toString());
+        return jasmAst;
     }
     catch (ex) {
         debugger;
@@ -30,7 +24,8 @@ export default function parse(jasmSource: string): Jasm {
 
 
 
-export interface Jasm {
+// TODO: doc...
+export interface JasmAst {
     code: Array<BlankLine | LabelLine | InstructionLine>;
     data: string;
 }
@@ -39,6 +34,7 @@ export interface Jasm {
 
 
 
+// TODO: doc...
 export interface BlankLine {
     type: 'blank';
     comment?: string;
@@ -48,6 +44,7 @@ export interface BlankLine {
 
 
 
+// TODO: doc...
 export interface LabelLine {
     type: 'label';
     name: string;
@@ -58,6 +55,7 @@ export interface LabelLine {
 
 
 
+// TODO: doc...
 export interface InstructionLine {
     type: 'instruction';
     opcode: string;
