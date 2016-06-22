@@ -38,6 +38,7 @@
 
 
 ## TODOs
+- [ ] restore static checks (ie tsc) in www/ browser version - see kludge in static-check.ts
 - [ ] interface Storable { code, data }
 - [ ] interface Runnable { step, throwInto, registers }
 - [ ] type Readable = string
