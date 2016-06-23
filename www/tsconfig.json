@@ -6,11 +6,18 @@
         "sourceMap": false,
         "outDir": "./built",
         "moduleResolution": "node", // TODO: won't work in browser!! Use electron instead...
-        "types" : ["node"]
+        "types" : ["node"],
+        "baseUrl": ".",
+        "paths": {
+            "*": [
+                "*",
+                "scripts/*"
+            ]
+        }
     },
     "files": [
-        "../src/index.ts",
-        "../src/converters/typescript-to-jasm/index.ts",
+        "main.ts",
+        "../src/converters/index.ts",
         "../src/typings.d.ts"
     ]
 }

@@ -49,6 +49,8 @@
     "@types/babel-core": "^6.7.8-alpha",
     "@types/babel-types": "^6.7.8-alpha",
     "@types/chai": "^3.4.22-alpha",
+    "@types/codemirror": "0.0.22-alpha",
+    "@types/knockout": "^3.2.22-alpha",
     "@types/mocha": "^2.2.21-alpha",
     "@types/node": "^4.0.22-alpha",
     "@types/pegjs": "0.0.21-alpha",
