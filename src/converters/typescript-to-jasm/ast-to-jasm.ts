@@ -3,23 +3,23 @@ import {Node, File, Program as ProgramNode} from "babel-types";             // E
 import {Statement, Expression, Identifier} from "babel-types";              // Elided (used only for types)
 import {StringLiteral, NumericLiteral, SpreadElement} from "babel-types";   // Elided (used only for types)
 import {types as t} from './babel';
+import JasmEmitter from './jasm-emitter';
 import Jasm from '../../formats/jasm';
+import Label from './label';
 import matchNode from './match-node';
-import Label from '../../jasm/label';
 import Register from '../../formats/jasm/register';
-import Emitter from '../../jasm/emitter';
 
 
 
 
 
-// TODO: ...
-export function emit(javaScriptSource: string, ast: Node): Jasm {
-    let emitter = new Emitter(javaScriptSource);
+// TODO: ... make second arg optional
+export default function astToJasm(ast: Node, typeScriptSource: string): Jasm {
     assert(t.isFile(ast));
-    visitStatement(emitter, (<File> ast).program);
-    let newSrc = emitter.build();
-    return newSrc;
+    let emit = new JasmEmitter(typeScriptSource);
+    visitStatement(emit, (<File> ast).program);
+    let jasmText = emit.build();
+    return jasmText;
 }
 
 
@@ -27,19 +27,19 @@ export function emit(javaScriptSource: string, ast: Node): Jasm {
 
 
 // TODO: ...
-function visitStatement(jasm: Emitter, stmt: Statement|ProgramNode) {
+function visitStatement(emit: JasmEmitter, stmt: Statement|ProgramNode) {
 
     // TODO: ...
-    let visitStmt = (stmt: Statement) => visitStatement(jasm, stmt);
-    let visitExpr = (expr: Expression|SpreadElement, $T: Register) => visitExpression(jasm, expr, $T);
+    let visitStmt = (stmt: Statement) => visitStatement(emit, stmt);
+    let visitExpr = (expr: Expression|SpreadElement, $T: Register) => visitExpression(emit, expr, $T);
 
     // TODO: ...
-    let oldLoc = jasm.sourceLocation;
-    jasm.sourceLocation = stmt.loc;
+    let oldLoc = emit.sourceLocation;
+    emit.sourceLocation = stmt.loc;
 
     // TODO: ...
     if (stmt.scope) {
-        jasm.enterScope(stmt.scope);
+        emit.enterScope(stmt.scope);
     }
     
     // TODO: ...
@@ -56,7 +56,7 @@ function visitStatement(jasm: Emitter, stmt: Statement|ProgramNode) {
         // Statement:           stmt => [***],
         EmptyStatement:         stmt => {},
         ExpressionStatement:    stmt => {
-                                    jasm.withRegisters($0 => {
+                                    emit.withRegisters($0 => {
                                         visitExpr(stmt.expression, $0);
                                     });
                                 },
@@ -69,11 +69,11 @@ function visitStatement(jasm: Emitter, stmt: Statement|ProgramNode) {
                                     // nothing else to do...
                                     // TODO: initial cut... check code below... complete? correct?
                                     stmt.declarations.forEach(decl => {
-                                        jasm.withRegisters(($0, $1) => {
-                                            decl.init ? visitExpr(decl.init, $0) : jasm.UNDEFD($0);
+                                        emit.withRegisters(($0, $1) => {
+                                            decl.init ? visitExpr(decl.init, $0) : emit.UNDEFD($0);
                                             if (t.isIdentifier(decl.id)) {
-                                                jasm.STRING($1, decl.id.name);
-                                                jasm.STORE(jasm.ENV, $1, $0);
+                                                emit.STRING($1, decl.id.name);
+                                                emit.STORE(emit.ENV, $1, $0);
                                             }
                                             else {
                                                 throw new Error(`Unsupported variable declarator type: '${decl.id.type}'`);
@@ -86,24 +86,24 @@ function visitStatement(jasm: Emitter, stmt: Statement|ProgramNode) {
         IfStatement:            stmt => {
                                     let L1 = new Label();
                                     let L2 = new Label();
-                                    jasm.withRegisters($0 => {
+                                    emit.withRegisters($0 => {
                                         visitExpr(stmt.test, $0);
-                                        jasm.BF(L1, $0);
+                                        emit.BF(L1, $0);
                                     });
                                     visitStmt(stmt.consequent);
-                                    if (stmt.alternate) jasm.B(L2);
-                                    jasm.LABEL(L1);
+                                    if (stmt.alternate) emit.B(L2);
+                                    emit.LABEL(L1);
                                     visitStmt(stmt.alternate || t.blockStatement([]));
-                                    jasm.LABEL(L2);
+                                    emit.LABEL(L2);
                                 },
         // LabeledStatement:    stmt => [***],
         // ReturnStatement:     stmt => [***],
         // SwitchCase:          stmt => [***],
         // SwitchStatement:     stmt => [***],
         ThrowStatement:         stmt => {
-                                    jasm.withRegisters($0 => {
+                                    emit.withRegisters($0 => {
                                         visitExpr(stmt.argument, $0);
-                                        jasm.THROW($0);
+                                        emit.THROW($0);
                                     });
                                 },
         // TryStatement:        stmt => [***],
@@ -111,14 +111,14 @@ function visitStatement(jasm: Emitter, stmt: Statement|ProgramNode) {
         WhileStatement:         stmt => {
                                     let L1 = new Label();
                                     let L2 = new Label();
-                                    jasm.LABEL(L1);
-                                    jasm.withRegisters($0 => {
+                                    emit.LABEL(L1);
+                                    emit.withRegisters($0 => {
                                         visitExpr(stmt.test, $0);
-                                        jasm.BF(L2, $0);
+                                        emit.BF(L2, $0);
                                     });
                                     visitStmt(stmt.body);
-                                    jasm.B(L1);
-                                    jasm.LABEL(L2);
+                                    emit.B(L1);
+                                    emit.LABEL(L2);
                                 },
         // WithStatement:       stmt => [***],
 
@@ -145,11 +145,11 @@ function visitStatement(jasm: Emitter, stmt: Statement|ProgramNode) {
 
     // TODO: temp testing...
     if (stmt.scope) {
-        jasm.leaveScope();
+        emit.leaveScope();
     }
 
     // TODO: temp testing...
-    jasm.sourceLocation = oldLoc;
+    emit.sourceLocation = oldLoc;
 }
 
 
@@ -157,25 +157,25 @@ function visitStatement(jasm: Emitter, stmt: Statement|ProgramNode) {
 
 
 // TODO: ...
-function visitExpression(jasm: Emitter, expr: Expression|SpreadElement, $T: Register) {
+function visitExpression(emit: JasmEmitter, expr: Expression|SpreadElement, $T: Register) {
 
     // TODO: ...
-    let visitExpr = (expr: Expression|SpreadElement, $T: Register) => visitExpression(jasm, expr, $T);
+    let visitExpr = (expr: Expression|SpreadElement, $T: Register) => visitExpression(emit, expr, $T);
 
     // TODO: ...
-    let oldLoc = jasm.sourceLocation;
-    jasm.sourceLocation = expr.loc;
+    let oldLoc = emit.sourceLocation;
+    emit.sourceLocation = expr.loc;
 
     // TODO: ...
     matchNode<void>(expr, {
         // ------------------------- core -------------------------
         ArrayExpression:        expr => {
-                                    jasm.ARRAY($T);
-                                    jasm.withRegisters(($0, $1) => {
+                                    emit.ARRAY($T);
+                                    emit.withRegisters(($0, $1) => {
                                         expr.elements.forEach((el, i) => {
                                             visitExpr(el, $0);
-                                            jasm.NUMBER($1, i);
-                                            jasm.STORE($T, $1, $0);
+                                            emit.NUMBER($1, i);
+                                            emit.STORE($T, $1, $0);
                                         });
                                     });
                                 },
@@ -192,9 +192,9 @@ function visitExpression(jasm: Emitter, expr: Expression|SpreadElement, $T: Regi
                                         visitExpr(expr.right, $T);
                                         if (t.isIdentifier(expr.left)) {
                                             let left = expr.left;
-                                            jasm.withRegisters($0 => {
-                                                jasm.STRING($0, left.name);
-                                                jasm.STORE(jasm.ENV, $0, $T);
+                                            emit.withRegisters($0 => {
+                                                emit.STRING($0, left.name);
+                                                emit.STORE(emit.ENV, $0, $T);
                                             });
                                         }
                                         else {
@@ -202,10 +202,10 @@ function visitExpression(jasm: Emitter, expr: Expression|SpreadElement, $T: Regi
                                                 throw new Error(`Unsupported property type: '${expr.left.property.type}'`);
                                             }
                                             let left = expr.left, prop = expr.left.property;
-                                            jasm.withRegisters(($0, $1) => {
+                                            emit.withRegisters(($0, $1) => {
                                                 visitExpr(left.object, $0);
-                                                jasm.STRING($1, t.isIdentifier(prop) ? prop.name : prop.value);
-                                                jasm.STORE($0, $1, $T);
+                                                emit.STRING($1, t.isIdentifier(prop) ? prop.name : prop.value);
+                                                emit.STORE($0, $1, $T);
                                             });
                                         }
                                     }
@@ -214,79 +214,79 @@ function visitExpression(jasm: Emitter, expr: Expression|SpreadElement, $T: Regi
                                     else {
                                         let operation = (operator: string, $T: Register, $0: Register) => {
                                             switch (operator) {
-                                                case '+=': return jasm.ADD($T, $0, $T);
-                                                case '-=': return jasm.SUB($T, $0, $T);
-                                                case '*=': return jasm.MUL($T, $0, $T);
-                                                case '/=': return jasm.DIV($T, $0, $T);
+                                                case '+=': return emit.ADD($T, $0, $T);
+                                                case '-=': return emit.SUB($T, $0, $T);
+                                                case '*=': return emit.MUL($T, $0, $T);
+                                                case '/=': return emit.DIV($T, $0, $T);
                                                 // TODO: "%=" | "<<=" | ">>=" | ">>>=" | "|=" | "^=" | "&=";
                                                 default: throw new Error(`Unsupported assignment operator: '${expr.operator}'`);
                                             }
                                         }
                                         if (t.isIdentifier(expr.left)) {
                                             let left = expr.left;
-                                            jasm.withRegisters($0 => {
-                                                jasm.STRING($0, left.name);
-                                                jasm.withRegisters($1 => {
-                                                    jasm.LOAD($1, jasm.ENV, $0);
+                                            emit.withRegisters($0 => {
+                                                emit.STRING($0, left.name);
+                                                emit.withRegisters($1 => {
+                                                    emit.LOAD($1, emit.ENV, $0);
                                                     visitExpr(expr.right, $T);
                                                     operation(expr.operator, $T, $1);
                                                 });
-                                                jasm.STORE(jasm.ENV, $0, $T);
+                                                emit.STORE(emit.ENV, $0, $T);
                                             });
                                         }
                                         else {
                                             let left = expr.left;
-                                            jasm.withRegisters(($0, $1, $2) => {
+                                            emit.withRegisters(($0, $1, $2) => {
                                                 visitExpr(left.object, $1);
                                                 visitExpr(left.property, $2);
-                                                jasm.LOAD($0, $1, $2);
+                                                emit.LOAD($0, $1, $2);
                                                 visitExpr(expr.right, $T);
                                                 operation(expr.operator, $T, $0);
-                                                jasm.STORE($1, $2, $T);
+                                                emit.STORE($1, $2, $T);
                                             });
                                         }
                                     }
                                 },
         BinaryExpression:       expr => {
                                     visitExpr(expr.left, $T);
-                                    jasm.withRegisters($0 => {
+                                    emit.withRegisters($0 => {
                                         visitExpr(expr.right, $0);
                                         switch (expr.operator) {
-                                            case '+':   return jasm.ADD($T, $T, $0);
-                                            case '-':   return jasm.SUB($T, $T, $0);
-                                            case '*':   return jasm.MUL($T, $T, $0);
-                                            case '/':   return jasm.DIV($T, $T, $0);
-                                            case '===': return jasm.EQ($T, $T, $0);
-                                            case '!==': return jasm.NE($T, $T, $0);
-                                            case '>=':  return jasm.GE($T, $T, $0);
-                                            case '>':   return jasm.GT($T, $T, $0);
-                                            case '<=':  return jasm.LE($T, $T, $0);
-                                            case '<':   return jasm.LT($T, $T, $0);
+                                            case '+':   return emit.ADD($T, $T, $0);
+                                            case '-':   return emit.SUB($T, $T, $0);
+                                            case '*':   return emit.MUL($T, $T, $0);
+                                            case '/':   return emit.DIV($T, $T, $0);
+                                            case '===': return emit.EQ($T, $T, $0);
+                                            case '!==': return emit.NE($T, $T, $0);
+                                            case '>=':  return emit.GE($T, $T, $0);
+                                            case '>':   return emit.GT($T, $T, $0);
+                                            case '<=':  return emit.LE($T, $T, $0);
+                                            case '<':   return emit.LT($T, $T, $0);
                                             // TODO: "%" | "**" | "&" | "|" | ">>" | ">>>" | "<<" | "^" | "==" | "!=" | "in" | "instanceof";
                                             default: throw new Error(`Unsupported binary operator: '${expr.operator}'`);
                                         }
                                     });
                                 },
         Identifier:             expr => {
-                                    jasm.withRegisters($0 => {
-                                        jasm.STRING($0, expr.name);
-                                        jasm.LOAD($T, jasm.ENV, $0);
+                                    emit.withRegisters($0 => {
+                                        emit.STRING($0, expr.name);
+                                        emit.LOAD($T, emit.ENV, $0);
                                     });
                                 },
         CallExpression:         expr => {
                                     if (t.isIdentifier(expr.callee)) {
                                         let callee = expr.callee;
-                                        jasm.withRegisters(($0, $1, $2) => {
-                                            jasm.STRING($T, callee.name);
-                                            jasm.LOAD($T, jasm.ENV, $T);
-                                            jasm.ARRAY($0);
+                                        emit.withRegisters(($0, $1, $2) => {
+                                            emit.STRING($T, callee.name);
+                                            emit.LOAD($T, emit.ENV, $T);
+                                            emit.ARRAY($0);
                                             expr.arguments.forEach((arg, i) => {
                                                 visitExpr(arg, $1);
-                                                jasm.NUMBER($2, i);
-                                                jasm.STORE($0, $2, $1);
+                                                emit.NUMBER($2, i);
+                                                emit.STORE($0, $2, $1);
                                             });
-                                            jasm.NULL($1); // TODO: set 'this' - should be what? global object? undefined?
-                                            jasm.CALL($T, $T, $1, $0);
+                                            emit.NULL($1); // TODO: set 'this' - should be what? global object? undefined?
+                                            emit.CALL($T, $T, $1, $0);
                                         });
                                     }
                                     else {
@@ -298,71 +298,71 @@ function visitExpression(jasm: Emitter, expr: Expression|SpreadElement, $T: Regi
                                     let L1 = new Label();
                                     let L2 = new Label();
                                     visitExpr(expr.test, $T);
-                                    jasm.BF(L1, $T);
+                                    emit.BF(L1, $T);
                                     visitExpr(expr.consequent, $T);
-                                    jasm.B(L2);
-                                    jasm.LABEL(L1);
+                                    emit.B(L2);
+                                    emit.LABEL(L1);
                                     visitExpr(expr.alternate, $T);
-                                    jasm.LABEL(L2);
+                                    emit.LABEL(L2);
                                 },
         // FunctionExpression:  expr => [***],
         StringLiteral:          expr => {
-                                    jasm.STRING($T, expr.value);
+                                    emit.STRING($T, expr.value);
                                 },
         NumericLiteral:         expr => {
-                                    jasm.NUMBER($T, expr.value);
+                                    emit.NUMBER($T, expr.value);
                                 },
         NullLiteral:            expr => {
-                                    jasm.NULL($T);
+                                    emit.NULL($T);
                                 },
         BooleanLiteral:         expr => {
-                                    expr.value ? jasm.TRUE($T) : jasm.FALSE($T);
+                                    expr.value ? emit.TRUE($T) : emit.FALSE($T);
                                 },
         RegExpLiteral:          expr => {
-                                    jasm.REGEXP($T, expr.pattern, expr.flags);
+                                    emit.REGEXP($T, expr.pattern, expr.flags);
                                 },
         LogicalExpression:      expr => {
                                     let L1 = new Label();
                                     visitExpr(expr.left, $T);
-                                    expr.operator === '&&' ? jasm.BF(L1, $T) : jasm.BT(L1, $T);
+                                    expr.operator === '&&' ? emit.BF(L1, $T) : emit.BT(L1, $T);
                                     visitExpr(expr.right, $T);
-                                    jasm.LABEL(L1);
+                                    emit.LABEL(L1);
                                 },
         MemberExpression:       expr => {
                                     // TODO: refactor common code out of the following cases...
                                     if (!expr.computed) {
                                         // TODO: good example for TS assert(type) suggestion...
                                         assert(t.isIdentifier(expr.property));
-                                        jasm.withRegisters(($0, $1) => {
+                                        emit.withRegisters(($0, $1) => {
                                             visitExpr(expr.object, $0);
-                                            jasm.STRING($1, (<Identifier> expr.property).name);
-                                            jasm.LOAD($T, $0, $1);
+                                            emit.STRING($1, (<Identifier> expr.property).name);
+                                            emit.LOAD($T, $0, $1);
                                         });
                                     }
                                     else if (t.isStringLiteral(expr.property) || t.isNumericLiteral(expr.property)) {
                                         let prop = expr.property;
-                                        jasm.withRegisters(($0, $1) => {
+                                        emit.withRegisters(($0, $1) => {
                                             visitExpr(expr.object, $0);
                                             if (t.isStringLiteral(prop)) {
-                                                jasm.STRING($1, prop.value);
+                                                emit.STRING($1, prop.value);
                                             }
                                             else {
-                                                jasm.NUMBER($1, prop.value);
+                                                emit.NUMBER($1, prop.value);
                                             }
-                                            jasm.LOAD($T, $0, $1);
+                                            emit.LOAD($T, $0, $1);
                                         });
                                     }
                                     else {
-                                        jasm.withRegisters(($0, $1) => {
+                                        emit.withRegisters(($0, $1) => {
                                             visitExpr(expr.object, $0);
                                             visitExpr(expr.property, $1);
-                                            jasm.LOAD($T, $0, $1);
+                                            emit.LOAD($T, $0, $1);
                                         });
                                     }
                                 },
         // NewExpression:       expr => [***],
         ObjectExpression:       expr => {
-                                    jasm.OBJECT($T);
+                                    emit.OBJECT($T);
                                     expr.properties.forEach(property => {
                                         if (t.isObjectProperty(property)) {
                                             let prop = property;
@@ -374,22 +374,22 @@ function visitExpression(jasm: Emitter, expr: Expression|SpreadElement, $T: Regi
                                                     case 'NumericLiteral':  key = (<NumericLiteral> prop.key).value; break;
                                                     default: throw new Error(`Unsupported property key: '${prop.key.type}'`);
                                                 }
-                                                jasm.withRegisters(($0, $1) => {
+                                                emit.withRegisters(($0, $1) => {
                                                     visitExpr(prop.value, $0);
                                                     if (typeof key === 'string') {
-                                                        jasm.STRING($1, key);
+                                                        emit.STRING($1, key);
                                                     }
                                                     else {
-                                                        jasm.NUMBER($1, key);
+                                                        emit.NUMBER($1, key);
                                                     }
-                                                    jasm.STORE($T, $1, $0);
+                                                    emit.STORE($T, $1, $0);
                                                 });
                                             }
                                             else {
-                                                jasm.withRegisters(($0, $1) => {
+                                                emit.withRegisters(($0, $1) => {
                                                     visitExpr(prop.key, $0);
                                                     visitExpr(prop.value, $1);
-                                                    jasm.STORE($T, $0, $1);
+                                                    emit.STORE($T, $0, $1);
                                                 });
                                             }
                                         }
@@ -408,8 +408,8 @@ function visitExpression(jasm: Emitter, expr: Expression|SpreadElement, $T: Regi
         UnaryExpression:        expr => {
                                     visitExpr(expr.argument, $T);
                                     switch (expr.operator) {
-                                        case '-':   return jasm.NEG($T, $T);
-                                        case '!':   return jasm.NOT($T, $T);
+                                        case '-':   return emit.NEG($T, $T);
+                                        case '!':   return emit.NOT($T, $T);
                                         // TODO: "+" | "~" | "typeof" | "void" | "delete"
                                         default: throw new Error(`Unsupported unary operator: '${expr.operator}'`);
                                     }
@@ -431,9 +431,9 @@ function visitExpression(jasm: Emitter, expr: Expression|SpreadElement, $T: Regi
         // ------------------------- experimental -------------------------
         AwaitExpression:        expr => {
                                     visitExpr(expr.argument, $T);
-                                    jasm.PARK(...jasm.usedRegisters());
-                                    jasm.AWAIT($T, $T);
+                                    emit.PARK(...emit.usedRegisters());
+                                    emit.AWAIT($T, $T);
                                 }
     });
-    jasm.sourceLocation = oldLoc;
+    emit.sourceLocation = oldLoc;
 }

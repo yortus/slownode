@@ -1,17 +1,16 @@
 import * as assert from 'assert';
 import {SourceLocation, BindingKind} from "babel-types"; // Elided (used only for types)
-import InstructionSet from '../formats/jasm/instruction-set';
+import InstructionSet from '../../formats/jasm/instruction-set';
 import Label from './label';
-import {ScopeInfo} from './object-code';
-import Register from '../formats/jasm/register';
-import RegisterSet from '../formats/jasm/register-set';
+import Register from '../../formats/jasm/register';
+import RegisterSet from '../../formats/jasm/register-set';
 
 
 
 
 
 /** TODO: doc... internal helper class used by compiler back end */
-export default class Emitter implements InstructionSet, RegisterSet {
+export default class JasmEmitter implements InstructionSet, RegisterSet {
 
 
     /** TODO: doc... */
@@ -259,6 +258,16 @@ export default class Emitter implements InstructionSet, RegisterSet {
 /** TODO: doc... sentinel value for unused registers */
 const RESERVED_REGISTER = {};
 const FREE_REGISTER = {};
+
+
+
+
+
+// TODO: ...
+export interface ScopeInfo {
+    lineage: number[];
+    identifiers: {[index: number]: {[name: string]: BindingKind}};
+}
 
 
 

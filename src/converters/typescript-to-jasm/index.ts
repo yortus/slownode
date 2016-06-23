@@ -1,12 +1,15 @@
-import {parse} from './front-end';
-import {emit} from './back-end';
+import * as assert from 'assert';
+import typeScriptToAst from './typescript-to-ast';
+import astToJasm from './ast-to-jasm';
 import Jasm from '../../formats/jasm';
 import staticCheck from './static-check';
+import {types as t} from './babel';
 
 
 
 
 
+// TODO: ...
 export default function typeScriptToJasm(typeScriptSource: string): Jasm {
 
     // TODO: wrap in IIAFE, and account for this in error line numbers...
@@ -28,13 +31,14 @@ export default function typeScriptToJasm(typeScriptSource: string): Jasm {
         throw new Error(`Static checking failed with ${errorCount} error${errorCount === 1 ? '' : 's'}`);
     }
 
-    // TODO: parse JS->AST...
-    let ast: any = parse(typeScriptSource);
+    // TODO: parse JS->AST... fix types!
+    let ast: any = typeScriptToAst(typeScriptSource);
+    assert(t.isFile(ast));
 
     // TODO: cut the IIAFE wrapper out of the AST...
     ast.program.body[0] = ast.program.body[0].expression.callee.body;
 
     // TODO: emit AST->JASM...
-    let result = emit(typeScriptSource, ast);
-    return result;
+    let jasm = astToJasm(ast, typeScriptSource);
+    return jasm;
 }

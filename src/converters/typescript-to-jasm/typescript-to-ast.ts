@@ -7,7 +7,7 @@ import {Visitor} from "babel-traverse"; // Elided (used only for types)
 
 
 // TODO: ... doc... Options param?
-export function parse(javaScriptSource: string): Node {
+export default function typeScriptToAst(typeScriptSource: string): Node {
 
     // TODO: ...
     let plugins = [
@@ -16,7 +16,7 @@ export function parse(javaScriptSource: string): Node {
         'transform-es2015-template-literals',
         augmentNodesWithScopeInfo
     ];
-    let ast = transform(javaScriptSource, {plugins}).ast;
+    let ast = transform(typeScriptSource, {plugins}).ast;
     return ast;
 }
 
