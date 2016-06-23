@@ -1,3 +1,14 @@
+## TODOs:
+- [ ] better interleaving of source code and instructions in emitted JASM
+- [ ] turn Stepper in to a standard Iterator<void> interface
+- [ ] get rid of Label.ts
+- [ ] refactor global object factory and lib.slow.d.ts (global-object.d.ts?)
+- [ ] src/formats/ is not well structured. Some types are really shared between jasm and stepper
+- [ ] neaten JASM formatting in emitted JASM
+- [ ] get rid of typings.d.ts
+- [ ] export proper API, including Epoch and converters
+- [ ] www: restore ability to run/step through code. Add a button for this instead of just doing it on every edit.
+
 
 ## Three Formats:
 
@@ -37,7 +48,7 @@
 
 
 
-## TODOs
+## Moar TODOs
 - [ ] restore static checks (ie tsc) in www/ browser version - see kludge in static-check.ts
 - [ ] interface Storable { code, data }
 - [ ] interface Runnable { step, throwInto, registers }
