@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as pegjs from 'pegjs';
+import * as PEG from 'pegjs';
 import Jasm from '../../formats/jasm';
 
 
@@ -68,7 +68,7 @@ export interface InstructionLine {
 
 
 // TODO: ...
-const pegParser = pegjs.buildParser(`
+const pegParser = PEG.buildParser(`
 {
 	function blank(comment) {
     	let line = {type: 'blank'};
