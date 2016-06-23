@@ -6,12 +6,7 @@
   "main": "built/index.js",
   "typings": "built/index.d.ts",
   "scripts": {
-    "build": "npm run build-ts && npm run build-peg && npm run build-copy",
-    "build-ts": "tsc -p src && tsc -p test && tsc -p www",
-    "build-peg": "pegjs src/converters/jasm-to-stepper/jasm-grammar.peg built/converters/jasm-to-stepper/jasm-grammar.js",
-    "build-copy": "ncp test/fixtures/ built/test/fixtures/",
-    "TODO": "copy jasm-grammar.js to www/built/ and convert it to AMD (currently done manually)",
-
+    "build": "tsc -p src && tsc -p test && tsc -p www && ncp test/fixtures/ built/test/fixtures/",
     "clean": "rimraf built/",
     "prepublish": "npm run self-ref && npm run build",
     "test": "node ./scripts/run-unit-tests",
@@ -47,6 +42,7 @@
   "homepage": "https://github.com/paypac/slownode",
   "dependencies": {
     "babel-standalone": "^6.7.7",
+    "pegjs": "^0.9.0",
     "typescript": "^1.9.0-dev.20160619-1.0"
   },
   "devDependencies": {
@@ -55,9 +51,9 @@
     "@types/chai": "^3.4.22-alpha",
     "@types/mocha": "^2.2.21-alpha",
     "@types/node": "^4.0.22-alpha",
+    "@types/pegjs": "0.0.21-alpha",
     "chai": "^3.2.0",
     "mocha": "^2.2.5",
-    "pegjs": "^0.9.0",
     "ncp": "^2.0.0",
     "rimraf": "^2.5.2"
   }
