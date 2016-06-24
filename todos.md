@@ -3,6 +3,8 @@
 - [ ] turn Stepper in to a standard Iterator<void> interface
 - [ ] get rid of Label.ts
 - [ ] refactor global object factory and lib.slow.d.ts (global-object.d.ts?)
+- [ ] standard library...
+- [ ] Epochs - automatically load & save scripts using fs
 - [ ] src/formats/ is not well structured. Some types are really shared between jasm and stepper
 - [ ] neaten JASM formatting in emitted JASM
 - [ ] get rid of typings.d.ts
