@@ -1,5 +1,5 @@
 ## TODOs:
-- [ ] better interleaving of source code and instructions in emitted JASM
+- [x] better interleaving of source code and instructions in emitted JASM
 - [ ] turn Stepper in to a standard Iterator<void> interface
 - [ ] get rid of Label.ts
 - [ ] refactor global object factory and lib.slow.d.ts (global-object.d.ts?)

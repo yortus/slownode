@@ -33,9 +33,8 @@ function visitStatement(emit: JasmEmitter, stmt: Statement|ProgramNode) {
     let visitStmt = (stmt: Statement) => visitStatement(emit, stmt);
     let visitExpr = (expr: Expression|SpreadElement, $T: Register) => visitExpression(emit, expr, $T);
 
-    // TODO: ...
-    let oldLoc = emit.sourceLocation;
-    emit.sourceLocation = stmt.loc;
+    // TODO: temp testing...
+    emit.setSourceLocation(stmt.loc);
 
     // TODO: ...
     if (stmt.scope) {
@@ -147,9 +146,6 @@ function visitStatement(emit: JasmEmitter, stmt: Statement|ProgramNode) {
     if (stmt.scope) {
         emit.leaveScope();
     }
-
-    // TODO: temp testing...
-    emit.sourceLocation = oldLoc;
 }
 
 
@@ -162,9 +158,8 @@ function visitExpression(emit: JasmEmitter, expr: Expression|SpreadElement, $T: 
     // TODO: ...
     let visitExpr = (expr: Expression|SpreadElement, $T: Register) => visitExpression(emit, expr, $T);
 
-    // TODO: ...
-    let oldLoc = emit.sourceLocation;
-    emit.sourceLocation = expr.loc;
+    // TODO: temp testing...
+    emit.setSourceLocation(expr.loc);
 
     // TODO: ...
     matchNode<void>(expr, {
@@ -435,5 +430,4 @@ function visitExpression(emit: JasmEmitter, expr: Expression|SpreadElement, $T: 
                                     emit.AWAIT($T, $T);
                                 }
     });
-    emit.sourceLocation = oldLoc;
 }

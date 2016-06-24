@@ -15,24 +15,17 @@ export default class JasmEmitter implements InstructionSet, RegisterSet {
 
     /** TODO: doc... */
     constructor(source?: string) {
-        if (typeof source === 'string') {
 
-            // Keep track of the lines of source, and how many have been emitted so far.
-            this._sourceLines = source.split(/(?:\r\n)|\r|\n/);
-            this._sourceLinesEmitted = 0;
+        // Keep track of the lines of source, and how many have been emitted so far.
+        this._sourceLines = source ? source.split(/(?:\r\n)|\r|\n/) : [''];
+        this._sourceLinesEmitted = 0;
 
-            // Compute a SourceLocation that encompasses the entire source.
-            let lineCount = this._sourceLines.length;
-            this._sourceLocationAll = {
-                start: { line: 1, column: 0 },
-                end: { line: lineCount, column: this._sourceLines[lineCount - 1].length }
-            };
-        }
-        else {
-
-            // No source was provided. Set sourceLines to null to indicate that no source is to be emitted.
-            this._sourceLines = null;
-        }
+        // Compute a SourceLocation that encompasses the entire source.
+        let lineCount = this._sourceLines.length;
+        this._sourceLocation = this._sourceLocationAll = {
+            start: { line: 1, column: 0 },
+            end: { line: lineCount, column: this._sourceLines[lineCount - 1].length }
+        };
     }
 
 
@@ -145,39 +138,26 @@ export default class JasmEmitter implements InstructionSet, RegisterSet {
     /** TODO: doc... */
     build(): string {
 
-        // TODO: all done... cap off... doc...
-        this.sourceLocation = {
-            start: this._sourceLocationAll.end,
-            end: this._sourceLocationAll.end
-        };
+        // TODO: still need to track _sourceLocationAll throughout instance?? I think no... fix this
+        this.setSourceLocation(this._sourceLocationAll);
         this.STOP();
 
-        // TODO: was... remove... this._lines = this._lines.map(line => line.trim());
-
-
-        // TODO: resolve all labels
-        // let labels: {[name: string]: number} = {};
-        // let labelCount = 0;
-        // this._lines.forEach((line, i) => {
-        //     let matches = line.match(/^(#[a-z0-9]+):$/i);
-        //     if (!matches) return;
-        //     labels[matches[1]] = i - labelCount + 1;
-        //     ++labelCount;
-        // });
-        // this._lines = this._lines.filter(line => !line.startsWith('#'));
-        // this._lines = this._lines.map(line => line.replace(/#[a-z0-9]+/, name => (labels[name] || name).toString()));
-
-        return `\n\n\n\n.CODE\n${this._lines.join('\n')}\n\n\n\n.DATA\nnull\n`;
+        // TODO: ...
+        return `.CODE\n${this._lines.join('\n')}\n\n\n\n\n\n.DATA\nnull\n`;
     }
 
 
     /** TODO: doc... */
-    sourceLocation: SourceLocation;
+    setSourceLocation(value: SourceLocation) {
+        this._sourceLocation = value || this._sourceLocationAll;
+    }
+    private _sourceLocation: SourceLocation; // TODO: just need end line #
+    private _sourceLocationAll: SourceLocation;
 
 
     /** TODO: doc... */
     private addLabel(label: Label) {
-        this._lines.push(`${label.name}:`);
+        this.addLine(`${label.name}:`, /*noIndent*/true);
     }
 
 
@@ -194,22 +174,64 @@ export default class JasmEmitter implements InstructionSet, RegisterSet {
 
 
     /** TODO: doc... */
-    private addLine(line: string) {
-        let lines: string[] = [];
+    private addLine(line: string, noIndent = false) {
+        if (!noIndent) line = '    ' + line;
 
-        // If source code is available, interleave lines of source for which IL has been emitted so far.
-        if (this._sourceLines) {
-            let currentSourceLine = (this.sourceLocation || this._sourceLocationAll).start.line;
-            while (this._sourceLinesEmitted < currentSourceLine) {
-                lines.push(`${' '.repeat(40)};|  ${this._sourceLines[this._sourceLinesEmitted]}`);
+        // TODO: temp testing... show current source line range...
+        line = line + ' '.repeat(Math.max(0, 48 - line.length));
+        let sl = (this._sourceLocation).start.line;
+        let el = (this._sourceLocation).end.line;
+        line = `${line};${sl-1}-${el-1}`;
+
+
+        // TODO: should we emit the next line of source alongside this jasm line?
+        let maxLineToEmit = this._sourceLocation.end.line;
+        while (this._sourceLinesEmitted < maxLineToEmit) {
+            let sourceLine = this._sourceLines[this._sourceLinesEmitted];
+            if (sourceLine.trim() === '') {
                 ++this._sourceLinesEmitted;
+            }
+            else {
+                line = line + ' '.repeat(Math.max(0, 60 - line.length));
+                line = `${line};|  ${this._sourceLines[this._sourceLinesEmitted]}`;
+                ++this._sourceLinesEmitted;
+                break;
             }
         }
 
+
+
+
+        // // TODO: should we emit the next line of source alongside this jasm line?
+        // let shouldEmitNextSourceLine = (() => {
+        //     let maxLineToEmit = (this._sourceLocation).end.line;
+        //     let maxLineEmitted = this._sourceLinesEmitted;
+        //     return maxLineToEmit > maxLineEmitted;
+        // })();
+
+        // if (shouldEmitNextSourceLine) {
+        //     line = line + ' '.repeat(Math.max(0, 60 - line.length));
+        //     line = `${line};|  ${this._sourceLines[this._sourceLinesEmitted]}`;
+        //     ++this._sourceLinesEmitted;
+        // }
+        this._lines.push(line);
+
+
+        // let lines: string[] = [];
+
+        // // If source code is available, interleave lines of source for which IL has been emitted so far.
+        // if (this._sourceLines) {
+        //     let currentSourceLine = (this.sourceLocation || this._sourceLocationAll).start.line;
+        //     while (this._sourceLinesEmitted < currentSourceLine) {
+        //         lines.push(`${' '.repeat(40)};|  ${this._sourceLines[this._sourceLinesEmitted]}`);
+        //         ++this._sourceLinesEmitted;
+        //     }
+        // }
+
         // TODO: ...
-        lines.push(line);
-        lines = lines.map(line => `    ${line}`);
-        this._lines.push(...lines);
+        //lines.push(line);
+        //lines = lines.map(line => `    ${line}`);
+        //this._lines.push(...lines);
     }
 
 
@@ -245,10 +267,6 @@ export default class JasmEmitter implements InstructionSet, RegisterSet {
 
     /** TODO: doc... */
     private _sourceLinesEmitted: number;
-
-
-    /** TODO: doc... */
-    private _sourceLocationAll: SourceLocation;
 }
 
 
