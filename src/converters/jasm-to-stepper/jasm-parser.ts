@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as PEG from 'pegjs';
-import Jasm from '../../formats/jasm';
+import Jasm from '../../types/jasm';
 
 
 

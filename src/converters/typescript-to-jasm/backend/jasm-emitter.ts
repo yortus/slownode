@@ -1,9 +1,9 @@
 import * as assert from 'assert';
 import {SourceLocation, BindingKind} from "babel-types"; // Elided (used only for types)
-import InstructionSet from '../../../formats/jasm/instruction-set';
+import InstructionSet from '../../../types/instruction-set';
 import Label from './label';
-import Register from '../../../formats/jasm/register';
-import RegisterSet from '../../../formats/jasm/register-set';
+import Register from '../../../types/register';
+import RegisterSet from '../../../types/register-set';
 
 
 
@@ -74,16 +74,16 @@ export default class JasmEmitter implements InstructionSet, RegisterSet {
 
 
     // Registers
-    PC = new Register('PC');
-    ENV = new Register('ENV');
-    $0 = new Register('$0', FREE_REGISTER);
-    $1 = new Register('$1', FREE_REGISTER);
-    $2 = new Register('$2', FREE_REGISTER);
-    $3 = new Register('$3', FREE_REGISTER);
-    $4 = new Register('$4', FREE_REGISTER);
-    $5 = new Register('$5', FREE_REGISTER);
-    $6 = new Register('$6', FREE_REGISTER);
-    $7 = new Register('$7', FREE_REGISTER);
+    PC: Register = {name: 'PC', value: void 0};
+    ENV: Register = {name: 'ENV', value: void 0};
+    $0: Register = {name: '$0', value: FREE_REGISTER};
+    $1: Register = {name: '$1', value: FREE_REGISTER};
+    $2: Register = {name: '$2', value: FREE_REGISTER};
+    $3: Register = {name: '$3', value: FREE_REGISTER};
+    $4: Register = {name: '$4', value: FREE_REGISTER};
+    $5: Register = {name: '$5', value: FREE_REGISTER};
+    $6: Register = {name: '$6', value: FREE_REGISTER};
+    $7: Register = {name: '$7', value: FREE_REGISTER};
 
 
     // TODO: doc...
@@ -163,12 +163,7 @@ export default class JasmEmitter implements InstructionSet, RegisterSet {
 
     /** TODO: doc... */
     private addInstr(name: string, ...args: Array<Register|Label|string|number>) {
-        let argStrs = args.map(arg => {
-            if (arg instanceof Register) return arg.name;
-            else if (typeof arg === 'string') return JSON.stringify(arg).replace(/#/g, '\\u0023'); // TODO: doc... '#' is special (used for labels) - don't need this replace any more, can remove it
-            else if (typeof arg === 'number') return JSON.stringify(arg);
-            else return `${arg.name}`;
-        });
+        let argStrs = args.map(arg => typeof arg === 'object' ? arg.name : JSON.stringify(arg));
         this.addLine(`${name.toLowerCase()}${' '.repeat(Math.max(0, 8 - name.length))}${argStrs.join(', ')}`);
     }
 

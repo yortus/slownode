@@ -1,10 +1,10 @@
-import {createGlobal, isGlobal} from '../../formats/stepper/global-object';
-import InstructionSet from '../../formats/jasm/instruction-set';
-import Jasm from '../../formats/jasm';
+import {createGlobal, isGlobal} from '../../global-object/global-object';
+import InstructionSet from '../../types/instruction-set';
+import Jasm from '../../types/jasm';
 import * as JSON3000 from '../../json3000/index'; // TODO: explicit index, so it works with AMD too
 import {parse} from './jasm-parser';
-import Register from '../../formats/jasm/register';
-import RegisterSet from '../../formats/jasm/register-set';
+import Register from '../../types/register';
+import RegisterSet from '../../types/register-set';
 
 
 
@@ -43,7 +43,7 @@ export class Stepper {
 
     // TODO: doc... does this need to otherwise work like step(), return a value, etc? I think not, but think about it...
     throwInto(err: any) {
-        let reg = new Register('temp', err);
+        let reg: Register = {name: 'temp', value: err}; // TODO: this creates a non-existent register. Better way? Is this reliable?
         this._virtualMachine.THROW(reg);
     }
 
@@ -259,16 +259,16 @@ function makeRegisters(target: RegisterSet) {
 
     let registers: RegisterSet = {
         // TODO: add ERR register for exception in flight? (can only be one)
-        PC:     new Register('PC', 1),
-        ENV:    new Register('ENV'),
-        $0:     new Register('$0'),
-        $1:     new Register('$1'),
-        $2:     new Register('$2'),
-        $3:     new Register('$3'),
-        $4:     new Register('$4'),
-        $5:     new Register('$5'),
-        $6:     new Register('$6'),
-        $7:     new Register('$7')
+        PC:     {name: 'PC', value: 1},
+        ENV:    {name: 'ENV', value: void 0},
+        $0:     {name: '$0', value: void 0},
+        $1:     {name: '$1', value: void 0},
+        $2:     {name: '$2', value: void 0},
+        $3:     {name: '$3', value: void 0},
+        $4:     {name: '$4', value: void 0},
+        $5:     {name: '$5', value: void 0},
+        $6:     {name: '$6', value: void 0},
+        $7:     {name: '$7', value: void 0}
     };
 
     // TODO: copy to target...

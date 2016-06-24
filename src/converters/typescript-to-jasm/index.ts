@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import typeScriptToAst from './frontend/typescript-to-ast';
 import astToJasm from './backend/ast-to-jasm';
-import Jasm from '../../formats/jasm';
+import Jasm from '../../types/jasm';
 import staticCheck from './frontend/static-check';
 import {types as t} from './babel';
 

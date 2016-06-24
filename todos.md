@@ -8,7 +8,9 @@
 - [ ] Epochs - automatically load & save scripts using fs
 - [ ] neaten JASM formatting in emitted JASM
 - [ ] export proper API, including Epoch and converters
+- [ ] www: get static checks working in browser
 - [ ] www: restore ability to run/step through code. Add a button for this instead of just doing it on every edit.
+- [ ] *early* error for unawaited promise - preferably static check - use tsc somehow? or some heuristic?
 - [x] better interleaving of source code and instructions in emitted JASM
 - [x] get rid of typings.d.ts
 - [x] ~~get rid of Label.ts~~ actually, leave it in. It's well-localised now.

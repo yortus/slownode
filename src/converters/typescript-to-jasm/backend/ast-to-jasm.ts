@@ -4,10 +4,10 @@ import {Statement, Expression, Identifier} from "babel-types";              // E
 import {StringLiteral, NumericLiteral, SpreadElement} from "babel-types";   // Elided (used only for types)
 import {types as t} from '../babel';
 import JasmEmitter from './jasm-emitter';
-import Jasm from '../../../formats/jasm';
+import Jasm from '../../../types/jasm';
 import Label from './label';
 import matchNode from './match-node';
-import Register from '../../../formats/jasm/register';
+import Register from '../../../types/register';
 
 
 
