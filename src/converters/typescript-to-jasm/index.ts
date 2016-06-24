@@ -1,8 +1,8 @@
 import * as assert from 'assert';
-import typeScriptToAst from './typescript-to-ast';
-import astToJasm from './ast-to-jasm';
+import typeScriptToAst from './frontend/typescript-to-ast';
+import astToJasm from './backend/ast-to-jasm';
 import Jasm from '../../formats/jasm';
-import staticCheck from './static-check';
+import staticCheck from './frontend/static-check';
 import {types as t} from './babel';
 
 

@@ -1,4 +1,4 @@
-import {transform} from './babel';
+import {transform} from '../babel';
 import {Node} from "babel-types";       // Elided (used only for types)
 import {Visitor} from "babel-traverse"; // Elided (used only for types)
 

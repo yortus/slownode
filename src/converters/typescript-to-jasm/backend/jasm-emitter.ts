@@ -1,9 +1,9 @@
 import * as assert from 'assert';
 import {SourceLocation, BindingKind} from "babel-types"; // Elided (used only for types)
-import InstructionSet from '../../formats/jasm/instruction-set';
+import InstructionSet from '../../../formats/jasm/instruction-set';
 import Label from './label';
-import Register from '../../formats/jasm/register';
-import RegisterSet from '../../formats/jasm/register-set';
+import Register from '../../../formats/jasm/register';
+import RegisterSet from '../../../formats/jasm/register-set';
 
 
 
