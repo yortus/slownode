@@ -12,12 +12,12 @@ import {types as t} from './babel';
 // TODO: ...
 export default function typeScriptToJasm(typeScriptSource: string): Jasm {
 
-    // TODO: wrap in IIAFE, and account for this in error line numbers...
-    typeScriptSource = `(async () => {\n${typeScriptSource}\n})()`;
+    // TODO: wrap in IIAFE, without changing line numbers)
+    let wrappedSource = `(async () => {${typeScriptSource}})()`;
 
     // TODO: temp testing... do static checking...
     let errorCount = 0;
-    let valid = staticCheck(typeScriptSource, (msg, line, col) => {
+    let valid = staticCheck(wrappedSource, (msg, line, col) => {
         ++errorCount;
 
         // NB: take 1 off line to account for IIAFE prolog
@@ -32,7 +32,7 @@ export default function typeScriptToJasm(typeScriptSource: string): Jasm {
     }
 
     // TODO: parse JS->AST... fix types!
-    let ast: any = typeScriptToAst(typeScriptSource);
+    let ast: any = typeScriptToAst(wrappedSource);
     assert(t.isFile(ast));
 
     // TODO: cut the IIAFE wrapper out of the AST...
