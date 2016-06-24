@@ -17,7 +17,6 @@
     },
     "files": [
         "main.ts",
-        "../src/converters/index.ts",
-        "../src/typings.d.ts"
+        "../src/converters/index.ts"
     ]
 }

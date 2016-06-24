@@ -16,7 +16,12 @@
                     "util": "scripts/util",
                 },
                 shim: {
-                    "pegjs": { exports: 'PEG' }
+                    "pegjs": {exports: 'PEG'},
+                    "built/www/main": {deps: ['babel-standalone']}
+                    // NB: ^ ensures 'babel-standalone' is fully loaded before the main loading starts. This is
+                    // necessary so that the naked `require("babel-standalone")` call in babel.ts works (else the
+                    // requirejs loader throws an error). That naked require call is there in lieu of 'babel-standalone'
+                    // having it's own published @types. babel.ts just aliases it to 'babel-core' types for simplicity.
                 }
             };
         </script>

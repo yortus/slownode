@@ -1,11 +1,27 @@
 // TODO: doc... this papers over some peculiarities of babel-core (for node) vs babel-standalone (for browsers)
-import {transform, transformFile} from 'babel-standalone';
+import * as babel from 'babel-core';
 import * as t from 'babel-types';
+const {transform, transformFile} = <typeof babel> require('babel-standalone');
 
 
 
 
 
+// TODO: augment nodes with scope info...
+declare module 'babel-types' {
+
+    interface Node {
+        scope?: {[name: string]: BindingKind};
+    }
+
+    type BindingKind = 'var'|'let'|'const'|'hoisted'|'param'|'module';
+}
+
+
+
+
+
+// TODO: exports...
 export {transform, transformFile};
 export let types: typeof t;
 

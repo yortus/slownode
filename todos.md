@@ -1,5 +1,5 @@
 ## TODOs:
-- [x] better interleaving of source code and instructions in emitted JASM
+- [ ] get rid of the `async () => {` and `})()` artefacts in source interleaving
 - [ ] turn Stepper in to a standard Iterator<void> interface
 - [ ] get rid of Label.ts
 - [ ] refactor global object factory and lib.slow.d.ts (global-object.d.ts?)
@@ -7,9 +7,10 @@
 - [ ] Epochs - automatically load & save scripts using fs
 - [ ] src/formats/ is not well structured. Some types are really shared between jasm and stepper
 - [ ] neaten JASM formatting in emitted JASM
-- [ ] get rid of typings.d.ts
 - [ ] export proper API, including Epoch and converters
 - [ ] www: restore ability to run/step through code. Add a button for this instead of just doing it on every edit.
+- [x] better interleaving of source code and instructions in emitted JASM
+- [x] get rid of typings.d.ts
 
 
 ## Three Formats:
