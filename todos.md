@@ -1,9 +1,8 @@
 ## TODOs:
-- [ ] src/formats/ is not well structured. Some types are really shared between jasm and stepper
-- [ ] turn Stepper in to a standard Iterator<void> interface
 - [ ] implement stepper-to-jasm
 - [ ] refactor global object factory and lib.slow.d.ts (global-object.d.ts?)
 - [ ] standard library...
+- [ ] instr/opcode casing - use consistently. Make jasm opcodes/directives/registers/labels case-insensitive?
 - [ ] Epochs - automatically load & save scripts using fs
 - [ ] neaten JASM formatting in emitted JASM
 - [ ] export proper API, including Epoch and converters
@@ -14,7 +13,9 @@
 - [x] get rid of typings.d.ts
 - [x] ~~get rid of Label.ts~~ actually, leave it in. It's well-localised now.
 - [x] get rid of the `async () => {` and `})()` artefacts in source interleaving
+- [x] src/formats/ is not well structured. Some types are really shared between jasm and stepper
 - [x] source interleaving: 'zip' jasm and ts lines together guided by 'sync points'
+- [x] turn Stepper in to a standard Iterator<void> interface
 
 
 ## Three Formats:

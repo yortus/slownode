@@ -37,7 +37,11 @@ export default class Epoch extends EventEmitter {
             // TODO: run to completion...
             try {
                 // TODO: saving at await points...
-                while (!(await stepper.step())) {/* no-op */}
+                while (true) {
+                    let it = stepper.next();
+                    if (it.done) return;
+                    await it.value;
+                }
             }
             catch (err) {
                 this.emit('error', err, scriptId);

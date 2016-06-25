@@ -5,6 +5,7 @@ import * as JSON3000 from '../../json3000/index'; // TODO: explicit index, so it
 import {parse} from './jasm-parser';
 import Register from '../../types/register';
 import RegisterSet from '../../types/register-set';
+import Stepper from '../../types/stepper';
 
 
 
@@ -13,7 +14,7 @@ import RegisterSet from '../../types/register-set';
 // TODO: ...
 export default function jasmToStepper(jasm: Jasm): Stepper {
     let globalObject = createGlobal();
-    let stepper = new Stepper(jasm, globalObject, tempPark);
+    let stepper = new StepperImpl(jasm, globalObject, tempPark);
     return stepper;
 }
 
@@ -22,7 +23,7 @@ export default function jasmToStepper(jasm: Jasm): Stepper {
 
 
 // TODO: ...
-export class Stepper {
+export class StepperImpl implements Stepper {
 
 
     // TODO: ...
@@ -32,19 +33,23 @@ export class Stepper {
         let virtualMachine = this._virtualMachine = makeVirtualMachine(park);
         let registers = this.registers = <any> virtualMachine;
         registers.ENV.value = globalObject || {};
-        this.step = makeStepFunction(jasm, virtualMachine);
+        this.next = makeNextFunction(jasm, virtualMachine);
     }
 
 
     // TODO: doc... unhandled exceptions in the script will be thrown here...
     // TODO: what if step() is called again after jasm finished/errored? Expected behaviour? Undefined behaviour for now...
-    step: () => Promise<boolean>;
+    next: () => IteratorResult<Promise<void>>;
 
 
     // TODO: doc... does this need to otherwise work like step(), return a value, etc? I think not, but think about it...
-    throwInto(err: any) {
+    throw(err: any): IteratorResult<Promise<void>> {
         let reg: Register = {name: 'temp', value: err}; // TODO: this creates a non-existent register. Better way? Is this reliable?
-        this._virtualMachine.THROW(reg);
+        this._virtualMachine.THROW(reg); // TODO: this executes an instruction that is not in the JASM program. What happens to PC, etc??
+        // TODO: ^ will throw back at caller if JASM program doesn't handle it
+        // TODO: is JASM program *does* handle it, what should we return from here?
+        // TODO: temp just for now...
+        return { done: false, value: Promise.resolve() };
     }
 
 
@@ -106,7 +111,7 @@ console.log(o);
 
 
 // TODO: ...
-function makeStepFunction(jasm: Jasm, virtualMachine: InstructionSet & RegisterSet) {
+function makeNextFunction(jasm: Jasm, virtualMachine: InstructionSet & RegisterSet): () => IteratorResult<Promise<void>> {
 
     let ast = parse(jasm);
 
@@ -169,9 +174,11 @@ function makeStepFunction(jasm: Jasm, virtualMachine: InstructionSet & RegisterS
             switch (PC.value++) {
                 ${lines.map(line => `${' '.repeat(16)}${line}`).join('\n').slice(16)}
             }
-            return Promise.resolve(p).then(() => PC.value > ${codeLines.length});
+            let done = PC.value > ${codeLines.length}; // If done, must have seen STOP instruction
+            let result = { done, value: done ? void 0 : Promise.resolve(p) };
+            return result;
         })`);
-    let result: () => Promise<boolean> = makeCode(virtualMachine);
+    let result: () => IteratorResult<Promise<void>> = makeCode(virtualMachine);
 
     // TODO: temp testing... remove...
     console.log(result.toString())
