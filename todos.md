@@ -1,5 +1,4 @@
 ## TODOs:
-- [ ] source interleaving: 'zip' jasm and ts lines together guided by 'sync points'
 - [ ] src/formats/ is not well structured. Some types are really shared between jasm and stepper
 - [ ] turn Stepper in to a standard Iterator<void> interface
 - [ ] implement stepper-to-jasm
@@ -15,6 +14,7 @@
 - [x] get rid of typings.d.ts
 - [x] ~~get rid of Label.ts~~ actually, leave it in. It's well-localised now.
 - [x] get rid of the `async () => {` and `})()` artefacts in source interleaving
+- [x] source interleaving: 'zip' jasm and ts lines together guided by 'sync points'
 
 
 ## Three Formats:
