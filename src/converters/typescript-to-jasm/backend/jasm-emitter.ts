@@ -19,13 +19,6 @@ export default class JasmEmitter implements InstructionSet, RegisterSet {
         // Keep track of the lines of source, and how many have been emitted so far.
         this._sourceLines = source ? source.split(/(?:\r\n)|\r|\n/) : [''];
         this._sourceLinesEmitted = 0;
-
-        // Compute a SourceLocation that encompasses the entire source.
-        let lineCount = this._sourceLines.length;
-        this.pushSourceLocation({
-            start: { line: 1, column: 0 },
-            end: { line: lineCount, column: this._sourceLines[lineCount - 1].length }
-        });
     }
 
 
@@ -165,18 +158,14 @@ export default class JasmEmitter implements InstructionSet, RegisterSet {
         }
 
         // TODO: ...
-        return `.CODE\n${lines.join('\n')}\n\n\n\n\n\n.DATA\nnull\n`;
+        return `.CODE\n${lines.join('\n')}\n\n\n\n.DATA\nnull\n`;
     }
 
 
-    /** TODO: doc... */
-    pushSourceLocation(value: SourceLocation) {
-        if (value && value.start.line - 1 === this._syncLines[this._syncLines.length - 1][1]) value = null; // TODO: explain...
-
-        if (!value) return;
-        this._syncLines.push([this._lines.length, value.start.line - 1]);
-    }
-    popSourceLocation() {
+    /** TODO: doc... one-based */
+    syncSourceLocation(sourceLine: number) {
+        if (sourceLine - 1 === this._syncLines[this._syncLines.length - 1][1]) return; // TODO: explain...
+        this._syncLines.push([this._lines.length, sourceLine - 1]);
     }
     private _syncLines: [number, number][] = [[0, 0]];
 
