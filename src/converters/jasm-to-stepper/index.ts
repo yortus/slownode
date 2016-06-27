@@ -1,7 +1,7 @@
 import {createGlobal, isGlobal} from '../../global-object/global-object';
 import InstructionSet from '../../types/instruction-set';
 import Jasm from '../../types/jasm';
-import * as JSON3000 from '../../json3000/index'; // TODO: explicit index, so it works with AMD too
+import * as KVON from '../../kvon/index'; // TODO: explicit index, so it works with AMD too
 import {parse} from './jasm-parser';
 import Register from '../../types/register';
 import RegisterSet from '../../types/register-set';
@@ -71,10 +71,10 @@ export class StepperImpl implements Stepper {
 
 // TODO: implement properly...
 async function tempPark(state: any) {
-    let s = JSON3000.stringify(state, replacer, 4);
+    let s = KVON.stringify(state, replacer, 4);
     console.log(`PARK: ${s}`);
 // TODO: temp testing...
-let o = JSON3000.parse(s, reviver);
+let o = KVON.parse(s, reviver);
 console.log(`UNPARK:`);
 console.log(o);
 

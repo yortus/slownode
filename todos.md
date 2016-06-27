@@ -18,6 +18,30 @@
 - [x] turn Stepper in to a standard Iterator<void> interface
 
 
+
+```
+
+Stepper.parse           // JASM+KVON to Stepper object
+  JASM.parse            // JASM string to Program object
+  KVON.parse            // KVON string to object
+
+Stepper.stringify       // Stepper object to JASM+KVON
+  JASM.stringify        // Program object to JASM string
+  KVON.stringify        // object to KVON string
+
+
+
+Stepper (Virtual Machine impl)
+  program: Program
+  registers: RegisterSet
+
+
+
+
+
+```
+
+
 ## Three Formats:
 
 1. **Readable** - a textual representation suitable for authoring by a human developer (also: Writable)
@@ -33,17 +57,17 @@
 
 2. **Runnable to Storable**
   - extraction of JASM instruction sequence (one-liner via retained reference to JASM source)
-  - serialization of current state (one-liner via JSON3000#stringify)
+  - serialization of current state (one-liner via KVON#stringify)
 
 3. **Storable to Runnable**
   - compilation of JASM instruction sequence into an object akin to a generator object with a step/next method.
-  - deserialization of state from JSON3000 format into a state object
+  - deserialization of state from KVON format into a state object
   - 
 
 
 ## Shared Functionality/Types:
 
-- JSON3000 (parse & stringify & types)
+- KVON (parse & stringify & types)
 - global object factory
 - global object type declarations
 
@@ -62,7 +86,7 @@
 - [ ] interface Runnable { step, throwInto, registers }
 - [ ] type Readable = string
 - [ ] JASM dir (instruction-set, register-set)
-- [ ] JSON3000 dir (...)
+- [ ] KVON dir (...)
 - [ ] readable-to-storable dir (all from ts-to-jasm)
 - [ ] storable-to-runnable dir (???)
 - [ ] get rid of `typings.d.ts` files from source code
