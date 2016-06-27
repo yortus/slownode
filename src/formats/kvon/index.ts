@@ -15,8 +15,15 @@ import * as tranformers from './transformers/all';
 
 
 
+// TODO: the KVON object...
+export default { stringify, parse };
+
+
+
+
+
 // TODO: fix signatures/pass-through...
-export function stringify(value: any, replacer?: Replacer, space?: string|number) {
+function stringify(value: any, replacer?: Replacer, space?: string|number) {
 
     let compositeReplacer: Replacer;
     if (!replacer) {
@@ -44,7 +51,7 @@ export function stringify(value: any, replacer?: Replacer, space?: string|number
 
 
 // TODO: fix signatures/pass-through...
-export function parse(text: string, reviver?: Reviver) {
+function parse(text: string, reviver?: Reviver) {
 
     let compositeReviver: Reviver;
     if (!reviver) {

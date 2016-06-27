@@ -10,5 +10,7 @@
         "strictNullChecks": false,
         "listFiles": false,
         "types" : ["node"]
+        // TODO: add following after PR for node.d.ts adding `declare module "console" {...}`, `declare var console...`, etc
+        // TODO: was... "lib": ["es6"]
     }
 }
