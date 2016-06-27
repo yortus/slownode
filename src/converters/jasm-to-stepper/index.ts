@@ -1,7 +1,7 @@
 import {createGlobal, isGlobal} from '../../global-object/global-object';
 import InstructionSet from '../../types/instruction-set';
 import Jasm from '../../types/jasm';
-import * as KVON from '../../kvon/index'; // TODO: explicit index, so it works with AMD too
+import * as KVON from '../../formats/kvon/index'; // TODO: explicit index, so it works with AMD too
 import {parse} from './jasm-parser';
 import Register from '../../types/register';
 import RegisterSet from '../../types/register-set';
