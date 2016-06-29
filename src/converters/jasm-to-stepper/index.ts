@@ -1,20 +1,20 @@
 import {createGlobal, isGlobal} from '../../global-object/global-object';
 import InstructionSet from '../../types/instruction-set';
-import JASM from '../../formats/jasm/index'; // TODO: explicit index, so it works with AMD too
+import JASM, {Program} from '../../formats/jasm/index'; // TODO: explicit index, so it works with AMD too
 import KVON from '../../formats/kvon/index'; // TODO: explicit index, so it works with AMD too
 import makeVirtualMachine from './make-virtual-machine';
 import Register from '../../types/register';
 import RegisterSet from '../../types/register-set';
-import Stepper from '../../types/stepper';
+import StepperType from '../../types/stepper';
 
 
 
 
 
 // TODO: ...
-export default function jasmToStepper(jasm: string): Stepper {
+export default function jasmToStepper(jasm: string): StepperType {
     let globalObject = createGlobal();
-    let stepper = new StepperImpl(jasm, globalObject, tempPark);
+    let stepper = new Stepper(jasm, globalObject, tempPark);
     return stepper;
 }
 
@@ -23,17 +23,17 @@ export default function jasmToStepper(jasm: string): Stepper {
 
 
 // TODO: ...
-class StepperImpl implements Stepper {
+class Stepper implements StepperType {
 
 
     // TODO: ...
     constructor(jasm: string, globalObject?: {}, park?: (state: any) => Promise<void>) {
         park = park || (async () => {});
-        this.jasm = jasm;
+        let program = this.program = JASM.parse(jasm);
         let virtualMachine = this._virtualMachine = makeVirtualMachine(park);
         let registers = this.registers = <any> virtualMachine;
         registers.ENV.value = globalObject || {};
-        this.next = makeNextFunction(jasm, virtualMachine);
+        this.next = makeNextFunction(program, virtualMachine);
     }
 
 
@@ -54,7 +54,7 @@ class StepperImpl implements Stepper {
 
 
     // TODO: ...
-    jasm: string;
+    program: Program;
 
 
     // TODO: ...
@@ -111,18 +111,16 @@ console.log(o);
 
 
 // TODO: ...
-function makeNextFunction(jasm: string, virtualMachine: InstructionSet & RegisterSet): () => IteratorResult<Promise<void>> {
-
-    let ast = JASM.parse(jasm);
+function makeNextFunction(program: Program, virtualMachine: InstructionSet & RegisterSet): () => IteratorResult<Promise<void>> {
 
     // TODO: Associate each label with it's one-based line number...
-    let labels = ast.lines.reduce((labels, line, i) => {
+    let labels = program.lines.reduce((labels, line, i) => {
         if (line.type === 'label') labels[line.name] = i + 1;
         return labels;
     }, {});
 
     // TODO: ...
-    let codeLines = ast.lines.map(line => {
+    let codeLines = program.lines.map(line => {
         switch (line.type) {
             case 'blank':
                 return `// ${line.comment}`;
