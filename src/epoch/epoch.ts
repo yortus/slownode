@@ -33,7 +33,7 @@ export default class Epoch extends EventEmitter {
         // TODO: ...
         let jasm = typeScriptToJasm(script);
         let globalObject = createGlobal();
-        let stepper = new Stepper(jasm, globalObject, tempPark);
+        let stepper = new Stepper(jasm, globalObject);
 
         // TODO: Kick off script using an IIAFE...
         // TODO: do we need to keep a reference to the script/jasm/interpreter/progress after this? Why? Why not?
@@ -42,6 +42,13 @@ export default class Epoch extends EventEmitter {
             try {
                 // TODO: saving at await points...
                 while (true) {
+                    let instr = stepper.program.lines[stepper.registers.PC.value];
+                    let shouldPark = instr.type === 'instruction' && instr.opcode.toUpperCase() === 'AWAIT';
+
+                    if (shouldPark) {
+                        await tempPark(stepper);
+                    }                    
+
                     let it = stepper.next();
                     if (it.done) return;
                     await it.value;
@@ -64,14 +71,26 @@ export default class Epoch extends EventEmitter {
 
 
 // TODO: implement properly...
-import KVON from '../serialization/kvon/index'; // TODO: explicit index, so it works with AMD too
-async function tempPark(state: any) {
-    let s = KVON.stringify(state, replacer, 4);
+import JASM from '../serialization/jasm';
+import KVON from '../serialization/kvon';
+async function tempPark(stepper: Stepper) {
+
+    // TODO: temp testing...
+    const regNames = ['PC', 'ENV', '$0', '$1', '$2', '$3', '$4', '$5', '$6', '$7'];
+    let state = regNames.reduce((state, name) => (state[name] = stepper.registers[name].value, state), {});
+
+    // TODO: temp testing...
+    let code = JASM.stringify(stepper.program);
+    let data = KVON.stringify(state, replacer, 4);
+    let s = `.CODE\n${code}\n\n\n\n\n.DATA\n${data}`;
+    console.log(`\n\n\n\n\n################################################################################`);
     console.log(`PARK: ${s}`);
-// TODO: temp testing...
-let o = KVON.parse(s, reviver);
-console.log(`UNPARK:`);
-console.log(o);
+
+
+    // TODO: temp testing... what about JASM?
+    let o = KVON.parse(data, reviver);
+    console.log(`\n\nUNPARK:`);
+    console.log(o);
 
 
     // TODO: temp testing...

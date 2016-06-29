@@ -12,10 +12,10 @@ export default class Stepper {
 
 
     // TODO: ...
-    constructor(jasm: string, globalObject?: {}, park?: (state: any) => Promise<void>) {
-        park = park || (async () => {});
+    constructor(jasm: string, globalObject?: {}) {
+        this.jasm = jasm;
         let program = this.program = JASM.parse(jasm);
-        let virtualMachine = this._virtualMachine = makeVirtualMachine(park);
+        let virtualMachine = this._virtualMachine = makeVirtualMachine();
         let registers = this.registers = <any> virtualMachine;
         registers.ENV.value = globalObject || {};
         this.next = makeNextFunction(program, virtualMachine);
@@ -48,4 +48,8 @@ export default class Stepper {
 
     // TODO: ...
     private _virtualMachine: VirtualMachine;
+
+
+    // TODO: ...
+    private jasm: string;
 }

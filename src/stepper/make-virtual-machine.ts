@@ -5,10 +5,10 @@ import VirtualMachine, {InstructionSet, Register, RegisterSet} from '../virtual-
 
 
 // TODO: ... `park` callback has got to go...
-export default function makeVirtualMachine(park: (state: any) => Promise<void>): VirtualMachine {
+export default function makeVirtualMachine(): VirtualMachine {
     let virtualMachine: VirtualMachine = <any> {};
     makeRegisters(virtualMachine);
-    makeInstructions(virtualMachine, virtualMachine.PC, park);
+    makeInstructions(virtualMachine, virtualMachine.PC);
     return virtualMachine;
 }
 
@@ -16,7 +16,7 @@ export default function makeVirtualMachine(park: (state: any) => Promise<void>):
 
 
 // TODO: ...
-function makeInstructions(target: InstructionSet, pc: Register, park: (state: any) => Promise<void>) {
+function makeInstructions(target: InstructionSet, pc: Register) {
     let instructions: InstructionSet = {
 
 // TODO: convert all to method shorthand - too risky with return value otherwise, in case a Promise shows up (eg in CALL)...
@@ -60,10 +60,7 @@ function makeInstructions(target: InstructionSet, pc: Register, park: (state: an
         TRUE:   (tgt) => { tgt.value = true; },
         FALSE:  (tgt) => { tgt.value = false; },
         NULL:   (tgt) => { tgt.value = null; },
-        UNDEFD:   (tgt) => { tgt.value = void 0; },
-
-        // Meta
-        PARK:   (...regs) => park(regs.reduce((state, reg) => (state[reg.name] = reg.value, state), {}))
+        UNDEFD:   (tgt) => { tgt.value = void 0; }
     };
 
     // TODO: copy to target...
