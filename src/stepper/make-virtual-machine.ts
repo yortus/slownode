@@ -1,6 +1,6 @@
-import InstructionSet from '../../types/instruction-set';
-import Register from '../../types/register';
-import RegisterSet from '../../types/register-set';
+import InstructionSet from '../types/instruction-set';
+import Register from '../types/register';
+import RegisterSet from '../types/register-set';
 
 
 

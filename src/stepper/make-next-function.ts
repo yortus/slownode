@@ -1,6 +1,6 @@
-import InstructionSet from '../../types/instruction-set';
-import {Program} from '../../formats/jasm';
-import RegisterSet from '../../types/register-set';
+import InstructionSet from '../types/instruction-set';
+import {Program} from '../formats/jasm';
+import RegisterSet from '../types/register-set';
 
 
 

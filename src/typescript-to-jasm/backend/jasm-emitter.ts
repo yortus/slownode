@@ -1,9 +1,9 @@
 import * as assert from 'assert';
 import {SourceLocation, BindingKind} from "babel-types"; // Elided (used only for types)
-import InstructionSet from '../../../types/instruction-set';
+import InstructionSet from '../../types/instruction-set';
 import Label from './label';
-import Register from '../../../types/register';
-import RegisterSet from '../../../types/register-set';
+import Register from '../../types/register';
+import RegisterSet from '../../types/register-set';
 
 
 

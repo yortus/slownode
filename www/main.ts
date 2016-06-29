@@ -2,7 +2,7 @@ import * as ko from 'knockout';
 import * as cm from 'codemirror';
 import 'javascript-mode';
 import 'z80-mode';
-import typeScriptToJasm from '../src/converters/typescript-to-jasm/index';
+import typeScriptToJasm from '../src/typescript-to-jasm/index';
 
 
 
