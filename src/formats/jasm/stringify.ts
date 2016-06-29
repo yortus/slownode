@@ -41,7 +41,7 @@ export default function stringify(program: Program): string {
         // TODO: ...
         if (line.comment) {
             if (line.commentColumn) s = s + ' '.repeat(Math.max(0, line.commentColumn - s.length));
-            s = `${s}${line.comment}`;
+            s = `${s};${line.comment}`;
         }
 
         return s;
