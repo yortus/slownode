@@ -1,8 +1,7 @@
 import {createGlobal, isGlobal} from '../../global-object/global-object';
 import InstructionSet from '../../types/instruction-set';
-import Jasm from '../../types/jasm';
+import JASM from '../../formats/jasm/index'; // TODO: explicit index, so it works with AMD too
 import KVON from '../../formats/kvon/index'; // TODO: explicit index, so it works with AMD too
-import {parse} from './jasm-parser';
 import Register from '../../types/register';
 import RegisterSet from '../../types/register-set';
 import Stepper from '../../types/stepper';
@@ -12,7 +11,7 @@ import Stepper from '../../types/stepper';
 
 
 // TODO: ...
-export default function jasmToStepper(jasm: Jasm): Stepper {
+export default function jasmToStepper(jasm: string): Stepper {
     let globalObject = createGlobal();
     let stepper = new StepperImpl(jasm, globalObject, tempPark);
     return stepper;
@@ -27,7 +26,7 @@ export class StepperImpl implements Stepper {
 
 
     // TODO: ...
-    constructor(jasm: Jasm, globalObject?: {}, park?: (state: any) => Promise<void>) {
+    constructor(jasm: string, globalObject?: {}, park?: (state: any) => Promise<void>) {
         park = park || (async () => {});
         this.jasm = jasm;
         let virtualMachine = this._virtualMachine = makeVirtualMachine(park);
@@ -54,7 +53,7 @@ export class StepperImpl implements Stepper {
 
 
     // TODO: ...
-    jasm: Jasm;
+    jasm: string;
 
 
     // TODO: ...
@@ -111,18 +110,18 @@ console.log(o);
 
 
 // TODO: ...
-function makeNextFunction(jasm: Jasm, virtualMachine: InstructionSet & RegisterSet): () => IteratorResult<Promise<void>> {
+function makeNextFunction(jasm: string, virtualMachine: InstructionSet & RegisterSet): () => IteratorResult<Promise<void>> {
 
-    let ast = parse(jasm);
+    let ast = JASM.parse(jasm);
 
     // TODO: Associate each label with it's one-based line number...
-    let labels = ast.code.reduce((labels, line, i) => {
+    let labels = ast.lines.reduce((labels, line, i) => {
         if (line.type === 'label') labels[line.name] = i + 1;
         return labels;
     }, {});
 
     // TODO: ...
-    let codeLines = ast.code.map(line => {
+    let codeLines = ast.lines.map(line => {
         switch (line.type) {
             case 'blank':
                 return `// ${line.comment}`;

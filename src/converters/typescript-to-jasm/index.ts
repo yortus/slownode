@@ -1,7 +1,6 @@
 import * as assert from 'assert';
 import typeScriptToAst from './frontend/typescript-to-ast';
 import astToJasm from './backend/ast-to-jasm';
-import Jasm from '../../types/jasm';
 import staticCheck from './frontend/static-check';
 import {types as t} from './babel';
 
@@ -10,7 +9,7 @@ import {types as t} from './babel';
 
 
 // TODO: ...
-export default function typeScriptToJasm(typeScriptSource: string): Jasm {
+export default function typeScriptToJasm(typeScriptSource: string): string {
 
     // TODO: wrap in IIAFE, without changing line numbers)
     let wrappedSource = `(async () => {${typeScriptSource}})()`;

@@ -4,7 +4,6 @@ import {Statement, Expression, Identifier} from "babel-types";              // E
 import {StringLiteral, NumericLiteral, SpreadElement} from "babel-types";   // Elided (used only for types)
 import {types as t} from '../babel';
 import JasmEmitter from './jasm-emitter';
-import Jasm from '../../../types/jasm';
 import Label from './label';
 import matchNode from './match-node';
 import Register from '../../../types/register';
@@ -14,7 +13,7 @@ import Register from '../../../types/register';
 
 
 // TODO: ... make second arg optional
-export default function astToJasm(ast: Node, typeScriptSource: string): Jasm {
+export default function astToJasm(ast: Node, typeScriptSource: string): string {
     assert(t.isFile(ast));
     let emit = new JasmEmitter(typeScriptSource);
     visitStatement(emit, (<File> ast).program);

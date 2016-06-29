@@ -158,7 +158,7 @@ export default class JasmEmitter implements InstructionSet, RegisterSet {
         }
 
         // TODO: ...
-        return `.CODE\n${lines.join('\n')}\n\n\n\n.DATA\nnull\n`;
+        return `${lines.join('\n')}\n`;
     }
 
 
