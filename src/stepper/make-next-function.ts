@@ -60,8 +60,6 @@ export default function makeNextFunction(program: Program, virtualMachine: Virtu
     `.split(/(?:\r\n)|\r|\n/).map(line => line.slice(8)).join('\n');
     let result: () => IteratorResult<Promise<void>> = eval(`(${source})`);
 
-
-    // TODO: temp testing... remove...
-    console.log(result.toString())
+    // TODO: ...
     return result;
 }
