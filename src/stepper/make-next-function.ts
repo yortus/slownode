@@ -1,13 +1,12 @@
-import InstructionSet from '../types/instruction-set';
 import {Program} from '../formats/jasm';
-import RegisterSet from '../types/register-set';
+import VirtualMachine from '../virtual-machine';
 
 
 
 
 
 // TODO: ...
-export default function makeNextFunction(program: Program, virtualMachine: InstructionSet & RegisterSet): () => IteratorResult<Promise<void>> {
+export default function makeNextFunction(program: Program, virtualMachine: VirtualMachine): () => IteratorResult<Promise<void>> {
 
     // TODO: Associate each label with it's zero-based line number...
     let labelLines = program.lines.reduce((labels, line, i) => {

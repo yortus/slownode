@@ -1,10 +1,8 @@
-import InstructionSet from '../types/instruction-set';
 import JASM, {Program} from '../formats/jasm/index'; // TODO: explicit index, so it works with AMD too
 import KVON from '../formats/kvon/index'; // TODO: explicit index, so it works with AMD too
 import makeNextFunction from './make-next-function';
 import makeVirtualMachine from './make-virtual-machine';
-import Register from '../types/register';
-import RegisterSet from '../types/register-set';
+import VirtualMachine, {InstructionSet, Register, RegisterSet} from '../virtual-machine';
 
 
 
@@ -49,5 +47,5 @@ export default class Stepper {
 
 
     // TODO: ...
-    private _virtualMachine: InstructionSet & RegisterSet;
+    private _virtualMachine: VirtualMachine;
 }

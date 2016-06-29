@@ -1,14 +1,12 @@
-import InstructionSet from '../types/instruction-set';
-import Register from '../types/register';
-import RegisterSet from '../types/register-set';
+import VirtualMachine, {InstructionSet, Register, RegisterSet} from '../virtual-machine';
 
 
 
 
 
 // TODO: ... `park` callback has got to go...
-export default function makeVirtualMachine(park: (state: any) => Promise<void>): InstructionSet & RegisterSet {
-    let virtualMachine: InstructionSet & RegisterSet = <any> {};
+export default function makeVirtualMachine(park: (state: any) => Promise<void>): VirtualMachine {
+    let virtualMachine: VirtualMachine = <any> {};
     makeRegisters(virtualMachine);
     makeInstructions(virtualMachine, virtualMachine.PC, park);
     return virtualMachine;
