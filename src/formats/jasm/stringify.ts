@@ -30,7 +30,7 @@ export default function stringify(program: Program): string {
                         default:            throw new Error(`Unhandled JASM argument type`);
                     }
                 });
-                s = `    ${line.opcode} ${' '.repeat(Math.max(0, 7 - name.length))}${args.join(', ')}`;
+                s = `    ${line.opcode} ${' '.repeat(Math.max(0, 7 - line.opcode.length))}${args.join(', ')}`;
                 break;
 
             default:
@@ -41,12 +41,12 @@ export default function stringify(program: Program): string {
         // TODO: ...
         if (line.comment) {
             if (line.commentColumn) s = s + ' '.repeat(Math.max(0, line.commentColumn - s.length));
-            s = `${s};${line.comment}`;
+            s = `${s}${line.comment}`;
         }
 
         return s;
     });
 
     // TODO: ...
-    return lines.join('\n');
+    return `${lines.join('\n')}\n`;
 }

@@ -55,7 +55,7 @@ StringArgument        =   String   { return {type:'const', value: JSON.parse(tex
 NumberArgument        =   Number   { return {type:'const', value: JSON.parse(text())}; }
 
 // ---------- comment ----------
-Comment "comment"     =   ";"   (!EOL .)*   { return {text: text().slice(1), col: location().start.column-1}; }
+Comment "comment"     =   ";"   (!EOL .)*   { return { text: text(), col: location().start.column - 1 }; }
 
 // ---------- string literal ----------
 String "string"       =   '"'   Character*   '"'
