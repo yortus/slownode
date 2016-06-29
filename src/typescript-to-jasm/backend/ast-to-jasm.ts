@@ -425,7 +425,6 @@ function visitExpression(emit: JasmEmitter, expr: Expression|SpreadElement, $T: 
         // ------------------------- experimental -------------------------
         AwaitExpression:        expr => {
                                     visitExpr(expr.argument, $T);
-                                    emit.PARK(...emit.usedRegisters());
                                     emit.AWAIT($T, $T);
                                 }
     });

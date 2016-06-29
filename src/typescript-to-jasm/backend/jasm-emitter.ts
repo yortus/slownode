@@ -60,9 +60,6 @@ export default class JasmEmitter implements InstructionSet, RegisterSet {
     NULL(tgt: Register) { this.addInstr('NULL', tgt); }
     UNDEFD(tgt: Register) { this.addInstr('UNDEFD', tgt); }
 
-    // Instructions: Meta
-    PARK(...regs: Register[]) { this.addInstr('PARK', ...regs); }
-
 
     // Registers
     PC: Register = {name: 'PC', value: void 0};
@@ -111,18 +108,6 @@ export default class JasmEmitter implements InstructionSet, RegisterSet {
         }
         callback(...args);
         args.forEach(arg => this.releaseRegister(arg));
-    }
-
-
-    /** TODO: doc... */    
-    usedRegisters(): Register[] {
-        let result = [this.PC, this.ENV];
-        for (let i = 0; i < 8; ++i) {
-            let reg = <Register> this[`$${i}`];
-            if (reg.value === FREE_REGISTER) continue;
-            result.push(reg);
-        }
-        return result;
     }
 
 
@@ -201,6 +186,7 @@ export default class JasmEmitter implements InstructionSet, RegisterSet {
 
     /** TODO: doc... */
     private releaseRegister(reg: Register) {
+        this.UNDEFD(reg);
         reg.value = FREE_REGISTER;
     }
 
