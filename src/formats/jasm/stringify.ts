@@ -30,7 +30,7 @@ export default function stringify(program: Program): string {
                         default:            throw new Error(`Unhandled JASM argument type`);
                     }
                 });
-                s = `    ${line.opcode} ${args.join(', ')}`;
+                s = `    ${line.opcode} ${' '.repeat(Math.max(0, 7 - name.length))}${args.join(', ')}`;
                 break;
 
             default:
