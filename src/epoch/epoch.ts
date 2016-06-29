@@ -32,12 +32,20 @@ export default class Epoch extends EventEmitter {
         let jasm = typeScriptToJasm(script);
         let stepper = jasmToStepper(jasm);
 
+        // TODO: Kick off script using an IIAFE...
         // TODO: do we need to keep a reference to the script/jasm/interpreter/progress after this? Why? Why not?
         (async () => {
             // TODO: run to completion...
             try {
                 // TODO: saving at await points...
                 while (true) {
+
+// TODO: temp testing...
+let prog = stepper.program;
+let pc = stepper.registers.PC.value;
+debugger;
+let line = prog.lines[pc];
+
                     let it = stepper.next();
                     if (it.done) return;
                     await it.value;

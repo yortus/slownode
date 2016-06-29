@@ -132,8 +132,8 @@ export default class JasmEmitter implements InstructionSet, RegisterSet {
     build(): string {
 
         // TODO: ...
-        this._syncLines.push([this._lines.length, this._sourceLines.length]);
         this.STOP();
+        this._syncLines.push([this._lines.length, this._sourceLines.length]);
 
         // TODO: ...
         let lines: string[] = [];
@@ -208,7 +208,7 @@ export default class JasmEmitter implements InstructionSet, RegisterSet {
 
 
     /** TODO: doc... */
-    private _lines: string[] = []; // NB: 1-based line numbering
+    private _lines: string[] = [];
 
 
     /** TODO: doc... */

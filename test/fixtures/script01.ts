@@ -1,3 +1,30 @@
+//if (1 === 1 + 0) return;
+
+
+let ii = 0, isum = 0; 
+while (ii < 50) {
+    isum = isum + ii;  
+    ii += 1;
+    print('' + isum);
+}
+await 0;
+// blah
+// blah
+// blah
+// blah
+// blah
+// blah
+// blah
+// blah
+// blah
+// blah
+// blah
+// blah
+// blah
+// blah
+// blah
+// blah
+
 
 
 let s = `

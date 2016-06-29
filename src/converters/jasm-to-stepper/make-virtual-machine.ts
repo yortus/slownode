@@ -83,7 +83,7 @@ function makeRegisters(target: RegisterSet) {
 
     let registers: RegisterSet = {
         // TODO: add ERR register for exception in flight? (can only be one)
-        PC:     {name: 'PC', value: 1},
+        PC:     {name: 'PC', value: 0},
         ENV:    {name: 'ENV', value: void 0},
         $0:     {name: '$0', value: void 0},
         $1:     {name: '$1', value: void 0},
