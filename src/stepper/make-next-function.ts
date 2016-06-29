@@ -1,4 +1,4 @@
-import {Program} from '../formats/jasm';
+import {Program} from '../serialization/jasm';
 import VirtualMachine from '../virtual-machine';
 
 

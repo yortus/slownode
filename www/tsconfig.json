@@ -17,6 +17,6 @@
     },
     "files": [
         "main.ts",
-        "../src/converters/index.ts"
+        "../src/typescript-to-jasm/index.ts"
     ]
 }

@@ -64,7 +64,7 @@ export default class Epoch extends EventEmitter {
 
 
 // TODO: implement properly...
-import KVON from '../formats/kvon/index'; // TODO: explicit index, so it works with AMD too
+import KVON from '../serialization/kvon/index'; // TODO: explicit index, so it works with AMD too
 async function tempPark(state: any) {
     let s = KVON.stringify(state, replacer, 4);
     console.log(`PARK: ${s}`);

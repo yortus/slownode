@@ -1,5 +1,5 @@
-import JASM, {Program} from '../formats/jasm/index'; // TODO: explicit index, so it works with AMD too
-import KVON from '../formats/kvon/index'; // TODO: explicit index, so it works with AMD too
+import JASM, {Program} from '../serialization/jasm/index';  // TODO: explicit index, so it works with AMD too
+import KVON from '../serialization/kvon/index';             // TODO: explicit index, so it works with AMD too
 import makeNextFunction from './make-next-function';
 import makeVirtualMachine from './make-virtual-machine';
 import VirtualMachine, {InstructionSet, Register, RegisterSet} from '../virtual-machine';
