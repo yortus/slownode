@@ -81,40 +81,14 @@ async function tempPark(stepper: Stepper) {
 
     // TODO: temp testing...
     let code = JASM.stringify(stepper.program);
-    let data = KVON.stringify(state, replacer, 4);
+    let data = KVON.stringify(state, null, 4);
     let s = `.CODE\n${code}\n\n\n\n\n.DATA\n${data}`;
     console.log(`\n\n\n\n\n################################################################################`);
     console.log(`PARK: ${s}`);
 
 
     // TODO: temp testing... what about JASM?
-    let o = KVON.parse(data, reviver);
+    let o = KVON.parse(data);
     console.log(`\n\nUNPARK:`);
     console.log(o);
-
-
-    // TODO: temp testing...
-    // - support special storage of Promise that rejects with 'EpochRestartError' on revival (or ExtinctionError?, UnrevivableError?, RevivalError?)
-    function replacer(key: string, val: any) {
-        if (isGlobal(val)) {
-            let keys = Object.keys(val);
-            return { $type: 'Global', props: keys.reduce((props, key) => (props[key] = val[key], props), {}) };
-        }
-        if (val && typeof val.then === 'function') {
-            return { $type: 'Promise', value: ['???'] };
-        }
-        return val;
-    }
-    function reviver(key: string, val: any) {
-        if (!val || Object.getPrototypeOf(val) !== Object.prototype || ! val.$type) return val;
-        if (val.$type === 'Global') {
-            let g = createGlobal();
-            Object.keys(val.props).forEach(key => g[key] = val.props[key]);
-            return g;
-        }
-        else if (val.$type === 'Promise') {
-            return Promise.resolve(42);
-        }
-        return val;
-    }
 }

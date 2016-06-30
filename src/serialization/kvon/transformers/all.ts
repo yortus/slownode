@@ -1,9 +1,10 @@
+import * as global from './global';
 import * as infinity from './infinity';
 import * as nan from './nan';
+import * as promise from './promise';
 import * as regexp from './regexp';
 import * as undefd from './undefined';
 // TODO: others:
-// - global (and all its std props)
 // - generator
 // - generator-function
 // - typed-array
@@ -19,7 +20,14 @@ import * as undefd from './undefined';
 
 
 // TODO: ...
-const allTransformers = [infinity, nan, regexp, undefd];
+const allTransformers = [
+    global,
+    infinity,
+    nan,
+    promise,
+    regexp,
+    undefd
+];
 
 
 
