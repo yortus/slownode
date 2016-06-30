@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import {SourceLocation, BindingKind} from "babel-types"; // Elided (used only for types)
 import Label from './label';
-import VirtualMachine, {Register} from '../../virtual-machine';
+import ExecutionEngine, {Register} from '../../execution-engine';
 
 
 
@@ -15,7 +15,7 @@ export type R = Register;
 
 
 /** TODO: doc... internal helper class used by compiler back end */
-export default class JasmEmitter implements VirtualMachine {
+export default class JasmEmitter implements ExecutionEngine {
 
 
     /** TODO: doc... */

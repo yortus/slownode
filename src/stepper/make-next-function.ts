@@ -1,12 +1,12 @@
 import {Program} from '../serialization/jasm';
-import VirtualMachine from '../virtual-machine';
+import ExecutionEngine from '../execution-engine';
 
 
 
 
 
 // TODO: ...
-export default function makeNextFunction(program: Program, virtualMachine: VirtualMachine): () => IteratorResult<Promise<void>> {
+export default function makeNextFunction(program: Program, engine: ExecutionEngine): () => IteratorResult<Promise<void>> {
 
     // TODO: Associate each label with it's zero-based line number...
     let labelLines = program.lines.reduce((labels, line, i) => {
@@ -48,7 +48,7 @@ export default function makeNextFunction(program: Program, virtualMachine: Virtu
 
     // TODO: Eval up the next() function...
     // TODO: what if an THROW/AWAIT op rejects? It's not handled properly in the following source code...
-    let _ = virtualMachine;
+    let _ = engine;
     let source = `
         function next() {
             var done = false, p;

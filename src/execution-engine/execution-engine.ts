@@ -14,7 +14,7 @@ export type R = Register;
 
 
 // TODO: ...
-export default class VirtualMachine {
+export default class ExecutionEngine {
 
     // Instructions: Load/store
     LOAD    (tgt: R, obj: R, key: R) { tgt.value = obj.value[key.value]; }

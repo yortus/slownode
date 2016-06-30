@@ -30,8 +30,9 @@ Stepper.stringify       // Stepper object to JASM+KVON
   KVON.stringify        // object to KVON string
 
 
+Execution Engine
 
-Stepper (Virtual Machine impl)
+Stepper (has-a Execution Engine)
   program: Program
   registers: RegisterSet
 
