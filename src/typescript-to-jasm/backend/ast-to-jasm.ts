@@ -6,7 +6,7 @@ import {types as t} from '../babel';
 import JasmEmitter from './jasm-emitter';
 import Label from './label';
 import matchNode from './match-node';
-import {Register} from '../../execution-engine';
+import {Register} from '../../execution-engine/index'; // NB: explicit 'index' so loadable by both CJS & AMD
 
 
 
@@ -71,7 +71,7 @@ function visitStatement(emit: JasmEmitter, stmt: Statement|ProgramNode) {
                                             decl.init ? visitExpr(decl.init, $0) : emit.UNDEFD($0);
                                             if (t.isIdentifier(decl.id)) {
                                                 emit.STRING($1, decl.id.name);
-                                                emit.STORE(emit.ENV, $1, $0);
+                                                emit.STORE('ENV', $1, $0);
                                             }
                                             else {
                                                 throw new Error(`Unsupported variable declarator type: '${decl.id.type}'`);
@@ -188,7 +188,7 @@ function visitExpression(emit: JasmEmitter, expr: Expression|SpreadElement, $T: 
                                             let left = expr.left;
                                             emit.withRegisters($0 => {
                                                 emit.STRING($0, left.name);
-                                                emit.STORE(emit.ENV, $0, $T);
+                                                emit.STORE('ENV', $0, $T);
                                             });
                                         }
                                         else {
@@ -221,11 +221,11 @@ function visitExpression(emit: JasmEmitter, expr: Expression|SpreadElement, $T: 
                                             emit.withRegisters($0 => {
                                                 emit.STRING($0, left.name);
                                                 emit.withRegisters($1 => {
-                                                    emit.LOAD($1, emit.ENV, $0);
+                                                    emit.LOAD($1, 'ENV', $0);
                                                     visitExpr(expr.right, $T);
                                                     operation(expr.operator, $T, $1);
                                                 });
-                                                emit.STORE(emit.ENV, $0, $T);
+                                                emit.STORE('ENV', $0, $T);
                                             });
                                         }
                                         else {
@@ -264,7 +264,7 @@ function visitExpression(emit: JasmEmitter, expr: Expression|SpreadElement, $T: 
         Identifier:             expr => {
                                     emit.withRegisters($0 => {
                                         emit.STRING($0, expr.name);
-                                        emit.LOAD($T, emit.ENV, $0);
+                                        emit.LOAD($T, 'ENV', $0);
                                     });
                                 },
         CallExpression:         expr => {
@@ -272,7 +272,7 @@ function visitExpression(emit: JasmEmitter, expr: Expression|SpreadElement, $T: 
                                         let callee = expr.callee;
                                         emit.withRegisters(($0, $1, $2) => {
                                             emit.STRING($T, callee.name);
-                                            emit.LOAD($T, emit.ENV, $T);
+                                            emit.LOAD($T, 'ENV', $T);
                                             emit.ARRAY($0);
                                             expr.arguments.forEach((arg, i) => {
                                                 visitExpr(arg, $1);

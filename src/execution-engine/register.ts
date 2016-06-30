@@ -5,7 +5,4 @@
 
 // TODO: ...
 export default Register;
-interface Register {
-    name: string;
-    value: any;
-}
+type Register = 'PC' | 'ENV' | 'ERR' | '$0' | '$1' | '$2' | '$3' | '$4' | '$5' | '$6' | '$7';

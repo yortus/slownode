@@ -1,14 +1,7 @@
 import * as assert from 'assert';
 import {SourceLocation, BindingKind} from "babel-types"; // Elided (used only for types)
 import Label from './label';
-import ExecutionEngine, {Register} from '../../execution-engine';
-
-
-
-
-
-// TODO: for brevity below...
-export type R = Register;
+import ExecutionEngine, {Register, Register as R} from '../../execution-engine/index'; // NB: explicit 'index' so loadable by both CJS & AMD
 
 
 
@@ -48,18 +41,18 @@ export default class JasmEmitter implements ExecutionEngine {
     LT      (tgt: R, lhs: R, rhs: R) { this.addInstr('LT', tgt, lhs, rhs); }
 
     // Instructions: Control
-    B       (line: Label|number) { this.addInstr('B', line); }
-    BF      (line: Label|number, arg: R) { this.addInstr('BF', line, arg); }
-    BT      (line: Label|number, arg: R) { this.addInstr('BT', line, arg); }
+    B       (line: Label|number) { this.addInstr('B', typeof line === 'number' ? lit(line) : line.name); }
+    BF      (line: Label|number, arg: R) { this.addInstr('BF', typeof line === 'number' ? lit(line) : line.name, arg); }
+    BT      (line: Label|number, arg: R) { this.addInstr('BT', typeof line === 'number' ? lit(line) : line.name, arg); }
     CALL    (tgt: R, func: R, thís: R, args: R) { this.addInstr('CALL', tgt, func, thís, args); }
     THROW   (err: R) { this.addInstr('THROW', err); return null; }
     AWAIT   (tgt: R, arg: R) { this.addInstr('AWAIT', tgt, arg); return null; }
     STOP    () { this.addInstr('STOP'); }
 
     // Instructions: Data
-    STRING  (tgt: R, val: string) { this.addInstr('STRING', tgt, val); }
-    NUMBER  (tgt: R, val: number) { this.addInstr('NUMBER', tgt, val); }
-    REGEXP  (tgt: R, pattern: string, flags: string) { this.addInstr('REGEXP', tgt, pattern, flags); }
+    STRING  (tgt: R, val: string) { this.addInstr('STRING', tgt, lit(val)); }
+    NUMBER  (tgt: R, val: number) { this.addInstr('NUMBER', tgt, lit(val)); }
+    REGEXP  (tgt: R, pattern: string, flags: string) { this.addInstr('REGEXP', tgt, lit(pattern), lit(flags)); }
     ARRAY   (tgt: R) { this.addInstr('ARRAY', tgt); }
     OBJECT  (tgt: R) { this.addInstr('OBJECT', tgt); }
     TRUE    (tgt: R) { this.addInstr('TRUE', tgt); }
@@ -69,16 +62,19 @@ export default class JasmEmitter implements ExecutionEngine {
 
 
     // Registers
-    PC      = <R> {name: 'PC', value: void 0}
-    ENV     = <R> {name: 'ENV', value: void 0}
-    $0      = <R> {name: '$0', value: FREE_REGISTER}
-    $1      = <R> {name: '$1', value: FREE_REGISTER}
-    $2      = <R> {name: '$2', value: FREE_REGISTER}
-    $3      = <R> {name: '$3', value: FREE_REGISTER}
-    $4      = <R> {name: '$4', value: FREE_REGISTER}
-    $5      = <R> {name: '$5', value: FREE_REGISTER}
-    $6      = <R> {name: '$6', value: FREE_REGISTER}
-    $7      = <R> {name: '$7', value: FREE_REGISTER}
+    registers = new Map(<[R, any][]>[
+        ['PC', void 0],
+        ['ENV', void 0],
+        ['ERR', void 0],
+        ['$0', FREE_REGISTER],
+        ['$1', FREE_REGISTER],
+        ['$2', FREE_REGISTER],
+        ['$3', FREE_REGISTER],
+        ['$4', FREE_REGISTER],
+        ['$5', FREE_REGISTER],
+        ['$6', FREE_REGISTER],
+        ['$7', FREE_REGISTER]
+    ]);
 
 
     // TODO: doc...
@@ -167,9 +163,8 @@ export default class JasmEmitter implements ExecutionEngine {
 
 
     /** TODO: doc... */
-    private addInstr(name: string, ...args: Array<Register|Label|string|number>) {
-        let argStrs = args.map(arg => typeof arg === 'object' ? arg.name : JSON.stringify(arg));
-        this.addLine(`    ${name.toLowerCase()}${' '.repeat(Math.max(0, 8 - name.length))}${argStrs.join(', ')}`);
+    private addInstr(name: string, ...args: string[]) {
+        this.addLine(`    ${name.toLowerCase()}${' '.repeat(Math.max(0, 8 - name.length))}${args.join(', ')}`);
     }
 
 
@@ -182,9 +177,9 @@ export default class JasmEmitter implements ExecutionEngine {
     /** TODO: doc... */
     private reserveRegister(): Register {
         for (let i = 0; i < 8; ++i) {
-            let reg = <Register> this[`$${i}`];
-            if (reg.value === RESERVED_REGISTER) continue;
-            reg.value = RESERVED_REGISTER;
+            let reg = <Register> this.registers[`$${i}`];
+            if (reg === RESERVED_REGISTER) continue;
+            this.registers[reg] = RESERVED_REGISTER;
             return reg;
         }
         throw new Error(`Expression too complex - ran out of registers`);
@@ -194,7 +189,7 @@ export default class JasmEmitter implements ExecutionEngine {
     /** TODO: doc... */
     private releaseRegister(reg: Register) {
         this.UNDEFD(reg);
-        reg.value = FREE_REGISTER;
+        this.registers[reg] = FREE_REGISTER;
     }
 
 
@@ -218,6 +213,14 @@ export default class JasmEmitter implements ExecutionEngine {
 const RESERVED_REGISTER = {};
 const FREE_REGISTER = {};
 
+
+
+
+
+// TODO: ...
+function lit(v: string | number) {
+    return JSON.stringify(v);
+}
 
 
 

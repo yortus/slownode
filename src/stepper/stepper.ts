@@ -1,6 +1,6 @@
-import JASM, {Program} from '../serialization/jasm/index';  // TODO: explicit index, so it works with AMD too
+import JASM, {Program} from '../serialization/jasm/index';  // NB: explicit 'index' so loadable by both CJS & AMD
 import makeNextFunction from './make-next-function';
-import ExecutionEngine, {Register, registerNames} from '../execution-engine';
+import ExecutionEngine, {Register} from '../execution-engine/index'; // NB: explicit 'index' so loadable by both CJS & AMD
 
 
 
@@ -14,10 +14,10 @@ export default class Stepper {
     constructor(jasm: string, globalObject?: {}) {
         this._jasm = jasm;
         let program = this.program = JASM.parse(jasm);
-        let exec = this._exec = new ExecutionEngine();
-        let regs = this.registers = <any> registerNames.reduce((regs, n) => (regs[n] = exec[n], regs), {});
-        regs.ENV.value = globalObject || {};
-        this.next = makeNextFunction(program, exec);
+        let engine = this._engine = new ExecutionEngine();
+        let registers = this.registers = engine.registers;
+        registers.set('ENV', globalObject || {});
+        this.next = makeNextFunction(program, engine);
         // TODO: add -->?: this.throw = makeThrowFunction(program, vm);
     }
 
@@ -29,8 +29,8 @@ export default class Stepper {
 
     // TODO: doc... does this need to otherwise work like step(), return a value, etc? I think not, but think about it...
     throw(err: any): IteratorResult<Promise<void>> {
-        let reg: Register = {name: 'temp', value: err}; // TODO: this creates a non-existent register. Better way? Is this reliable?
-        this._exec.THROW(reg); // TODO: this executes an instruction that is not in the JASM program. What happens to PC, etc??
+        this.registers.set('ERR', err);
+        this._engine.THROW('ERR'); // TODO: this executes an instruction that is not in the JASM program. What happens to PC, etc??
         // TODO: ^ will throw back at caller if JASM program doesn't handle it
         // TODO: is JASM program *does* handle it, what should we return from here?
         // TODO: temp just for now...
@@ -43,13 +43,20 @@ export default class Stepper {
 
 
     // TODO: ...
-    registers: { ENV: Register, PC: Register, [name: string]: Register};
+    registers: typeof _registersTypeofKludge;
 
 
     // TODO: ...
-    private _exec: ExecutionEngine;
+    private _engine: ExecutionEngine;
 
 
     // TODO: ...
     private _jasm: string;
 }
+
+
+
+
+
+// TODO: ...
+export var _registersTypeofKludge = 0 && new ExecutionEngine().registers;

@@ -42,7 +42,7 @@ export default class Epoch extends EventEmitter {
             try {
                 // TODO: saving at await points...
                 while (true) {
-                    let instr = stepper.program.lines[stepper.registers.PC.value];
+                    let instr = stepper.program.lines[stepper.registers.get('PC')];
                     let shouldPark = instr.type === 'instruction' && instr.opcode.toUpperCase() === 'AWAIT';
 
                     if (shouldPark) {
