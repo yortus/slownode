@@ -1,24 +1,24 @@
 import JASM, {Program} from '../serialization/jasm/index';  // TODO: explicit index, so it works with AMD too
-import KVON from '../serialization/kvon/index';             // TODO: explicit index, so it works with AMD too
 import makeNextFunction from './make-next-function';
-import makeVirtualMachine from './make-virtual-machine';
-import VirtualMachine, {InstructionSet, Register, RegisterSet} from '../virtual-machine';
+import VirtualMachine, {Register, registerNames} from '../virtual-machine';
 
 
 
 
 
+// TODO: ...
 export default class Stepper {
 
 
     // TODO: ...
     constructor(jasm: string, globalObject?: {}) {
-        this.jasm = jasm;
+        this._jasm = jasm;
         let program = this.program = JASM.parse(jasm);
-        let virtualMachine = this._virtualMachine = makeVirtualMachine();
-        let registers = this.registers = <any> virtualMachine;
+        let vm = this._virtualMachine = new VirtualMachine();
+        let registers = this.registers = <any> registerNames.reduce((regs, n) => (regs[n] = vm[n], regs), {});
         registers.ENV.value = globalObject || {};
-        this.next = makeNextFunction(program, virtualMachine);
+        this.next = makeNextFunction(program, vm);
+        // TODO: add -->?: this.throw = makeThrowFunction(program, vm);
     }
 
 
@@ -43,7 +43,7 @@ export default class Stepper {
 
 
     // TODO: ...
-    registers: RegisterSet & {[name: string]: Register};
+    registers: { ENV: Register, PC: Register, [name: string]: Register};
 
 
     // TODO: ...
@@ -51,5 +51,5 @@ export default class Stepper {
 
 
     // TODO: ...
-    private jasm: string;
+    private _jasm: string;
 }

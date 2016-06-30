@@ -1,14 +1,21 @@
 import * as assert from 'assert';
 import {SourceLocation, BindingKind} from "babel-types"; // Elided (used only for types)
 import Label from './label';
-import {InstructionSet, Register, RegisterSet} from '../../virtual-machine';
+import VirtualMachine, {Register} from '../../virtual-machine';
+
+
+
+
+
+// TODO: for brevity below...
+export type R = Register;
 
 
 
 
 
 /** TODO: doc... internal helper class used by compiler back end */
-export default class JasmEmitter implements InstructionSet, RegisterSet {
+export default class JasmEmitter implements VirtualMachine {
 
 
     /** TODO: doc... */
@@ -21,57 +28,57 @@ export default class JasmEmitter implements InstructionSet, RegisterSet {
 
 
     // Instructions: Load/store
-    LOAD(tgt: Register, obj: Register, key: Register) { this.addInstr('LOAD', tgt, obj, key); }
-    STORE(obj: Register, key: Register, src: Register) { this.addInstr('STORE', obj, key, src); }
+    LOAD    (tgt: R, obj: R, key: R) { this.addInstr('LOAD', tgt, obj, key); }
+    STORE   (obj: R, key: R, src: R) { this.addInstr('STORE', obj, key, src); }
 
     // Instructions: Arithmetic/logic
-    ADD(tgt: Register, lhs: Register, rhs: Register) { this.addInstr('ADD', tgt, lhs, rhs); }
-    SUB(tgt: Register, lhs: Register, rhs: Register) { this.addInstr('SUB', tgt, lhs, rhs); }
-    MUL(tgt: Register, lhs: Register, rhs: Register) { this.addInstr('MUL', tgt, lhs, rhs); }
-    DIV(tgt: Register, lhs: Register, rhs: Register) { this.addInstr('DIV', tgt, lhs, rhs); }
-    NEG(tgt: Register, arg: Register) { this.addInstr('NEG', tgt, arg); }
-    NOT(tgt: Register, arg: Register) { this.addInstr('NOT', tgt, arg); }
+    ADD     (tgt: R, lhs: R, rhs: R) { this.addInstr('ADD', tgt, lhs, rhs); }
+    SUB     (tgt: R, lhs: R, rhs: R) { this.addInstr('SUB', tgt, lhs, rhs); }
+    MUL     (tgt: R, lhs: R, rhs: R) { this.addInstr('MUL', tgt, lhs, rhs); }
+    DIV     (tgt: R, lhs: R, rhs: R) { this.addInstr('DIV', tgt, lhs, rhs); }
+    NEG     (tgt: R, arg: R) { this.addInstr('NEG', tgt, arg); }
+    NOT     (tgt: R, arg: R) { this.addInstr('NOT', tgt, arg); }
 
     // Instructions: Relational
-    EQ(tgt: Register, lhs: Register, rhs: Register) { this.addInstr('EQ', tgt, lhs, rhs); }
-    NE(tgt: Register, lhs: Register, rhs: Register) { this.addInstr('NE', tgt, lhs, rhs); }
-    GE(tgt: Register, lhs: Register, rhs: Register) { this.addInstr('GE', tgt, lhs, rhs); }
-    GT(tgt: Register, lhs: Register, rhs: Register) { this.addInstr('GT', tgt, lhs, rhs); }
-    LE(tgt: Register, lhs: Register, rhs: Register) { this.addInstr('LE', tgt, lhs, rhs); }
-    LT(tgt: Register, lhs: Register, rhs: Register) { this.addInstr('LT', tgt, lhs, rhs); }
+    EQ      (tgt: R, lhs: R, rhs: R) { this.addInstr('EQ', tgt, lhs, rhs); }
+    NE      (tgt: R, lhs: R, rhs: R) { this.addInstr('NE', tgt, lhs, rhs); }
+    GE      (tgt: R, lhs: R, rhs: R) { this.addInstr('GE', tgt, lhs, rhs); }
+    GT      (tgt: R, lhs: R, rhs: R) { this.addInstr('GT', tgt, lhs, rhs); }
+    LE      (tgt: R, lhs: R, rhs: R) { this.addInstr('LE', tgt, lhs, rhs); }
+    LT      (tgt: R, lhs: R, rhs: R) { this.addInstr('LT', tgt, lhs, rhs); }
 
     // Instructions: Control
-    B(line: Label|number) { this.addInstr('B', line); }
-    BF(line: Label|number, arg: Register) { this.addInstr('BF', line, arg); }
-    BT(line: Label|number, arg: Register) { this.addInstr('BT', line, arg); }
-    CALL(tgt: Register, func: Register, thís: Register, args: Register) { this.addInstr('CALL', tgt, func, thís, args); }
-    THROW(err: Register) { this.addInstr('THROW', err); return null; }
-    AWAIT(tgt: Register, arg: Register) { this.addInstr('AWAIT', tgt, arg); return null; }
-    STOP() { this.addInstr('STOP'); }
+    B       (line: Label|number) { this.addInstr('B', line); }
+    BF      (line: Label|number, arg: R) { this.addInstr('BF', line, arg); }
+    BT      (line: Label|number, arg: R) { this.addInstr('BT', line, arg); }
+    CALL    (tgt: R, func: R, thís: R, args: R) { this.addInstr('CALL', tgt, func, thís, args); }
+    THROW   (err: R) { this.addInstr('THROW', err); return null; }
+    AWAIT   (tgt: R, arg: R) { this.addInstr('AWAIT', tgt, arg); return null; }
+    STOP    () { this.addInstr('STOP'); }
 
     // Instructions: Data
-    STRING(tgt: Register, val: string) { this.addInstr('STRING', tgt, val); }
-    NUMBER(tgt: Register, val: number) { this.addInstr('NUMBER', tgt, val); }
-    REGEXP(tgt: Register, pattern: string, flags: string) { this.addInstr('REGEXP', tgt, pattern, flags); }
-    ARRAY(tgt: Register) { this.addInstr('ARRAY', tgt); }
-    OBJECT(tgt: Register) { this.addInstr('OBJECT', tgt); }
-    TRUE(tgt: Register) { this.addInstr('TRUE', tgt); }
-    FALSE(tgt: Register) { this.addInstr('FALSE', tgt); }
-    NULL(tgt: Register) { this.addInstr('NULL', tgt); }
-    UNDEFD(tgt: Register) { this.addInstr('UNDEFD', tgt); }
+    STRING  (tgt: R, val: string) { this.addInstr('STRING', tgt, val); }
+    NUMBER  (tgt: R, val: number) { this.addInstr('NUMBER', tgt, val); }
+    REGEXP  (tgt: R, pattern: string, flags: string) { this.addInstr('REGEXP', tgt, pattern, flags); }
+    ARRAY   (tgt: R) { this.addInstr('ARRAY', tgt); }
+    OBJECT  (tgt: R) { this.addInstr('OBJECT', tgt); }
+    TRUE    (tgt: R) { this.addInstr('TRUE', tgt); }
+    FALSE   (tgt: R) { this.addInstr('FALSE', tgt); }
+    NULL    (tgt: R) { this.addInstr('NULL', tgt); }
+    UNDEFD  (tgt: R) { this.addInstr('UNDEFD', tgt); }
 
 
     // Registers
-    PC: Register = {name: 'PC', value: void 0};
-    ENV: Register = {name: 'ENV', value: void 0};
-    $0: Register = {name: '$0', value: FREE_REGISTER};
-    $1: Register = {name: '$1', value: FREE_REGISTER};
-    $2: Register = {name: '$2', value: FREE_REGISTER};
-    $3: Register = {name: '$3', value: FREE_REGISTER};
-    $4: Register = {name: '$4', value: FREE_REGISTER};
-    $5: Register = {name: '$5', value: FREE_REGISTER};
-    $6: Register = {name: '$6', value: FREE_REGISTER};
-    $7: Register = {name: '$7', value: FREE_REGISTER};
+    PC      = <R> {name: 'PC', value: void 0}
+    ENV     = <R> {name: 'ENV', value: void 0}
+    $0      = <R> {name: '$0', value: FREE_REGISTER}
+    $1      = <R> {name: '$1', value: FREE_REGISTER}
+    $2      = <R> {name: '$2', value: FREE_REGISTER}
+    $3      = <R> {name: '$3', value: FREE_REGISTER}
+    $4      = <R> {name: '$4', value: FREE_REGISTER}
+    $5      = <R> {name: '$5', value: FREE_REGISTER}
+    $6      = <R> {name: '$6', value: FREE_REGISTER}
+    $7      = <R> {name: '$7', value: FREE_REGISTER}
 
 
     // TODO: doc...
