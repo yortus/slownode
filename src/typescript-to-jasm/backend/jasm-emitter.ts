@@ -176,10 +176,9 @@ export default class JasmEmitter implements ExecutionEngine {
 
     /** TODO: doc... */
     private reserveRegister(): Register {
-        for (let i = 0; i < 8; ++i) {
-            let reg = <Register> this.registers[`$${i}`];
-            if (reg === RESERVED_REGISTER) continue;
-            this.registers[reg] = RESERVED_REGISTER;
+        for (let reg of this.registers.keys()) {
+            if (this.registers.get(reg) === RESERVED_REGISTER) continue;
+            this.registers.set(reg, RESERVED_REGISTER);
             return reg;
         }
         throw new Error(`Expression too complex - ran out of registers`);
@@ -189,7 +188,7 @@ export default class JasmEmitter implements ExecutionEngine {
     /** TODO: doc... */
     private releaseRegister(reg: Register) {
         this.UNDEFD(reg);
-        this.registers[reg] = FREE_REGISTER;
+        this.registers.set(reg, FREE_REGISTER);
     }
 
 
