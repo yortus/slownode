@@ -76,7 +76,7 @@ import KVON from '../serialization/kvon';
 async function tempPark(stepper: Stepper) {
 
     // TODO: temp testing...
-    const regNames = ['PC', 'ENV', '$0', '$1', '$2', '$3', '$4', '$5', '$6', '$7'];
+    const regNames = Object.keys(stepper.registers);
     let state = regNames.reduce((state, name) => (state[name] = stepper.registers[name].value, state), {});
 
     // TODO: temp testing...
