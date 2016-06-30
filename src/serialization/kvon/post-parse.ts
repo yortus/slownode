@@ -32,7 +32,7 @@ export default function postParse(value: Serializable, reviver: Reviver): any {
         // Check if `val` represents a reference to a canonical decoding elsewhere in the object graph. If so,
         // just record the details for backpatching after the full traversal has completed. Since there are no
         // guarantees with property enumeration order, it would be unsafe to resolve the reference now, because
-        // the canonical path is refers to may not have been decoded yet.
+        // the canonical path it refers to may not have been decoded yet.
         if (isReference(val)) {
             pathRefs.push({obj, key, path: val.path});
             return;
