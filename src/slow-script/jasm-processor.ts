@@ -1,3 +1,5 @@
+// TODO: add top-level getters/setters for PC, ENV? all regs?
+// TODO: rename ENV --> $ENV, PC --> $PC, ERR --> $ERR
 // TODO: properly handle (at runtime) use before assignment for block-scoped vars, prevent re-assignment of consts, etc
 // TODO: add ERR register to VM for exception in flight? (can only be one)
 
