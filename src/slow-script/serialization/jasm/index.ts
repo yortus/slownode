@@ -9,7 +9,8 @@ import stringify from './stringify';
 
 
 // TODO: the JASM object...
-export default { stringify, parse };
+let JASM = { stringify, parse };
+export default JASM;
 
 
 

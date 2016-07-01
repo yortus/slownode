@@ -16,7 +16,15 @@ import * as tranformers from './transformers/all';
 
 
 // TODO: the KVON object...
-export default { stringify, parse };
+let KVON = { stringify, parse };
+export default KVON;
+
+
+
+
+
+// TODO: ...
+export {Replacer, Reviver};
 
 
 
