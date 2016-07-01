@@ -2,7 +2,7 @@ import {createGlobal, isGlobal} from '../global-object/global-object';
 import {EventEmitter} from 'events';
 import EpochOptions from './epoch-options';
 import Stepper from '../stepper';
-import typeScriptToJasm from '../typescript-to-jasm';
+import * as typescript from '../slow-script/source-languages/typescript';
 
 
 
@@ -31,7 +31,7 @@ export default class Epoch extends EventEmitter {
         scriptId = scriptId || '«unidentified script»';
 
         // TODO: ...
-        let jasm = typeScriptToJasm(script);
+        let jasm = typescript.transpileToJasm(script);
         let globalObject = createGlobal();
         let stepper = new Stepper(jasm, globalObject);
 

@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import {SourceLocation, BindingKind} from "babel-types"; // Elided (used only for types)
 import Label from './label';
-import JasmProcessor, {Register, Register as R} from '../../slow-script/jasm-processor';
+import JasmProcessor, {Register, Register as R} from '../../../jasm-processor';
 
 
 

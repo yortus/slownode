@@ -9,7 +9,7 @@ import {types as t} from './babel';
 
 
 // TODO: ...
-export default function typeScriptToJasm(typeScriptSource: string): string {
+export default function transpileToJasm(typeScriptSource: string): string {
 
     // TODO: wrap in IIAFE, without changing line numbers)
     let wrappedSource = `(async () => {${typeScriptSource}})()`;

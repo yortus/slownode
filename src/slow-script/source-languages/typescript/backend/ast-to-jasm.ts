@@ -6,7 +6,7 @@ import {types as t} from '../babel';
 import JasmEmitter from './jasm-emitter';
 import Label from './label';
 import matchNode from './match-node';
-import {Register} from '../../slow-script/jasm-processor';
+import {Register} from '../../../jasm-processor';
 
 
 
