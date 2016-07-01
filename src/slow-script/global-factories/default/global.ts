@@ -1,30 +1,10 @@
-// TODO: freeze the prototypes of builtins so they can't be monkey patched? (since KVON can't handle that)
 
 
 
 
 
 // TODO: ...
-export function createGlobal() {
-    let global = new Global();
-    return global;
-}
-
-
-
-
-
-// TODO: ...
-export function isGlobal(obj: any) {
-    return obj instanceof Global;
-}
-
-
-
-
-
-// TODO: ...
-export class Global {
+export default class Global {
 
     Infinity = Infinity;
 

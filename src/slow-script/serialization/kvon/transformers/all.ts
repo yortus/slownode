@@ -1,4 +1,3 @@
-import * as global from './global';
 import * as infinity from './infinity';
 import * as nan from './nan';
 import * as promise from './promise';
@@ -21,7 +20,6 @@ import * as undefd from './undefined';
 
 // TODO: ...
 const allTransformers = [
-    global,
     infinity,
     nan,
     promise,

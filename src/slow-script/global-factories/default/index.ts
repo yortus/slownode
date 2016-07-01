@@ -1,10 +1,29 @@
-import {createGlobal, isGlobal} from '../../../../global-object/global-object';
+import GlobalFactory from '../../global-factory';
+import Global from './global';
+import isGlobal from './is-global';
 
 
 
 
 
-export function replacer(key: string, val: any) {
+// TODO: ...
+export default <GlobalFactory> {create, replacer, reviver};
+
+
+
+
+
+// TODO: ...
+function create() {
+    return new Global();
+}
+
+
+
+
+
+// TODO: ...
+function replacer(key: string, val: any) {
     if (!isGlobal(val)) return val;
 
 // TODO: only serialize changed props!
@@ -16,11 +35,12 @@ export function replacer(key: string, val: any) {
 
 
 
-export function reviver(key: string, val: any) {
+// TODO: ...
+function reviver(key: string, val: any) {
     if (!val || val.$type !== 'Global') return val;
 
 // TODO: do reverse of replacer (once that's fixed)...
-    let g = createGlobal();
+    let g = create();
     Object.keys(val.props).forEach(key => g[key] = val.props[key]);
     return g;
 }

@@ -1,4 +1,4 @@
-import {createGlobal, isGlobal} from '../global-object/global-object';
+import globalFactory from '../slow-script/global-factories/default';
 import {EventEmitter} from 'events';
 import EpochOptions from './epoch-options';
 import Stepper from '../stepper';
@@ -32,7 +32,7 @@ export default class Epoch extends EventEmitter {
 
         // TODO: ...
         let jasm = typescript.transpileToJasm(script);
-        let globalObject = createGlobal();
+        let globalObject = globalFactory.create();
         let stepper = new Stepper(jasm, globalObject);
 
         // TODO: Kick off script using an IIAFE...
@@ -81,14 +81,14 @@ async function tempPark(stepper: Stepper) {
 
     // TODO: temp testing...
     let code = JASM.stringify(stepper.program);
-    let data = KVON.stringify(state, null, 4);
+    let data = KVON.stringify(state, globalFactory.replacer, 4);
     let s = `.CODE\n${code}\n\n\n\n\n.DATA\n${data}`;
     console.log(`\n\n\n\n\n################################################################################`);
     console.log(`PARK: ${s}`);
 
 
     // TODO: temp testing... what about JASM?
-    let o = KVON.parse(data);
+    let o = KVON.parse(data, globalFactory.reviver);
     console.log(`\n\nUNPARK:`);
     console.log(o);
 }
