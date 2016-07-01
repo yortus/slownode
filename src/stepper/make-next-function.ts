@@ -1,4 +1,4 @@
-import {Program} from '../serialization/jasm';
+import {Program} from '../slow-script/serialization/jasm';
 import ExecutionEngine from '../execution-engine';
 
 

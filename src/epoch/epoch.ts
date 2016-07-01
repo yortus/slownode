@@ -71,8 +71,8 @@ export default class Epoch extends EventEmitter {
 
 
 // TODO: implement properly...
-import JASM from '../serialization/jasm';
-import KVON from '../serialization/kvon';
+import JASM from '../slow-script/serialization/jasm';
+import KVON from '../slow-script/serialization/kvon';
 async function tempPark(stepper: Stepper) {
 
     // TODO: temp testing...

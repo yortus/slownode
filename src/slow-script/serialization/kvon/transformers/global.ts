@@ -1,4 +1,4 @@
-import {createGlobal, isGlobal} from '../../../global-object/global-object';
+import {createGlobal, isGlobal} from '../../../../global-object/global-object';
 
 
 
