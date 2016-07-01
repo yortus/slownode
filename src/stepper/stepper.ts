@@ -1,6 +1,6 @@
 import JASM, {Program} from '../slow-script/serialization/jasm/index';  // NB: explicit 'index' so loadable by both CJS & AMD
 import makeNextFunction from './make-next-function';
-import ExecutionEngine, {Register} from '../slow-script/execution-engine';
+import JasmProcessor, {Register} from '../slow-script/jasm-processor';
 
 
 
@@ -14,10 +14,10 @@ export default class Stepper {
     constructor(jasm: string, globalObject?: {}) {
         this._jasm = jasm;
         let program = this.program = JASM.parse(jasm);
-        let engine = this._engine = new ExecutionEngine();
-        let registers = this.registers = engine.registers;
+        let processor = this._processor = new JasmProcessor();
+        let registers = this.registers = processor.registers;
         registers.set('ENV', globalObject || {});
-        this.next = makeNextFunction(program, engine);
+        this.next = makeNextFunction(program, processor);
         // TODO: add -->?: this.throw = makeThrowFunction(program, vm);
     }
 
@@ -30,7 +30,7 @@ export default class Stepper {
     // TODO: doc... does this need to otherwise work like step(), return a value, etc? I think not, but think about it...
     throw(err: any): IteratorResult<Promise<void>> {
         this.registers.set('ERR', err);
-        this._engine.THROW('ERR'); // TODO: this executes an instruction that is not in the JASM program. What happens to PC, etc??
+        this._processor.THROW('ERR'); // TODO: this executes an instruction that is not in the JASM program. What happens to PC, etc??
         // TODO: ^ will throw back at caller if JASM program doesn't handle it
         // TODO: is JASM program *does* handle it, what should we return from here?
         // TODO: temp just for now...
@@ -47,7 +47,7 @@ export default class Stepper {
 
 
     // TODO: ...
-    private _engine: ExecutionEngine;
+    private _processor: JasmProcessor;
 
 
     // TODO: ...
@@ -59,4 +59,4 @@ export default class Stepper {
 
 
 // TODO: ...
-export var _registersTypeofKludge = 0 && new ExecutionEngine().registers;
+export var _registersTypeofKludge = 0 && new JasmProcessor().registers;

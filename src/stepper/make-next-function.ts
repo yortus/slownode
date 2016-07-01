@@ -1,12 +1,12 @@
 import {Program} from '../slow-script/serialization/jasm';
-import ExecutionEngine from '../slow-script/execution-engine';
+import JasmProcesor from '../slow-script/jasm-processor';
 
 
 
 
 
 // TODO: ...
-export default function makeNextFunction(program: Program, engine: ExecutionEngine): () => IteratorResult<Promise<void>> {
+export default function makeNextFunction(program: Program, processor: JasmProcesor): () => IteratorResult<Promise<void>> {
 
     // TODO: Associate each label with it's zero-based line number...
     let labelLines = program.lines.reduce((labels, line, i) => {
@@ -48,7 +48,7 @@ export default function makeNextFunction(program: Program, engine: ExecutionEngi
 
     // TODO: Eval up the next() function...
     // TODO: what if an THROW/AWAIT op rejects? It's not handled properly in the following source code...
-    let _ = engine;
+    let _ = processor;
     let source = `
         function next() {
             var done = false, pc = _.registers.get('PC'), p;

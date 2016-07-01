@@ -1,14 +1,14 @@
 import * as assert from 'assert';
 import {SourceLocation, BindingKind} from "babel-types"; // Elided (used only for types)
 import Label from './label';
-import ExecutionEngine, {Register, Register as R} from '../../slow-script/execution-engine';
+import JasmProcessor, {Register, Register as R} from '../../slow-script/jasm-processor';
 
 
 
 
 
 /** TODO: doc... internal helper class used by compiler back end */
-export default class JasmEmitter implements ExecutionEngine {
+export default class JasmEmitter implements JasmProcessor {
 
 
     /** TODO: doc... */

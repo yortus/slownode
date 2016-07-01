@@ -14,7 +14,7 @@ export {R as Register};
 
 
 // TODO: ...
-export default class ExecutionEngine {
+export default class JasmProcessor {
 
     // Instructions: Load/store
     LOAD    (tgt: R, obj: R, key: R) { let r = this.registers; r.set(tgt, r.get(obj)[r.get(key)]); }
