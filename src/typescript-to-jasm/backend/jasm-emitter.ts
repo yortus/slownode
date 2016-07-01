@@ -63,9 +63,9 @@ export default class JasmEmitter implements ExecutionEngine {
 
     // Registers
     registers = new Map(<[R, any][]>[
-        ['PC', void 0],
-        ['ENV', void 0],
-        ['ERR', void 0],
+        ['PC', RESERVED_REGISTER], // TODO: overkill! we don't need FREE/RESERVED here, just truthy/falsy
+        ['ENV', RESERVED_REGISTER],
+        ['ERR', RESERVED_REGISTER],
         ['$0', FREE_REGISTER],
         ['$1', FREE_REGISTER],
         ['$2', FREE_REGISTER],

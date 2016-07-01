@@ -76,8 +76,8 @@ import KVON from '../serialization/kvon';
 async function tempPark(stepper: Stepper) {
 
     // TODO: temp testing...
-    const regNames = Object.keys(stepper.registers);
-    let state = regNames.reduce((state, name) => (state[name] = stepper.registers[name].value, state), {});
+    const regNames = [...stepper.registers.keys()];
+    let state = regNames.reduce((state, name) => (state[name] = stepper.registers.get(name), state), {});
 
     // TODO: temp testing...
     let code = JASM.stringify(stepper.program);

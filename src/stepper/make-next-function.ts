@@ -23,12 +23,12 @@ export default function makeNextFunction(program: Program, engine: ExecutionEngi
             case 'instruction':
                 let opcode = line.opcode.toUpperCase();
                 if (opcode === 'STOP') {
-                    return `done = true; _.PC.value = ${i}; `;
+                    return `done = true; _.registers.set('PC', ${i}); `;
                 }
                 else {
                     return `p = _.${opcode}(${line.arguments.map(arg => {
                         switch (arg.type) {
-                            case 'register':    return `_.${arg.name}`;
+                            case 'register':    return `'${arg.name}'`;
                             case 'label':       return labelLines[arg.name];
                             case 'const':       return JSON.stringify(arg.value);
                             default:            let unreachable: never = arg; /* ensure all discriminants covered */
@@ -51,8 +51,9 @@ export default function makeNextFunction(program: Program, engine: ExecutionEngi
     let _ = engine;
     let source = `
         function next() {
-            var done = false, p;
-            switch (_.PC.value++) {
+            var done = false, pc = _.registers.get('PC'), p;
+            _.registers.set('PC', pc + 1);
+            switch (pc) {
                 ${switchCases.join(`\n                `)}
             }
             return { done, value: done ? void 0 : Promise.resolve(p) };
