@@ -2,7 +2,7 @@ import * as ko from 'knockout';
 import * as cm from 'codemirror';
 import 'javascript-mode';
 import 'z80-mode';
-import typeScriptToJasm from '../src/typescript-to-jasm/index';
+import * as typescript from '../src/slow-script/source-languages/typescript/index';
 
 
 
@@ -16,7 +16,7 @@ vm.output = ko.computed(() => {
 
     // When 'input' changes, recompute the 'output'.
     try {
-        jasm = typeScriptToJasm(vm.input());
+        jasm = typescript.transpileToJasm(vm.input());
         let jasmStr = jasm.toString();
 
         // TODO: temp testing... if jasm was successfully created, run it...

@@ -17,6 +17,6 @@
     },
     "files": [
         "main.ts",
-        "../src/typescript-to-jasm/index.ts"
+        "../src/slow-script/source-languages/typescript/index.ts"
     ]
 }

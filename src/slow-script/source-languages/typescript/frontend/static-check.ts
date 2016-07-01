@@ -53,7 +53,7 @@ function getLibSource(): string {
         return null;
     }
 
-    let libSource = fs.readFileSync(path.join(__dirname, '../../../lib.slow.d.ts'), 'utf8'); // TODO: move lib file to proper place...
+    let libSource = fs.readFileSync(path.join(__dirname, '../../../../../lib.slow.d.ts'), 'utf8'); // TODO: move lib file to proper place...
     return libSource;
 }
 
