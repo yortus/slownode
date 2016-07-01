@@ -1,6 +1,13 @@
 // TODO: properly handle (at runtime) use before assignment for block-scoped vars, prevent re-assignment of consts, etc
 // TODO: add ERR register to VM for exception in flight? (can only be one)
-import R from './register';
+
+
+
+
+
+// TODO: ...
+type R = 'PC' | 'ENV' | 'ERR' | '$0' | '$1' | '$2' | '$3' | '$4' | '$5' | '$6' | '$7';
+export {R as Register};
 
 
 

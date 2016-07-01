@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import {SourceLocation, BindingKind} from "babel-types"; // Elided (used only for types)
 import Label from './label';
-import ExecutionEngine, {Register, Register as R} from '../../execution-engine/index'; // NB: explicit 'index' so loadable by both CJS & AMD
+import ExecutionEngine, {Register, Register as R} from '../../execution-engine';
 
 
 

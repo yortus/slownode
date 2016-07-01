@@ -6,7 +6,7 @@ import {types as t} from '../babel';
 import JasmEmitter from './jasm-emitter';
 import Label from './label';
 import matchNode from './match-node';
-import {Register} from '../../execution-engine/index'; // NB: explicit 'index' so loadable by both CJS & AMD
+import {Register} from '../../execution-engine';
 
 
 
