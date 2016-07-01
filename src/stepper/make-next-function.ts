@@ -1,5 +1,5 @@
 import {Program} from '../slow-script/serialization/jasm';
-import ExecutionEngine from '../execution-engine';
+import ExecutionEngine from '../slow-script/execution-engine';
 
 
 
