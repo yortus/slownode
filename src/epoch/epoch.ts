@@ -1,8 +1,6 @@
-import globalFactory from '../script/global-factories/default';
 import {EventEmitter} from 'events';
 import EpochOptions from './epoch-options';
-import Stepper from '../stepper';
-import * as typescript from '../script/source-languages/typescript';
+import Script from '../script';
 
 
 
@@ -27,13 +25,11 @@ export default class Epoch extends EventEmitter {
 
 
     // TODO: ...
-    eval(script: string, scriptId?: string) {
+    eval(source: string, scriptId?: string) {
         scriptId = scriptId || '«unidentified script»';
 
         // TODO: ...
-        let jasm = typescript.transpileToJasm(script);
-        let globalObject = globalFactory.create();
-        let stepper = new Stepper(jasm, globalObject);
+        let script = new Script(source);
 
         // TODO: Kick off script using an IIAFE...
         // TODO: do we need to keep a reference to the script/jasm/interpreter/progress after this? Why? Why not?
@@ -41,17 +37,21 @@ export default class Epoch extends EventEmitter {
             // TODO: run to completion...
             try {
                 // TODO: saving at await points...
-                while (true) {
-                    let instr = stepper.program.lines[stepper.registers.get('PC')];
+                for (let step of script) {
+                    await step;
+
+                    let instr = script.program.lines[script.registers.get('PC')];
                     let shouldPark = instr.type === 'instruction' && instr.opcode.toUpperCase() === 'AWAIT';
 
                     if (shouldPark) {
-                        await tempPark(stepper);
+                        let snapshot = script.snapshot();
+// TODO: temp testing...
+console.log(`\n\n\n\n\n################################################################################`);
+console.log(`PARK:\n${snapshot}`);
+let o = Script.fromSnapshot(snapshot).registers;
+console.log(`\n\nUNPARK:`);
+console.log(o);
                     }                    
-
-                    let it = stepper.next();
-                    if (it.done) return;
-                    await it.value;
                 }
             }
             catch (err) {
@@ -59,36 +59,4 @@ export default class Epoch extends EventEmitter {
             }
         })();
     }
-}
-
-
-
-
-
-
-
-
-
-
-// TODO: implement properly...
-import JASM from '../script/serialization/jasm';
-import KVON from '../script/serialization/kvon';
-async function tempPark(stepper: Stepper) {
-
-    // TODO: temp testing...
-    const regNames = [...stepper.registers.keys()];
-    let state = regNames.reduce((state, name) => (state[name] = stepper.registers.get(name), state), {});
-
-    // TODO: temp testing...
-    let code = JASM.stringify(stepper.program);
-    let data = KVON.stringify(state, globalFactory.replacer, 4);
-    let s = `.CODE\n${code}\n\n\n\n\n.DATA\n${data}`;
-    console.log(`\n\n\n\n\n################################################################################`);
-    console.log(`PARK: ${s}`);
-
-
-    // TODO: temp testing... what about JASM?
-    let o = KVON.parse(data, globalFactory.reviver);
-    console.log(`\n\nUNPARK:`);
-    console.log(o);
 }
