@@ -26,7 +26,18 @@ export default class Epoch extends EventEmitter {
 
         // TODO: load/revive running scripts from storage...
         this._scriptIds = [];
+        let filenames = fs.readdirSync(this._dirname);
+        filenames.forEach(filename => {
 
+            // TODO: resume script...
+            let scriptId = filename.slice(0, -path.extname(filename).length);
+            this._scriptIds.push(scriptId);
+            filename = path.join(this._dirname, filename);
+            let snapshot = fs.readFileSync(filename, 'utf8');
+            let script = Script.fromSnapshot(snapshot);
+
+            this.runScript(script, filename);
+        });
     }
 
 
@@ -55,6 +66,26 @@ export default class Epoch extends EventEmitter {
         let filename = path.join(this._dirname, scriptId + '.slow');
         fs.writeFileSync(filename, script.snapshot(), {encoding: 'utf8'});
 
+        // TODO: run the script...
+        this.runScript(script, filename);
+    }
+
+
+    // TODO: ...
+    private _dirname: string;
+
+
+    // TODO: ...
+    private _scriptIds: string[];
+
+
+
+
+
+    // TODO: ...
+    private runScript(script: Script, filename: string) {
+        let scriptId = script.name;
+
         // TODO: Kick off script using an IIAFE...
         // TODO: do we need to keep a reference to the script/jasm/interpreter/progress after this? Why? Why not?
         (async () => {
@@ -71,12 +102,12 @@ export default class Epoch extends EventEmitter {
                         let snapshot = script.snapshot();
                         fs.writeFileSync(filename, snapshot, {encoding: 'utf8'});
 
-// // TODO: temp testing...
-// console.log(`\n\n\n\n\n################################################################################`);
-// console.log(`PARK:\n${snapshot}`);
-// let o = Script.fromSnapshot(snapshot).registers;
-// console.log(`\n\nUNPARK:`);
-// console.log(o);
+    // // TODO: temp testing...
+    // console.log(`\n\n\n\n\n################################################################################`);
+    // console.log(`PARK:\n${snapshot}`);
+    // let o = Script.fromSnapshot(snapshot).registers;
+    // console.log(`\n\nUNPARK:`);
+    // console.log(o);
                     }                    
                 }
 
@@ -93,12 +124,4 @@ export default class Epoch extends EventEmitter {
             }
         })();
     }
-
-
-    // TODO: ...
-    private _dirname: string;
-
-
-    // TODO: ...
-    private _scriptIds: string[];
 }
