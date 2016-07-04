@@ -1,4 +1,5 @@
 // TODO: use async 'fs' functions where possible
+// TODO: full set of emitted codes (apart from 'error'). What is common? 'done'? Check other repos for common names...
 import * as fs from 'fs';
 import * as path from 'path';
 import {EventEmitter} from 'events';
