@@ -1,6 +1,6 @@
 // TODO: support Iterator#return method? Would need JASM support...
-import {Program} from '../script/serialization/jasm';
-import JasmProcesor from '../script/jasm-processor';
+import JasmProcesor, {Register} from './jasm-processor';
+import {Program} from './serialization/jasm';
 
 
 
@@ -10,23 +10,43 @@ import JasmProcesor from '../script/jasm-processor';
 export default class Script implements IterableIterator<Promise<void>> {
 
 
-    // TODO: doc... add opts arg later...
-    constructor(sourceOrMemento: string|Memento) {
+    // TODO: doc...
+    constructor(source: string, options?: ScriptOptions) {
+        options = options || {language: 'typescript'};
+
+
+        if (options.language === 'typescript') {
+            // TODO: ...
+        }
+        else if (options.language === 'jasm+kvon') {
+            // TODO: ...
+        }
+        else {
+            // TODO: throw unsupported language...
+        }
+
         //this.next = makeNextFunction();
         //this.throw = makeThrowFunction();
     }
 
 
     // TODO: ...
-    program;
+    static fromSnapshot(snapshot: string) {
+        // TODO: ...
+        return new Script(snapshot, {language: 'jasm+kvon'});
+    }
 
 
     // TODO: ...
-    registers;
+    instructions: Program;
 
 
     // TODO: ...
-    toMememto(): Memento {
+    registers: Map<Register, any>;
+
+
+    // TODO: ...
+    snapshot(): string {
         // TODO: ...
         throw new Error(`Not implemented`);
     }
@@ -50,8 +70,9 @@ export default class Script implements IterableIterator<Promise<void>> {
 
 
 
-export interface Memento {
-    toString(): string;
+// TODO: ...
+export interface ScriptOptions {
+    language: 'typescript'|'jasm+kvon'
 }
 
 
