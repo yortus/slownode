@@ -21,6 +21,7 @@ export default class Script implements IterableIterator<Promise<void>> {
         this._source = source;
         this._options = options = options || {};
         let language = options.language = options.language || 'typescript';
+        this.name = options.name = options.name || '«anonymous script»';
         this._globalFactory = defaultGlobalFactory; // TODO: allow other options?
 
         // Create a JASM processor for executing the script step-by-step.
@@ -30,11 +31,14 @@ export default class Script implements IterableIterator<Promise<void>> {
         if (language === 'jasm+kvon') {
 
             // TODO: decode source...
-            let matches = source.replace(/(?:\r\n)|\r/g, '\n').match(/^[\s\S]*?\.CODE\n([\s\S]+?)\n\.DATA\n([\s\S]+)$/);
+            let matches = source
+                .replace(/(?:\r\n)|\r/g, '\n')
+                .match(/^\.NAME\n([^\n]+)\n\.CODE\n([\s\S]+?)\n\.DATA\n([\s\S]+)$/);
             if (matches === null) throw new Error(`Invalid snapshot format`);
-            let [, jasm, kvon] = matches;
+            let [, name, jasm, kvon] = matches;
 
             // TODO: ...
+            this.name = name;
             this._jasm = jasm;
             this.program = JASM.parse(jasm);
             let kvonReviver = this._globalFactory.reviver; // TODO: how to validate this is the same factory that was used when the snapshot was created? E.g. use https://github.com/puleos/object-hash
@@ -77,9 +81,13 @@ export default class Script implements IterableIterator<Promise<void>> {
         let regNames = [...this.registers.keys()];
         let data = regNames.reduce((obj, regName) => (obj[regName] = this.registers.get(regName), obj), {});
         let jasm = this._jasm, kvon = KVON.stringify(data, kvonReplacer);
-        let snapshot = `.CODE\n${jasm}\n.DATA\n${kvon}`;
+        let snapshot = `.NAME\n${JSON.stringify(this._options.name)}\n.CODE\n${jasm}\n.DATA\n${kvon}`;
         return snapshot;
     }
+
+
+    // TODO: ...
+    name: string;
 
 
     // TODO: ...
@@ -131,6 +139,7 @@ export default class Script implements IterableIterator<Promise<void>> {
 // TODO: put in separate file?
 export interface ScriptOptions {
     language?: 'typescript'|'jasm+kvon';
+    name?: string;
 }
 
 
