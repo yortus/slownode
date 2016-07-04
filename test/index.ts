@@ -14,7 +14,6 @@ let script01 = fs.readFileSync(path.join(__dirname, './fixtures/script01.ts'), '
 
 
 // TODO: ...
-slownode.init({});
 slownode.eval(script01);
 slownode.on('error', (err, scriptId) => {
     console.log(`Error evaluating script '${scriptId}':`);

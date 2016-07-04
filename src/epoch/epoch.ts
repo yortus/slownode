@@ -1,3 +1,6 @@
+// TODO: use async 'fs' functions where possible
+import * as fs from 'fs';
+import * as path from 'path';
 import {EventEmitter} from 'events';
 import EpochOptions from './epoch-options';
 import Script from '../script';
@@ -11,25 +14,46 @@ export default class Epoch extends EventEmitter {
 
 
     // TODO: ...
-    constructor() {
+    constructor(options?: EpochOptions) {
         super();
-    }
 
+        // Validate options
+        this._dirname = path.join(process.cwd(), 'slowfiles');
 
-    // TODO: why allow this, separate from constructor? Ans: so 'default' Epoch can be configured. Then maybe just support that instance specially... Seems an antipattern at present...
-    init(options: EpochOptions) {
-        options = options || {};
+        // TODO: create dir if not exists...
+        try { fs.mkdirSync(this._dirname); }
+        catch (err) { }
 
         // TODO: load/revive running scripts from storage...
+        this._scriptIds = [];
+
     }
 
 
     // TODO: ...
     eval(source: string, scriptId?: string) {
-        scriptId = scriptId || '«unidentified script»';
 
-        // TODO: ...
-        let script = new Script(source);
+        // TODO: ensure script ID is a valid filename...
+        // TODO: better to just separate scriptId from filename, and use a GUID for filename? Less discoverable on disk...
+        scriptId = scriptId || '«unidentified script»';
+        scriptId = scriptId.replace(/[^a-zA-Z0-9_«»] /, '_');
+
+        // TODO: ensure script ID is unique within epoch...
+        let index = 0;
+        while (true) {
+            let sid = `${scriptId}${index++ || ''}`;
+            if (this._scriptIds.indexOf(sid) !== -1) continue;
+            scriptId = sid;
+            break;
+        }
+
+        // TODO: create the script object...
+        let script = new Script(source, {name: scriptId});
+        this._scriptIds.push(scriptId);
+
+        // TODO: Save the script's initial snapshot to disk...
+        let filename = path.join(this._dirname, scriptId + '.slow');
+        fs.writeFileSync(filename, script.snapshot(), {encoding: 'utf8'});
 
         // TODO: Kick off script using an IIAFE...
         // TODO: do we need to keep a reference to the script/jasm/interpreter/progress after this? Why? Why not?
@@ -45,18 +69,36 @@ export default class Epoch extends EventEmitter {
 
                     if (shouldPark) {
                         let snapshot = script.snapshot();
-// TODO: temp testing...
-console.log(`\n\n\n\n\n################################################################################`);
-console.log(`PARK:\n${snapshot}`);
-let o = Script.fromSnapshot(snapshot).registers;
-console.log(`\n\nUNPARK:`);
-console.log(o);
+                        fs.writeFileSync(filename, snapshot, {encoding: 'utf8'});
+
+// // TODO: temp testing...
+// console.log(`\n\n\n\n\n################################################################################`);
+// console.log(`PARK:\n${snapshot}`);
+// let o = Script.fromSnapshot(snapshot).registers;
+// console.log(`\n\nUNPARK:`);
+// console.log(o);
                     }                    
                 }
+
+                // TODO: script finished successfully... emit something?
             }
             catch (err) {
                 this.emit('error', err, scriptId);
             }
+            finally {
+
+                // TODO: script finished...
+                this._scriptIds.splice(this._scriptIds.indexOf(scriptId), 1);
+                fs.unlinkSync(filename);
+            }
         })();
     }
+
+
+    // TODO: ...
+    private _dirname: string;
+
+
+    // TODO: ...
+    private _scriptIds: string[];
 }

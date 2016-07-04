@@ -59,7 +59,7 @@ export default function preStringify(value: {}, replacer: Replacer): Serializabl
         // TODO: what about non-enum properties? Getters? etc? Such props, if present, may break the roundtrip guarantees...
 // TODO: array handling is useless... need to encode array as an object so JSON.stringify preserves hols/extra props
 if (Array.isArray(newVal)) {
-    debugger;
+//TODO: fix!!! was...    debugger;
 }
         let result: any = Array.isArray(newVal) ? [] : {};
         Object.keys(newVal).forEach(key => {

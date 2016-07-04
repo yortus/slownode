@@ -2,7 +2,8 @@
 
 
 let ii = 0, isum = 0; 
-while (ii < 50) {
+while (ii < 5) {
+    await sleep(500);
     isum = isum + ii;  
     ii += 1;
     print('' + isum);
