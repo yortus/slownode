@@ -1,13 +1,13 @@
 // TODO: support Iterator#return method? Would need JASM support...
-import {Program} from '../slow-script/serialization/jasm';
-import JasmProcesor from '../slow-script/jasm-processor';
+import {Program} from '../script/serialization/jasm';
+import JasmProcesor from '../script/jasm-processor';
 
 
 
 
 
 // TODO: ...
-export default class SlowScript implements IterableIterator<Promise<void>> {
+export default class Script implements IterableIterator<Promise<void>> {
 
 
     // TODO: doc... add opts arg later...

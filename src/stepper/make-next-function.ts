@@ -1,5 +1,5 @@
-import {Program} from '../slow-script/serialization/jasm';
-import JasmProcesor from '../slow-script/jasm-processor';
+import {Program} from '../script/serialization/jasm';
+import JasmProcesor from '../script/jasm-processor';
 
 
 

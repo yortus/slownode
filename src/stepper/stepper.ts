@@ -1,6 +1,6 @@
-import JASM, {Program} from '../slow-script/serialization/jasm/index';  // NB: explicit 'index' so loadable by both CJS & AMD
+import JASM, {Program} from '../script/serialization/jasm/index';  // NB: explicit 'index' so loadable by both CJS & AMD
 import makeNextFunction from './make-next-function';
-import JasmProcessor, {Register} from '../slow-script/jasm-processor';
+import JasmProcessor, {Register} from '../script/jasm-processor';
 
 
 

@@ -2,7 +2,7 @@ import * as ko from 'knockout';
 import * as cm from 'codemirror';
 import 'javascript-mode';
 import 'z80-mode';
-import * as typescript from '../src/slow-script/source-languages/typescript/index';
+import * as typescript from '../src/script/source-languages/typescript/index';
 
 
 

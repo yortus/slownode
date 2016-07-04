@@ -1,8 +1,8 @@
-import globalFactory from '../slow-script/global-factories/default';
+import globalFactory from '../script/global-factories/default';
 import {EventEmitter} from 'events';
 import EpochOptions from './epoch-options';
 import Stepper from '../stepper';
-import * as typescript from '../slow-script/source-languages/typescript';
+import * as typescript from '../script/source-languages/typescript';
 
 
 
@@ -71,8 +71,8 @@ export default class Epoch extends EventEmitter {
 
 
 // TODO: implement properly...
-import JASM from '../slow-script/serialization/jasm';
-import KVON from '../slow-script/serialization/kvon';
+import JASM from '../script/serialization/jasm';
+import KVON from '../script/serialization/kvon';
 async function tempPark(stepper: Stepper) {
 
     // TODO: temp testing...

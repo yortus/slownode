@@ -17,6 +17,6 @@
     },
     "files": [
         "main.ts",
-        "../src/slow-script/source-languages/typescript/index.ts"
+        "../src/script/source-languages/typescript/index.ts"
     ]
 }
