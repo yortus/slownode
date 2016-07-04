@@ -1,6 +1,10 @@
 // TODO: support Iterator#return method? Would need JASM support...
-import JasmProcesor, {Register} from './jasm-processor';
-import {Program} from './serialization/jasm';
+import defaultGlobalFactory from './global-factories/default';
+import GlobalFactory from './global-factory';
+import JASM, {Program} from './serialization/jasm';
+import JasmProcessor, {Register} from './jasm-processor';
+import KVON from './serialization/kvon';
+import * as typescript from './source-languages/typescript';
 
 
 
@@ -12,21 +16,51 @@ export default class Script implements IterableIterator<Promise<void>> {
 
     // TODO: doc...
     constructor(source: string, options?: ScriptOptions) {
-        options = options || {language: 'typescript'};
 
+        // Validate source and options arguments.
+        this._source = source;
+        this._options = options = options || {};
+        let language = options.language = options.language || 'typescript';
+        this._globalFactory = defaultGlobalFactory; // TODO: allow other options?
 
-        if (options.language === 'typescript') {
+        // Create a JASM processor for executing the script step-by-step.
+        let processor = this._processor = new JasmProcessor();
+
+        // TODO: ...
+        if (language === 'jasm+kvon') {
+
+            // TODO: decode source...
+            let matches = source.replace(/(?:\r\n)|\r/g, '\n').match(/^[\s\S]*?\.CODE\n([\s\S]+?)\n\.DATA\n([\s\S]+)$/);
+            if (matches === null) throw new Error(`Invalid snapshot format`);
+            let [, jasm, kvon] = matches;
+
             // TODO: ...
-        }
-        else if (options.language === 'jasm+kvon') {
-            // TODO: ...
+            this._jasm = jasm;
+            this.program = JASM.parse(jasm);
+            let kvonReviver = this._globalFactory.reviver; // TODO: how to validate this is the same factory that was used when the snapshot was created? E.g. use https://github.com/puleos/object-hash
+            let data = KVON.parse(kvon, kvonReviver); // TODO: validate data is an object with *all* registers defined as keys
+            let registers = Object.keys(data).reduce((map, key) => (map.set(key, data[key])), new Map());
+            this.registers = this._processor.registers = registers;
         }
         else {
-            // TODO: throw unsupported language...
+
+            // TODO: only TypeScript is supported for now...
+            let transpileToJasm = language === 'typescript' ? typescript.transpileToJasm : null;
+            if (!transpileToJasm) throw new Error(`Unsupported script source language '${language}'`);
+
+            // TODO: language-independent steps...
+            let jasm = this._jasm = transpileToJasm(source);
+            this.program = JASM.parse(jasm);
+            this.registers = processor.registers;
+
+            // TODO: create global and set ENV
+            let globalObject = this._globalFactory.create();
+            this.registers.set('ENV', globalObject);
         }
 
-        //this.next = makeNextFunction();
-        //this.throw = makeThrowFunction();
+        // TODO: universal steps...
+        this.next = makeNextFunction(this.program, this._processor);
+        this.throw = makeThrowFunction(this.program, this._processor);
     }
 
 
@@ -38,18 +72,22 @@ export default class Script implements IterableIterator<Promise<void>> {
 
 
     // TODO: ...
-    instructions: Program;
+    snapshot(): string {
+        let kvonReplacer = this._globalFactory.replacer;
+        let regNames = [...this.registers.keys()];
+        let data = regNames.reduce((obj, regName) => (obj[regName] = this.registers.get(regName), obj), {});
+        let jasm = this._jasm, kvon = KVON.stringify(data, kvonReplacer);
+        let snapshot = `.CODE\n${jasm}\n.DATA\n${kvon}`;
+        return snapshot;
+    }
+
+
+    // TODO: ...
+    program: Program;
 
 
     // TODO: ...
     registers: Map<Register, any>;
-
-
-    // TODO: ...
-    snapshot(): string {
-        // TODO: ...
-        throw new Error(`Not implemented`);
-    }
 
 
     // TODO: ...
@@ -64,23 +102,43 @@ export default class Script implements IterableIterator<Promise<void>> {
     [Symbol.iterator]() {
         return this;
     }
+
+
+    // TODO: ...
+    private _source: string;
+
+
+    // TODO: ...
+    private _options: ScriptOptions;
+
+
+    // TODO: ...
+    private _processor: JasmProcessor;
+
+
+    // TODO: ...
+    private _jasm: string;
+
+
+    // TODO: ...
+    private _globalFactory: GlobalFactory;
 }
 
 
 
 
 
-// TODO: ...
+// TODO: put in separate file?
 export interface ScriptOptions {
-    language: 'typescript'|'jasm+kvon'
+    language?: 'typescript'|'jasm+kvon';
 }
 
 
 
 
 
-// TODO: ...
-function makeNextFunction(program: Program, processor: JasmProcesor): () => IteratorResult<Promise<void>> {
+// TODO: put in separate file?
+function makeNextFunction(program: Program, processor: JasmProcessor): () => IteratorResult<Promise<void>> {
 
     // TODO: Associate each label with it's zero-based line number...
     let labelLines = program.lines.reduce((labels, line, i) => {
@@ -114,17 +172,17 @@ function makeNextFunction(program: Program, processor: JasmProcesor): () => Iter
         }
     }).map((line, i) => `case ${`${i}:    `.slice(0, 6)} ${line}break;`);
 
-    // TODO: retain program comments to aid debugging... NB: An inline sourcemap to JASM (or to the original script) would be the best thing here
+    // TODO: retain program comments to aid debugging... NB: An inline sourcemap to JASM (or to the original script) might be the best thing here
     switchCases = switchCases.map((line, i) => {
         if (!program.lines[i].comment) return line;
         return `${line}${' '.repeat(Math.max(0, 72 - line.length))}//${program.lines[i].comment}`;
     });
 
     // TODO: Eval up the next() function...
-    // TODO: what if an THROW/AWAIT op rejects? It's not handled properly in the following source code...
+    // TODO: what if a THROW/AWAIT op rejects? It's not handled properly in the following source code...
     let _ = processor;
     let source = `
-        function next() {
+        function iteratorNext() {
             var done = false, pc = _.registers.get('PC'), p;
             _.registers.set('PC', pc + 1);
             switch (pc) {
@@ -143,8 +201,16 @@ function makeNextFunction(program: Program, processor: JasmProcesor): () => Iter
 
 
 
-// TODO: ...
-function makeThrowFunction(program: Program, processor: JasmProcesor): () => IteratorResult<Promise<void>> {
-    // TODO: ...
-    throw new Error(`Not implemented`);
+// TODO: put in separate file?
+function makeThrowFunction(program: Program, processor: JasmProcessor): (err: any) => IteratorResult<Promise<void>> {
+
+    // TODO: doc... does this need to otherwise work like step(), return a value, etc? I think not, but think about it...
+    return function iteratorThrow(err: any): IteratorResult<Promise<void>> {
+        processor.registers.set('ERR', err);
+        processor.THROW('ERR'); // TODO: this executes an instruction that is not in the JASM program. What happens to PC, etc??
+        // TODO: ^ will throw back at caller if JASM program doesn't handle it
+        // TODO: is JASM program *does* handle it, what should we return from here?
+        // TODO: temp just for now...
+        return { done: false, value: Promise.resolve() };
+    }
 }
