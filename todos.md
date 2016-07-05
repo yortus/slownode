@@ -98,7 +98,13 @@ Stepper (has-a Execution Engine)
 - [x] in 'build', resolve labels and add switch/case wrapper
 
 
-
+## JASM
+- line-based
+- 3 line types: instruction, label, blank
+- comments start with ';' and run to end of line
+- comments are preserved in Program
+- canonical instruction lines are aligned with spaces; opcodes start at column 4, args start at column 12
+- canonical label lines are not indented
 
 
 ## Slow Scripting
