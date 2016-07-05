@@ -56,15 +56,15 @@ export default function preStringify(value: {}, replacer: Replacer): Serializabl
 
         // Create a serialized equivalent of the plain object/array in the output object graph. This involves
         // enumerating its own enumerable properties, and recursively traversing them to create the output object.
+        // Note that arrays are given a special encoding so that holes and extra properties are preserved.
         // TODO: what about non-enum properties? Getters? etc? Such props, if present, may break the roundtrip guarantees...
-// TODO: array handling is useless... need to encode array as an object so JSON.stringify preserves hols/extra props
-if (Array.isArray(newVal)) {
-//TODO: fix!!! was...    debugger;
-}
-        let result: any = Array.isArray(newVal) ? [] : {};
+        let result = {};
         Object.keys(newVal).forEach(key => {
             result[key] = traverse(newVal, key, newVal[key], path.concat(encodePathSegment(key)));
         });
+        if (Array.isArray(newVal)) {
+            result = {$type: 'array', props: result};
+        }
 
         // Finally, we must consider the special case where the original object contains a property called '$type',
         // and the replacer didn't change it. '$type' is a special property key reserved for serialized encodings.

@@ -1,4 +1,5 @@
 ## TODOs:
+- [ ] what to do/where to put test fixtures?
 - [ ] implement stepper-to-jasm
 - [ ] refactor global object factory and lib.slow.d.ts (global-object.d.ts?)
 - [ ] standard library...

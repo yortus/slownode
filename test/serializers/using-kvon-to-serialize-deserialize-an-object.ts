@@ -35,6 +35,8 @@ describe('Using KVON to serialize/deserialize an object', () => {
         ['object with $type key',   {$type: '$type is reserved', other: ['things', 'and', 'stuff']}],
         ['holey array 1',           [1,,,4]],
         ['holey array 2',           (() => { let a = []; a[0] = 1; a[3] = 4; return a; })()],
+        ['array with props',        (() => { let a: any = [1, '22/22', 3, 42]; a.p = 'foo'; a.q = null; return a; })()],
+        ['holey array with props',  (() => { let a = [1,2,3]; delete a[1]; a['x/y'] = {z:-9}; return a; })()],
         // TODO: add more...
         // - Date
         // - Error

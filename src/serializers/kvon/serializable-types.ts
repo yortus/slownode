@@ -7,6 +7,7 @@
 export type Serializable = null|string|number|boolean|Object|Array<any>;
 export type Escaped = {$type: 'esc', raw: {}};
 export type Reference = {$type: 'ref', path: string};
+export type EncodedArray = {$type: 'array', props: {}};
 
 
 
@@ -46,4 +47,13 @@ export function isEscaped(x: any): x is Escaped {
 // TODO: ...
 export function isReference(x: any): x is Reference {
     return isSerializableObject(x) && x.$type === 'ref';
+}
+
+
+
+
+
+// TODO: ...
+export function isEncodedArray(x: any): x is EncodedArray {
+    return isSerializableObject(x) && x.$type === 'array';
 }

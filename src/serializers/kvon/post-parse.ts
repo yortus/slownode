@@ -1,6 +1,6 @@
 import encodePathSegment from './encode-path-segment';
 import Reviver from './reviver';
-import {Serializable, isSerializableObject, isEscaped, isReference} from './serializable-types';
+import {Serializable, isSerializableObject, isEscaped, isReference, isEncodedArray} from './serializable-types';
 
 
 
@@ -50,7 +50,12 @@ export default function postParse(value: Serializable, reviver: Reviver): any {
                 var noRevive = true;
             }
 
-            // Traverse the properties of the object/array, so that they are recursively revived.
+            // Traverse the properties of the object/array, so that they are recursively revived. If the value
+            // represents an encoded array, restore it back to a plain array before traversing its properties.
+            if (isEncodedArray(val)) {
+                let props = val.props;
+                obj[key] = val = Object.keys(props).reduce((ar, subkey) => (ar[subkey] = props[subkey], ar), []);
+            }
             Object.keys(val).forEach(subkey => {
                 traverse(val, subkey, val[subkey], path.concat(encodePathSegment(subkey)));
             });
