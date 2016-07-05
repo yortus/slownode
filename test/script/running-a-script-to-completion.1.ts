@@ -1,3 +1,4 @@
+// TODO: add another test file for testing snapshots...
 import {Script, KVON} from 'slownode';
 import {expect} from 'chai';
 
@@ -23,6 +24,7 @@ describe('Running a script to completion', () => {
         `let obj:any = {}, ref = obj.bar.baz;                       ==> ERROR: Cannot read property 'baz'...`,
         `await sleep(20); let result = 5                            ==> 5`,
         `await sleepThenFail(20, 'oops');                           ==> ERROR: oops`,
+        // TODO: test all supported syntax and builtins...
     ];
 
     tests.forEach(test => {

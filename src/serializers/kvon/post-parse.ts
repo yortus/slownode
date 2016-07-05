@@ -20,6 +20,9 @@ export default function postParse(value: Serializable, reviver: Reviver): any {
 
     // TODO: backpatch refs to defs
     pathRefs.forEach(ref => {
+
+let v = value;
+
         ref.obj[ref.key] = pathDefs.get(ref.path);
     });
 
