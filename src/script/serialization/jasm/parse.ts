@@ -50,7 +50,7 @@ ArgumentList          =   first:Argument   rest:NextArgument*   { return [first]
 NextArgument          =   SPC?   ","   SPC?   arg:Argument   { return arg; }
 Argument              =   RegisterArgument   /   LabelArgument   /   StringArgument   /   NumberArgument
 RegisterArgument      =   ("PC"   /   "ENV"   /   "ERR"   /   ("$" [0-7]))   { return {type: 'register', name: text()}; }
-LabelArgument "label" =   [a-z]i   [a-z0-9]i   { return {type: 'label', name: text()}; }
+LabelArgument "label" =   [a-z]i   [a-z0-9]i*   { return {type: 'label', name: text()}; }
 StringArgument        =   String   { return {type:'const', value: JSON.parse(text())}; }
 NumberArgument        =   Number   { return {type:'const', value: JSON.parse(text())}; }
 

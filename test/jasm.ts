@@ -15,6 +15,13 @@ describe('JASM round-trip serialization restores the original value', () => {
         ['instruction with comment',    `    STRING  $7, "blah"   ; load "blah into register $7\n`],
         ['label with comment',          `L2:                ;  while (true) {\n`],
         ['blank line with comment',     `         ; witty remark\n`],
+        ['*invalid* line',              `; no newline here-->`],
+        ['*invalid* instruction 1',     `$BADOPCODE $0, $1\n`],
+        ['*invalid* instruction 2',     `ADD $0, $1,\n`],
+        ['*invalid* argument 1',        `LOAD $8, $1, $0\n`],
+        ['*invalid* argument 2',        `B -label-\n`],
+        ['*invalid* argument 3',        `LOAD #33\n`],
+        ['*invalid* label',             `L3.1:\n`],
         ['program sequence',            `
                                             ; ===== ENTER SCOPE 1 ===== {  }
                                         L1:                                             ; while (n < 10) {
@@ -55,13 +62,21 @@ describe('JASM round-trip serialization restores the original value', () => {
     ];
 
     tests.forEach(test => {
-        let [name, value] = <[string, string]>test;
+        let [name, value] = <[string, string]> test;
         it(name, () => {
-            // TODO: add try/catch?
+            let expectedError = name.startsWith('*invalid*');
             let expected = value;
-            let program = JASM.parse(value);
-            let actual = JASM.stringify(program);
-            expect(actual).to.deep.equal(expected);
+            let actual: string;
+            let actualError = false;
+            try {
+                let program = JASM.parse(value);
+                actual = JASM.stringify(program);
+            }
+            catch (ex) {
+                actualError = true;
+            }
+            expect(actualError).to.equal(expectedError);
+            expect(!actualError && actual).to.deep.equal(!expectedError && expected);
         });
     });
 });

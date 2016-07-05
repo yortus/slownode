@@ -38,7 +38,35 @@ describe('KVON round-trip serialization restores the original value', () => {
         // - GeneratorFunction
         // - GeneratorObject
         // - Iterator
-
+        ['complex object graph', (() => {
+            let o = <any> {
+                foo: [
+                    1,
+                    2,
+                    {
+                        a: 9,
+                        b: ['c', 'd'],
+                        c: [true, false, null, undefined],
+                        d: [0, -0, NaN, Infinity, -Infinity],
+                        e: /^[fF]oo+\n$/g,
+                        f: {$type: 'secret', $val: 'password'}
+                    }
+                ],
+                bar: {
+                    baz: [
+                        'quux',
+                        [
+                            [
+                                []
+                            ]
+                        ]
+                    ]
+                }
+            };
+            o.bar.baz[1][0].push(o.foo[2]);
+            o.bar.baz[1].unshift(o.foo[2]);
+            return o;
+        })()]
     ];
 
     tests.forEach(test => {
