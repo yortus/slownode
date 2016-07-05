@@ -21,20 +21,14 @@
 
 ```
 
-Stepper.parse           // JASM+KVON to Stepper object
-  JASM.parse            // JASM string to Program object
-  KVON.parse            // KVON string to object
+Testing a Script object
 
-Stepper.stringify       // Stepper object to JASM+KVON
-  JASM.stringify        // Program object to JASM string
-  KVON.stringify        // object to KVON string
+- load a source string
+- iterate over it
+- get expected result/error (eventually)
+- inspect program/registers??
 
-
-Execution Engine
-
-Stepper (has-a Execution Engine)
-  program: Program
-  registers: RegisterSet
+- suspend/restore in mid-stream using snapshots
 
 
 

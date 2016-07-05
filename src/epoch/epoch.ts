@@ -37,12 +37,12 @@ export default class Epoch extends EventEmitter {
             let snapshot = fs.readFileSync(filename, 'utf8');
             let script = Script.fromSnapshot(snapshot);
 
-            this.runScript(script, filename);
+            this.runToCompletion(script, filename);
         });
     }
 
 
-    // TODO: ...
+    // TODO: ... fix signature - accept scriptIdHint and return actualScriptId (unique in epoch)
     eval(source: string, scriptId?: string) {
 
         // TODO: ensure script ID is a valid filename...
@@ -68,7 +68,7 @@ export default class Epoch extends EventEmitter {
         fs.writeFileSync(filename, script.snapshot(), {encoding: 'utf8'});
 
         // TODO: run the script...
-        this.runScript(script, filename);
+        this.runToCompletion(script, filename);
     }
 
 
@@ -80,11 +80,8 @@ export default class Epoch extends EventEmitter {
     private _scriptIds: string[];
 
 
-
-
-
     // TODO: ...
-    private runScript(script: Script, filename: string) {
+    private runToCompletion(script: Script, filename: string) {
         let scriptId = script.name;
 
         // TODO: Kick off script using an IIAFE...
@@ -113,6 +110,7 @@ export default class Epoch extends EventEmitter {
                 }
 
                 // TODO: script finished successfully... emit something?
+                this.emit('end', scriptId);
             }
             catch (err) {
                 this.emit('error', err, scriptId);

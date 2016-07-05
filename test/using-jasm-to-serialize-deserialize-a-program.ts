@@ -5,7 +5,7 @@ import {expect} from 'chai';
 
 
 
-describe('JASM round-trip serialization restores the original value', () => {
+describe('Using JASM to serialize/deserialize a program', () => {
 
     // NB: Note canonical spacing of instruction lines below (see docs)
     let tests = [
@@ -16,11 +16,11 @@ describe('JASM round-trip serialization restores the original value', () => {
         ['label with comment',          `L2:                ;  while (true) {\n`],
         ['blank line with comment',     `         ; witty remark\n`],
         ['*invalid* line',              `; no newline here-->`],
-        ['*invalid* instruction 1',     `$BADOPCODE $0, $1\n`],
-        ['*invalid* instruction 2',     `ADD $0, $1,\n`],
-        ['*invalid* argument 1',        `LOAD $8, $1, $0\n`],
-        ['*invalid* argument 2',        `B -label-\n`],
-        ['*invalid* argument 3',        `LOAD #33\n`],
+        ['*invalid* instruction 1',     `    $BADOPCODE $0, $1\n`],
+        ['*invalid* instruction 2',     `    ADD $0, $1,\n`],
+        ['*invalid* argument 1',        `    LOAD $8, $1, $0\n`],
+        ['*invalid* argument 2',        `    B -label-\n`],
+        ['*invalid* argument 3',        `    LOAD #33\n`],
         ['*invalid* label',             `L3.1:\n`],
         ['program sequence',            `
                                             ; ===== ENTER SCOPE 1 ===== {  }

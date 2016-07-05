@@ -5,7 +5,16 @@ import {expect} from 'chai';
 
 
 
-describe('KVON round-trip serialization restores the original value', () => {
+// TODO: how to check ES6 types like Maps for deep equality?
+// let m1 = new Map([['a', 1], ['b', 2]]);
+// let m2 = new Map([['a', 1], ['b', 2], ['c', 3]]);
+// expect(m1).to.not.deep.equal(m2); // FAIL
+
+
+
+
+
+describe('Using KVON to serialize/deserialize an object', () => {
 
     let tests = [
         ['string',                  `foo\nbar  "baz"    'nunchucks'\r\n\\\\\`     \t    blah \u0042 \\u0042`],
