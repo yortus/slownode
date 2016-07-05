@@ -6,7 +6,7 @@
 
 // TODO: was...
 // Tell mocha where the test files are.
-process.argv.push('built/test/*.js');
+process.argv.push('built/test/**/*.js');
 
 // Tell mocha *not* to call process.exit() when tests have finished.
 process.argv.push('--no-exit');

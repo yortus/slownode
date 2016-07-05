@@ -1,9 +1,8 @@
 // TODO: support Iterator#return method? Would need JASM support...
 import defaultGlobalFactory from './global-factories/default';
 import GlobalFactory from './global-factory';
-import JASM, {Program} from './serialization/jasm';
+import {JASM, KVON, Program} from '../serializers';
 import JasmProcessor, {Register} from './jasm-processor';
-import KVON from './serialization/kvon';
 import * as typescript from './source-languages/typescript';
 
 

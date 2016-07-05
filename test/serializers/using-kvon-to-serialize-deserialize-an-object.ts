@@ -33,8 +33,9 @@ describe('Using KVON to serialize/deserialize an object', () => {
         ['RegExp',                  /^\\.*?[\s\S]F(O|o+)$/gi],
         ['circular object',         (() => { let o = {x: 123, y: <any>[1,2]}; o.y.push({self: o}); return o; })()],
         ['object with $type key',   {$type: '$type is reserved', other: ['things', 'and', 'stuff']}],
+        ['holey array 1',           [1,,,4]],
+        ['holey array 2',           (() => { let a = []; a[0] = 1; a[3] = 4; return a; })()],
         // TODO: add more...
-        // - Holey array
         // - Date
         // - Error
         // - Map
@@ -47,6 +48,7 @@ describe('Using KVON to serialize/deserialize an object', () => {
         // - GeneratorFunction
         // - GeneratorObject
         // - Iterator
+        // - object with prototype
         ['complex object graph', (() => {
             let o = <any> {
                 foo: [

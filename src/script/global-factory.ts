@@ -1,4 +1,4 @@
-import {Replacer, Reviver} from './serialization/kvon';
+import {Replacer, Reviver} from '../serializers';
 
 
 

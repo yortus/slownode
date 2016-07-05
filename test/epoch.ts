@@ -19,7 +19,7 @@ describe('an Epoch instance', () => {
 
 
         // TODO: ...
-        slownode.eval(script01);
+        slownode.eval(script00);
         await runToCompletion(slownode);
     }));
 });
