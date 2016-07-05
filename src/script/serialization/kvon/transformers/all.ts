@@ -1,9 +1,10 @@
 import * as infinity from './infinity';
 import * as nan from './nan';
-import * as promise from './promise';
+import * as negativeZero from './negative-zero';
 import * as regexp from './regexp';
 import * as undefd from './undefined';
 // TODO: others:
+// - promise
 // - generator
 // - generator-function
 // - typed-array
@@ -22,7 +23,7 @@ import * as undefd from './undefined';
 const allTransformers = [
     infinity,
     nan,
-    promise,
+    negativeZero,
     regexp,
     undefd
 ];

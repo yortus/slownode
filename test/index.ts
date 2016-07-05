@@ -1,12 +1,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import slownode, {Epoch} from 'slownode';
+import slownode, {Epoch, Script} from 'slownode';
 
 
 
 
 
 // TODO: ...
+let script00 = ``;
 let script01 = fs.readFileSync(path.join(__dirname, './fixtures/script01.ts'), 'utf8');
 
 
@@ -14,7 +15,7 @@ let script01 = fs.readFileSync(path.join(__dirname, './fixtures/script01.ts'), '
 
 
 // TODO: ...
-slownode.eval(script01);
+slownode.eval(script00);
 slownode.on('error', (err, scriptId) => {
     console.log(`Error evaluating script '${scriptId}':`);
     console.log(err);
