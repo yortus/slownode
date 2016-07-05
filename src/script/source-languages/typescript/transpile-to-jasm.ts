@@ -8,7 +8,7 @@ import {types as t} from './babel';
 
 
 
-// TODO: ...
+// TODO: ... return all errors/diagnostics somehow!! See how babel/ts do it (i.e. return an object)
 export default function transpileToJasm(typeScriptSource: string): string {
 
     // TODO: wrap in IIAFE, without changing line numbers)
@@ -22,7 +22,7 @@ export default function transpileToJasm(typeScriptSource: string): string {
         // NB: take 1 off line to account for IIAFE prolog
         --line;
 
-        console.log(`L${line}C${col}   ${msg}`);
+        // TODO: temp testing... console.log(`L${line}C${col}   ${msg}`);
         // TODO: should be... this.emit('error', `L${line}C${col}   ${msg}`, scriptId);
     });
     if (!valid) {

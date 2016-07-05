@@ -14,6 +14,7 @@ export default function typeScriptToAst(typeScriptSource: string): Node {
         'syntax-async-functions',
         'transform-es2015-destructuring',
         'transform-es2015-template-literals',
+        'transform-flow-strip-types',
         augmentNodesWithScopeInfo
     ];
     let ast = transform(typeScriptSource, {plugins}).ast;
