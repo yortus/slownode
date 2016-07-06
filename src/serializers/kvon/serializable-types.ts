@@ -3,18 +3,20 @@
 
 
 
-// TODO: ...
-export type Serializable = null|string|number|boolean|Object|Array<any>;
+// TODO: ... NB: Serializable excludes array...
+export type Primitive = null|string|number|boolean;
+export type PlainObject = Object;
+export type Serializable = Primitive | {[key: string]: Serializable};
 export type Escaped = {$type: 'esc', raw: {}};
-export type Reference = {$type: 'ref', path: string};
-export type EncodedArray = {$type: 'array', props: {}};
+//export type Reference = {$type: 'ref', path: string};
+//export type EncodedArray = {$type: 'array', props: {}};
 
 
 
 
 
 // TODO: doc... NB will return false for new String, new Number, etc
-export function isSerializablePrimitive(x: any): x is null|string|number|boolean {
+export function isPrimitive(x: any): x is Primitive {
     if (x === null) return true;
     let t = typeof x;
     return t === 'string' || t === 'number' || t === 'boolean';
@@ -24,11 +26,9 @@ export function isSerializablePrimitive(x: any): x is null|string|number|boolean
 
 
 
-// TODO: doc... NB will return false for 'subclassed' Object and Array instances
-export function isSerializableObject(x: any): x is Object|Array<any> {
-    if (!x) return false;
-    let proto = Object.getPrototypeOf(x);
-    return proto === Object.prototype || proto === Array.prototype;
+// TODO: doc... NB will return false for arrays and 'subclassed' Object instances
+export function isPlainObject(x: any): x is PlainObject {
+    return x && Object.getPrototypeOf(x) === Object.prototype;
 }
 
 
@@ -37,23 +37,23 @@ export function isSerializableObject(x: any): x is Object|Array<any> {
 
 // TODO: ...
 export function isEscaped(x: any): x is Escaped {
-    return isSerializableObject(x) && x.$type === 'esc';
+    return isPlainObject(x) && x.$type === 'esc';
 }
 
 
 
 
 
-// TODO: ...
-export function isReference(x: any): x is Reference {
-    return isSerializableObject(x) && x.$type === 'ref';
-}
+// // TODO: remove this!! should be unused...
+// export function isReference(x: any): x is Reference {
+//     return isPlainObject(x) && x.$type === 'ref';
+// }
 
 
 
 
 
-// TODO: ...
-export function isEncodedArray(x: any): x is EncodedArray {
-    return isSerializableObject(x) && x.$type === 'array';
-}
+// // TODO: remove this!! should be unused...
+// export function isEncodedArray(x: any): x is EncodedArray {
+//     return isPlainObject(x) && x.$type === 'array';
+// }

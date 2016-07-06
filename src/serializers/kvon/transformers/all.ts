@@ -1,3 +1,4 @@
+import * as array from './array';
 import * as infinity from './infinity';
 import * as nan from './nan';
 import * as negativeZero from './negative-zero';
@@ -21,6 +22,7 @@ import * as undefd from './undefined';
 
 // TODO: ...
 const allTransformers = [
+    array,
     infinity,
     nan,
     negativeZero,
