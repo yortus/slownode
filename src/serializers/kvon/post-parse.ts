@@ -16,6 +16,24 @@ export default function postParse(value: Serializable[], reviver: Reviver): any 
     return revived;
 
 
+
+    function replace(objectGraph: {}, oldValue: any, newValue: any, visited = new Set<{}>()): void {
+        if (!objectGraph) return;
+        if (typeof objectGraph !== 'object') return;
+        if (visited.has(objectGraph)) return;
+
+        visited.add(objectGraph);
+        Object.keys(objectGraph).forEach(key => {
+            let val = objectGraph[key];
+            if (val === oldValue) {
+                val = objectGraph[key] = newValue;
+            }
+            replace(val, oldValue, newValue); // recurse
+        });
+    }
+
+
+
     // TODO: ...
     // TODO: put in own file replace.ts
     function revive(obj: Serializable, key: string, val: Serializable, visited = new Map<Serializable, {}>()): {} {
@@ -41,29 +59,33 @@ export default function postParse(value: Serializable[], reviver: Reviver): any 
             }
 
             // TODO: ...
+            let placeholder = {}; // an opaque unique object
+            visited.set(val, placeholder);
+
+            // TODO: ...
             let pojo = {};
             Object.keys(val).forEach(subkey => {
                 pojo[subkey] = revive(val, subkey, val[subkey], visited);
             });
 
+            let revived = shouldReviveVal ? reviver.call({'':pojo}, '', pojo) : pojo;
 
+            visited.set(val, revived);
+            replace(revived, placeholder, revived);
+
+            return revived;
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+        else {
+            // TODO: fix...
+            return val;
+        }
 
     }
+
+
+
+
 
 
     // TODO: put in own file flatten.ts
