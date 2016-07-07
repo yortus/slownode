@@ -2,6 +2,7 @@
 import encodePathSegment from './encode-path-segment';
 import Replacer from './replacer';
 import {Serializable, Escaped, isPrimitive, isPlainObject} from './serializable-types';
+import WtfMap from './wtf-map';
 
 
 
@@ -22,7 +23,7 @@ export default function preStringify(value: {}, replacer: Replacer): Serializabl
 
         // TODO: ...
         let flat: Serializable[] = [];
-        let visited = new Map<Serializable, number>();
+        let visited = new WtfMap<Serializable, number>();
         self(val);
         return flat;
 
@@ -63,7 +64,7 @@ export default function preStringify(value: {}, replacer: Replacer): Serializabl
 
 
     // TODO: put in own file replace.ts
-    function replace(obj: {}, key: string, val: {}, visited = new Map<{}, Serializable>()): Serializable {
+    function replace(obj: {}, key: string, val: {}, visited = new WtfMap<{}, Serializable>()): Serializable {
 
         // Check if we have already encountered this value elsewhere in the object graph. If so, return the
         // replacement value previously computed for it. This ensures the output object graph retains object

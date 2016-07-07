@@ -1,6 +1,7 @@
 import encodePathSegment from './encode-path-segment';
 import Reviver from './reviver';
 import {Serializable, Escaped, isPrimitive, isPlainObject, isEscaped} from './serializable-types';
+import WtfMap from './wtf-map';
 
 
 
@@ -10,48 +11,65 @@ import {Serializable, Escaped, isPrimitive, isPlainObject, isEscaped} from './se
 export default function postParse(value: Serializable[], reviver: Reviver): {} {
 
     // TODO: ...
-    let visited = new Set<Serializable>();
-    let revivedTo = new Map<Serializable, {}>();
+//    let visited = new Set<Serializable>();
+    let revivedTo = new WtfMap<Serializable, {}>();
+    const PENDING = {toString: () => 'PENDING'};
 
     // TODO: ...
     let unflattened = unflatten(value);
     let revived = {'':unflattened};
     revive(revived, '', revived['']);
-    backpatch(revived, '', revived['']);
+//    backpatch(revived, '', revived['']);
     return revived[''];
 
 
 
-    function backpatch(obj: {}, key: string, val: {}, visited = new Set<{}>()): void {
+    // function backpatch(obj: {}, key: string, val: {}, visited = new Set<{}>()): void {
 
-        if (visited.has(val)) return;
-        visited.add(val);
+    //     if (visited.has(val)) return;
+    //     visited.add(val);
 
-        if (revivedTo.has(val)) {
-            obj[key] = revivedTo.get(val);
-            return;
-        }
+    //     if (revivedTo.has(val)) {
+    //         obj[key] = revivedTo.get(val);
+    //         return;
+    //     }
 
-        if (!val || typeof val !== 'object') return;
-        Object.keys(val).forEach(subkey => {
-            backpatch(val, subkey, val[subkey]);
-        });
-    }
+    //     if (!val || typeof val !== 'object') return;
+    //     Object.keys(val).forEach(subkey => {
+    //         backpatch(val, subkey, val[subkey]);
+    //     });
+    // }
+
+
 
 
 
     // TODO: ...
     // TODO: put in own file replace.ts
     function revive(obj: Serializable, key: string, val: Serializable): void {
+if (Object.is(val, -0)) {
+    debugger;
+}
 
         // TODO: revise comment...
         // Check if we have already encountered this value elsewhere in the object graph. If so, return the
         // revived value previously computed for it. This ensures the output object graph retains object
         // identities and supports circular references.
-        if (visited.has(val)) return; // TODO: replace with a getter that throws to prevent corner-case error (explain...)
+        if (revivedTo.has(val)) {
+            //return; // TODO: replace with a getter that throws to prevent corner-case error (explain...)
+            // TODO: temp testing...
+            Object.defineProperty(obj, key, {
+                enumerable: true,
+                configurable: true,
+                get: () => { let v = revivedTo.get(val); if (v !== PENDING) return v; throw new Error(`PENDING!!!`);}
+            });
+            return;
+        }
+
 
         // TODO: ...
-        visited.add(val);
+        revivedTo.set(val, PENDING);
+        //TODO: was... visited.add(val);
 
         // TODO: ...
         let shouldReviveVal = true;
@@ -66,9 +84,15 @@ export default function postParse(value: Serializable[], reviver: Reviver): {} {
             }
 
             // TODO: ...
-            Object.keys(val).forEach(subkey => {
+            let subkeys = Object.keys(val);
+            for (let i = 0; i < subkeys.length; ++i) {
+                let subkey = subkeys[i];
                 revive(val, subkey, val[subkey]);
-            });
+            }
+            // TODO: was.. restore after testing...
+            // Object.keys(val).forEach(subkey => {
+            //     revive(val, subkey, val[subkey]);
+            // });
 
             // TODO: ...
             if (shouldReviveVal) {
@@ -82,7 +106,7 @@ export default function postParse(value: Serializable[], reviver: Reviver): {} {
         }
 
         // TODO: ...
-        if (!Object.is(obj[key], val)) revivedTo.set(obj[key], val);
+        revivedTo.set(obj[key], val);
         obj[key] = val;
     }
 
@@ -94,7 +118,7 @@ export default function postParse(value: Serializable[], reviver: Reviver): {} {
     function unflatten(flat: Serializable[]): Serializable {
 
         // TODO: ...
-        let visited = new Map<number, Serializable>();
+        let visited = new WtfMap<number, Serializable>();
         return self(0);
 
         function self(index: number): Serializable {
