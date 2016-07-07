@@ -3,6 +3,7 @@
 
 
 
+/** drop-in replacement for Map that treats 0 and -0 as distinct keys */
 export default class WtfMap<K, V> implements Map<K, V> {
 
     clear() {
@@ -54,6 +55,10 @@ export default class WtfMap<K, V> implements Map<K, V> {
     }
 
     readonly [Symbol.toStringTag]: 'Map' = <any> 'WtfMap';
+
+    toString() {
+        return this._map.toString();
+    }
 
     private _map = new Map<K, V>();
 }

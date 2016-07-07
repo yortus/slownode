@@ -47,9 +47,6 @@ export default function postParse(value: Serializable[], reviver: Reviver): {} {
     // TODO: ...
     // TODO: put in own file replace.ts
     function revive(obj: Serializable, key: string, val: Serializable): void {
-if (Object.is(val, -0)) {
-    debugger;
-}
 
         // TODO: revise comment...
         // Check if we have already encountered this value elsewhere in the object graph. If so, return the
