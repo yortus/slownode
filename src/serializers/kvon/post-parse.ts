@@ -7,28 +7,34 @@ import {Serializable, Escaped, isPrimitive, isPlainObject, isEscaped} from './se
 
 
 // TODO: ...
-export default function postParse(value: Serializable[], reviver: Reviver): any {
+export default function postParse(value: Serializable[], reviver: Reviver): {} {
 
+    // TODO: ...
+    let visited = new Set<Serializable>();
+    let revivedTo = new Map<Serializable, {}>();
 
     // TODO: ...
     let unflattened = unflatten(value);
-    let revived = revive({'':unflattened}, '', unflattened);
-    return revived;
+    let revived = {'':unflattened};
+    revive(revived, '', revived['']);
+    backpatch(revived, '', revived['']);
+    return revived[''];
 
 
 
-    function replace(objectGraph: {}, oldValue: any, newValue: any, visited = new Set<{}>()): void {
-        if (!objectGraph) return;
-        if (typeof objectGraph !== 'object') return;
-        if (visited.has(objectGraph)) return;
+    function backpatch(obj: {}, key: string, val: {}, visited = new Set<{}>()): void {
 
-        visited.add(objectGraph);
-        Object.keys(objectGraph).forEach(key => {
-            let val = objectGraph[key];
-            if (val === oldValue) {
-                val = objectGraph[key] = newValue;
-            }
-            replace(val, oldValue, newValue); // recurse
+        if (visited.has(val)) return;
+        visited.add(val);
+
+        if (revivedTo.has(val)) {
+            obj[key] = revivedTo.get(val);
+            return;
+        }
+
+        if (!val || typeof val !== 'object') return;
+        Object.keys(val).forEach(subkey => {
+            backpatch(val, subkey, val[subkey]);
         });
     }
 
@@ -36,18 +42,19 @@ export default function postParse(value: Serializable[], reviver: Reviver): any 
 
     // TODO: ...
     // TODO: put in own file replace.ts
-    function revive(obj: Serializable, key: string, val: Serializable, visited = new Map<Serializable, {}>()): {} {
+    function revive(obj: Serializable, key: string, val: Serializable): void {
 
+        // TODO: revise comment...
         // Check if we have already encountered this value elsewhere in the object graph. If so, return the
         // revived value previously computed for it. This ensures the output object graph retains object
         // identities and supports circular references.
-        if (visited.has(val)) return visited.get(val);
+        if (visited.has(val)) return; // TODO: replace with a getter that throws to prevent corner-case error (explain...)
 
-
+        // TODO: ...
+        visited.add(val);
 
         // TODO: ...
         let shouldReviveVal = true;
-
 
         // TODO: recursively replace children first...
         if (isPlainObject(val)) {
@@ -59,30 +66,25 @@ export default function postParse(value: Serializable[], reviver: Reviver): any 
             }
 
             // TODO: ...
-            let placeholder = {}; // an opaque unique object
-            visited.set(val, placeholder);
-
-            // TODO: ...
-            let pojo = {};
             Object.keys(val).forEach(subkey => {
-                pojo[subkey] = revive(val, subkey, val[subkey], visited);
+                revive(val, subkey, val[subkey]);
             });
 
-            let revived = shouldReviveVal ? reviver.call({'':pojo}, '', pojo) : pojo;
-
-            visited.set(val, revived);
-            replace(revived, placeholder, revived);
-
-            return revived;
+            // TODO: ...
+            if (shouldReviveVal) {
+                // TODO: add sanity check to assert that the reviver didn't mutate `obj` or `val`?
+                val = reviver.call(obj, key, val);
+            }
         }
 
         else {
-            // TODO: fix...
-            return val;
+            // TODO: ...
         }
 
+        // TODO: ...
+        if (!Object.is(obj[key], val)) revivedTo.set(obj[key], val);
+        obj[key] = val;
     }
-
 
 
 
