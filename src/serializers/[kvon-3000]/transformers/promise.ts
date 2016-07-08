@@ -8,7 +8,7 @@ export function replacer(key, val) {
     if (!val || Object.getPrototypeOf(val) !== Promise.prototype) return val;
 
     // TODO: implement properly... handle DelayPromise...
-    return { $: 'Promise', value: ['???'] };
+    return { $type: 'Promise', value: ['???'] };
 }
 
 
@@ -16,7 +16,7 @@ export function replacer(key, val) {
 
 
 export function reviver(key, val) {
-    if (!val || val.$ !== 'Promise') return val;
+    if (!val || val.$type !== 'Promise') return val;
 
     // TODO: implement properly... handle DelayPromise...
     return Promise.resolve(42);

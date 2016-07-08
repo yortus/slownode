@@ -6,7 +6,7 @@
 export function replacer(key, val) {
     if (!val || Object.getPrototypeOf(val) !== Array.prototype) return val;
     return <ArrayInfo> {
-        $: 'Array',
+        $type: 'Array',
         props: Object.keys(val).reduce((props, key) => (props[key] = val[key], props), {})
     };
 }
@@ -27,7 +27,7 @@ export function reviver(key, val: {}) {
 
 
 function isArrayInfo(x: any): x is ArrayInfo {
-    return x && x.$ === 'Array';
+    return x && x.$type === 'Array';
 }
 
 
@@ -35,6 +35,6 @@ function isArrayInfo(x: any): x is ArrayInfo {
 
 
 interface ArrayInfo {
-    $: 'Array';
+    $type: 'Array';
     props: {};
 }

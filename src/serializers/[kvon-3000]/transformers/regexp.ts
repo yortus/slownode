@@ -6,7 +6,7 @@
 export function replacer(key, val) {
     if (!val || Object.getPrototypeOf(val) !== RegExp.prototype) return val;
     return <RegExpInfo> {
-        $: 'RegExp',
+        $type: 'RegExp',
         pattern: val.source,
         flags: val.toString().match(/[gimuy]*$/)[0], // NB: RegExp#flags is only available in ES6+
         lastIndex: val.lastIndex
@@ -29,7 +29,7 @@ export function reviver(key, val: {}) {
 
 
 function isRegExpInfo(x: any): x is RegExpInfo {
-    return x && x.$ === 'RegExp';
+    return x && x.$type === 'RegExp';
 }
 
 
@@ -37,7 +37,7 @@ function isRegExpInfo(x: any): x is RegExpInfo {
 
 
 interface RegExpInfo {
-    $: 'RegExp';
+    $type: 'RegExp';
     pattern: string;
     flags: string;
     lastIndex: number;

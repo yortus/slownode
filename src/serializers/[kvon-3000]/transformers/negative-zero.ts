@@ -4,7 +4,7 @@
 
 
 export function replacer(key, val) {
-    if (val === void 0) return {$: 'undefined'};
+    if (Object.is(val, -0)) return {$type: '-0'};
     return val;
 }
 
@@ -13,6 +13,6 @@ export function replacer(key, val) {
 
 
 export function reviver(key, val) {
-    if (val && val.$ === 'undefined') return void 0;
+    if (val && val.$type === '-0') return -0;
     return val;
 }

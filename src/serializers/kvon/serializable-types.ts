@@ -3,13 +3,11 @@
 
 
 
-// TODO: ... NB: Serializable excludes array...
+// TODO: ... NB: explain shortcoming of Serializable type as defd here - props/elements should also be serializable but TS can't express recursive type (yet?)...
+export type Serializable = Primitive | PlainObject | (PlainArray);
 export type Primitive = null|string|number|boolean;
 export type PlainObject = Object;
-export type Serializable = Primitive | {[key: string]: Serializable};
-export type Escaped = {$type: 'esc', raw: {}};
-//export type Reference = {$type: 'ref', path: string};
-//export type EncodedArray = {$type: 'array', props: {}};
+export type PlainArray = Array<any>;
 
 
 
@@ -35,25 +33,7 @@ export function isPlainObject(x: any): x is PlainObject {
 
 
 
-// TODO: ...
-export function isEscaped(x: any): x is Escaped {
-    return isPlainObject(x) && x.$type === 'esc';
+// TODO: doc... NB will return false for arrays and 'subclassed' Object instances
+export function isPlainArray(x: any): x is PlainArray {
+    return x && Object.getPrototypeOf(x) === Array.prototype;
 }
-
-
-
-
-
-// // TODO: remove this!! should be unused...
-// export function isReference(x: any): x is Reference {
-//     return isPlainObject(x) && x.$type === 'ref';
-// }
-
-
-
-
-
-// // TODO: remove this!! should be unused...
-// export function isEncodedArray(x: any): x is EncodedArray {
-//     return isPlainObject(x) && x.$type === 'array';
-// }
