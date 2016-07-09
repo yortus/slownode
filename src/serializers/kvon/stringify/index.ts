@@ -61,43 +61,39 @@ function test(obj: {}, key: string, val: {}, path: string[], replacer: Replacer,
     let result: string;
 
     // For a primitive value, no further traversal is necessary.
-    // TODO: explain steps in here...
-    if (isPrimitive(replacement)) {
-        if (typeof replacement === 'string') replacement = escapeValueText(replacement);
-        result = JSON.stringify(replacement);
-        visited.set(val, result);
+    if (replacement === null) {
+        result = 'null';
+    }
+    else if (typeof replacement === 'boolean') {
+        result = replacement ? 'true' : 'false';
+    }
+    else if (typeof replacement === 'number') {
+        result = replacement.toString();
+    }
+    else if (typeof replacement === 'string') {
+        const specials = {'"': '\\"', '\\': '\\\\', '\b': '\\b', '\f': '\\f', '\n': '\\n', '\r': '\\r', '\t': '\\t'};
+        result = [...replacement].map(c => specials[c] || c).join('');
+
+        // TODO: escape strings that start with the special ^ character...
+        result = '"' + result.replace(/^\^/g, '\\u005e') + '"';
     }
 
     // TODO: explain... recurse!
-    else if (isPlainObject(replacement)) {
+    else if (isPlainObject(replacement) || isPlainArray(replacement)) {
+        let isArray = Array.isArray(replacement);
 
         // TODO: ...
         visited.set(val, makeReferenceText(path));
 
         // TODO: ...
         // TODO: honour spacing...
-        let props = Object.keys(replacement).map(subkey => {
-            let keyText = JSON.stringify(isUnchanged ? escapeKeyText(subkey) : subkey);
+        let items = Object.keys(replacement).map(subkey => {
+            let keyText = JSON.stringify(subkey);
+            if (isUnchanged && keyText === '"$"') keyText = '"\\u0024"'; // TODO: escape special '$' key
             let valText = test(replacement, subkey, replacement[subkey], path.concat(subkey), replacer, visited);
-            return `${keyText}:${valText}`;
+            return isArray ? valText : `${keyText}:${valText}`;
         });
-        result = `{${props.join(',')}}`;
-    }
-
-    // TODO: explain... recurse!
-    else if (isPlainArray(replacement)) {
-
-        // TODO: ...
-        visited.set(val, makeReferenceText(path));
-
-        // TODO: ...
-        // TODO: honour spacing...
-        let elements = replacement.map((element, index) => {
-            let subkey = String(index);
-            let valText = test(replacement, subkey, element, path.concat(subkey), replacer, visited);
-            return valText;
-        });
-        result = `[${elements.join(',')}]`;
+        result = `${isArray ? '[' : '{'}${items.join(',')}${isArray ? ']' : '}'}`;
     }
 
     // If the replacement value is neither a primitive value nor a plain object, then we have a serialization error.
@@ -112,26 +108,13 @@ function test(obj: {}, key: string, val: {}, path: string[], replacer: Replacer,
         throw new Error(`Replacer function returned a non-serializable value: ${replacement}`);
     }
 
+    // TODO: ...
+    if (!visited.has(val)) {
+        visited.set(val, result);
+    }
+
     // Return the replacement value.
     return result;
-}
-
-
-
-
-
-// TODO: ...
-function escapeKeyText(key: string) {
-    return key === '$' ? '\\u0024' : key;
-}
-
-
-
-
-
-// TODO: ...
-function escapeValueText(value: string) {
-    return value.replace(/^\^/g, '\\u005e');
 }
 
 

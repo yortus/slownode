@@ -5,6 +5,7 @@
 
 export function replacer(key, val) {
     if (!val || Object.getPrototypeOf(val) !== Array.prototype) return val;
+    if (!isSparseOrHybrid(val)) return val;
     return <ArrayInfo> {
         $: 'Array',
         props: Object.keys(val).reduce((props, key) => (props[key] = val[key], props), {})
@@ -26,6 +27,18 @@ export function reviver(key, val: {}) {
 
 
 
+// TODO: ...
+function isSparseOrHybrid(ar: any[]) {
+    let keys = Object.keys(ar);
+    if (keys.length !== ar.length) return true;
+    return keys.some((k, i) => k !== `${i}`);
+}
+
+
+
+
+
+// TODO: ...
 function isArrayInfo(x: any): x is ArrayInfo {
     return x && x.$ === 'Array';
 }
@@ -34,6 +47,7 @@ function isArrayInfo(x: any): x is ArrayInfo {
 
 
 
+// TODO: ...
 interface ArrayInfo {
     $: 'Array';
     props: {};

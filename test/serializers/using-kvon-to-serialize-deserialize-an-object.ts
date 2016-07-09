@@ -23,7 +23,7 @@ describe('Using KVON to serialize/deserialize an object', () => {
 
 
         ['string',                  `foo\nbar  "baz"    'nunchucks'\r\n\\\\\`     \t    blah \u0042 \\u0042`],
-        ['string with specials',    `^@$#^a.b.c`],
+        ['string with specials',    `^\u0024\\u0024---@$#^a.b.c`],
         ['number',                  3.141592e-27],
         ['true',                    true],
         ['false',                   false],
@@ -41,10 +41,10 @@ describe('Using KVON to serialize/deserialize an object', () => {
         ['circular object',         (() => { let o = {x: 123, y: <any>[1,2]}; o.y.push({self: o}); return o; })()],
         ['circular object 2',       (() => { let o: any = {x: 123, 'y.z': {$:[1,2, '^'], '^': []}}; o.z = { self: [o], xref: o['y.z'].$, ar: o['y.z']['^']}; return o; })()],
         ['object with $type key',   {$type: '$type is reserved', other: ['things', 'and', 'stuff']}],
-        ['holey array 1',           [1,,,4]],
-        ['holey array 2',           (() => { let a = []; a[0] = 1; a[3] = 4; return a; })()],
-        ['array with props',        (() => { let a: any = [1, '22/22', 3, 42]; a.p = 'foo'; a.q = null; return a; })()],
-        ['holey array with props',  (() => { let a = [1,2,3]; delete a[1]; a['x/y'] = {z:-9}; return a; })()],
+        ['sparse array 1',          [1,,,4]],
+        ['sparse array 2',          (() => { let a = []; a[0] = 1; a[3] = 4; return a; })()],
+        ['hybrid array',            (() => { let a: any = [1, '22/22', 3, 42]; a.p = 'foo'; a.q = null; return a; })()],
+        ['hybrid sparse array',     (() => { let a = [1,2,3]; delete a[1]; a['x/y'] = {z:-9}; return a; })()],
         // TODO: add more...
         // - Date
         // - Error
@@ -90,8 +90,8 @@ describe('Using KVON to serialize/deserialize an object', () => {
             let expected = value;
             let kvon = KVON.stringify(value);
 // TODO: temp testing...
-console.log(`\n\n\n\n\n${kvon}`);
-//            let actual = KVON.parse(kvon);
+//console.log(`\n\n\n\n\n${kvon}`);
+            let actual = KVON.parse(kvon);
 //            expect(actual).to.deep.equal(expected);
         });
     });
