@@ -53,6 +53,15 @@ function char(lo?: string, hi?: string): Parser {
         return (src) => src.text[src.pos] >= lo && src.text[src.pos] <= (hi || lo) ? (++src.pos, true) : false;
     }
 }
+function expect(expected: string, expr: Parser): Parser {
+    return (src) => {
+        if (expr(src)) return true;
+        let before = (src.pos > 10 ? '...' : '') + src.text.slice(src.pos - 10, src.pos);
+        let after = src.text.slice(src.pos + 1, src.pos + 11) + (src.len - src.pos > 11 ? '...' : '');
+        let indicator = `${before}-->${src.text[src.pos]}<--${after}`;
+        throw new Error(`KVON: expected ${expected} but found '${src.text[src.pos]}': "${indicator}"`);
+    }
+}
 
 
 
@@ -185,17 +194,22 @@ export default function parse(text: string, reviver?: Reviver): {} {
         return rule(src);
     }
 
-    const jsonText = series(
-        WHITESPACE,
-        value,
-        WHITESPACE,
-        not(char())
+    const jsonText = expect('JSON',
+        series(
+            WHITESPACE,
+            value,
+            WHITESPACE,
+            expect('end of string', not(char()))
+        )
     );
 
 
-
-    let success = jsonText({text, len: text.length, pos: 0});
-    return success;
-
+    try {
+        let success = jsonText({text, len: text.length, pos: 0});
+        return success;
+    }
+    catch (err) {
+        console.log(err);
+    }
 
 }
