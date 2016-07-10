@@ -13,49 +13,63 @@ interface Source {
 }
 interface Parser {
     (src: Source): boolean;
+    <T>(src: Source, post: (isMatch: boolean, startPos: number) => T): T;
 }
+const STD_POST = (isMatch: boolean, startPos: number) => isMatch;
 function series(...exprs: Parser[]): Parser {
-    return (src) => {
+    return (src, post = STD_POST) => {
         let startPos = src.pos;
-        if (exprs.every(expr => expr(src))) return true;
+        if (exprs.every(expr => expr(src))) return post(true, startPos);
         src.pos = startPos;
-        return false;
+        return post(false, startPos);
     };
 }
 function choice(...exprs: Parser[]): Parser {
-    return (src) => exprs.some(expr => expr(src));
+    return (src, post = STD_POST) => {
+        let startPos = src.pos;
+        let result = exprs.some(expr => expr(src));
+        return post(result, startPos);
+    }
 }
 function option(expr: Parser): Parser {
-    return (src) => (expr(src), true);
+    return (src, post = STD_POST) => {
+        let startPos = src.pos;
+        expr(src);
+        return post(true, startPos);
+    };
 }
 function zeroOrMore(expr: Parser): Parser {
-    return (src) => {
+    return (src, post = STD_POST) => {
+        let startPos = src.pos;
         while (expr(src)) { }
-        return true;
+        return post(true, startPos);
     }
 }
 function oneOrMore(expr: Parser): Parser {
     return series(expr, zeroOrMore(expr));
 }
 function not(expr: Parser): Parser {
-    return (src) => {
-        let oldPos = src.pos;
+    return (src, post = STD_POST) => {
+        let startPos = src.pos;
         let result = !expr(src);
-        src.pos = oldPos;
-        return result;
+        src.pos = startPos;
+        return post(result, startPos);
     }
 }
 function char(lo?: string, hi?: string): Parser {
-    if (arguments.length === 0) {
-        return (src) => src.pos < src.len ? (++src.pos, true) : false;
-    }
-    else {
-        return (src) => src.text[src.pos] >= lo && src.text[src.pos] <= (hi || lo) ? (++src.pos, true) : false;
-    }
+    let anyChar = arguments.length === 0;
+    hi = hi || lo;
+    return (src, post = STD_POST) => {
+        if (src.pos >= src.len) return post(false, src.pos);
+        if (anyChar) return post(true, src.pos++);
+        if (src.text[src.pos] < lo || src.text[src.pos] > hi) return post(false, src.pos);
+        return post(true, src.pos++);
+    };
 }
 function expect(expected: string, expr: Parser): Parser {
-    return (src) => {
-        if (expr(src)) return true;
+    return (src, post = STD_POST) => {
+        let startPos = src.pos;
+        if (expr(src)) return post(true, startPos);
         let before = (src.pos > 10 ? '...' : '') + src.text.slice(src.pos - 10, src.pos);
         let after = src.text.slice(src.pos + 1, src.pos + 11) + (src.len - src.pos > 11 ? '...' : '');
         let indicator = `${before}-->${src.text[src.pos]}<--${after}`;
@@ -181,8 +195,8 @@ export default function parse(text: string, reviver?: Reviver): {} {
     );
 
     // TODO: explain why this one is a function unlike the others (support circular refs)...
-    function value(src: Source): boolean {
-        let rule: (src: Source) => boolean = value['rule'] || (value['rule'] = choice(
+    function value(src: Source, post = STD_POST): boolean {
+        let rule = value['rule'] || (value['rule'] = choice(
             NULL,
             TRUE,
             FALSE,
@@ -191,7 +205,7 @@ export default function parse(text: string, reviver?: Reviver): {} {
             array,
             object
         ));
-        return rule(src);
+        return rule(src, post);
     }
 
     const jsonText = expect('JSON',
@@ -205,7 +219,11 @@ export default function parse(text: string, reviver?: Reviver): {} {
 
 
     try {
-        let success = jsonText({text, len: text.length, pos: 0});
+        let source = {text, len: text.length, pos: 0};
+        let success = jsonText(source, (isMatch, startPos) => {
+            if (!isMatch) return null;
+            return text.slice(startPos, source.pos);
+        });
         return success;
     }
     catch (err) {
