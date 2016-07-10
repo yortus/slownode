@@ -1,6 +1,6 @@
 import Reviver from './reviver';
 export {Reviver};
-import {series, choice, option, zeroOrMore, oneOrMore, not, char, expect} from './parser-combinators';
+import {series, choice, option, zeroOrMore, oneOrMore, not, char, expect, lazy} from './parser-combinators';
 import {Source} from './parser-combinators';
 
 
@@ -77,13 +77,13 @@ export default function parse(text: string, reviver?: Reviver): {} {
         WHITESPACE,
         option(
             series(
-                value,
+                lazy(() => value),
                 zeroOrMore(
                     series(
                         WHITESPACE,
                         COMMA,
                         WHITESPACE,
-                        value
+                        lazy(() => value)
                     )
                 )
             )
@@ -97,7 +97,7 @@ export default function parse(text: string, reviver?: Reviver): {} {
         WHITESPACE,
         COLON,
         WHITESPACE,
-        value
+        lazy(() => value)
     );
 
     const object = series(
@@ -121,18 +121,15 @@ export default function parse(text: string, reviver?: Reviver): {} {
     );
 
     // TODO: explain why this one is a function unlike the others (support circular refs)...
-    function value(src: Source, post?): boolean {
-        let rule = value['rule'] || (value['rule'] = choice(
-            NULL,
-            TRUE,
-            FALSE,
-            number,
-            string,
-            array,
-            object
-        ));
-        return rule(src, post);
-    }
+    const value = choice(
+        NULL,
+        TRUE,
+        FALSE,
+        number,
+        string,
+        array,
+        object
+    );
 
     const jsonText = expect('JSON',
         series(

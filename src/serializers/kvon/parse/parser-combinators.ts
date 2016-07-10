@@ -3,17 +3,31 @@
 
 
 
-// Parser Combinators
 export interface Source {
     text: string;
     len: number;
     pos: number;
 }
+
+
+
+
+
 export interface Parser {
     (src: Source): boolean;
     <T>(src: Source, post: (isMatch: boolean, startPos: number) => T): T;
 }
+
+
+
+
+
 export const STD_POST = (isMatch: boolean, startPos: number) => isMatch;
+
+
+
+
+
 export function series(...exprs: Parser[]): Parser {
     return (src, post = STD_POST) => {
         let startPos = src.pos;
@@ -22,6 +36,11 @@ export function series(...exprs: Parser[]): Parser {
         return post(false, startPos);
     };
 }
+
+
+
+
+
 export function choice(...exprs: Parser[]): Parser {
     return (src, post = STD_POST) => {
         let startPos = src.pos;
@@ -29,6 +48,11 @@ export function choice(...exprs: Parser[]): Parser {
         return post(result, startPos);
     }
 }
+
+
+
+
+
 export function option(expr: Parser): Parser {
     return (src, post = STD_POST) => {
         let startPos = src.pos;
@@ -36,6 +60,11 @@ export function option(expr: Parser): Parser {
         return post(true, startPos);
     };
 }
+
+
+
+
+
 export function zeroOrMore(expr: Parser): Parser {
     return (src, post = STD_POST) => {
         let startPos = src.pos;
@@ -43,9 +72,19 @@ export function zeroOrMore(expr: Parser): Parser {
         return post(true, startPos);
     }
 }
+
+
+
+
+
 export function oneOrMore(expr: Parser): Parser {
     return series(expr, zeroOrMore(expr));
 }
+
+
+
+
+
 export function not(expr: Parser): Parser {
     return (src, post = STD_POST) => {
         let startPos = src.pos;
@@ -54,6 +93,11 @@ export function not(expr: Parser): Parser {
         return post(result, startPos);
     }
 }
+
+
+
+
+
 export function char(lo?: string, hi?: string): Parser {
     let anyChar = arguments.length === 0;
     hi = hi || lo;
@@ -64,6 +108,11 @@ export function char(lo?: string, hi?: string): Parser {
         return post(true, src.pos++);
     };
 }
+
+
+
+
+
 export function expect(expected: string, expr: Parser): Parser {
     return (src, post = STD_POST) => {
         let startPos = src.pos;
@@ -72,5 +121,17 @@ export function expect(expected: string, expr: Parser): Parser {
         let after = src.text.slice(src.pos + 1, src.pos + 11) + (src.len - src.pos > 11 ? '...' : '');
         let indicator = `${before}-->${src.text[src.pos]}<--${after}`;
         throw new Error(`KVON: expected ${expected} but found '${src.text[src.pos]}': "${indicator}"`);
+    }
+}
+
+
+
+
+
+export function lazy(init: () => Parser): Parser {
+    let parser: Parser;
+    return (src, post = STD_POST) => {
+        parser = parser || (parser = init());
+        return parser(src, post);
     }
 }
