@@ -113,6 +113,14 @@ export function char(lo?: string, hi?: string): Parser {
 
 
 
+export function chars(...candidates: string[]): Parser {
+    return choice(...candidates.map(c => char(c)));
+}
+
+
+
+
+
 export function expect(expected: string, expr: Parser): Parser {
     return (src, post = STD_POST) => {
         let startPos = src.pos;
