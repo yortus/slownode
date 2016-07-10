@@ -1,6 +1,6 @@
 import Reviver from './reviver';
 export {Reviver};
-import {series, choice, option, zeroOrMore, oneOrMore, not, char, chars, expect, lazy} from './parser-combinators';
+import {series, choice, option, zeroOrMore, oneOrMore, not, char, chars, lazy} from './parser-combinators';
 import {Source, Parser} from './parser-combinators';
 
 
@@ -11,15 +11,107 @@ import {Source, Parser} from './parser-combinators';
 export default function parse(text: string, reviver?: Reviver): {} {
     // TODO: ...
 
+    function expect(src: Source, expected: string, expr: Parser) {
+        if (expr(src)) return;
+        let before = (src.pos > 10 ? '...' : '') + src.text.slice(src.pos - 10, src.pos);
+        let after = src.text.slice(src.pos + 1, src.pos + 11) + (src.len - src.pos > 11 ? '...' : '');
+        let indicator = `${before}-->${src.text[src.pos]}<--${after}`;
+        throw new Error(`KVON: expected ${expected} but found '${src.text[src.pos]}': "${indicator}"`);
+    }
+
+    function capture(src: Source, expected: string, expr: Parser) {
+        let startPos = src.pos;
+        expect(src, expected, expr);
+        let result = src.text.slice(startPos, src.pos);
+        return result;
+    }
+
+    function captureNumber(src: Source) {
+        return parseFloat(capture(src, 'number', number));
+    }
+
+    function captureString(src: Source) {
+        return capture(src, 'string', string);
+    }
+
+    function captureArray(src: Source) {
+        expect(src, '[', LEFT_BRACKET);
+        WHITESPACE(src);
+        let result = [];
+        while (true) {
+            if (RIGHT_BRACKET(src)) return result;
+            result.push(captureValue(src));
+            WHITESPACE(src);
+            COMMA(src);
+            WHITESPACE(src);
+        }
+    }
+
+    function captureObject(src: Source) {
+        expect(src, '{', LEFT_BRACE);
+        WHITESPACE(src);
+        let result = {};
+        while (true) {
+            if (RIGHT_BRACE(src)) return result;
+            let name = captureString(src);
+            WHITESPACE(src);
+            expect(src, 'colon', COLON);
+            WHITESPACE(src);
+            let value = captureValue(src);
+            result[name] = value;
+            WHITESPACE(src);
+            COMMA(src);
+            WHITESPACE(src);
+        }
+    }
+
+    function captureValue(src: Source): boolean | string | number | {} | any[] {
+        let c = src.text[src.pos];
+        switch (c) {
+            case 'n':
+                expect(src, 'null', NULL);
+                return null;
+            case 't':
+                expect(src, 'true', TRUE);
+                return true;
+            case 'f':
+                expect(src, 'false', FALSE);
+                return false;
+            case '-':
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9':
+                return captureNumber(src);
+            case '"':
+                return captureString(src);
+            case '[':
+                return captureArray(src);
+            case '{':
+                return captureObject(src);
+            default:
+                // TODO: nice error message...
+                throw new Error(`***`);
+        }
+    }
+
+
+
 
 
     try {
+
         let source = {text, len: text.length, pos: 0};
-        let success = jsonText(source, (isMatch, startPos) => {
-            if (!isMatch) return null;
-            return text.slice(startPos, source.pos);
-        });
-        return success;
+        WHITESPACE(source);
+        let result = captureValue(source);
+        WHITESPACE(source);
+        return result;
     }
     catch (err) {
         console.log(err);
@@ -76,4 +168,4 @@ const object = series(LEFT_BRACE, WHITESPACE, option(commaList(nameValuePair)), 
 
 // All Values and overall JSON strings
 const value = choice(NULL, TRUE, FALSE, number, string, array, object);
-const jsonText = expect('JSON', series(WHITESPACE, value, WHITESPACE, expect('end of string', not(char()))));
+const jsonText = series(WHITESPACE, value, WHITESPACE, not(char()));
