@@ -5,59 +5,62 @@ export {Reviver};
 
 
 
+// Parser Combinators
+interface Source {
+    text: string;
+    len: number;
+    pos: number;
+}
+interface Parser {
+    (src: Source): boolean;
+}
+function series(...exprs: Parser[]): Parser {
+    return (src) => {
+        let startPos = src.pos;
+        if (exprs.every(expr => expr(src))) return true;
+        src.pos = startPos;
+        return false;
+    };
+}
+function choice(...exprs: Parser[]): Parser {
+    return (src) => exprs.some(expr => expr(src));
+}
+function option(expr: Parser): Parser {
+    return (src) => (expr(src), true);
+}
+function zeroOrMore(expr: Parser): Parser {
+    return (src) => {
+        while (expr(src)) { }
+        return true;
+    }
+}
+function oneOrMore(expr: Parser): Parser {
+    return series(expr, zeroOrMore(expr));
+}
+function not(expr: Parser): Parser {
+    return (src) => {
+        let oldPos = src.pos;
+        let result = !expr(src);
+        src.pos = oldPos;
+        return result;
+    }
+}
+function char(lo?: string, hi?: string): Parser {
+    if (arguments.length === 0) {
+        return (src) => src.pos < src.len ? (++src.pos, true) : false;
+    }
+    else {
+        return (src) => src.text[src.pos] >= lo && src.text[src.pos] <= (hi || lo) ? (++src.pos, true) : false;
+    }
+}
+
+
+
+
+
 // TODO: implement parse...
 export default function parse(text: string, reviver?: Reviver): {} {
     // TODO: ...
-    let pos = 0;
-    interface Parser {
-        (): boolean;
-    }
-
-    function series(...exprs: Parser[]): Parser {
-        return () => {
-            let startPos = pos;
-            if (exprs.every(expr => expr())) return true;
-            pos = startPos;
-            return false;
-        };
-    }
-
-    function choice(...exprs: Parser[]): Parser {
-        return () => exprs.some(expr => expr());
-    }
-
-    function option(expr: Parser) {
-        return () => (expr(), true);
-    }
-
-    function zeroOrMore(expr: Parser): Parser {
-        return () => {
-            while (expr()) {}
-            return true;
-        }
-    }
-
-    function oneOrMore(expr: Parser): Parser {
-        return series(expr, zeroOrMore(expr));
-    }
-
-    function not(expr: Parser): Parser {
-        return () => {
-            let oldPos = pos;
-            let result = !expr();
-            pos = oldPos;
-            return result;
-        }
-    }
-
-    function char(lo?: string, hi?: string): Parser {
-        if (arguments.length === 0) return () => pos < text.length ? (++pos, true) : false;
-        return () => text[pos] >= lo && text[pos] <= (hi || lo) ? (++pos, true) : false;
-    }
-
-
-
-
 
     const BACKSLASH = char('\\');
     const COLON = char(':');
@@ -169,8 +172,8 @@ export default function parse(text: string, reviver?: Reviver): {} {
     );
 
     // TODO: explain why this one is a function unlike the others (support circular refs)...
-    function value(): boolean {
-        let rule: () => boolean = value['rule'] || (value['rule'] = choice(
+    function value(src: Source): boolean {
+        let rule: (src: Source) => boolean = value['rule'] || (value['rule'] = choice(
             NULL,
             TRUE,
             FALSE,
@@ -179,7 +182,7 @@ export default function parse(text: string, reviver?: Reviver): {} {
             array,
             object
         ));
-        return rule();
+        return rule(src);
     }
 
     const jsonText = series(
@@ -191,7 +194,7 @@ export default function parse(text: string, reviver?: Reviver): {} {
 
 
 
-    let success = jsonText();
+    let success = jsonText({text, len: text.length, pos: 0});
     return success;
 
 
