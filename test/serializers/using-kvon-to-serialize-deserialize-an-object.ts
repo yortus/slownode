@@ -30,7 +30,7 @@ describe('Using KVON to serialize/deserialize an object', () => {
         ['null',                    null],
         ['plain object',            {foo: 42, 'ba`r': "bar", baz$$: false}],
         ['object with specials',    {"@$#\"a.b.c": 42, "$": 'bar', '$$': false, bar: '^$"$"$'}],
-        ['plain array',             [1,2,3,"abc", false, null, undefined, 42, "abc", 42, undefined]],
+        ['plain array',             [1,2,3,"abc", true, false, false, null, undefined, 42, "abc", 42, undefined]],
         ['undefined',               void 0],
         ['NaN',                     NaN],
         ['Infinity',                Infinity],

@@ -47,12 +47,23 @@ function capture(src: Source, expected: string, expr: Parser) {
     return result;
 }
 
+function captureNull(src: Source) {
+    expect(src, 'null', NULL);
+    return null;
+}
+
+function captureBoolean(src: Source) {
+    let c = src.text[src.pos];
+    expect(src, 'boolean', JSON_BOOLEAN);
+    return c === 't';
+}
+
 function captureNumber(src: Source) {
-    return parseFloat(capture(src, 'number', number));
+    return parseFloat(capture(src, 'number', JSON_NUMBER));
 }
 
 function captureString(src: Source) {
-    return capture(src, 'string', string);
+    return capture(src, 'string', JSON_STRING);
 }
 
 function captureArray(src: Source) {
@@ -88,38 +99,13 @@ function captureObject(src: Source) {
 
 function captureValue(src: Source): boolean | string | number | {} | any[] {
     let c = src.text[src.pos];
-    switch (c) {
-        case 'n':
-            expect(src, 'null', NULL);
-            return null;
-        case 't':
-            expect(src, 'true', TRUE);
-            return true;
-        case 'f':
-            expect(src, 'false', FALSE);
-            return false;
-        case '-':
-        case '0':
-        case '1':
-        case '2':
-        case '3':
-        case '4':
-        case '5':
-        case '6':
-        case '7':
-        case '8':
-        case '9':
-            return captureNumber(src);
-        case '"':
-            return captureString(src);
-        case '[':
-            return captureArray(src);
-        case '{':
-            return captureObject(src);
-        default:
-            // TODO: nice error message...
-            throw new Error(`***`);
-    }
+    if (c === 'n') return captureNull(src);
+    if (c === 't' || c === 'f') return captureBoolean(src);
+    if (c === '-' || (c >= '0' && c <= '9')) return captureNumber(src);
+    if (c === '"') return captureString(src);
+    if (c === '[') return captureArray(src);
+    if (c === '{') return captureObject(src);
+    throw new Error(`***`); // TODO: nice error message...
 }
 
 
@@ -150,28 +136,29 @@ const TRUE = series(char('t'), char('r'), char('u'), char('e'));
 const WHITESPACE = zeroOrMore(choice(char(' '), char('\t'), char('\r'), char('\n')));
 const ZERO = char('0');
 
-// Numbers
-const integerPart = choice(ZERO, DIGITS);
-const fractionalPart = option(series(DECIMAL, DIGITS));
-const exponentPart = option(series(E, option(SIGN), DIGITS));
-const number = series(option(MINUS), integerPart, fractionalPart, exponentPart);
+// JSON Boolean
+const JSON_BOOLEAN = choice(TRUE, FALSE);
 
-// Strings
-const unescapedChar = series(not(choice(QUOTATION_MARK, BACKSLASH, CONTROL_CHAR)), char());
-const escapedControlChar = series(BACKSLASH, chars('"', '\\', '/', 'b', 'f', 'n', 'r', 't'));
-const escapedUnicodeChar = series(BACKSLASH, char('u'), HEX_DIGIT, HEX_DIGIT, HEX_DIGIT, HEX_DIGIT)
-const escapedOrUnescapedChar = choice(unescapedChar, escapedControlChar, escapedUnicodeChar);
-const string = series(QUOTATION_MARK, zeroOrMore(escapedOrUnescapedChar), QUOTATION_MARK);
+// JSON Number
+const INTEGER_PART = choice(ZERO, DIGITS);
+const FRACTIONAL_PART = option(series(DECIMAL, DIGITS));
+const EXPONENT_PART = option(series(E, option(SIGN), DIGITS));
+const JSON_NUMBER = series(option(MINUS), INTEGER_PART, FRACTIONAL_PART, EXPONENT_PART);
 
-// Arrays
-const commaList = (expr: Parser) => series(expr, zeroOrMore(series(WHITESPACE, COMMA, WHITESPACE, expr)));
-const array = series(LEFT_BRACKET, WHITESPACE, option(commaList(lazy(() => value))), WHITESPACE, RIGHT_BRACKET);
+// JSON String
+const UNESCAPED_CHAR = series(not(choice(QUOTATION_MARK, BACKSLASH, CONTROL_CHAR)), char());
+const ESCAPED_CONTROL_CHAR = series(BACKSLASH, chars('"', '\\', '/', 'b', 'f', 'n', 'r', 't'));
+const ESCAPED_UNICODE_CHAR = series(BACKSLASH, char('u'), HEX_DIGIT, HEX_DIGIT, HEX_DIGIT, HEX_DIGIT)
+const ESCAPED_OR_UNESCAPED_CHAR = choice(UNESCAPED_CHAR, ESCAPED_CONTROL_CHAR, ESCAPED_UNICODE_CHAR);
+const JSON_STRING = series(QUOTATION_MARK, zeroOrMore(ESCAPED_OR_UNESCAPED_CHAR), QUOTATION_MARK);
 
-// Objects
-const nameValuePair = series(string, WHITESPACE, COLON, WHITESPACE, lazy(() => value));
-const object = series(LEFT_BRACE, WHITESPACE, option(commaList(nameValuePair)), WHITESPACE, RIGHT_BRACE);
+// JSON Array
+const COMMA_LIST = (expr: Parser) => series(expr, zeroOrMore(series(WHITESPACE, COMMA, WHITESPACE, expr)));
+const JSON_ARRAY = series(LEFT_BRACKET, WHITESPACE, option(COMMA_LIST(lazy(() => JSON_VALUE))), WHITESPACE, RIGHT_BRACKET);
 
-// All Values and overall JSON strings
-// TODO: unused - remove these
-const value = choice(NULL, TRUE, FALSE, number, string, array, object);
-const jsonText = series(WHITESPACE, value, WHITESPACE, not(char()));
+// JSON Object
+const NAME_VALUE_PAIR = series(JSON_STRING, WHITESPACE, COLON, WHITESPACE, lazy(() => JSON_VALUE));
+const JSON_OBJECT = series(LEFT_BRACE, WHITESPACE, option(COMMA_LIST(NAME_VALUE_PAIR)), WHITESPACE, RIGHT_BRACE);
+
+// Any JSON Value
+const JSON_VALUE = choice(NULL, JSON_BOOLEAN, JSON_NUMBER, JSON_STRING, JSON_ARRAY, JSON_OBJECT);
