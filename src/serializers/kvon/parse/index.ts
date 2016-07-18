@@ -106,7 +106,9 @@ export default function parse(text: string, reviver?: Reviver): {} {
 
 
     try {
-
+        // TODO:
+        // - strings are not yet 'unescaped', and special ^ and $ need special handling
+        // - add up work hours from git log
         let source = {text, len: text.length, pos: 0};
         WHITESPACE(source);
         let result = captureValue(source);
@@ -167,5 +169,6 @@ const nameValuePair = series(string, WHITESPACE, COLON, WHITESPACE, lazy(() => v
 const object = series(LEFT_BRACE, WHITESPACE, option(commaList(nameValuePair)), WHITESPACE, RIGHT_BRACE);
 
 // All Values and overall JSON strings
+// TODO: unused - remove these
 const value = choice(NULL, TRUE, FALSE, number, string, array, object);
 const jsonText = series(WHITESPACE, value, WHITESPACE, not(char()));
