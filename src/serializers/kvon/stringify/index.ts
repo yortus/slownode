@@ -1,7 +1,9 @@
 import Map from '../wtf-map';
 import Replacer from './replacer';
-import {Serializable, isPrimitive, isPlainObject, isPlainArray} from '../serializable-types';
+import {isPlainObject, isPlainArray} from '../serializable-types';
+import makeReference from '../make-reference';
 import * as tranformers from '../transformers/all'; // TODO: bring local...
+// TODO: use WtfMap...
 
 
 
@@ -51,14 +53,24 @@ export default function stringify(value: any, replacer?: Replacer, space?: strin
 //   - run replacer
 function test(obj: {}, key: string, val: {}, path: string[], replacer: Replacer, visited: Map<{}, string>): string {
 
-    // TODO: explain...
-    if (visited.has(val)) return visited.get(val);
+    // TODO: explain here, and document this limitation in README...
+    if (visited.has(val)) {
+        let result = visited.get(val);
+        if (result !== INCOMPLETE) return result;
+        throw new Error(`KVON: cyclic object graphs are not supported`);
+    }
 
     // Run the value through the replacer function. Detect whether the original value is replaced or left unchanged.
     // TODO: add sanity check to assert that the replacer didn't mutate `obj` or `val`?
     let replacement: {} = replacer.call(obj, key, val);
-    let isUnchanged = Object.is(val, replacement);
+    let isReplaced = !Object.is(val, replacement);
     let result: string;
+
+    // TODO: document the following rule in the README...
+    // If the value was replaced, the replacement *must* be a discriminated plain object (DPO)
+    if (isReplaced && !(isPlainObject(replacement) && replacement.hasOwnProperty('$'))) {
+        throw new Error(`KVON: replacement value must be a discriminated plain object`);
+    }
 
     // For a primitive value, no further traversal is necessary.
     if (replacement === null) {
@@ -83,17 +95,20 @@ function test(obj: {}, key: string, val: {}, path: string[], replacer: Replacer,
         let isArray = Array.isArray(replacement);
 
         // TODO: ...
-        visited.set(val, makeReferenceText(path));
+        visited.set(val, INCOMPLETE);
 
         // TODO: ...
-        // TODO: honour spacing...
+        // TODO: honour `space` param from stringify()...
         let items = Object.keys(replacement).map(subkey => {
             let keyText = JSON.stringify(subkey);
-            if (isUnchanged && keyText === '"$"') keyText = '"\\u0024"'; // TODO: escape special '$' key
-            let valText = test(replacement, subkey, replacement[subkey], path.concat(subkey), replacer, visited);
+            if (!isReplaced && keyText === '"$"') keyText = '"\\u0024"'; // TODO: escape special '$' key
+            let valText = test(replacement, subkey, replacement[subkey], path.concat(subkey), replacer, visited); // NB: recursive
             return isArray ? valText : `${keyText}:${valText}`;
         });
         result = `${isArray ? '[' : '{'}${items.join(',')}${isArray ? ']' : '}'}`;
+
+        // TODO: ...
+        visited.set(val, makeReference(path));
     }
 
     // If the replacement value is neither a primitive value nor a plain object, then we have a serialization error.
@@ -104,11 +119,11 @@ function test(obj: {}, key: string, val: {}, path: string[], replacer: Replacer,
     // (b) a non-serializable input value. If the replacer left the input value unchanged, then the input value
     //     must be unserializable with no replacer case that deals with it. That's a problem with the input value.
     else {
-        if (isUnchanged) throw new Error(`No known serialization available for value: ${val}`);
-        throw new Error(`Replacer function returned a non-serializable value: ${replacement}`);
+        if (!isReplaced) throw new Error(`KVON: no known serialization available for value: ${val}`);
+        throw new Error(`KVON: replacer function returned a non-serializable value: ${replacement}`);
     }
 
-    // TODO: ...
+    // TODO: ... only need to add non-primitives to map??
     if (!visited.has(val)) {
         visited.set(val, result);
     }
@@ -122,7 +137,4 @@ function test(obj: {}, key: string, val: {}, path: string[], replacer: Replacer,
 
 
 // TODO: ...
-function makeReferenceText(path: string[]): string {
-    let safePath = path.map(seg => JSON.stringify(seg).slice(1, -1).replace(/\./g, '\\u002e'));
-    return '"' + ['^'].concat(safePath).join('.') + '"';
-}
+const INCOMPLETE = <any> {};

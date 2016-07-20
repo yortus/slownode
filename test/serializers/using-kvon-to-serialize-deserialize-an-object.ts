@@ -18,8 +18,9 @@ describe('Using KVON to serialize/deserialize an object', () => {
 
     let tests = [
         // TODO: temp... remove or integrate these...
-        ['!!!1', (() => { let o = {$type: [], x: [123, void 0], y: <any>[1,2], z: /.*/g}; o.y.push({o, ox: o.x}); return o; })()],
-        ['!!!2', (() => { let o = {x: 123, y: <any>[1,2]}; o.y.push({self: o}); return o; })()],
+        // ['!!!1', (() => { let o = {$type: [], x: [123, void 0], y: <any>[1,2], z: /.*/g}; o.y.push({o, ox: o.x}); return o; })()],
+        // ['!!!2', (() => { let o = {x: 123, y: <any>[1,2]}; o.y.push({self: o}); return o; })()],
+        ['!!!3', (() => { let o = {x: 123, y: <any>[1,2], z: null}; o.z = o.y; return o; })()],
 
 
         ['string',                  `foo\nbar  "baz"    'nunchucks'\r\n\\\\\`     \t    blah \u0042 \\u0042`],

@@ -1,7 +1,28 @@
+import makeReference from '../make-reference';
 import Reviver from './reviver';
 export {Reviver};
 import {series, choice, option, zeroOrMore, oneOrMore, not, char, chars, lazy} from './parser-combinators';
 import {Source, Parser} from './parser-combinators';
+import * as tranformers from '../transformers/all'; // TODO: bring local...
+// TODO: use WtfMap...
+
+
+
+
+
+// TODO: JSON_REFERENCE/captureReference (special string that starts with literal '^')
+// TODO: DISCRIMINANT_KEY/captureDiscriminantKey (special string that equals literal '$')
+
+
+
+
+
+// TODO: ...
+interface Progress extends Source {
+    path: string[];
+    reviver: Reviver;
+    visited: Map<string, {}>;
+}
 
 
 
@@ -11,20 +32,153 @@ import {Source, Parser} from './parser-combinators';
 export default function parse(text: string, reviver?: Reviver): {} {
 
     // TODO: ...
+    let compositeReviver: Reviver;
+    if (!reviver) {
+        compositeReviver = tranformers.reviver;
+    }
+    else if (typeof reviver === 'function') {
+        compositeReviver = function (this, key, val) {
+            // TODO: swap call order below? which order is correct/consistent? examples?
+            let newVal = reviver.call(this, key, val);
+            if (Object.is(val, newVal)) newVal = tranformers.reviver.call(this, key, val);
+            return newVal;
+        }
+    }
+    else {
+        // TODO: JSON reviver may *only* be a function, so this error is correct (but needs finalizing)
+        throw new Error(`Bad arg`);
+    }
+
+    // TODO: ...
     try {
         // TODO:
         // - strings are not yet 'unescaped', and special ^ and $ need special handling
         // - add up work hours from git log
         let source = {text, len: text.length, pos: 0};
+        let visited = new Map<string, {}>();
         WHITESPACE(source);
-        let result = captureValue(source);
+        let result = temp(source, [], compositeReviver, visited);
         WHITESPACE(source);
-        expect(source, 'End of text', EOS);
+        match(source, 'End of text', EOS);
         return result;
     }
     catch (err) {
         console.log(err);
     }
+}
+
+
+
+
+
+function temp(src: Source, path: string[], reviver: Reviver, visited: Map<string, {}>): {} {
+    let c = src.text[src.pos];
+
+    // Handle null.
+    if (c === 'n') {
+        match(src, 'null', NULL);
+        return null;
+    }
+
+    // Handle booleans.
+    if (c === 't' || c === 'f') {
+        match(src, 'boolean', JSON_BOOLEAN);
+        return c === 't';
+    }
+
+    // Handle numbers.
+    if (c === '-' || (c >= '0' && c <= '9')) {
+        return parseFloat(capture(src, 'number', JSON_NUMBER));
+    }
+
+    // Handle strings, including references.
+    if (c === '"') {
+        // TODO: unescape... eg \n \r \u0032 etc...
+        let raw = capture(src, 'string', JSON_STRING);
+        if (raw[1] === '^') {
+            // TODO: reference
+            if (!visited.has(raw)) throw new Error(`KVON: invalid reference`); // TODO: improve message...
+            return visited.get(raw);
+        }
+        else {
+            return unescape(raw);
+        }
+    }
+
+    // Handle arrays.
+    if (c === '[') {
+        match(src, '[', LEFT_BRACKET);
+        WHITESPACE(src);
+        if (RIGHT_BRACKET(src)) return []; // empty array
+        let ar = [];
+        while (true) {
+            let element = temp(src, path.concat(ar.length.toString()), reviver, visited); // NB: recursive
+            ar.push(element);
+            WHITESPACE(src);
+            if (!COMMA(src)) break;
+            WHITESPACE(src);
+        }
+        match(src, ']', RIGHT_BRACKET);
+        return ar;
+    }
+
+    // Handle objects.
+    if (c === '{') {
+        match(src, '{', LEFT_BRACE);
+        WHITESPACE(src);
+        if (RIGHT_BRACE(src)) return {}; // empty object
+        let obj = {};
+        let isDiscriminated = false;
+        while (true) {
+            let rawName = capture(src, 'string', JSON_STRING);
+            isDiscriminated = isDiscriminated || rawName === '"*"';
+            let name = unescape(rawName);
+
+            WHITESPACE(src);
+            match(src, 'colon', COLON);
+            WHITESPACE(src);
+
+            let value = temp(src, path.concat(name), reviver, visited); // NB: recursive
+            obj[name] = value;
+
+            WHITESPACE(src);
+            if (!COMMA(src)) break;
+            WHITESPACE(src);
+        }
+        match(src, '}', RIGHT_BRACE);
+        if (!isDiscriminated) return obj;
+
+        // TODO: run reviver... this is the only case... explain why here, and document reviver rules in README...
+        obj = reviver.call({'':obj}, '', obj);
+        return obj;
+
+
+        // TODO: when/where do we update `visited`?
+        ???
+    }
+
+    // TODO: the following is sure to throw since we've covered all valid options already..
+    match(src, `null, boolean, string, number, array or object`, JSON_VALUE);
+
+
+
+    function capture(src: Source, expected: string, expr: Parser) {
+        let startPos = src.pos;
+        match(src, expected, expr);
+        let result = src.text.slice(startPos, src.pos);
+        return result;
+    }
+
+
+    // function captureReference(src: Source) {
+    //     let s = captureString(src);
+    // }
+
+    // function captureDiscriminant(src: Source) {
+    //     let s = captureString(src);
+    // }
+
+
 
 }
 
@@ -32,7 +186,8 @@ export default function parse(text: string, reviver?: Reviver): {} {
 
 
 
-function expect(src: Source, expected: string, expr: Parser) {
+// TODO: ...
+function match(src: Source, expected: string, expr: Parser) {
     if (expr(src)) return;
     let before = (src.pos > 10 ? '...' : '') + src.text.slice(src.pos - 10, src.pos);
     let after = src.text.slice(src.pos + 1, src.pos + 11) + (src.len - src.pos > 11 ? '...' : '');
@@ -40,72 +195,14 @@ function expect(src: Source, expected: string, expr: Parser) {
     throw new Error(`KVON: expected ${expected} but found '${src.text[src.pos]}': "${indicator}"`);
 }
 
-function capture(src: Source, expected: string, expr: Parser) {
-    let startPos = src.pos;
-    expect(src, expected, expr);
-    let result = src.text.slice(startPos, src.pos);
-    return result;
-}
 
-function captureNull(src: Source) {
-    expect(src, 'null', NULL);
-    return null;
-}
 
-function captureBoolean(src: Source) {
-    let c = src.text[src.pos];
-    expect(src, 'boolean', JSON_BOOLEAN);
-    return c === 't';
-}
 
-function captureNumber(src: Source) {
-    return parseFloat(capture(src, 'number', JSON_NUMBER));
-}
 
-function captureString(src: Source) {
-    return capture(src, 'string', JSON_STRING);
-}
-
-function captureArray(src: Source) {
-    expect(src, '[', LEFT_BRACKET);
-    WHITESPACE(src);
-    let result = [];
-    while (true) {
-        if (RIGHT_BRACKET(src)) return result;
-        result.push(captureValue(src));
-        WHITESPACE(src);
-        COMMA(src);
-        WHITESPACE(src);
-    }
-}
-
-function captureObject(src: Source) {
-    expect(src, '{', LEFT_BRACE);
-    WHITESPACE(src);
-    let result = {};
-    while (true) {
-        if (RIGHT_BRACE(src)) return result;
-        let name = captureString(src);
-        WHITESPACE(src);
-        expect(src, 'colon', COLON);
-        WHITESPACE(src);
-        let value = captureValue(src);
-        result[name] = value;
-        WHITESPACE(src);
-        COMMA(src);
-        WHITESPACE(src);
-    }
-}
-
-function captureValue(src: Source): boolean | string | number | {} | any[] {
-    let c = src.text[src.pos];
-    if (c === 'n') return captureNull(src);
-    if (c === 't' || c === 'f') return captureBoolean(src);
-    if (c === '-' || (c >= '0' && c <= '9')) return captureNumber(src);
-    if (c === '"') return captureString(src);
-    if (c === '[') return captureArray(src);
-    if (c === '{') return captureObject(src);
-    throw new Error(`***`); // TODO: nice error message...
+// TODO: ...
+function unescape(raw: string): string {
+    // TODO: implement without JSON.parse?
+    return JSON.parse(raw);
 }
 
 
