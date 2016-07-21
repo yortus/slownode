@@ -1,3 +1,9 @@
+// TODO: old code - remove this entire [kvon-3000] subdirectoty
+
+
+
+
+
 // TODO: doc KVON (in README?)
 // - strictness - ie no silent roundtrip failures - parse(stringify(x)) must result in something that is observably identical to x, otherwise stringify/parse must throw
 // - replacers - must either leave value unchanged or return a 'serializable' value
