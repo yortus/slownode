@@ -4,25 +4,6 @@ export {Reviver};
 import {series, choice, option, zeroOrMore, oneOrMore, not, char, chars, lazy} from './parser-combinators';
 import {Source, Parser} from './parser-combinators';
 import * as tranformers from '../transformers/all'; // TODO: bring local...
-// TODO: use WtfMap...
-
-
-
-
-
-// TODO: JSON_REFERENCE/captureReference (special string that starts with literal '^')
-// TODO: DISCRIMINANT_KEY/captureDiscriminantKey (special string that equals literal '$')
-
-
-
-
-
-// TODO: ...
-interface Progress extends Source {
-    path: string[];
-    reviver: Reviver;
-    visited: Map<string, {}>;
-}
 
 
 
@@ -72,46 +53,46 @@ export default function parse(text: string, reviver?: Reviver): {} {
 
 
 function temp(src: Source, path: string[], reviver: Reviver, visited: Map<string, {}>): {} {
+    let result: {};
     let c = src.text[src.pos];
 
     // Handle null.
     if (c === 'n') {
         match(src, 'null', NULL);
-        return null;
+        result = null;
     }
 
     // Handle booleans.
-    if (c === 't' || c === 'f') {
+    else if (c === 't' || c === 'f') {
         match(src, 'boolean', JSON_BOOLEAN);
-        return c === 't';
+        result = c === 't';
     }
 
     // Handle numbers.
-    if (c === '-' || (c >= '0' && c <= '9')) {
-        return parseFloat(capture(src, 'number', JSON_NUMBER));
+    else if (c === '-' || (c >= '0' && c <= '9')) {
+        result = parseFloat(capture(src, 'number', JSON_NUMBER));
     }
 
     // Handle strings, including references.
-    if (c === '"') {
+    else if (c === '"') {
         // TODO: unescape... eg \n \r \u0032 etc...
-        let raw = capture(src, 'string', JSON_STRING);
-        if (raw[1] === '^') {
+        let rawString = capture(src, 'string', JSON_STRING);
+        if (rawString[1] === '^') {
             // TODO: reference
-            if (!visited.has(raw)) throw new Error(`KVON: invalid reference`); // TODO: improve message...
-            return visited.get(raw);
+            if (!visited.has(rawString)) throw new Error(`(KVON) invalid reference`); // TODO: improve message...
+            result = visited.get(rawString);
         }
         else {
-            return unescape(raw);
+            result = unescape(rawString);
         }
     }
 
     // Handle arrays.
-    if (c === '[') {
+    else if (c === '[') {
+        let ar = [];
         match(src, '[', LEFT_BRACKET);
         WHITESPACE(src);
-        if (RIGHT_BRACKET(src)) return []; // empty array
-        let ar = [];
-        while (true) {
+        while (src.text[src.pos] !== ']') {
             let element = temp(src, path.concat(ar.length.toString()), reviver, visited); // NB: recursive
             ar.push(element);
             WHITESPACE(src);
@@ -119,67 +100,55 @@ function temp(src: Source, path: string[], reviver: Reviver, visited: Map<string
             WHITESPACE(src);
         }
         match(src, ']', RIGHT_BRACKET);
-        return ar;
+        result = ar;
     }
 
     // Handle objects.
-    if (c === '{') {
+    else if (c === '{') {
+        let obj = {}, isDiscriminated = false;
         match(src, '{', LEFT_BRACE);
         WHITESPACE(src);
-        if (RIGHT_BRACE(src)) return {}; // empty object
-        let obj = {};
-        let isDiscriminated = false;
-        while (true) {
+        while (src.text[src.pos] !== '}') {
             let rawName = capture(src, 'string', JSON_STRING);
-            isDiscriminated = isDiscriminated || rawName === '"*"';
+            isDiscriminated = isDiscriminated || rawName === '"$"';
             let name = unescape(rawName);
-
             WHITESPACE(src);
             match(src, 'colon', COLON);
             WHITESPACE(src);
-
             let value = temp(src, path.concat(name), reviver, visited); // NB: recursive
             obj[name] = value;
-
             WHITESPACE(src);
             if (!COMMA(src)) break;
             WHITESPACE(src);
         }
         match(src, '}', RIGHT_BRACE);
-        if (!isDiscriminated) return obj;
-
-        // TODO: run reviver... this is the only case... explain why here, and document reviver rules in README...
-        obj = reviver.call({'':obj}, '', obj);
-        return obj;
-
-
-        // TODO: when/where do we update `visited`?
-        ???
+        if (isDiscriminated) {
+            // TODO: run reviver... this is the only case... explain why here, and document reviver rules in README...
+            obj = reviver.call({'':obj}, '', obj);
+        }
+        result = obj;
     }
 
-    // TODO: the following is sure to throw since we've covered all valid options already..
-    match(src, `null, boolean, string, number, array or object`, JSON_VALUE);
-
-
-
-    function capture(src: Source, expected: string, expr: Parser) {
-        let startPos = src.pos;
-        match(src, expected, expr);
-        let result = src.text.slice(startPos, src.pos);
-        return result;
+    else {
+        // TODO: the following is sure to throw since we've covered all valid options already...
+        match(src, `null, boolean, string, number, array or object`, JSON_VALUE);
     }
 
-
-    // function captureReference(src: Source) {
-    //     let s = captureString(src);
-    // }
-
-    // function captureDiscriminant(src: Source) {
-    //     let s = captureString(src);
-    // }
+    // TODO: update visited...
+    visited.set(makeReference(path), result);
+    return result;
+}
 
 
 
+
+
+// TODO: ...
+function capture(src: Source, expected: string, expr: Parser) {
+    let startPos = src.pos;
+    match(src, expected, expr);
+    let result = src.text.slice(startPos, src.pos);
+    return result;
 }
 
 
@@ -192,7 +161,7 @@ function match(src: Source, expected: string, expr: Parser) {
     let before = (src.pos > 10 ? '...' : '') + src.text.slice(src.pos - 10, src.pos);
     let after = src.text.slice(src.pos + 1, src.pos + 11) + (src.len - src.pos > 11 ? '...' : '');
     let indicator = `${before}-->${src.text[src.pos]}<--${after}`;
-    throw new Error(`KVON: expected ${expected} but found '${src.text[src.pos]}': "${indicator}"`);
+    throw new Error(`(KVON) expected ${expected} but found '${src.text[src.pos]}': "${indicator}"`);
 }
 
 

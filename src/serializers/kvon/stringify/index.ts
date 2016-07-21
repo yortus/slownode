@@ -3,7 +3,6 @@ import Replacer from './replacer';
 import {isPlainObject, isPlainArray} from '../serializable-types';
 import makeReference from '../make-reference';
 import * as tranformers from '../transformers/all'; // TODO: bring local...
-// TODO: use WtfMap...
 
 
 
@@ -52,24 +51,24 @@ export default function stringify(value: any, replacer?: Replacer, space?: strin
 //   - encode cross references
 //   - run replacer
 function test(obj: {}, key: string, val: {}, path: string[], replacer: Replacer, visited: Map<{}, string>): string {
+    let result: string;
 
     // TODO: explain here, and document this limitation in README...
     if (visited.has(val)) {
-        let result = visited.get(val);
+        result = visited.get(val);
         if (result !== INCOMPLETE) return result;
-        throw new Error(`KVON: cyclic object graphs are not supported`);
+        throw new Error(`(KVON) cyclic object graphs are not supported`);
     }
 
     // Run the value through the replacer function. Detect whether the original value is replaced or left unchanged.
     // TODO: add sanity check to assert that the replacer didn't mutate `obj` or `val`?
     let replacement: {} = replacer.call(obj, key, val);
     let isReplaced = !Object.is(val, replacement);
-    let result: string;
 
     // TODO: document the following rule in the README...
     // If the value was replaced, the replacement *must* be a discriminated plain object (DPO)
     if (isReplaced && !(isPlainObject(replacement) && replacement.hasOwnProperty('$'))) {
-        throw new Error(`KVON: replacement value must be a discriminated plain object`);
+        throw new Error(`(KVON) replacement value must be a discriminated plain object`);
     }
 
     // For a primitive value, no further traversal is necessary.
@@ -119,8 +118,8 @@ function test(obj: {}, key: string, val: {}, path: string[], replacer: Replacer,
     // (b) a non-serializable input value. If the replacer left the input value unchanged, then the input value
     //     must be unserializable with no replacer case that deals with it. That's a problem with the input value.
     else {
-        if (!isReplaced) throw new Error(`KVON: no known serialization available for value: ${val}`);
-        throw new Error(`KVON: replacer function returned a non-serializable value: ${replacement}`);
+        if (!isReplaced) throw new Error(`(KVON) no known serialization available for value: ${val}`);
+        throw new Error(`(KVON) replacer function returned a non-serializable value: ${replacement}`);
     }
 
     // TODO: ... only need to add non-primitives to map??

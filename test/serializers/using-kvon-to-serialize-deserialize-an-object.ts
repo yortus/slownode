@@ -17,12 +17,6 @@ import {expect} from 'chai';
 describe('Using KVON to serialize/deserialize an object', () => {
 
     let tests = [
-        // TODO: temp... remove or integrate these...
-        // ['!!!1', (() => { let o = {$type: [], x: [123, void 0], y: <any>[1,2], z: /.*/g}; o.y.push({o, ox: o.x}); return o; })()],
-        // ['!!!2', (() => { let o = {x: 123, y: <any>[1,2]}; o.y.push({self: o}); return o; })()],
-        ['!!!3', (() => { let o = {x: 123, y: <any>[1,2], z: null}; o.z = o.y; return o; })()],
-
-
         ['string',                  `foo\nbar  "baz"    'nunchucks'\r\n\\\\\`     \t    blah \u0042 \\u0042`],
         ['string with specials',    `^\u0024\\u0024---@$#^a.b.c`],
         ['number',                  3.141592e-27],
@@ -37,15 +31,61 @@ describe('Using KVON to serialize/deserialize an object', () => {
         ['Infinity',                Infinity],
         ['-Infinity',               -Infinity],
         ['negative zero',           -0],
+        ['zero and negative zero',  [-0, 0, -0, 0]],
         ['nested object/array',     {foo: [1,2,{a:9, b: ['c', 'd']}], bar: {baz:['quux', [[[]]]]}}],
         ['RegExp',                  /^\\.*?[\s\S]F(O|o+)$/gi],
-        ['circular object',         (() => { let o = {x: 123, y: <any>[1,2]}; o.y.push({self: o}); return o; })()],
-        ['circular object 2',       (() => { let o: any = {x: 123, 'y.z': {$:[1,2, '^'], '^': []}}; o.z = { self: [o], xref: o['y.z'].$, ar: o['y.z']['^']}; return o; })()],
-        ['object with $type key',   {$type: '$type is reserved', other: ['things', 'and', 'stuff']}],
+        ['object with "$" key',     {$: '$ is reserved', other: ['things', 'and', 'stuff']}],
         ['sparse array 1',          [1,,,4]],
         ['sparse array 2',          (() => { let a = []; a[0] = 1; a[3] = 4; return a; })()],
         ['hybrid array',            (() => { let a: any = [1, '22/22', 3, 42]; a.p = 'foo'; a.q = null; return a; })()],
         ['hybrid sparse array',     (() => { let a = [1,2,3]; delete a[1]; a['x/y'] = {z:-9}; return a; })()],
+        ['object with val reuse',   (() => { let o = {x: 123, y: <any>[1,2], z: null}; o.z = o.y; return o; })()],
+
+        [
+            'circular object',
+            (() => {
+                let o = {x: 123, y: <any>[1,2]};
+                o.y.push({self: o});
+                return o;
+            })(),
+            'ERROR: (KVON) cyclic...'
+        ],
+
+        [
+            'circular object 2',
+            (() => {
+                let o: any = {x: 123, 'y.z': {$:[1,2, '^'], '^': []}};
+                o.z = { self: [o], xref: o['y.z'].$, ar: o['y.z']['^']};
+                return o;
+            })(),
+            'ERROR: (KVON) cyclic...'
+        ],
+
+        [
+            'complex object graph',
+            (() => {
+                let o = <any> {
+                    foo: [
+                        1,
+                        2,
+                        {
+                            a: 9,
+                            b: ['c', 'd'],
+                            c: [true, false, null, undefined],
+                            d: [0, -0, NaN, Infinity, -Infinity],
+                            e: /^[fF]oo+\n$/g,
+                            f: {$: 'secret', $val: 'password'}
+                        }
+                    ],
+                    bar: {
+                        baz: ['quux', [[[]]]]
+                    }
+                };
+                o.bar.baz[1][0].push(o.foo[2]);
+                o.bar.baz[1].unshift(o.foo[2]);
+                return o;
+            })()
+        ]
         // TODO: add more...
         // - Date
         // - Error
@@ -60,40 +100,25 @@ describe('Using KVON to serialize/deserialize an object', () => {
         // - GeneratorObject
         // - Iterator
         // - object with prototype
-        ['complex object graph', (() => {
-            let o = <any> {
-                foo: [
-                    1,
-                    2,
-                    {
-                        a: 9,
-                        b: ['c', 'd'],
-                        c: [true, false, null, undefined],
-                        d: [0, -0, NaN, Infinity, -Infinity],
-                        e: /^[fF]oo+\n$/g,
-                        f: {$type: 'secret', $val: 'password'}
-                    }
-                ],
-                bar: {
-                    baz: ['quux', [[[]]]]
-                }
-            };
-            o.bar.baz[1][0].push(o.foo[2]);
-            o.bar.baz[1].unshift(o.foo[2]);
-            return o;
-        })()]
     ];
 
     tests.forEach(test => {
-        let [name, value] = <[string, any]>test;
+        let [name, value, error] = <[string, any, string]>test;
         it(name, () => {
             // TODO: add try/catch?
-            let expected = value;
-            let kvon = KVON.stringify(value);
-// TODO: temp testing...
-//console.log(`\n\n\n\n\n${kvon}`);
-            let actual = KVON.parse(kvon);
-//            expect(actual).to.deep.equal(expected);
+            let expected = error || value;
+            let actual: any;
+            try {
+                let kvon = KVON.stringify(value);
+                actual = KVON.parse(kvon);
+            }
+            catch (ex) {
+                actual = `ERROR: ${ex.message}`;
+                if (typeof expected === 'string' && expected.endsWith('...')) {
+                    actual = actual.substr(0, expected.length - 3) + '...';
+                }
+            }
+            expect(actual).to.deep.equal(expected);
         });
     });
 });
