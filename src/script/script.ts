@@ -163,7 +163,7 @@ function makeNextFunction(program: Program, processor: JasmProcessor): () => Ite
             case 'instruction':
                 let opcode = line.opcode.toUpperCase();
                 if (opcode === 'STOP') {
-                    return `done = true; _.registers.set('PC', ${i}); `;
+                    return `done = true; _.PC = ${i}; `;
                 }
                 else {
                     return `p = _.${opcode}(${line.arguments.map(arg => {
@@ -191,9 +191,8 @@ function makeNextFunction(program: Program, processor: JasmProcessor): () => Ite
     let _ = processor;
     let source = `
         function iteratorNext() {
-            var done = false, pc = _.registers.get('PC'), p;
-            _.registers.set('PC', pc + 1);
-            switch (pc) {
+            var done = false, p;
+            switch (_.PC++) {
                 ${switchCases.join(`\n                `)}
             }
             return { done, value: done ? void 0 : Promise.resolve(p) };

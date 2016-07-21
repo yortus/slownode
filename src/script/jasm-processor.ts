@@ -73,4 +73,6 @@ export default class JasmProcessor {
         ['$6', void 0],
         ['$7', void 0]
     ]);
+    get PC() { return <number> this.registers.get('PC'); }
+    set PC(value: number) { this.registers.set('PC', value); }
 }

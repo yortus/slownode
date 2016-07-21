@@ -75,6 +75,7 @@ export default class JasmEmitter implements JasmProcessor {
         ['$6', FREE_REGISTER],
         ['$7', FREE_REGISTER]
     ]);
+    PC: never; // TODO: doc... required to implement JasmProcessor, but not used at runtime
 
 
     // TODO: doc...
