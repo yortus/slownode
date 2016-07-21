@@ -28,7 +28,7 @@ function replacer(key: string, val: any) {
 
 // TODO: only serialize changed props!
     let keys = Object.keys(val);
-    return { $type: 'Global', props: keys.reduce((props, key) => (props[key] = val[key], props), {}) };
+    return { $: 'Global', props: keys.reduce((props, key) => (props[key] = val[key], props), {}) };
 }
 
 
@@ -37,7 +37,7 @@ function replacer(key: string, val: any) {
 
 // TODO: ...
 function reviver(key: string, val: any) {
-    if (!val || val.$type !== 'Global') return val;
+    if (!val || val.$ !== 'Global') return val;
 
 // TODO: do reverse of replacer (once that's fixed)...
     let g = create();

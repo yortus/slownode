@@ -115,7 +115,7 @@ describe('Using KVON to serialize/deserialize an object', () => {
             catch (ex) {
                 actual = `ERROR: ${ex.message}`;
                 if (typeof expected === 'string' && expected.endsWith('...')) {
-                    actual = actual.substr(0, expected.length - 3) + '...';
+                    actual = actual.slice(0, expected.length - 3) + '...';
                 }
             }
             expect(actual).to.deep.equal(expected);
