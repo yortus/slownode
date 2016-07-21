@@ -40,13 +40,13 @@ export default class JasmProcessor {
     NE      (tgt: R, lhs: R, rhs: R) { let r = this.registers; r.set(tgt, r.get(lhs) !== r.get(rhs)); }
 
     // Instructions: Control
-    B       (line: number) { this.registers.set('PC', line); }
-    BF      (line: number, arg: R) { this.registers.get(arg) ? null : this.registers.set('PC', line); }
+    B       (line: number) { this.PC = line; }
+    BF      (line: number, arg: R) { this.registers.get(arg) ? null : this.PC = line; }
     BT      (line: number, arg: R) { this.registers.get(arg) ? this.registers.set('PC', line) : null; }
     CALL    (tgt: R, func: R, thís: R, args: R) { let r = this.registers; r.set(tgt, r.get(func).apply(r.get(thís), r.get(args))); }
     THROW   = async (err: R) => { throw this.registers[err]; } // TODO: temporary soln... how to really implement this?
     AWAIT   = async (tgt: R, arg: R) => { let r = this.registers; r.set(tgt, await r.get(arg)); }
-    STOP    () { this.registers.set('PC', Infinity); }
+    STOP    () { this.PC = Infinity; }
 
     // Instructions: Data
     STRING  (tgt: R, val: string) { this.registers.set(tgt, val); }

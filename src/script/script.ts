@@ -10,7 +10,7 @@ import * as typescript from './source-languages/typescript';
 
 
 // TODO: ...
-export default class Script implements IterableIterator<Promise<void>> {
+export default class Script implements IterableIterator<() => Promise<void>> {
 
 
     // TODO: doc...
@@ -98,11 +98,11 @@ export default class Script implements IterableIterator<Promise<void>> {
 
 
     // TODO: ...
-    next: () => IteratorResult<Promise<void>>;
+    next: () => IteratorResult<() => Promise<void>>;
 
 
     // TODO: ...
-    throw: (err: any) => IteratorResult<Promise<void>>;
+    throw: (err: any) => IteratorResult<() => Promise<void>>;
 
 
     // TODO: ...
@@ -146,7 +146,7 @@ export interface ScriptOptions {
 
 
 // TODO: put in separate file?
-function makeNextFunction(program: Program, processor: JasmProcessor): () => IteratorResult<Promise<void>> {
+function makeNextFunction(program: Program, processor: JasmProcessor): () => IteratorResult<() => Promise<void>> {
 
     // TODO: Associate each label with it's zero-based line number...
     let labelLines = program.lines.reduce((labels, line, i) => {
@@ -162,19 +162,14 @@ function makeNextFunction(program: Program, processor: JasmProcessor): () => Ite
                 return '';
             case 'instruction':
                 let opcode = line.opcode.toUpperCase();
-                if (opcode === 'STOP') {
-                    return `done = true; _.PC = ${i}; `;
-                }
-                else {
-                    return `p = _.${opcode}(${line.arguments.map(arg => {
-                        switch (arg.type) {
-                            case 'register':    return `'${arg.name}'`;
-                            case 'label':       return labelLines[arg.name];
-                            case 'const':       return JSON.stringify(arg.value);
-                            default:            let unreachable: never = arg; /* ensure all discriminants covered */
-                        }
-                    }).join(', ')}); `;
-                }
+                return `p = _.${opcode}(${line.arguments.map(arg => {
+                    switch (arg.type) {
+                        case 'register':    return `'${arg.name}'`;
+                        case 'label':       return labelLines[arg.name];
+                        case 'const':       return JSON.stringify(arg.value);
+                        default:            let unreachable: never = arg; /* ensure all discriminants covered */
+                    }
+                }).join(', ')}); `;
             default:
                 let unreachable: never = line; /* ensure all discriminants covered */
         }
@@ -191,14 +186,22 @@ function makeNextFunction(program: Program, processor: JasmProcessor): () => Ite
     let _ = processor;
     let source = `
         function iteratorNext() {
-            var done = false, p;
-            switch (_.PC++) {
-                ${switchCases.join(`\n                `)}
-            }
-            return { done, value: done ? void 0 : Promise.resolve(p) };
+            let nextInstr = program.lines[_.PC];
+            let isDone = nextInstr.type === 'instruction' && nextInstr.opcode.toUpperCase() === 'STOP';
+            if (isDone) return {done: true};
+            return {
+                done: false,
+                value: () => { // TODO: un-nest this closure for perf...
+                    let p;
+                    switch (_.PC++) {
+                        ${switchCases.join(`\n                `)}
+                    }
+                    return Promise.resolve(p);
+                }
+            };
         }
     `.split(/(?:\r\n)|\r|\n/).map(line => line.slice(8)).join('\n');
-    let result: () => IteratorResult<Promise<void>> = eval(`(${source})`);
+    let result: () => IteratorResult<() => Promise<void>> = eval(`(${source})`);
 
     // TODO: ...
     return result;
@@ -209,15 +212,15 @@ function makeNextFunction(program: Program, processor: JasmProcessor): () => Ite
 
 
 // TODO: put in separate file?
-function makeThrowFunction(program: Program, processor: JasmProcessor): (err: any) => IteratorResult<Promise<void>> {
+function makeThrowFunction(program: Program, processor: JasmProcessor): (err: any) => IteratorResult<() => Promise<void>> {
 
     // TODO: doc... does this need to otherwise work like step(), return a value, etc? I think not, but think about it...
-    return function iteratorThrow(err: any): IteratorResult<Promise<void>> {
+    return function iteratorThrow(err: any): IteratorResult<() => Promise<void>> {
         processor.registers.set('ERR', err);
         processor.THROW('ERR'); // TODO: this executes an instruction that is not in the JASM program. What happens to PC, etc??
         // TODO: ^ will throw back at caller if JASM program doesn't handle it
         // TODO: is JASM program *does* handle it, what should we return from here?
         // TODO: temp just for now...
-        return { done: false, value: Promise.resolve() };
+        return { done: false, value: () => Promise.resolve() };
     }
 }
