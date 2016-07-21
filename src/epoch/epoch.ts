@@ -21,6 +21,7 @@ export default class Epoch extends EventEmitter {
         // Validate options
         // TODO: allow setting path as option
         this._dirname = path.join(process.cwd(), 'slowfiles');
+        this._isAborted = false;
 
         // TODO: create dir if it does not exist...
         try { fs.mkdirSync(this._dirname); }
@@ -42,6 +43,9 @@ export default class Epoch extends EventEmitter {
     // TODO: ... fix signature - accept scriptIdHint and return actualScriptId (unique in epoch)
     eval(source: string, scriptName?: string) {
 
+        // TODO: ...
+        if (this._isAborted) throw new Error(`(Epoch) cannot eval script; epoch has entered an aborted state`);
+
         // TODO: create the script object...
         scriptName = scriptName || '«unnamed script»';
         let script = new Script(source, {name: scriptName});
@@ -59,6 +63,13 @@ export default class Epoch extends EventEmitter {
     }
 
 
+    // TODO: ... how do we know if/when abort() is done? return a promise?
+    abort() {
+        if (this._isAborted) return; // no-op if already currently paused
+        this._isAborted = true;
+    }
+
+
     // TODO: ...
     private runToCompletion(script: Script, filename: string) {
 
@@ -70,6 +81,13 @@ export default class Epoch extends EventEmitter {
                     await step;
 
                     // TODO: ...
+                    if (this._isAborted) break;
+
+                    // TODO: ... saving file at each AWAIT is meant as an optimisation, but has correctness issues.
+                    //   The process might crash (or Epoch be aborted) at *any* PC value. But then on construction, the
+                    //   scripts will be reloaded from disk and will run from their most recent save-point (an AWAIT).
+                    //   Any excuted instructions after the save point but before the crash will then be re-run...
+                    // SOLN? Save after *every* instruction? Mark *some* opcodes as safe to rerun, save at every non-safe opcode?
                     let instr = script.program.lines[script.registers.get('PC')];
                     let shouldPark = instr.type === 'instruction' && instr.opcode.toUpperCase() === 'AWAIT';
                     if (shouldPark) {
@@ -82,16 +100,24 @@ export default class Epoch extends EventEmitter {
     // let o = Script.fromSnapshot(snapshot).registers;
     // console.log(`\n\nUNPARK:`);
     // console.log(o);
-                    }                    
+                    }
                 }
 
-                // TODO: script finished successfully... emit something?
+                // TODO: script aborted... emit something??
+                if (this._isAborted) return;
+
+                // TODO: script finished successfully...
                 this.emit('end', script);
             }
             catch (err) {
+
+                // TODO: an unhandled error bubbled up from the script...
                 this.emit('error', err, script);
             }
             finally {
+
+                // TODO: DRY!!! see copy above
+                if (this._isAborted) return;
 
                 // TODO: script finished...
                 fs.unlinkSync(filename);
@@ -102,4 +128,24 @@ export default class Epoch extends EventEmitter {
 
     // TODO: ...
     private _dirname: string;
+
+
+    // TODO: ...
+    private _isAborted: boolean;
 }
+
+
+
+
+
+// TODO: document these concepts in README...
+// - unsafe
+// - destructive
+// - non-repeatable
+// - impure
+// - external effects
+// - polluting
+function doesNextInstructionHaveExternalEffects(script: Script) {
+
+}
+
