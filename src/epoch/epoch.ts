@@ -78,7 +78,7 @@ export default class Epoch extends EventEmitter {
             // TODO: run to completion...
             try {
                 for (let step of script) {
-                    await step;
+                    await step();
 
                     // TODO: ...
                     if (this._isAborted) break;
