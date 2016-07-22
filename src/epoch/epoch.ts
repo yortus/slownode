@@ -30,12 +30,9 @@ export default class Epoch extends EventEmitter {
         // TODO: load/revive running scripts from storage...
         let filenames = fs.readdirSync(this._dirname);
         filenames.forEach(filename => {
-
-            // TODO: resume script...
             filename = path.join(this._dirname, filename);
-            let snapshot = fs.readFileSync(filename, 'utf8');
-            let script = Script.fromSnapshot(snapshot);
-            this.runToCompletion(script, filename);
+            let script = loadScriptFromFile(filename);
+            this.runScriptToCompletion('resume', script, filename);
         });
     }
 
@@ -53,13 +50,10 @@ export default class Epoch extends EventEmitter {
         // Derive a valid filename from the script name.
         // TODO: better to just use a GUID for filename? Less discoverable as to what's what on disk...
         let filename = scriptName.replace(/[^a-zA-Z0-9_«»] /, '_');
-
-        // TODO: Save the script's initial snapshot to disk...
         filename = path.join(this._dirname, filename + '.slow');
-        fs.writeFileSync(filename, script.snapshot(), {encoding: 'utf8'});
 
         // TODO: run the script...
-        this.runToCompletion(script, filename);
+        this.runScriptToCompletion('start', script, filename);
     }
 
 
@@ -71,58 +65,63 @@ export default class Epoch extends EventEmitter {
 
 
     // TODO: ...
-    private runToCompletion(script: Script, filename: string) {
+    private async runScriptToCompletion(mode: 'start'|'resume', script: Script, filename: string) {
+        try {
 
-        // TODO: Kick off script using an IIAFE...
-        (async () => {
-            // TODO: run to completion...
-            try {
-                for (let step of script) {
-                    await step();
+            // TODO: ...
+            let isNextImpure = !isNextInstructionFreeOfExternalSideEffects(script);
 
-                    // TODO: ...
-                    if (this._isAborted) break;
+            if (mode === 'start') {
+                // TODO: Save the script's initial snapshot to disk...
+                saveScriptToFile(filename, script); // TODO: what if this fails???
+            }
+            else /* mode === 'resume' */ {
 
-                    // TODO: ... saving file at each AWAIT is meant as an optimisation, but has correctness issues.
-                    //   The process might crash (or Epoch be aborted) at *any* PC value. But then on construction, the
-                    //   scripts will be reloaded from disk and will run from their most recent save-point (an AWAIT).
-                    //   Any excuted instructions after the save point but before the crash will then be re-run...
-                    // SOLN? Save after *every* instruction? Mark *some* opcodes as safe to rerun, save at every non-safe opcode?
-                    let instr = script.program.lines[script.registers.get('PC')];
-                    let shouldPark = instr.type === 'instruction' && instr.opcode.toUpperCase() === 'AWAIT';
-                    if (shouldPark) {
-                        let snapshot = script.snapshot();
-                        fs.writeFileSync(filename, snapshot, {encoding: 'utf8'});
-
-    // // TODO: temp testing...
-    // console.log(`\n\n\n\n\n################################################################################`);
-    // console.log(`PARK:\n${snapshot}`);
-    // let o = Script.fromSnapshot(snapshot).registers;
-    // console.log(`\n\nUNPARK:`);
-    // console.log(o);
-                    }
+                // throw into the script if the pending instruction is an impure one
+                if (isNextImpure) {
+                    await script.throw(new Error(`Cannot resume: pending instruction may have had external side-effects`)); // TODO: add special Error subclass, don't need string message then
+                    // TODO: if script doesn't catch above error, it will be thrown out to here... any special handling?
+                    // TODO: if script *does* catch the above error, we'll fall through to the for loop below. Is that correct?
                 }
-
-                // TODO: script aborted... emit something??
-                if (this._isAborted) return;
-
-                // TODO: script finished successfully...
-                this.emit('end', script);
             }
-            catch (err) {
 
-                // TODO: an unhandled error bubbled up from the script...
-                this.emit('error', err, script);
+
+            // TODO: run to completion...
+            for (let step of script) {
+
+                // TODO: doc... process may die (or epoch be aborted) while we wait here and that's ok...
+                await step;
+
+                // TODO: ...
+                if (this._isAborted) break;
+
+                // TODO: ...
+                let isPrevImpure = isNextImpure;
+                isNextImpure = !isNextInstructionFreeOfExternalSideEffects(script);
+                if (isPrevImpure || isNextImpure) {
+                    saveScriptToFile(filename, script);
+                }
             }
-            finally {
 
-                // TODO: DRY!!! see copy above
-                if (this._isAborted) return;
+            // TODO: script aborted... emit something??
+            if (this._isAborted) return;
 
-                // TODO: script finished...
-                fs.unlinkSync(filename);
-            }
-        })();
+            // TODO: script finished successfully...
+            this.emit('end', script);
+        }
+        catch (err) {
+
+            // TODO: an unhandled error bubbled up from the script...
+            this.emit('error', err, script);
+        }
+        finally {
+
+            // TODO: DRY!!! see copy above
+            if (this._isAborted) return;
+
+            // TODO: script finished...
+            fs.unlinkSync(filename);
+        }
     }
 
 
@@ -145,7 +144,47 @@ export default class Epoch extends EventEmitter {
 // - impure
 // - external effects
 // - polluting
-function doesNextInstructionHaveExternalEffects(script: Script) {
+// - irrevocable
+// - critical
+// - side-effects
+function isNextInstructionFreeOfExternalSideEffects(script: Script) {
 
+    // TODO: use 'AWAIT' instructions as a proxy for this condition for now... But this needs refinement...
+    // TODO: what about awaiting for a DelayPromise? That is safe/resumable/has no side-effects
+    let instr = script.program.lines[script.registers.get('PC')];
+    let isAwait = instr.type === 'instruction' && instr.opcode.toUpperCase() === 'AWAIT';
+    return !isAwait;
 }
 
+
+
+
+
+// TODO: ... make async
+function saveScriptToFile(filename: string, script: Script): void {
+    // TODO: use async fs function...
+    fs.writeFileSync(filename, script.snapshot(), {encoding: 'utf8'});
+}
+
+
+
+
+
+// TODO: ... make async
+function loadScriptFromFile(filename: string): Script {
+    // TODO: use async fs function...
+    let snapshot = fs.readFileSync(filename, 'utf8');
+    let script = Script.fromSnapshot(snapshot);
+    return script;
+}
+
+
+
+
+
+    // // TODO: temp testing...
+    // console.log(`\n\n\n\n\n################################################################################`);
+    // console.log(`PARK:\n${snapshot}`);
+    // let o = Script.fromSnapshot(snapshot).registers;
+    // console.log(`\n\nUNPARK:`);
+    // console.log(o);

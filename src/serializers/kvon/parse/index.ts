@@ -124,7 +124,7 @@ function temp(src: Source, path: string[], reviver: Reviver, visited: Map<string
         match(src, '}', RIGHT_BRACE);
         if (isDiscriminated) {
             // TODO: run reviver... this is the only case... explain why here, and document reviver rules in README...
-            obj = reviver.call({'':obj}, '', obj);
+            obj = reviver.call({'':obj}, '', obj); // TODO: throwaway object created every time here... reduce waste?
         }
         result = obj;
     }

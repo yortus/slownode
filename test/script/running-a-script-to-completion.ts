@@ -40,7 +40,7 @@
 
 //             try {
 //                 let script = new Script(source);
-//                 for (let step of script) await step();
+//                 for (let step of script) await step;
 //                 actual = script.registers.get('ENV')['result'];
 //             }
 //             catch (er) {

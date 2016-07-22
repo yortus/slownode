@@ -42,7 +42,7 @@
 //                 while (true) {
 //                     let step = script.next();
 //                     if (step.done) break;
-//                     await step.value();
+//                     await step.value;
 //                     ++stepsDone;
 
 //                     // After every five steps, take a snapshot of the running script, destroy the
