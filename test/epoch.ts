@@ -12,15 +12,35 @@ describe('an Epoch instance', () => {
 
     it('runs a script to completion', nodeify(async () => {
 
-
         // TODO: ...
         let script00 = ``;
         let script01 = fs.readFileSync(path.join(__dirname, './fixtures/script01.ts'), 'utf8');
-
+        let script02 = fs.readFileSync(path.join(__dirname, './fixtures/script02.ts'), 'utf8');
 
         // TODO: ...
-        slownode.eval(script01);
-        await runToCompletion(slownode);
+        slownode.on('error', err => {
+            console.log(err);
+        });
+        slownode.on('end', script => {
+            console.log('Finished executing script ' + script.name);
+        });
+
+        // TODO: ...
+        console.log('Starting a new script...');
+        slownode.eval(script02);
+        // slownode.eval(script02); // 2nd copy to test filenames are uniquified...
+
+        // TODO: ...
+        let timeout = new Promise((resolve, reject) => {
+            setTimeout(() => {
+                console.log('Aborting epoch...');
+                slownode.abort();
+                reject(new Error(`abort!`));
+            }, 5000);
+        });
+
+        // TODO: ...
+        await Promise.all([runToCompletion(slownode), timeout]);
     }));
 });
 

@@ -40,8 +40,11 @@ export default class Script implements IterableIterator<Promise<void>> {
             this.name = name;
             this._jasm = jasm;
             this.program = JASM.parse(jasm);
-            let kvonReviver = this._globalFactory.reviver; // TODO: how to validate this is the same factory that was used when the snapshot was created? E.g. use https://github.com/puleos/object-hash
-            let data = KVON.parse(kvon, kvonReviver); // TODO: validate data is an object with *all* registers defined as keys
+
+            // TODO: how to validate this is the same factory that was used when the snapshot was created? E.g. use https://github.com/puleos/object-hash
+            let reviver = makeReviver(this._globalFactory);
+            
+            let data = KVON.parse(kvon, reviver); // TODO: validate data is an object with *all* registers defined as keys
             let registers = Object.keys(data).reduce((map, key) => (map.set(key, data[key])), new Map());
             this.registers = this._processor.registers = registers;
         }
@@ -76,10 +79,10 @@ export default class Script implements IterableIterator<Promise<void>> {
 
     // TODO: ...
     snapshot(): string {
-        let kvonReplacer = this._globalFactory.replacer;
+        let replacer = makeReplacer(this._globalFactory); // TODO: don't create new replacer on every call...
         let regNames = [...this.registers.keys()];
         let data = regNames.reduce((obj, regName) => (obj[regName] = this.registers.get(regName), obj), {});
-        let jasm = this._jasm, kvon = KVON.stringify(data, kvonReplacer);
+        let jasm = this._jasm, kvon = KVON.stringify(data, replacer);
         let snapshot = `.NAME\n${JSON.stringify(this._options.name)}\n.CODE\n${jasm}\n.DATA\n${kvon}`;
         return snapshot;
     }
@@ -217,6 +220,44 @@ function makeThrowFunction(program: Program, processor: JasmProcessor): (err: an
         // TODO: ^ will throw back at caller if JASM program doesn't handle it
         // TODO: is JASM program *does* handle it, what should we return from here?
         // TODO: temp just for now...
-        return { done: false, value: Promise.resolve() };
+        return { done: false, value: Promise.reject(err) };   // TODO: wrong! if script catches its error, this won't reject...
+    }
+}
+
+
+
+
+
+// TODO: ...
+function makeReplacer(gf: GlobalFactory) {
+    return function replacer(key: string, val: {}) {
+        let replaced = gf.replacer.call(this, key, val);
+        if (!Object.is(val, replaced)) return replaced;
+
+        if (val && Object.getPrototypeOf(val) === Promise.prototype) {
+            replaced = {$: 'Promise'}; // TODO: ...
+            return replaced;
+        }        
+
+        return val;
+    }
+}
+
+
+
+
+
+// TODO: ...
+function makeReviver(gf: GlobalFactory) {
+    return function reviver(key: string, val: any) {
+        let revived = gf.reviver.call(this, key, val);
+        if (!Object.is(val, revived)) return revived;
+
+        if (val && val.$ === 'Promise') {
+            revived = Promise.reject(new Error(`Epoch resumed`)); // TODO: use specific Error subclass
+            return revived;
+        }        
+
+        return val;
     }
 }

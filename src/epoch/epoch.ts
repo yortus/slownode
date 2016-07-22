@@ -1,3 +1,4 @@
+// TODO: instead of passing arounf `filename` below, pass around fiel handle that is open in exclusive mode (how to ensure robust release of handles?)
 // TODO: use async 'fs' functions where possible
 // TODO: full set of emitted codes (apart from 'error'). What is common? 'done'? Check other repos for common names...
 import * as fs from 'fs';
@@ -49,8 +50,17 @@ export default class Epoch extends EventEmitter {
 
         // Derive a valid filename from the script name.
         // TODO: better to just use a GUID for filename? Less discoverable as to what's what on disk...
-        let filename = scriptName.replace(/[^a-zA-Z0-9_«»] /, '_');
-        filename = path.join(this._dirname, filename + '.slow');
+        // TODO: two scripts with the same name will get the same filename - need to add a number or something...
+        let filename = scriptName.replace(/[^a-zA-Z0-9_«»] /, '_'), i = 0;
+        while (true) {
+            let filepath = path.join(this._dirname, filename + (i || '') + '.slow');
+            if ((this._filenames.indexOf(filepath)) !== -1) {
+                ++i;
+                continue;
+            }
+            filename = filepath;
+            break;
+        }
 
         // TODO: run the script...
         this.runScriptToCompletion('start', script, filename);
@@ -73,13 +83,15 @@ export default class Epoch extends EventEmitter {
 
             if (mode === 'start') {
                 // TODO: Save the script's initial snapshot to disk...
+                this._filenames.push(filename);
                 saveScriptToFile(filename, script); // TODO: what if this fails???
             }
             else /* mode === 'resume' */ {
 
                 // throw into the script if the pending instruction is an impure one
                 if (isNextImpure) {
-                    await script.throw(new Error(`Cannot resume: pending instruction may have had external side-effects`)); // TODO: add special Error subclass, don't need string message then
+                    let step = script.throw(new Error(`Cannot resume: pending instruction may have had external side-effects`)); // TODO: add special Error subclass, don't need string message then
+                    await step.value; // TODO: mess... what if step.done === true, then there is no value...
                     // TODO: if script doesn't catch above error, it will be thrown out to here... any special handling?
                     // TODO: if script *does* catch the above error, we'll fall through to the for loop below. Is that correct?
                 }
@@ -107,12 +119,14 @@ export default class Epoch extends EventEmitter {
             if (this._isAborted) return;
 
             // TODO: script finished successfully...
-            this.emit('end', script);
+            // TODO: must ensure event is not emitted synchronously...
+            process.nextTick(() => this.emit('end', script));
         }
         catch (err) {
 
             // TODO: an unhandled error bubbled up from the script...
-            this.emit('error', err, script);
+            // TODO: must ensure event is not emitted synchronously...
+            process.nextTick(() => this.emit('error', err, script));
         }
         finally {
 
@@ -120,6 +134,7 @@ export default class Epoch extends EventEmitter {
             if (this._isAborted) return;
 
             // TODO: script finished...
+            this._filenames.splice(this._filenames.indexOf(filename), 1);
             fs.unlinkSync(filename);
         }
     }
@@ -131,6 +146,10 @@ export default class Epoch extends EventEmitter {
 
     // TODO: ...
     private _isAborted: boolean;
+
+
+    // TODO: ...
+    private _filenames: string[] = [];
 }
 
 
