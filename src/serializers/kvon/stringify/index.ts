@@ -16,6 +16,7 @@ export {Replacer};
 
 
 // TODO: ...
+// TODO: replacer: accept Replacer | Replacer[]
 export default function stringify(value: any, replacer?: Replacer, space?: string|number): string {
 
     // TODO: ...
