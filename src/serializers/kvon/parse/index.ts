@@ -3,7 +3,6 @@ import Reviver from './reviver';
 export {Reviver};
 import {series, choice, option, zeroOrMore, oneOrMore, not, char, chars, lazy} from './parser-combinators';
 import {Source, Parser} from './parser-combinators';
-import * as tranformers from '../transformers/all'; // TODO: bring local...
 
 
 
@@ -16,13 +15,13 @@ export default function parse(text: string, reviver?: Reviver): {} {
     // TODO: ...
     let compositeReviver: Reviver;
     if (!reviver) {
-        compositeReviver = tranformers.reviver;
+        compositeReviver = (k, v) => v;
     }
     else if (typeof reviver === 'function') {
         compositeReviver = function (this, key, val) {
             // TODO: swap call order below? which order is correct/consistent? examples?
             let newVal = reviver.call(this, key, val);
-            if (Object.is(val, newVal)) newVal = tranformers.reviver.call(this, key, val);
+            //if (Object.is(val, newVal)) newVal = tranformers.reviver.call(this, key, val);
             return newVal;
         }
     }

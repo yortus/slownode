@@ -1,8 +1,8 @@
+import compose from '../compose';
 import Map from '../wtf-map';
 import Replacer from './replacer';
 import {isPlainObject, isPlainArray} from '../serializable-types';
 import makeReference from '../make-reference';
-import * as tranformers from '../transformers/all'; // TODO: bring local...
 
 
 
@@ -16,18 +16,18 @@ export {Replacer};
 
 
 // TODO: ...
-// TODO: replacer: accept Replacer | Replacer[]
+// TODO: replacer: accept replacer: (string|number)[]
 export default function stringify(value: any, replacer?: Replacer, space?: string|number): string {
 
     // TODO: ...
     let compositeReplacer: Replacer;
     if (!replacer) {
-        compositeReplacer = tranformers.replacer;
+        compositeReplacer = (k, v) => v;
     }
     else if (typeof replacer === 'function') {
         compositeReplacer = function (this, key, val) {
-            let newVal = replacer.call(this, key, val);
-            if (Object.is(val, newVal)) newVal = tranformers.replacer.call(this, key, val);
+            let newVal = replacer.call(this, key, val); // TODO: <== FIX!
+            //if (Object.is(val, newVal)) newVal = tranformers.replacer.call(this, key, val);
             return newVal;
         }
     }
@@ -41,6 +41,22 @@ export default function stringify(value: any, replacer?: Replacer, space?: strin
     let result = test({'':value}, '', value, [], compositeReplacer, visited);
     return result;
 }
+
+
+
+
+
+// // TODO: ...
+// function normalizeReplacer(replacer: Replacer | (string|number)[]): Replacer {
+
+//     if (Array.isArray(replacer)) {
+//         // TODO: implement...
+//         throw new Error(`KVON: replacer: array of property names is not supported`);
+//     }
+//     else {
+//         replacer;
+//     }
+// }
 
 
 

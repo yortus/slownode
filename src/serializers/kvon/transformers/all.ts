@@ -1,3 +1,5 @@
+import compose from '../compose';
+
 import * as array from './array';
 import * as infinity from './infinity';
 import * as nan from './nan';
@@ -21,37 +23,25 @@ import * as undefd from './undefined';
 
 
 // TODO: ...
-const allTransformers = [
-    array,
-    infinity,
-    nan,
-    negativeZero,
-    regexp,
-    undefd
-];
+export const replacer = compose(
+    array.replacer,
+    infinity.replacer,
+    nan.replacer,
+    negativeZero.replacer,
+    regexp.replacer,
+    undefd.replacer
+);
 
 
 
 
 
 // TODO: ...
-export function replacer(this: {}, key: string|number, val: {}) {
-    let xformed = val;
-    for (let i = 0; Object.is(val, xformed) && i < allTransformers.length; ++i) {
-        xformed = allTransformers[i].replacer.call(this, key, val);
-    }
-    return xformed;
-}
-
-
-
-
-
-// TODO: ...
-export function reviver(this: {}, key: string|number, val: {}) {
-    let xformed = val;
-    for (let i = 0; Object.is(val, xformed) && i < allTransformers.length; ++i) {
-        xformed = allTransformers[i].reviver.call(this, key, val);
-    }
-    return xformed;
-}
+export const reviver = compose(
+    array.reviver,
+    infinity.reviver,
+    nan.reviver,
+    negativeZero.reviver,
+    regexp.reviver,
+    undefd.reviver
+);
