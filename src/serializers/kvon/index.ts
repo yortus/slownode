@@ -6,21 +6,16 @@
 // - duality - a reviver can't touch anything not touched by any replacer, and vice versa, et cetera
 // - special treatment of '$type' property - safe to use as a discriminant in serializable forms because it is auto-escaped/unescaped in non-replaced encounters
 import compose from './compose';
-import stringify, {Replacer} from './stringify';
-import parse, {Reviver} from './parse';
+import stringify from './stringify';
+import parse from './parse';
 import {replacers, revivers} from './transformers';
+export {default as Replacer} from './replacer'
+export {default as Reviver} from './reviver'
 
 
 
 
 
-// TODO: the KVON object...
+// TODO: export the KVON object...
 let KVON = { stringify, parse, compose, replacers, revivers };
 export default KVON;
-
-
-
-
-
-// TODO: ...
-export {Replacer, Reviver};

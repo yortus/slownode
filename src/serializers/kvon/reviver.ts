@@ -1,5 +1,5 @@
 export default Reviver;
-import {Serializable} from '../serializable-types';
+import {Serializable} from './serializable-types';
 
 
 

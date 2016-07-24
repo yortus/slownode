@@ -1,5 +1,5 @@
-import Replacer from './stringify/replacer';
-import Reviver from './parse/reviver';
+import Replacer from './replacer';
+import Reviver from './reviver';
 
 
 

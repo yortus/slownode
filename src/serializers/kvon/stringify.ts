@@ -1,8 +1,8 @@
-import compose from '../compose';
-import Map from '../wtf-map';
+import compose from './compose';
+import Map from './wtf-map';
 import Replacer from './replacer';
-import {isPlainObject, isPlainArray} from '../serializable-types';
-import makeReference from '../make-reference';
+import {isPlainObject, isPlainArray} from './serializable-types';
+import makeReference from './make-reference';
 
 
 
