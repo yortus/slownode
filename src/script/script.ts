@@ -228,7 +228,7 @@ function makeThrowFunction(program: Program, processor: JasmProcessor): (err: an
 
 
 
-// TODO: ...
+// TODO: ... add in KVON.replacers.all
 function makeReplacer(gf: GlobalFactory) {
     return function replacer(key: string, val: {}) {
         let replaced = gf.replacer.call(this, key, val);
@@ -247,7 +247,7 @@ function makeReplacer(gf: GlobalFactory) {
 
 
 
-// TODO: ...
+// TODO: ... add in KVON.revivers.all
 function makeReviver(gf: GlobalFactory) {
     return function reviver(key: string, val: any) {
         let revived = gf.reviver.call(this, key, val);
