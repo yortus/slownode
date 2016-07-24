@@ -1,7 +1,6 @@
 import compose from './compose';
 import Map from './wtf-map';
 import Replacer from './replacer';
-import {isPlainObject, isPlainArray} from './serializable-types';
 import makeReference from './make-reference';
 
 
@@ -154,3 +153,29 @@ function test(obj: {}, key: string, val: {}, path: string[], replacer: Replacer,
 
 // TODO: ...
 const INCOMPLETE = <any> {};
+
+
+
+
+
+// TODO: doc... NB will return false for arrays and 'subclassed' Object instances
+function isPlainObject(x: any): x is PlainObject {
+    return x && Object.getPrototypeOf(x) === Object.prototype;
+}
+
+
+
+
+
+// TODO: doc... NB will return false for arrays and 'subclassed' Object instances
+function isPlainArray(x: any): x is PlainArray {
+    return x && Object.getPrototypeOf(x) === Array.prototype;
+}
+
+
+
+
+
+// TODO: ...
+type PlainObject = Object;
+type PlainArray = Array<any>;
