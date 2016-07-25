@@ -5,17 +5,5 @@
 // - revivers - returning `undefined` does *not* delete the key from the output object (as in the ECMA spec), it means the value is revived into a literal `undefined`
 // - duality - a reviver can't touch anything not touched by any replacer, and vice versa, et cetera
 // - special treatment of '$type' property - safe to use as a discriminant in serializable forms because it is auto-escaped/unescaped in non-replaced encounters
-import compose from './compose';
-import stringify from './stringify';
-import parse from './parse';
-import {replacers, revivers} from './transformers';
-export {default as Replacer} from './replacer'
-export {default as Reviver} from './reviver'
-
-
-
-
-
-// TODO: export the KVON object...
-let KVON = { stringify, parse, compose, replacers, revivers };
+import * as KVON from './kvon';
 export default KVON;

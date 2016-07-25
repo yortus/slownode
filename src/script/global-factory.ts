@@ -1,4 +1,4 @@
-import {Replacer, Reviver} from '../serializers';
+import {KVON} from '../serializers';
 
 
 
@@ -12,10 +12,10 @@ interface GlobalFactory {
     create(): Object;
 
     // TODO: ...
-    replacer?: Replacer;
+    replacer?: KVON.Replacer;
 
     // TODO: ...
-    reviver?: Reviver;
+    reviver?: KVON.Reviver;
 
     // TODO: ... contents of .d.ts
     typeDefinition?: string;

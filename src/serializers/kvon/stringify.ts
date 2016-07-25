@@ -14,6 +14,7 @@ import makeReference from './make-reference';
 
 // TODO: ...
 // TODO: replacer: accept replacer: (string|number)[]
+/** Stringify docs... */
 export default function stringify(value: any, replacer?: Replacer, space?: string|number): string {
 
     // TODO: ...
