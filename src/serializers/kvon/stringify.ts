@@ -8,13 +8,6 @@ import makeReference from './make-reference';
 
 
 // TODO: ...
-export {Replacer};
-
-
-
-
-
-// TODO: ...
 // TODO: replacer: accept replacer: (string|number)[]
 export default function stringify(value: any, replacer?: Replacer, space?: string|number): string {
 
