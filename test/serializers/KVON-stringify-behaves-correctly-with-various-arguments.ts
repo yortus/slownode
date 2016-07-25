@@ -22,11 +22,16 @@ describe('KVON.stringify behaves correctly with various arguments', () => {
         [[,2,,5], KVON.replacers.Array, null, `{"$":"Array","props":{"1":2,"3":5}}`],
         [undefined, null, null, `ERROR: (KVON) no known serialization...`],
         [undefined, KVON.replacers.undefined, null, `{"$":"undefined"}`],
-        [{foo: [void 0,,3]}, KVON.replacers.all, null, `{"foo":{"$":"Array","props":{"0":{"$":"undefined"},"2":3}}}`]
+        [{foo: [void 0,,3]}, KVON.replacers.all, null, `{"foo":{"$":"Array","props":{"0":{"$":"undefined"},"2":3}}}`],
+
+        [[NaN, -0], [KVON.replacers.NaN, KVON.replacers.Infinity], null, `[{"$":"NaN"},0]`],
+        [[NaN, -0], [KVON.replacers.NaN, KVON.replacers.negativeZero], null, `[{"$":"NaN"},{"$":"-0"}]`],
+        [{b: 2}, [], null, `{"b":2}`],
 
 
-        // TODO: replacer: (string|number)[]
+        // TODO: replacer: []   - how does JSON behave in this case???
         // TODO: replacer: Replacer[]
+        // TODO: replacer: (string|number)[]
         // TODO: space: 4
         // TODO: space: 2
         // TODO: space: 0
