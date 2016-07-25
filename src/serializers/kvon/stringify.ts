@@ -1,5 +1,10 @@
+// TODO: support toJSON?
+// TODO: support string|number arrays for replacer?
+// TODO: support space (third arg)?
+
+
 import compose from './compose';
-import Map from './wtf-map';
+import Map from './util/same-value-map';
 import Replacer from './replacer';
 import makeReference from './make-reference';
 

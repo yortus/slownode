@@ -1,7 +1,7 @@
 import makeReference from './make-reference';
 import Reviver from './reviver';
-import {series, choice, option, zeroOrMore, oneOrMore, not, char, chars, lazy} from './parser-combinators';
-import {Source, Parser} from './parser-combinators';
+import {series, choice, option, zeroOrMore, oneOrMore, not, char, chars, lazy} from './util/parser-combinators';
+import {Source, Parser} from './util/parser-combinators';
 
 
 
