@@ -1,15 +1,17 @@
 // TODO: others:
-// - promise
-// - generator
-// - generator-function
+// - Date
+// - Error and all builtin subclasses (TypeError etc)
+// - function (when safe - eg only pure functions, not closures. But complex to analyze...)
+// - Map, Set, WeakMap, WeakSet (Weak* not possible?)
+// - Promise (not possible)
+// - String, Number, Boolean (i.e. boxed, perhaps with extra props)
+// - generator-function (see function above)
+// - generator (GenObj)
 // - typed-array
 // - array-buffer
-// - String, Number, Boolean
 // - reflect, proxy, getters & setters
-// - all std error types
 // - class instances
 // - subclassed builtins
-// - negative zero
 
 
 
@@ -21,6 +23,7 @@ import * as nan from './nan';
 import * as negativeZero from './negative-zero';
 import * as regexp from './regexp';
 import * as undefd from './undefined';
+import * as unsupported from './unsupported';
 import compose from '../compose';
 import Replacer from '../replacer';
 import Reviver from '../reviver';
@@ -29,30 +32,32 @@ import Reviver from '../reviver';
 
 
 
-// TODO: rename some of these... use standard names
+// Export all the builtin replacers.
 export const replacers = {
     all: <Replacer> null,
-    array: array.replacer,
-    infinity: infinity.replacer,
-    nan: nan.replacer,
+    Array: array.replacer,
+    Infinity: infinity.replacer,
+    NaN: nan.replacer,
     negativeZero: negativeZero.replacer,
-    regexp: regexp.replacer,
-    undefd: undefd.replacer
+    RegExp: regexp.replacer,
+    undefined: undefd.replacer,
+    unsupported: unsupported.replacer
 }
 
 
 
 
 
-// TODO: rename some of these... use standard names
+// Export all the builtin revivers.
 export const revivers = {
     all: <Reviver> null,
-    array: array.reviver,
-    infinity: infinity.reviver,
-    nan: nan.reviver,
+    Array: array.reviver,
+    Infinity: infinity.reviver,
+    NaN: nan.reviver,
     negativeZero: negativeZero.reviver,
-    regexp: regexp.reviver,
-    undefd: undefd.reviver
+    RegExp: regexp.reviver,
+    undefined: undefd.reviver,
+    unsupported: unsupported.replacer
 }
 
 
@@ -60,5 +65,6 @@ export const revivers = {
 
 
 // Create the 'all' composites from all the other replacers/revivers.
-replacers.all = compose(...Object.keys(replacers).map(key => replacers[key]).filter(fn => !!fn));
-revivers.all = compose(...Object.keys(revivers).map(key => revivers[key]).filter(fn => !!fn));
+const notAllOrUnsupported = key => key !== 'all' && key !== 'unsupported';
+replacers.all = compose(...Object.keys(replacers).filter(notAllOrUnsupported).map(key => replacers[key]));
+revivers.all = compose(...Object.keys(revivers).filter(notAllOrUnsupported).map(key => revivers[key]));
