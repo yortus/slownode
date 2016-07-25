@@ -17,15 +17,15 @@ import {expect} from 'chai';
 describe('KVON.stringify correctly handles various arguments', () => {
 
     let tests = [
-        [{a:1}, null, null, `{"a":1}`],
-        [[1,,,4], null, null, `[1,4]`],
-        [[,2,,5], KVON.replacers.Array, null, `{"$":"Array","props":{"1":2,"3":5}}`],
-        [undefined, null, null, `ERROR: (KVON) no known serialization...`],
-        [undefined, KVON.replacers.undefined, null, `{"$":"undefined"}`],
-        [{foo: [void 0,,3]}, KVON.replacers.all, null, `{"foo":{"$":"Array","props":{"0":{"$":"undefined"},"2":3}}}`],
+        // [{a:1}, null, null, `{"a":1}`],
+        // [[1,,,4], null, null, `[1,4]`],
+        // [[,2,,5], KVON.replacers.Array, null, `{"$":"Array","props":{"1":2,"3":5}}`],
+        // [undefined, null, null, `ERROR: (KVON) no known serialization...`],
+        // [undefined, KVON.replacers.undefined, null, `{"$":"undefined"}`],
+        // [{foo: [void 0,,3]}, KVON.replacers.all, null, `{"foo":{"$":"Array","props":{"0":{"$":"undefined"},"2":3}}}`],
 
-        [[NaN,-0], [KVON.replacers.NaN, KVON.replacers.Infinity], null, `[{"$":"NaN"},0]`],
-        [[NaN,-0], [KVON.replacers.NaN, KVON.replacers.negativeZero], null, `[{"$":"NaN"},{"$":"-0"}]`],
+        // [[NaN,-0], [KVON.replacers.NaN, KVON.replacers.Infinity], null, `[{"$":"NaN"},0]`],
+        // [[NaN,-0], [KVON.replacers.NaN, KVON.replacers.negativeZero], null, `[{"$":"NaN"},{"$":"-0"}]`],
 
         [{a:1, b:2}, [], null, `{}`],
         [{a:1, b:{a:11,b:22,c:33}}, ['a'], null, `{"a":1}`],

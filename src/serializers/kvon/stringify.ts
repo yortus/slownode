@@ -22,7 +22,7 @@ import makeReference from './make-reference';
 /**
   * Converts a JavaScript value to a Key/Value Object Notation (KVON) string.
   * @param value A JavaScript value, usually an object graph, to be converted.
-  * @param replacer A function that transforms the results, or an array of such functions.
+  * @param replacer A function that transforms the results, or an non-empty array of such functions.
   * @param space Adds indentation, white space, and line break characters to the return-value KVON text to make it easier to read.
   */
 export default function stringify(value: any, replacer?: Replacer | Replacer[], space?: string|number): string;
@@ -54,14 +54,16 @@ function normalizeReplacer(replacer: Replacer | Replacer[] | (string|number)[]):
     if (Array.isArray(replacer)) {
         if (isReplacerArray(replacer)) return compose(...replacer);
         let whitelistedKeys = replacer.map(key => key.toString());
-        return (key, val) => whitelistedKeys.indexOf(key) === -1 ? void 0 : val;
+
+        // TODO: bug - don't retrict top-level object {'': val} - how to detect??
+        return (key, val) => (isPlainObject(val) && whitelistedKeys.indexOf(key) === -1) ? void 0 : val;
     }
     else {
         return replacer;
     }
 }
 function isReplacerArray(x: any[]): x is Replacer[] {
-    return x.every(el => typeof el === 'function');
+    return x.length > 0 && x.every(el => typeof el === 'function');
 }
 
 
