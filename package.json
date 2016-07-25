@@ -8,9 +8,9 @@
   "scripts": {
     "build": "tsc -p src && tsc -p test && tsc -p www && ncp test/fixtures/ built/test/fixtures/",
     "clean": "rimraf built/",
-    "prepublish": "npm run self-ref && npm run build",
+    "prepublish": "npm run selfref && npm run build",
     "test": "node ./scripts/run-unit-tests",
-    "self-ref": "node ./scripts/enable-self-reference"
+    "selfref": "node ./scripts/enable-self-reference"
   },
   "repository": {
     "type": "git",
@@ -45,7 +45,7 @@
     "knex": "^0.11.9",
     "pegjs": "^0.9.0",
     "sqlite3": "^3.1.4",
-    "typescript": "^2.0.0-dev.20160707"
+    "typescript": "^2.1.0-dev.20160725"
   },
   "devDependencies": {
     "@types/babel-core": "^6.7.8-alpha",
