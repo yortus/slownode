@@ -27,7 +27,6 @@ export function reviver(key, val: {}) {
 
 
 
-// TODO: ...
 function isSparseOrHybrid(ar: any[]) {
     let keys = Object.keys(ar);
     if (keys.length !== ar.length) return true;
@@ -38,7 +37,6 @@ function isSparseOrHybrid(ar: any[]) {
 
 
 
-// TODO: ...
 function isArrayInfo(x: any): x is ArrayInfo {
     return x && x.$ === 'Array';
 }
@@ -47,7 +45,6 @@ function isArrayInfo(x: any): x is ArrayInfo {
 
 
 
-// TODO: ...
 interface ArrayInfo {
     $: 'Array';
     props: {};

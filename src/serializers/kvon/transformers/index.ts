@@ -20,10 +20,10 @@
 import * as array from './array';
 import * as infinity from './infinity';
 import * as nan from './nan';
-import * as negativeZero from './negative-zero';
+import * as negZero from './negative-zero';
 import * as regexp from './regexp';
 import * as undefd from './undefined';
-import * as unsupported from './unsupported';
+import * as unsupd from './unsupported';
 import compose from '../compose';
 import Replacer from '../replacer';
 import Reviver from '../reviver';
@@ -32,39 +32,71 @@ import Reviver from '../reviver';
 
 
 
-// Export all the builtin replacers.
-export const replacers = {
-    all: <Replacer> null,
-    Array: array.replacer,
-    Infinity: infinity.replacer,
-    NaN: nan.replacer,
-    negativeZero: negativeZero.replacer,
-    RegExp: regexp.replacer,
-    undefined: undefd.replacer,
-    unsupported: unsupported.replacer
+/** Built-in replacer functions. */
+export namespace replacers {
+
+    /** Combines all built-in replacers except `unsupported` into a single replacer. */
+    export let all = <Replacer> null;
+
+    /** Encodes arrays with holes and/or extra properties, whilst allowing ordinary arrays to pass through. */
+    export let Array = array.replacer;
+
+    /** Encodes the special values Infinity and -Infinity. */
+    export let Infinity = infinity.replacer;
+
+    /** Encodes the special value NaN. */
+    export let NaN = nan.replacer;
+
+    /** Encodes the special value -0. */
+    export let negativeZero = negZero.replacer;
+
+    /** Encodes RegExp instances. */
+    export let RegExp = regexp.replacer;
+
+    /** Encodes the special value `undefined`. */
+    export let undefined = undefd.replacer;
+
+    /** Throws on encountering values that are known to be non-encodable. */
+    export let unsupported = unsupd.replacer;
 }
 
 
 
 
 
-// Export all the builtin revivers.
-export const revivers = {
-    all: <Reviver> null,
-    Array: array.reviver,
-    Infinity: infinity.reviver,
-    NaN: nan.reviver,
-    negativeZero: negativeZero.reviver,
-    RegExp: regexp.reviver,
-    undefined: undefd.reviver,
-    unsupported: unsupported.replacer
+/** Built-in reviver functions. */
+export namespace revivers {
+
+    /** Combines all built-in revivers except `unsupported` into a single reviver. */
+    export let all = <Reviver> null;
+
+    /** Decodes arrays with holes and/or extra properties, whilst allowing ordinary arrays to pass through. */
+    export let Array = array.reviver;
+
+    /** Decodes the special values Infinity and -Infinity */
+    export let Infinity = infinity.reviver;
+
+    /** Decodes the special value NaN. */
+    export let NaN = nan.reviver;
+
+    /** Decodes the special value -0. */
+    export let negativeZero = negZero.reviver;
+
+    /** Decodes RegExp instances. */
+    export let RegExp = regexp.reviver;
+
+    /** Decodes the special value `undefined`. */
+    export let undefined = undefd.reviver;
+
+    /** Throws on encountering values that are known to be non-decodable. */
+    export let unsupported = unsupd.reviver;
 }
 
 
 
 
 
-// Create the 'all' composites from all the other replacers/revivers.
+// Create the 'all' composites by combining the other replacers/revivers.
 const notAllOrUnsupported = key => key !== 'all' && key !== 'unsupported';
 replacers.all = compose(...Object.keys(replacers).filter(notAllOrUnsupported).map(key => replacers[key]));
 revivers.all = compose(...Object.keys(revivers).filter(notAllOrUnsupported).map(key => revivers[key]));

@@ -14,29 +14,30 @@ import makeReference from './make-reference';
 
 // TODO: ...
 // TODO: replacer: accept replacer: (string|number)[]
-/** Stringify docs... */
-export default function stringify(value: any, replacer?: Replacer, space?: string|number): string {
 
-    // TODO: ...
-    let compositeReplacer: Replacer;
-    if (!replacer) {
-        compositeReplacer = (k, v) => v;
-    }
-    else if (typeof replacer === 'function') {
-        compositeReplacer = function (this, key, val) {
-            let newVal = replacer.call(this, key, val); // TODO: <== FIX!
-            //if (Object.is(val, newVal)) newVal = tranformers.replacer.call(this, key, val);
-            return newVal;
-        }
-    }
-    else {
-        // TODO: JSON replacer may also be an array of string|number... handle this case
-        throw new Error(`Not implemented`);
-    }
 
-    // TODO: ...
+
+
+
+/**
+  * Converts a JavaScript value to a Key/Value Object Notation (KVON) string.
+  * @param value A JavaScript value, usually an object graph, to be converted.
+  * @param replacer A function that transforms the results, or an array of such functions.
+  * @param space Adds indentation, white space, and line break characters to the return-value KVON text to make it easier to read.
+  */
+export default function stringify(value: any, replacer?: Replacer | Replacer[], space?: string|number): string;
+
+/**
+  * Converts a JavaScript value to a Key/Value Object Notation (KVON) string.
+  * @param value A JavaScript value, usually an object graph, to be converted.
+  * @param replacer An array of strings and numbers that acts as a whitelist for selecting the object properties that will be stringified.
+  * @param space Adds indentation, white space, and line break characters to the return-value KVON text to make it easier to read.
+  */
+export default function stringify(value: any, replacer?: (number | string)[], space?: string|number): string;
+export default function stringify(value: any, replacer?: Replacer | Replacer[] | (number | string)[], space?: string|number): string {
+    replacer = normalizeReplacer(replacer);
     let visited = new Map<{}, string>();
-    let result = test({'':value}, '', value, [], compositeReplacer, visited);
+    let result = test({'':value}, '', value, [], replacer, visited);
     return result;
 }
 
@@ -44,17 +45,26 @@ export default function stringify(value: any, replacer?: Replacer, space?: strin
 
 
 
-// // TODO: ...
-// function normalizeReplacer(replacer: Replacer | (string|number)[]): Replacer {
+// TODO: ...
+function normalizeReplacer(replacer: Replacer | Replacer[] | (string|number)[]): Replacer {
 
-//     if (Array.isArray(replacer)) {
-//         // TODO: implement...
-//         throw new Error(`KVON: replacer: array of property names is not supported`);
-//     }
-//     else {
-//         replacer;
-//     }
-// }
+    if (!replacer) {
+        return NO_REPLACE;
+    }
+    if (Array.isArray(replacer)) {
+        if (isReplacerArray(replacer)) return compose(...replacer);
+        let whitelistedKeys = replacer.map(key => key.toString());
+        return (key, val) => whitelistedKeys.indexOf(key) === -1 ? void 0 : val;
+    }
+    else {
+        return replacer;
+    }
+}
+function isReplacerArray(x: any[]): x is Replacer[] {
+    return x.every(el => typeof el === 'function');
+}
+
+
 
 
 
@@ -145,6 +155,13 @@ function test(obj: {}, key: string, val: {}, path: string[], replacer: Replacer,
     // Return the replacement value.
     return result;
 }
+
+
+
+
+
+// TODO: ...
+const NO_REPLACE = (key, val) => val;
 
 
 
