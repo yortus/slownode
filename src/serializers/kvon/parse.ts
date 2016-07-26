@@ -7,6 +7,7 @@ import {Source, Parser} from './util/parser-combinators';
 
 
 
+// TODO: spec: throws SyntaxError on invalid text input
 // TODO: implement parse...
 // TODO: reviver: accept Reviver | Reviver[]
 export default function parse(text: string, reviver?: Reviver): {} {
