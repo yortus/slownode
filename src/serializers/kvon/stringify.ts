@@ -160,8 +160,9 @@ const INCOMPLETE = <any> {};
 
 
 
-// TODO: add more POJO checks - getters/setters, etc
+/** Detects whether the given value is a plain object suitable for simple KVON serialization. */
 function isPlainObject(x: any): x is Object {
+    // TODO: add more POJO checks - getters/setters, etc
     return x && Object.getPrototypeOf(x) === Object.prototype;
 }
 
@@ -169,8 +170,9 @@ function isPlainObject(x: any): x is Object {
 
 
 
-// TODO: add more POJA checks - getters/setters, etc
+/** Detects whether the given value is a plain array suitable for simple KVON serialization. */
 function isPlainArray(x: any): x is any[] {
+    // TODO: add more POJA checks - getters/setters, etc
     if (!x || Object.getPrototypeOf(x) !== Array.prototype) return false;
     let keys = Object.keys(x);
     if (keys.length !== x.length) return false;
