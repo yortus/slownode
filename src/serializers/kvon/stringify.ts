@@ -134,9 +134,11 @@ export default function stringify(value: any, replacer?: Replacer | Replacer[], 
 
 // TODO: ...
 function normalizeSpace(space: string | number): string {
+    space = space || '';
     if (typeof space === 'number') space = ' '.repeat(Math.max(0, Math.min(10, space)));
+    if (space && typeof space !== 'string') throw new Error("(KVON) expected `space` to be a string or number");
+    if (!/^[\s\t\n\r]*$/g.test(space)) throw new Error("(KVON) `space` string must contain only whitespace characters");
     if (!space || typeof space === 'string') return (space || '').slice(0, 10);
-    throw new Error("(KVON) expected `space` to be a string or number");
 }
 
 
