@@ -108,7 +108,7 @@
 //             let expected = error || value;
 //             let actual: any;
 //             try {
-//                 let kvon = KVON.stringify(value, KVON.replacers.all);
+//                 let kvon = KVON.stringify(value, KVON.replacers.all, 4);
 //                 actual = KVON.parse(kvon, KVON.revivers.all);
 //             }
 //             catch (ex) {

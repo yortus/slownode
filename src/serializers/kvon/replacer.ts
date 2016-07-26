@@ -4,8 +4,6 @@ export default Replacer;
 
 
 
-type Replacer = (this: {}, key: string, val: {}) => {};
-
-
-
-JSON.stringify
+interface Replacer {
+    (this: {}, key: string, val: {}): {};
+}
