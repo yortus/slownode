@@ -120,19 +120,10 @@ export default function stringify(value: any, replacer?: Replacer | Replacer[], 
 
 
 
-// TODO: ...
-function normalizeSpace(space: string | number): string {
-    space = space || '';
-    if (typeof space === 'number') space = ' '.repeat(Math.max(0, Math.min(10, space)));
-    if (space && typeof space !== 'string') throw new Error("(KVON) expected `space` to be a string or number");
-    if (!/^[\s\t\n\r]*$/g.test(space)) throw new Error("(KVON) `space` string must contain only whitespace characters");
-    if (!space || typeof space === 'string') return (space || '').slice(0, 10);
-}
 
 
-// TODO: ...
-// TODO: if space is a string, ensure it contains only whitespace characters: [\s\t\r\n] (better check? whole unicode category?)
-function normalizeReplacer(replacer: Replacer | Replacer[]): Replacer {
+/** Returns a `Replacer` function that is equivalent to the passed in `replacer`, which may have several formats. */
+function normalizeReplacer(replacer: Replacer | Replacer[] | null): Replacer {
     if (!Array.isArray(replacer)) return replacer || NO_REPLACE;
     if (replacer.every(el => typeof el === 'function')) return compose(...replacer);
     throw new Error(`(KVON) replacer must be a function or array of functions. Property whitelists are not supported`);
@@ -142,21 +133,27 @@ function normalizeReplacer(replacer: Replacer | Replacer[]): Replacer {
 
 
 
+/** Returns a space string that is equivalent to the passed in `space`, which may have several formats. */
+function normalizeSpace(space: string | number | null): string {
+    space = space || '';
+    if (typeof space === 'number') space = ' '.repeat(Math.max(0, Math.min(10, space)));
+    if (space && typeof space !== 'string') throw new Error("(KVON) expected `space` to be a string or number");
+    if (!/^[\s\t\n\r]*$/g.test(space)) throw new Error("(KVON) `space` string must contain only whitespace characters");
+    if (!space || typeof space === 'string') return (space || '').slice(0, 10);
+}
 
 
 
 
 
-
-
-// TODO: ...
+/** A no-op replacer function. */
 const NO_REPLACE = (key, val) => val;
 
 
 
 
 
-// TODO: ...
+/** The sentinel value used in the `visited` map to detect cyclic references. See comments elsewhere in this file. */
 const INCOMPLETE = <any> {};
 
 
@@ -164,7 +161,7 @@ const INCOMPLETE = <any> {};
 
 
 // TODO: add more POJO checks - getters/setters, etc
-function isPlainObject(x: any): x is PlainObject {
+function isPlainObject(x: any): x is Object {
     return x && Object.getPrototypeOf(x) === Object.prototype;
 }
 
@@ -173,17 +170,9 @@ function isPlainObject(x: any): x is PlainObject {
 
 
 // TODO: add more POJA checks - getters/setters, etc
-function isPlainArray(x: any): x is PlainArray {
+function isPlainArray(x: any): x is any[] {
     if (!x || Object.getPrototypeOf(x) !== Array.prototype) return false;
     let keys = Object.keys(x);
     if (keys.length !== x.length) return false;
     return keys.every((k, i) => k === `${i}`);
 }
-
-
-
-
-
-// TODO: ...
-type PlainObject = Object;
-type PlainArray = Array<any>;
