@@ -20,32 +20,40 @@ export default function stringify(value: any, replacer?: Replacer | Replacer[], 
     let result = recurse({'':value}, '', value, []);
     return result;
 
-
-    // TODO: doc...
+    /** Performs a single step of the recursive stringification process. */
     function recurse(obj: {}, key: string, val: {}, path: string[]): string {
-        replacer = <Replacer> replacer;
-        space = <string> space;
+        const specials = {'"': '\\"', '\\': '\\\\', '\b': '\\b', '\f': '\\f', '\n': '\\n', '\r': '\\r', '\t': '\\t'};
         let result: string;
 
-        // TODO: explain here, and document this limitation in README...
+        // Force variable narrowing inside closure. These are definitely narrowed after the normalizeX() calls above.
+        replacer = <Replacer> replacer;
+        space = <string> space;
+
+        // We must preserve the identities of values that are encountered multiple times in the object graph being
+        // stringified. This is trivial for primitive values, since two primitives with the same value have the same
+        // identity. But for objects and arrays, we must keep track of multiple occurences in the object graph. The
+        // `visited` map associates each value encountered with the special 'reference' string that indicates the path
+        // into the object graph where it's singleton definition can be found. If `visited` maps a value to the
+        // 'INCOMPLETE' sentinel, then the value has been visited before but has not been fully stringified yet, and
+        // therefore must cyclically reference itself. This is not permitted in KVON, and we throw an error in that
+        // case. Otherwise if the `visited` map holds a 'reference' string for the given value, then we return early
+        // with that string.
         if (visited.has(val)) {
             result = visited.get(val);
             if (result !== INCOMPLETE) return result;
             throw new Error(`(KVON) cyclic object graphs are not supported`);
         }
 
-        // Run the value through the replacer function. Detect whether the original value is replaced or left unchanged.
-        // TODO: add sanity check to assert that the replacer didn't mutate `obj` or `val`?
+        // Run `value` through the `replacer`. Detect whether the original value was replaced or left unchanged.
         let replacement: {} = replacer.call(obj, key, val);
         let isReplaced = !Object.is(val, replacement);
 
-        // TODO: document the following rule in the README...
-        // If the value was replaced, the replacement *must* be a discriminated plain object (DPO)
+        // If the value *was* replaced, then the replacement *must* be a discriminated plain object (DPO). Verify this.
         if (isReplaced && !(isPlainObject(replacement) && replacement.hasOwnProperty('$'))) {
             throw new Error(`(KVON) replacement value must be a discriminated plain object`);
         }
 
-        // For a primitive value, no further traversal is necessary.
+        // Stringify the replacement value according to it's type.
         if (replacement === null) {
             result = 'null';
         }
@@ -56,78 +64,58 @@ export default function stringify(value: any, replacer?: Replacer | Replacer[], 
             result = replacement.toString();
         }
         else if (typeof replacement === 'string') {
-            const specials = {'"': '\\"', '\\': '\\\\', '\b': '\\b', '\f': '\\f', '\n': '\\n', '\r': '\\r', '\t': '\\t'};
-            result = [...replacement].map(c => specials[c] || c).join('');
 
-            // TODO: escape strings that start with the special ^ character...
+            // For strings, escape all characters on the `special` list. Also, escape '^' if it appears as the first
+            // character in the string, since that marks a string as a special `reference` value. By escaping it during
+            // stringification, KVON#parse will later be able to distinguish the 'reference' strings from other strings.
+            result = [...replacement].map(c => specials[c] || c).join('');
             result = '"' + result.replace(/^\^/g, '\\u005e') + '"';
         }
-
-        // TODO: explain... recurse!
         else if (isPlainObject(replacement) || isPlainArray(replacement)) {
+
+            // Plain objects and arrays are handled together here since many steps are the same.
             let isArray = Array.isArray(replacement);
 
-            // TODO: ...
+            // Map this value to the special 'INCOMPLETE' marker in the `visited` map for now. This will be updated to
+            // the appropriate 'reference' string when the value has been completely stringified. This way, if we come
+            // across the 'INCOMPLETE' value again while recursing, we know the value must cyclically reference itself.
             visited.set(val, INCOMPLETE);
 
-            // TODO: ...
+            // Stringify the entire object/array.
             result = isArray ? '[' : '{';
-
-            // TODO: ...
             for (let keys = Object.keys(replacement), len = keys.length, i = 0; i < len; ++i) {
+
+                // Get stringified forms for the element/pair. This step is recursive. When we come across a '$' key,
+                // then we must stringify it such that the KVON#parse step can distinguish between (A) an ordinary plain
+                // object that wasn't replaced and just happens to have a '$' key, and (B) a replacement DPO where the
+                // '$' key represents the discriminant needed later by KVON#parse revival. We distinguish the two cases
+                // by escaping '$' keys in POJOs that weren't replaced, and leaving them intact in DPOs.
                 let subkey = keys[i];
                 let keyText = JSON.stringify(subkey);
-                if (!isReplaced && keyText === '"$"') keyText = '"\\u0024"'; // TODO: escape special '$' key
-                let valText = recurse(replacement, subkey, replacement[subkey], path.concat(subkey)); // NB: recursive
+                if (!isReplaced && keyText === '"$"') keyText = '"\\u0024"';
+                let valText = recurse(replacement, subkey, replacement[subkey], path.concat(subkey));
 
-                // Add comma between elements/pairs.
+                // Stringify the element/pair as a whole, including punctuation and whitespace as necessary.
                 if (i > 0) result += ',';
-
-                // Add line break/indent before element/pair.
                 if (space) result += '\n' + space.repeat(path.length + 1);
-
-                // Add the stringified form of the element/pair.
                 result += isArray ? valText : `${keyText}:${space ? ' ' : ''}${valText}`;
-
-                // Add line break/indent before closing bracket/brace.
                 if (space && i === len - 1) result += '\n' + space.repeat(path.length);
             }
-
-            // TODO: ...
             result += isArray ? ']' : '}';
 
-
-            // TODO: ...
+            // The value has been completely stringified, so we can update `visited` now.
             visited.set(val, makeReference(path));
         }
 
-        // If the replacement value is neither a primitive value nor a plain object, then we have a serialization error.
-        // There are two possible causes for such an error:
-        // (a) an error in the replacer function. Replacer functions are contracted to either leave the value unchanged,
-        //     or otherwise to return a primitive value or plain object. So if the replacer returned a modified value
-        //     which is not a primitive or plain object, then the problem lies in the replacer function.
-        // (b) a non-serializable input value. If the replacer left the input value unchanged, then the input value
-        //     must be unserializable with no replacer case that deals with it. That's a problem with the input value.
+        // We ensured earlier that the replacer either returned a DPO or left the value unchanged. Therefore if we reach
+        // here, the replacer must have left the value unchanged, and the value itself is not serializable.
         else {
-            if (!isReplaced) throw new Error(`(KVON) no known serialization available for value: ${val}`);
-            throw new Error(`(KVON) replacer function returned a non-serializable value: ${replacement}`);
+            throw new Error(`(KVON) no known serialization available for value: ${val}`);
         }
 
-        // TODO: ... only need to add non-primitives to map??
-        if (!visited.has(val)) {
-            visited.set(val, result);
-        }
-
-        // Return the replacement value.
+        // Return the stringified value.
         return result;
     }
-
-
-
-
-
-
-
 }
 
 

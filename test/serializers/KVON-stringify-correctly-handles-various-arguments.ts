@@ -41,6 +41,10 @@ describe('KVON.stringify correctly handles various arguments', () => {
         [[,2,,5], KVON.replacers.Array, null, `{"$":"Array","props":{"1":2,"3":5}}`],
         [undefined, KVON.replacers.undefined, null, `{"$":"undefined"}`],
         [{foo: [void 0,,3]}, KVON.replacers.all, null, `{"foo":{"$":"Array","props":{"0":{"$":"undefined"},"2":3}}}`],
+        [123, (k, v) => 42, null, `ERROR: (KVON) replacement value must be a discriminated...`],
+        [[345, 123, 345], (k, v) => v === 345 ? {'$':'345'} : v, null, `[{"$":"345"},123,"^.0"]`],
+        [[345, 123, 345], (k, v) => v === 345 ? {'$':345} : v, null, `ERROR: (KVON) cyclic...`],
+        [[345, 123, 345], (k, v) => v === 345 ? [3,4,5] : v, null, `ERROR: (KVON) replacement...`],
 
         // Cases where JSON.stringify and KVON.stringify give different results (usually due to KVON strictness)...
         [[1,,,4], null, null, `ERROR...(case 1)`, `[1,null,null,4]`],
