@@ -95,7 +95,7 @@ describe('KVON.stringify correctly handles various arguments', () => {
     ];
 
     tests.forEach(test => {
-        let [value, replacer, space, result, json] = <[{}, any, any, string, string]>test;
+        let [value, replacer, space, result, json] = <[{}, any, any, string, string]> test;
         it(JSON.stringify(result || '"undefined"').slice(1, -1).replace(/\\\"/g, '"'), () => {
 
             // If expected JSON result is provided, sanity-check the actual JSON result for the same data.

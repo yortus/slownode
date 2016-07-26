@@ -101,6 +101,7 @@ Testing a Script object
 - canonical instruction lines are aligned with spaces; opcodes start at column 4, args start at column 12
 - canonical label lines are not indented
 
+
 ## KVON
 - replacers and revivers must occur in dualistic pairs
 - if a replacer replaces a value, it's pair reviver must revive the replacement value back to the original value.
@@ -109,7 +110,7 @@ Testing a Script object
 - If a `replacer` function returns a replacement value, then the replacement *must* be a discriminated plain object (DPO).
 - stringify: toJSON is not supported (not reversible)
 - stringify `replacer` parameter: omitting properties by returning `undefined` is not supported
-- stringify `replacer` parameter: arrays of property names are not supported (not reversible)
+- stringify `replacer` parameter: 'whitelist' arrays of property names are not supported (not reversible)
 - stringify `space` parameter: strings containing non-whitespace characters are not supported (not reversible)
 
 

@@ -1,7 +1,7 @@
 import compose from './compose';
+import makeReference from './make-reference';
 import Map from './util/same-value-map';
 import Replacer from './replacer';
-import makeReference from './make-reference';
 
 
 

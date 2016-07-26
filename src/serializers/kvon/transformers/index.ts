@@ -1,4 +1,4 @@
-// TODO: others:
+// TODO: others: (and ensure unit tests for each when done)
 // - Date
 // - Error and all builtin subclasses (TypeError etc)
 // - function (when safe - eg only pure functions, not closures. But complex to analyze...)
