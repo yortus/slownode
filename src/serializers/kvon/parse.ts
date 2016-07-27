@@ -8,123 +8,129 @@ import {Source, Parser} from './util/parser-combinators';
 
 
 
-// TODO: spec: throws SyntaxError on invalid text input
-// TODO: implement parse...
-// TODO: reviver: accept Reviver | Reviver[]
+/**
+  * Converts a Key/Value Object Notation (KVON) string into an object.
+  * @param text A valid KVON string.
+  * @param reviver A function that transforms the results. This function is called for each member of the object.
+  * If a member contains nested objects, the nested objects are transformed before the parent object is.
+  */
 export default function parse(text: string, reviver?: Reviver | Reviver[]): {} {
+
+    // Validate and normalize arguments.
     if (typeof text !== 'string') throw new Error("(KVON) expected `text` to be a string");
     reviver = normalizeReviver(reviver);
 
-
-    // TODO: ...
-    // TODO:
-    // - strings are not yet 'unescaped', and special ^ and $ need special handling
-    // - add up work hours from git log
+    // Recursively parse and revive the entire KVON text.
     let source = {text, len: text.length, pos: 0};
     let visited = new Map<string, {}>();
     WHITESPACE(source);
-    let result = temp(source, [], reviver, visited);
+    let result = recurse(source, []);
     WHITESPACE(source);
     match(source, 'End of text', EOS);
     return result;
-}
 
+    /** Performs a single step of the recursive parsing process. */
+    function recurse(src: Source, path: string[]): {} {
+        let result: {};
 
+        // We can always proceed deterministically with a single lookahead character. No backtracking is ever needed.
+        const lookahead = src.text[src.pos];
 
-
-
-function temp(src: Source, path: string[], reviver: Reviver, visited: Map<string, {}>): {} {
-    let result: {};
-    let c = src.text[src.pos];
-
-    // Handle null.
-    if (c === 'n') {
-        match(src, 'null', NULL);
-        result = null;
-    }
-
-    // Handle booleans.
-    else if (c === 't' || c === 'f') {
-        match(src, 'boolean', JSON_BOOLEAN);
-        result = c === 't';
-    }
-
-    // Handle numbers.
-    else if (c === '-' || (c >= '0' && c <= '9')) {
-        result = parseFloat(capture(src, 'number', JSON_NUMBER));
-    }
-
-    // Handle strings, including references.
-    else if (c === '"') {
-        // TODO: unescape... eg \n \r \u0032 etc...
-        let rawString = capture(src, 'string', JSON_STRING);
-        if (rawString[1] === '^') {
-            // TODO: reference
-            if (!visited.has(rawString)) throw new Error(`(KVON) invalid reference ${rawString}`);
-            result = visited.get(rawString);
+        // Parse a null literal.
+        if (lookahead === 'n') {
+            match(src, 'null', NULL);
+            result = null;
         }
+
+        // Parse a boolean literal.
+        else if (lookahead === 't' || lookahead === 'f') {
+            match(src, 'boolean', JSON_BOOLEAN);
+            result = lookahead === 't';
+        }
+
+        // Parse a numeric literal.
+        else if (lookahead === '-' || (lookahead >= '0' && lookahead <= '9')) {
+            result = parseFloat(capture(src, 'number', JSON_NUMBER));
+        }
+
+        // Parse a string literal. This includes 'reference' strings.
+        else if (lookahead === '"') {
+            // TODO: unescape... eg \n \r \u0032 etc...
+            let rawString = capture(src, 'string', JSON_STRING);
+            if (rawString[1] === '^') {
+                // TODO: reference
+                if (!visited.has(rawString)) throw new Error(`(KVON) invalid reference ${rawString}`);
+                result = visited.get(rawString);
+            }
+            else {
+                result = unescape(rawString);
+            }
+        }
+
+        // Parse a plain array.
+        else if (lookahead === '[') {
+            let ar = [];
+            match(src, '[', LEFT_BRACKET);
+            WHITESPACE(src);
+            while (src.text[src.pos] !== ']') {
+                let element = recurse(src, path.concat(ar.length.toString())); // NB: recursive
+                ar.push(element);
+                WHITESPACE(src);
+                if (!COMMA(src)) break;
+                WHITESPACE(src);
+            }
+            match(src, ']', RIGHT_BRACKET);
+            result = ar;
+        }
+
+        // Parse a plain object. This includes discriminates plain objects (DPOs).
+        else if (lookahead === '{') {
+            let obj = {}, isDiscriminated = false;
+            match(src, '{', LEFT_BRACE);
+            WHITESPACE(src);
+            while (src.text[src.pos] !== '}') {
+                let rawName = capture(src, 'string', JSON_STRING);
+                isDiscriminated = isDiscriminated || rawName === '"$"';
+                let name = unescape(rawName);
+                WHITESPACE(src);
+                match(src, 'colon', COLON);
+                WHITESPACE(src);
+                let value = recurse(src, path.concat(name)); // NB: recursive
+                obj[name] = value;
+                WHITESPACE(src);
+                if (!COMMA(src)) break;
+                WHITESPACE(src);
+            }
+            match(src, '}', RIGHT_BRACE);
+            if (isDiscriminated) {
+                // TODO: run reviver... this is the only case... explain why here, and document reviver rules in README...
+                let revived = (<Reviver> reviver).call({'':obj}, '', obj); // TODO: throwaway object created every time here... reduce waste?
+                let isRevived = !Object.is(obj, revived);
+                obj = revived;
+
+                // TODO: doc... if obj was an DPO but was left untouched by revivers, must be an error...
+                // TODO: from stringify... If the value *was* replaced, then the replacement *must* be a discriminated plain object (DPO). Verify this.
+                if (!isRevived) throw new Error(`(KVON) reviver failed to transform discriminated plain object`);
+            }
+            result = obj;
+        }
+
         else {
-            result = unescape(rawString);
+            // TODO: the following is sure to throw since we've covered all valid options already...
+            match(src, `null, boolean, string, number, array or object`, JSON_VALUE);
         }
+
+        // TODO: update visited...
+        visited.set(makeReference(path), result);
+        return result;
     }
 
-    // Handle arrays.
-    else if (c === '[') {
-        let ar = [];
-        match(src, '[', LEFT_BRACKET);
-        WHITESPACE(src);
-        while (src.text[src.pos] !== ']') {
-            let element = temp(src, path.concat(ar.length.toString()), reviver, visited); // NB: recursive
-            ar.push(element);
-            WHITESPACE(src);
-            if (!COMMA(src)) break;
-            WHITESPACE(src);
-        }
-        match(src, ']', RIGHT_BRACKET);
-        result = ar;
-    }
-
-    // Handle objects.
-    else if (c === '{') {
-        let obj = {}, isDiscriminated = false;
-        match(src, '{', LEFT_BRACE);
-        WHITESPACE(src);
-        while (src.text[src.pos] !== '}') {
-            let rawName = capture(src, 'string', JSON_STRING);
-            isDiscriminated = isDiscriminated || rawName === '"$"';
-            let name = unescape(rawName);
-            WHITESPACE(src);
-            match(src, 'colon', COLON);
-            WHITESPACE(src);
-            let value = temp(src, path.concat(name), reviver, visited); // NB: recursive
-            obj[name] = value;
-            WHITESPACE(src);
-            if (!COMMA(src)) break;
-            WHITESPACE(src);
-        }
-        match(src, '}', RIGHT_BRACE);
-        if (isDiscriminated) {
-            // TODO: run reviver... this is the only case... explain why here, and document reviver rules in README...
-            let revived = reviver.call({'':obj}, '', obj); // TODO: throwaway object created every time here... reduce waste?
-            let isRevived = !Object.is(obj, revived);
-            obj = revived;
-
-            // TODO: doc... if obj was an DPO but was left untouched by revivers, must be an error...
-            // TODO: from stringify... If the value *was* replaced, then the replacement *must* be a discriminated plain object (DPO). Verify this.
-            if (!isRevived) throw new Error(`(KVON) reviver failed to transform discriminated plain object`);
-        }
-        result = obj;
-    }
-
-    else {
-        // TODO: the following is sure to throw since we've covered all valid options already...
-        match(src, `null, boolean, string, number, array or object`, JSON_VALUE);
-    }
-
-    // TODO: update visited...
-    visited.set(makeReference(path), result);
-    return result;
 }
+
+
+
+
+
 
 
 
@@ -163,7 +169,7 @@ function match(src: Source, expected: string, expr: Parser) {
     let before = (src.pos > 10 ? '...' : '') + src.text.slice(src.pos - 10, src.pos);
     let after = src.text.slice(src.pos + 1, src.pos + 11) + (src.len - src.pos > 11 ? '...' : '');
     let indicator = `${before}-->${src.text[src.pos]}<--${after}`;
-    throw new Error(`(KVON) expected ${expected} but found '${src.text[src.pos]}': "${indicator}"`);
+    throw new SyntaxError(`(KVON) expected ${expected} but found '${src.text[src.pos]}': "${indicator}"`);
 }
 
 

@@ -14,11 +14,15 @@ import Replacer from './replacer';
   * @param space Adds indentation, white space, and line break characters to the returned KVON text for readability.
   */
 export default function stringify(value: any, replacer?: Replacer | Replacer[], space?: string | number): string {
+
+    // Validate and normalize arguments.
     replacer = normalizeReplacer(replacer);
     space = normalizeSpace(space);
+
+    // Recursively replace and stringify the entire object graph.
     let visited = new Map<{}, string>();
-    let result = recurse({'':value}, '', value, []);
-    return result;
+    let kvonText = recurse({'':value}, '', value, []);
+    return kvonText;
 
     /** Performs a single step of the recursive stringification process. */
     function recurse(obj: {}, key: string, val: {}, path: string[]): string {

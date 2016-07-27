@@ -5,6 +5,12 @@ import {expect} from 'chai';
 
 
 
+// TODO: how are special numbers like -0, Infinity, -Infinity, NaN handled without replacers/revivers? Add tests here and stringify...
+
+
+
+
+
 describe('KVON.parse correctly handles various arguments', () => {
 
     let tests = [
