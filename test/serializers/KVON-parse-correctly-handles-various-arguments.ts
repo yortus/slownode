@@ -21,6 +21,7 @@ describe('KVON.parse correctly handles various arguments', () => {
         [`true`, null, true],
         [`"foo"`, null, 'foo'],
         [`'foo'`, null, `ERROR...`],
+        [`"\\n\\t\\"foo\\u0042\\""`, null, '\n\t"fooB"'],
         [`true`, null, true],
         [`[1,2,3]`, null, [1,2,3]],
         [`{"a":1}`, null, {a:1}],
