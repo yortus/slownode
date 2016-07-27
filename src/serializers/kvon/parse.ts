@@ -1,3 +1,4 @@
+import compose from './compose';
 import makeReference from './make-reference';
 import Reviver from './reviver';
 import {series, choice, option, zeroOrMore, oneOrMore, not, char, chars, lazy} from './util/parser-combinators';
@@ -10,42 +11,22 @@ import {Source, Parser} from './util/parser-combinators';
 // TODO: spec: throws SyntaxError on invalid text input
 // TODO: implement parse...
 // TODO: reviver: accept Reviver | Reviver[]
-export default function parse(text: string, reviver?: Reviver): {} {
+export default function parse(text: string, reviver?: Reviver | Reviver[]): {} {
+    if (typeof text !== 'string') throw new Error("(KVON) expected `text` to be a string");
+    reviver = normalizeReviver(reviver);
+
 
     // TODO: ...
-    let compositeReviver: Reviver;
-    if (!reviver) {
-        compositeReviver = (k, v) => v;
-    }
-    else if (typeof reviver === 'function') {
-        compositeReviver = function (this, key, val) {
-            // TODO: swap call order below? which order is correct/consistent? examples?
-            let newVal = reviver.call(this, key, val);
-            //if (Object.is(val, newVal)) newVal = tranformers.reviver.call(this, key, val);
-            return newVal;
-        }
-    }
-    else {
-        // TODO: JSON reviver may *only* be a function, so this error is correct (but needs finalizing)
-        throw new Error(`Bad arg`);
-    }
-
-    // TODO: ...
-    try {
-        // TODO:
-        // - strings are not yet 'unescaped', and special ^ and $ need special handling
-        // - add up work hours from git log
-        let source = {text, len: text.length, pos: 0};
-        let visited = new Map<string, {}>();
-        WHITESPACE(source);
-        let result = temp(source, [], compositeReviver, visited);
-        WHITESPACE(source);
-        match(source, 'End of text', EOS);
-        return result;
-    }
-    catch (err) {
-        console.log(err);
-    }
+    // TODO:
+    // - strings are not yet 'unescaped', and special ^ and $ need special handling
+    // - add up work hours from git log
+    let source = {text, len: text.length, pos: 0};
+    let visited = new Map<string, {}>();
+    WHITESPACE(source);
+    let result = temp(source, [], reviver, visited);
+    WHITESPACE(source);
+    match(source, 'End of text', EOS);
+    return result;
 }
 
 
@@ -79,7 +60,7 @@ function temp(src: Source, path: string[], reviver: Reviver, visited: Map<string
         let rawString = capture(src, 'string', JSON_STRING);
         if (rawString[1] === '^') {
             // TODO: reference
-            if (!visited.has(rawString)) throw new Error(`(KVON) invalid reference`); // TODO: improve message...
+            if (!visited.has(rawString)) throw new Error(`(KVON) invalid reference ${rawString}`);
             result = visited.get(rawString);
         }
         else {
@@ -124,7 +105,13 @@ function temp(src: Source, path: string[], reviver: Reviver, visited: Map<string
         match(src, '}', RIGHT_BRACE);
         if (isDiscriminated) {
             // TODO: run reviver... this is the only case... explain why here, and document reviver rules in README...
-            obj = reviver.call({'':obj}, '', obj); // TODO: throwaway object created every time here... reduce waste?
+            let revived = reviver.call({'':obj}, '', obj); // TODO: throwaway object created every time here... reduce waste?
+            let isRevived = !Object.is(obj, revived);
+            obj = revived;
+
+            // TODO: doc... if obj was an DPO but was left untouched by revivers, must be an error...
+            // TODO: from stringify... If the value *was* replaced, then the replacement *must* be a discriminated plain object (DPO). Verify this.
+            if (!isRevived) throw new Error(`(KVON) reviver failed to transform discriminated plain object`);
         }
         result = obj;
     }
@@ -138,6 +125,21 @@ function temp(src: Source, path: string[], reviver: Reviver, visited: Map<string
     visited.set(makeReference(path), result);
     return result;
 }
+
+
+
+
+/** Returns a `Replacer` function that is equivalent to the passed in `replacer`, which may have several formats. */
+function normalizeReviver(reviver: Reviver | Reviver[] | null): Reviver {
+    return Array.isArray(reviver) ? compose(...reviver) : (reviver || NO_REVIVE);
+}
+
+
+
+
+
+/** A no-op reviver function. */
+const NO_REVIVE = (key, val) => val;
 
 
 
