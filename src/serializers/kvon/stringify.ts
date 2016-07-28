@@ -26,8 +26,6 @@ export default function stringify(value: any, replacer?: Replacer | Replacer[], 
 
     /** Performs a single step of the recursive stringification process. */
     function recurse(obj: {}, key: string, val: {}, path: string[]): string {
-        const specials = {'"': '\\"', '\\': '\\\\', '\b': '\\b', '\f': '\\f', '\n': '\\n', '\r': '\\r', '\t': '\\t'};
-        let result: string;
 
         // Force variable narrowing inside closure. These are definitely narrowed after the normalizeX() calls above.
         replacer = <Replacer> replacer;
@@ -43,7 +41,7 @@ export default function stringify(value: any, replacer?: Replacer | Replacer[], 
         // case. Otherwise if the `visited` map holds a 'reference' string for the given value, then we return early
         // with that string.
         if (visited.has(val)) {
-            result = visited.get(val);
+            let result = visited.get(val);
             if (result !== INCOMPLETE) return result;
             throw new Error(`(KVON) cyclic object graphs are not supported`);
         }
@@ -57,27 +55,34 @@ export default function stringify(value: any, replacer?: Replacer | Replacer[], 
             throw new Error(`(KVON) replacement value must be a discriminated plain object`);
         }
 
-        // Stringify the replacement value according to it's type.
+        // Stringify a null literal.
         if (replacement === null) {
-            result = 'null';
+            return 'null';
         }
-        else if (typeof replacement === 'boolean') {
-            result = replacement ? 'true' : 'false';
-        }
-        else if (typeof replacement === 'number' && Number.isFinite(replacement) && !Object.is(replacement, -0)) {
-            result = replacement.toString();
-        }
-        else if (typeof replacement === 'string') {
 
-            // For strings, escape all characters on the `special` list. Also, escape '^' if it appears as the first
-            // character in the string, since that marks a string as a special `reference` value. By escaping it during
+        // Stringify a boolean literal.
+        if (typeof replacement === 'boolean') {
+            return replacement ? 'true' : 'false';
+        }
+
+        // Stringify a numeric literal. Be careful to exclude exotic numerics, which must be handled by replacers.
+        if (typeof replacement === 'number' && Number.isFinite(replacement) && !Object.is(replacement, -0)) {
+            return replacement.toString();
+        }
+
+        // Stringify a string literal.
+        if (typeof replacement === 'string') {
+
+            // Escape all characters on the `SPECIALS` list. Also, escape '^' if it appears as the first character
+            // in the string, since that marks a string as a special `reference` value. By escaping it during
             // stringification, KVON#parse will later be able to distinguish the 'reference' strings from other strings.
-            result = [...replacement].map(c => specials[c] || c).join('');
+            let result = [...replacement].map(c => SPECIALS[c] || c).join('');
             result = '"' + result.replace(/^\^/g, '\\u005e') + '"';
+            return result;
         }
-        else if (isPlainObject(replacement) || isPlainArray(replacement)) {
 
-            // Plain objects and arrays are handled together here since many steps are the same.
+        // Stringify a plain object or array. They are handled together here since many steps are the same.
+        if (isPlainObject(replacement) || isPlainArray(replacement)) {
             let isArray = Array.isArray(replacement);
 
             // Map this value to the special 'INCOMPLETE' marker in the `visited` map for now. This will be updated to
@@ -86,7 +91,7 @@ export default function stringify(value: any, replacer?: Replacer | Replacer[], 
             visited.set(val, INCOMPLETE);
 
             // Stringify the entire object/array.
-            result = isArray ? '[' : '{';
+            let result = isArray ? '[' : '{';
             for (let keys = Object.keys(replacement), len = keys.length, i = 0; i < len; ++i) {
 
                 // Get stringified forms for the element/pair. This step is recursive. When we come across a '$' key,
@@ -109,16 +114,12 @@ export default function stringify(value: any, replacer?: Replacer | Replacer[], 
 
             // The value has been completely stringified, so we can update `visited` now.
             visited.set(val, makeReference(path));
+            return result;
         }
 
         // We ensured earlier that the replacer either returned a DPO or left the value unchanged. Therefore if we reach
         // here, the replacer must have left the value unchanged, and the value itself is not serializable.
-        else {
-            throw new Error(`(KVON) no known serialization available for value: ${val}`);
-        }
-
-        // Return the stringified value.
-        return result;
+        throw new Error(`(KVON) no known serialization available for value: ${val}`);
     }
 }
 
@@ -159,6 +160,13 @@ const NO_REPLACE = (key, val) => val;
 
 /** The sentinel value used in the `visited` map to detect cyclic references. See comments elsewhere in this file. */
 const INCOMPLETE = <any> {};
+
+
+
+
+
+/** All characters that have special escape sequences in JSON. */
+const SPECIALS = {'"': '\\"', '\\': '\\\\', '\b': '\\b', '\f': '\\f', '\n': '\\n', '\r': '\\r', '\t': '\\t'};
 
 
 

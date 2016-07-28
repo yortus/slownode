@@ -38,7 +38,6 @@ export default function parse(text: string, reviver?: Reviver | Reviver[]): {} {
 
     /** Parses and revives a single complete KVON value starting at the current position in `src`. */
     function parseValue(src: Source, path: string[]): {} {
-        let result: {};
 
         // We can always proceed deterministically with a single lookahead character. No backtracking is ever needed.
         const lookahead = src.text[src.pos];
@@ -46,39 +45,37 @@ export default function parse(text: string, reviver?: Reviver | Reviver[]): {} {
         // Parse a null literal.
         if (lookahead === 'n') {
             match(src, 'null', NULL);
-            result = null;
+            return null;
         }
 
         // Parse a boolean literal.
-        else if (lookahead === 't' || lookahead === 'f') {
+        if (lookahead === 't' || lookahead === 'f') {
             match(src, 'boolean', JSON_BOOLEAN);
-            result = lookahead === 't';
+            return lookahead === 't';
         }
 
         // Parse a numeric literal.
-        else if (lookahead === '-' || (lookahead >= '0' && lookahead <= '9')) {
-            result = parseFloat(capture(src, 'number', JSON_NUMBER));
+        if (lookahead === '-' || (lookahead >= '0' && lookahead <= '9')) {
+            return parseFloat(capture(src, 'number', JSON_NUMBER));
         }
 
         // Parse a string literal. This includes 'reference' strings.
-        else if (lookahead === '"') {
+        if (lookahead === '"') {
             let rawString = capture(src, 'string', JSON_STRING);
-            if (rawString[1] === '^') {
 
-                // Parse a 'reference' string. It must refer to a path already aded to `visited` (else ref is invalid).
-                if (!visited.has(rawString)) throw new Error(`(KVON) invalid reference ${rawString}`);
-                result = visited.get(rawString);
+            // Parse an ordinary string.
+            if (rawString[1] !== '^') {
+                return unescape(rawString);
             }
-            else {
 
-                // Parse an ordinary string.
-                result = unescape(rawString);
-            }
+            // Parse a 'reference' string. It must refer to a path already added to `visited` (else ref is invalid).
+            if (!visited.has(rawString)) throw new Error(`(KVON) invalid reference ${rawString}`);
+            return visited.get(rawString);
         }
 
-        // Parse a plain object or array. This includes discriminated plain objects (DPOs).
-        // Plain objects and arrays are handled together here since many steps are the same.
-        else if (lookahead === '{' || lookahead === '[') {
+        // Parse a plain object or array. They are handled together here since many steps are the same.
+        // Discriminated plain objects (DPOs) are specially handled here.
+        if (lookahead === '{' || lookahead === '[') {
             let isObject = lookahead === '{';
             let obj = isObject ? {} : [];
             let isDPO = false;
@@ -131,23 +128,18 @@ export default function parse(text: string, reviver?: Reviver | Reviver[]): {} {
                 if (!isRevived) throw new Error(`(KVON) reviver failed to transform discriminated plain object`);
                 obj = revived;
             }
-            result = obj;
 
             // A complete object or array value has now been parsed and revived from `src`. Since objects and arrays may
             // be aliased multiple times in an object graph, we add the just-parsed value to `visited`, keyed against
             // the 'reference' string corresponding to the current path. Any future occurences of this 'reference'
             // string in the object graph will then return this same value.
-            visited.set(makeReference(path), result);
+            visited.set(makeReference(path), obj);
+            return obj;
         }
 
         // We have covered all possible valid lookahead characters in the previous
         // cases, so if we reach here, `text` cannot possibly be valid KVON.
-        else {
-            match(src, `null, boolean, string, number, array or object`, JSON_VALUE);
-        }
-
-// TODO:...
-        return result;
+        match(src, `null, boolean, string, number, array or object`, JSON_VALUE);
     }
 }
 
