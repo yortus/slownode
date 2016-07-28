@@ -8,7 +8,6 @@ import {Source, Parser} from './util/parser-combinators';
 
 
 
-// TODO: ensure no deps on JSON in KVON implementation...
 // TODO: KVON#canStringify...
 
 
@@ -165,7 +164,7 @@ const NO_REVIVE = (key, val) => val;
 
 /** Accepts a JSON-encoded string literal, and returns the decoded string literal that it represents. */
 function unescape(raw: string): string {
-    // TODO: implement without JSON.parse?
+    // TODO: remove JSON dep...
     return JSON.parse(raw);
 }
 

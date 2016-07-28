@@ -5,12 +5,6 @@ import {expect} from 'chai';
 
 
 
-// TODO: how are special numbers like -0, Infinity, -Infinity, NaN handled without replacers/revivers? Add tests here and stringify...
-
-
-
-
-
 describe('KVON.parse correctly handles various arguments', () => {
 
     let tests = [
@@ -84,7 +78,7 @@ describe('KVON.parse correctly handles various arguments', () => {
             // If expected JSON result is provided, sanity-check the actual JSON result for the same data.
             if (jsonResult) expect(jsonResult).to.deep.equal(JSON.parse(text, reviver));
 
-            // TODO: ...
+            // Check the actual KVON result matches the expected one, including matching errors.
             let expected = result;
             let actual: any;
             try {

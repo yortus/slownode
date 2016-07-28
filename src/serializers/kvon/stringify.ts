@@ -100,7 +100,7 @@ export default function stringify(value: any, replacer?: Replacer | Replacer[], 
                 // '$' key represents the discriminant needed later by KVON#parse revival. We distinguish the two cases
                 // by escaping '$' keys in POJOs that weren't replaced, and leaving them intact in DPOs.
                 let subkey = keys[i];
-                let keyText = JSON.stringify(subkey);
+                let keyText = JSON.stringify(subkey); // TODO: remove JSON dep
                 if (!isReplaced && keyText === '"$"') keyText = '"\\u0024"';
                 let valText = recurse(replacement, subkey, replacement[subkey], path.concat(subkey));
 

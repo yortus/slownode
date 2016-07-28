@@ -107,7 +107,7 @@ describe('KVON.stringify correctly handles various arguments', () => {
             // If expected JSON result is provided, sanity-check the actual JSON result for the same data.
             if (json) expect(json).to.equal(JSON.stringify(value, replacer, space) || '<undefined>');
 
-            // TODO: ...
+            // Check the actual KVON result matches the expected one, including matching errors.
             let expected = result.startsWith('ERROR') ? result.replace(/\.\.\..*/, '...') : result;
             let actual: any;
             try {
