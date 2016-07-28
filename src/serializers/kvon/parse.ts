@@ -8,6 +8,13 @@ import {Source, Parser} from './util/parser-combinators';
 
 
 
+// TODO: ensure no deps on JSON in KVON implementation...
+// TODO: KVON#canStringify...
+
+
+
+
+
 /**
   * Converts a Key/Value Object Notation (KVON) string into an object.
   * @param text A valid KVON string.
@@ -83,6 +90,12 @@ export default function parse(text: string, reviver?: Reviver | Reviver[]): {} {
             }
             match(src, ']', RIGHT_BRACKET);
             result = ar;
+
+// TODO: don't repeat yourself! see below...
+            // A complete KVON value has been parsed and revived from `src`, so we can update `visited` now to associate the
+            // current path with this parsed/revived value. Any subsequent reference strings that refer to this path will
+            // then return the same value.
+            visited.set(makeReference(path), result);
         }
 
         // Parse a plain object. This includes discriminated plain objects (DPOs).
@@ -117,6 +130,12 @@ export default function parse(text: string, reviver?: Reviver | Reviver[]): {} {
                 obj = revived;
             }
             result = obj;
+
+// TODO: don't repeat yourself! see above...
+            // A complete KVON value has been parsed and revived from `src`, so we can update `visited` now to associate the
+            // current path with this parsed/revived value. Any subsequent reference strings that refer to this path will
+            // then return the same value.
+            visited.set(makeReference(path), result);
         }
 
         // We have covered all possible valid lookahead characters in the previous
@@ -125,10 +144,7 @@ export default function parse(text: string, reviver?: Reviver | Reviver[]): {} {
             match(src, `null, boolean, string, number, array or object`, JSON_VALUE);
         }
 
-        // A complete KVON value has been parsed and revived from `src`, so we can update `visited` now to associate the
-        // current path with this parsed/revived value. Any subsequent reference strings that refer to this path will
-        // then return the same value.
-        visited.set(makeReference(path), result);
+// TODO:...
         return result;
     }
 }
@@ -137,7 +153,7 @@ export default function parse(text: string, reviver?: Reviver | Reviver[]): {} {
 
 
 
-/** Returns a `Replacer` function that is equivalent to the passed in `replacer`, which may have several formats. */
+/** Returns a `Reviver` function that is equivalent to the passed in `reviver`, which may have several formats. */
 function normalizeReviver(reviver: Reviver | Reviver[] | null): Reviver {
     return Array.isArray(reviver) ? compose(...reviver) : (reviver || NO_REVIVE);
 }
@@ -153,7 +169,17 @@ const NO_REVIVE = (key, val) => val;
 
 
 
-// TODO: ...
+/** Accepts a JSON-encoded string literal, and returns the decoded string literal that it represents. */
+function unescape(raw: string): string {
+    // TODO: implement without JSON.parse?
+    return JSON.parse(raw);
+}
+
+
+
+
+
+/** Matches `expr` at the current position in `src`, advances the source position, and returns the matched substring. */
 function capture(src: Source, expected: string, expr: Parser) {
     let startPos = src.pos;
     match(src, expected, expr);
@@ -165,8 +191,11 @@ function capture(src: Source, expected: string, expr: Parser) {
 
 
 
-// TODO: ...
-function match(src: Source, expected: string, expr: Parser) {
+/**
+ * Asserts that `src` contains the pattern represented by `expr` at the current position, and advances the source
+ * position past it accordingly. If the match fails, a SyntaxError is thrown with details about the failed match.
+ */
+function match(src: Source, expected: string, expr: Parser): void {
     if (expr(src)) return;
     let before = (src.pos > 10 ? '...' : '') + src.text.slice(src.pos - 10, src.pos);
     let after = src.text.slice(src.pos + 1, src.pos + 11) + (src.len - src.pos > 11 ? '...' : '');
@@ -178,17 +207,7 @@ function match(src: Source, expected: string, expr: Parser) {
 
 
 
-// TODO: ...
-function unescape(raw: string): string {
-    // TODO: implement without JSON.parse?
-    return JSON.parse(raw);
-}
-
-
-
-
-
-// JSON parsers...
+// ========== The remaining declarations are parsers for the various components of JSON. ==========
 // Terminals
 const BACKSLASH = char('\\');
 const COLON = char(':');

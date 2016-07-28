@@ -57,7 +57,8 @@ describe('KVON.parse correctly handles various arguments', () => {
         [`{"$":\t\t\t"\\u004eaN"}`, KVON.revivers.Infinity, `ERROR: (KVON) reviver failed...`],
 
         // 'Reference' values
-        [`[57, "^.0"]`, null, [57,57]],
+        [`[57, "^.0"]`, null, `ERROR: (KVON) invalid reference...`], // primitives don't get refs
+        [`[[57], "^.0"]`, null, [[57], [57]]],
         [`[57, " ^.0"]`, null, [57,' ^.0']],
         [`[57, "\\u005e.0"]`, null, [57,'^.0']],
         [`"^"`, null, `ERROR: (KVON) invalid reference...`],

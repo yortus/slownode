@@ -64,7 +64,7 @@ export default function stringify(value: any, replacer?: Replacer | Replacer[], 
         else if (typeof replacement === 'boolean') {
             result = replacement ? 'true' : 'false';
         }
-        else if (typeof replacement === 'number') {
+        else if (typeof replacement === 'number' && Number.isFinite(replacement) && !Object.is(replacement, -0)) {
             result = replacement.toString();
         }
         else if (typeof replacement === 'string') {
