@@ -121,6 +121,11 @@ describe('KVON.stringify correctly handles various arguments', () => {
                 }
             }
             expect(actual).to.deep.equal(expected);
+
+            // Also verify that stringify and canStringify give consistent results.
+            let expectedCan = !result.startsWith('ERROR');
+            let actualCan = KVON.canStringify(value, replacer, space);
+            expect(actualCan).to.equal(expectedCan);
         });
     });
 });

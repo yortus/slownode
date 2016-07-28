@@ -69,6 +69,7 @@ describe('KVON.parse correctly handles various arguments', () => {
         [`{"a":42,}`, null, {a:42}], // trailing comma
         [`[1,2,3,4]`, (k, v) => typeof v === 'number' ? void 0 : v, [1,2,3,4], [,,,]],
         [`{"a":1}`, (k, v) => typeof v === 'number' ? void 0 : v, {"a":1}, {}],
+        [`{"c":33}`, function (k, v) { return this ? 42 : v; }, {c: 33}, 42], // no `this` in reviver
     ];
 
     tests.forEach(test => {

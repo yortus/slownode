@@ -1,4 +1,7 @@
 import compose from './compose';
+import escapeString from './util/escape-string';
+import isPlainArray from './util/is-plain-array';
+import isPlainObject from './util/is-plain-object';
 import makeReference from './make-reference';
 import Map from './util/same-value-map';
 import Replacer from './replacer';
@@ -73,12 +76,10 @@ export default function stringify(value: any, replacer?: Replacer | Replacer[], 
         // Stringify a string literal.
         if (typeof replacement === 'string') {
 
-            // Escape all characters on the `SPECIALS` list. Also, escape '^' if it appears as the first character
-            // in the string, since that marks a string as a special `reference` value. By escaping it during
-            // stringification, KVON#parse will later be able to distinguish the 'reference' strings from other strings.
-            let result = [...replacement].map(c => SPECIALS[c] || c).join('');
-            result = '"' + result.replace(/^\^/g, '\\u005e') + '"';
-            return result;
+            // Escape the string literal. Also, escape '^' if it appears as the first character in the string, since
+            // that marks a string as a special `reference` value. By escaping '^'-prefixed ordinary strings during
+            // stringification, KVON#parse will be able to distinguish 'reference' strings from ordinary strings.
+            return escapeString(replacement).replace(/^"\^/, '"\\u005e');
         }
 
         // Stringify a plain object or array. They are handled together here since many steps are the same.
@@ -100,7 +101,7 @@ export default function stringify(value: any, replacer?: Replacer | Replacer[], 
                 // '$' key represents the discriminant needed later by KVON#parse revival. We distinguish the two cases
                 // by escaping '$' keys in POJOs that weren't replaced, and leaving them intact in DPOs.
                 let subkey = keys[i];
-                let keyText = JSON.stringify(subkey); // TODO: remove JSON dep
+                let keyText = escapeString(subkey);
                 if (!isReplaced && keyText === '"$"') keyText = '"\\u0024"';
                 let valText = recurse(replacement, subkey, replacement[subkey], path.concat(subkey));
 
@@ -160,33 +161,3 @@ const NO_REPLACE = (key, val) => val;
 
 /** The sentinel value used in the `visited` map to detect cyclic references. See comments elsewhere in this file. */
 const INCOMPLETE = <any> {};
-
-
-
-
-
-/** All characters that have special escape sequences in JSON. */
-const SPECIALS = {'"': '\\"', '\\': '\\\\', '\b': '\\b', '\f': '\\f', '\n': '\\n', '\r': '\\r', '\t': '\\t'};
-
-
-
-
-
-/** Detects whether the given value is a plain object suitable for simple KVON serialization. */
-function isPlainObject(x: any): x is Object {
-    // TODO: add more POJO checks - getters/setters, etc
-    return x && Object.getPrototypeOf(x) === Object.prototype;
-}
-
-
-
-
-
-/** Detects whether the given value is a plain array suitable for simple KVON serialization. */
-function isPlainArray(x: any): x is any[] {
-    // TODO: add more POJA checks - getters/setters, etc
-    if (!x || Object.getPrototypeOf(x) !== Array.prototype) return false;
-    let keys = Object.keys(x);
-    if (keys.length !== x.length) return false;
-    return keys.every((k, i) => k === `${i}`);
-}

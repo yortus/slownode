@@ -103,15 +103,24 @@ Testing a Script object
 
 
 ## KVON
-- replacers and revivers must occur in dualistic pairs
-- if a replacer replaces a value, it's pair reviver must revive the replacement value back to the original value.
-- if a replacer does not act on a value, it's reviver must not act on that value either.
-- Circular references in object graphs are not supported. But identities *are* preserved for values that recur in DAGs.
+- strictness - no silent roundtrip failures - parse(stringify(x)) must result in something that is functionally identical to x, otherwise stringify/parse must throw
+- replacers and revivers must occur in dualistic pairs.
 - If a `replacer` function returns a replacement value, then the replacement *must* be a discriminated plain object (DPO).
+- `reviver` functions will only ever be called with DPO values.
+- if a replacer replaces a value, it's pair reviver must revive the replacement value back to the original value.
+- if a replacer does not act on a value, it's dual reviver must not act on that value either.
+- replacers may not mutate the object containing the value being replaced/revived (passed as `this`).
+- revivers always receive `null` for their `this` context (unlike JSON revivers).
+- Circular references in object graphs are not supported. But identities *are* preserved for values that recur in DAGs.
 - stringify: toJSON is not supported (not reversible)
-- stringify `replacer` parameter: omitting properties by returning `undefined` is not supported
-- stringify `replacer` parameter: 'whitelist' arrays of property names are not supported (not reversible)
 - stringify `space` parameter: strings containing non-whitespace characters are not supported (not reversible)
+- stringify `replacer` parameter: 'whitelist' arrays of property names are not supported (not reversible)
+- stringify `replacer` parameter: omitting properties by returning `undefined` from function is not supported
+- parse `reviver` parameter: omitting properties by returning `undefined` from function is not supported
+- Glossary terms:
+  - 'Discriminated Plain Object' (DPO) - plain object with a '$' key
+  - 'Discriminant key' - '$'
+  - 'Reference' value - string starting with '^'. '^' and '.' are special chars.
 
 
 ## Slow Scripting

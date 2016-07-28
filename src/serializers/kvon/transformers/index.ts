@@ -1,17 +1,22 @@
-// TODO: others: (and ensure unit tests for each when done)
+// TODO: others: (***AND*** ensure unit tests for each case implemented)
+// - objects (incl arrays, funcs, dates, regexps, etc) with:
+//   - symbol-keyed properties
+//   - non-default property descriptors (eg not configurable or not writable)
+//   - getters/setters (just fail on encountering these?)
 // - Date
 // - Error and all builtin subclasses (TypeError etc)
 // - function (when safe - eg only pure functions, not closures. But complex to analyze...)
 // - Map, Set, WeakMap, WeakSet (Weak* not possible?)
-// - Promise (not possible)
+// - Promise (not possible? unles already resolved... but how to inspect? any node/V8 api for that?)
 // - String, Number, Boolean (i.e. boxed, perhaps with extra props)
+// - subclassed builtins
+// - class instances
 // - generator-function (see function above)
 // - generator (GenObj)
 // - typed-array
 // - array-buffer
-// - reflect, proxy, getters & setters
-// - class instances
-// - subclassed builtins
+// - reflect
+// - proxy (impossible to detect?)
 
 
 
