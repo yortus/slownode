@@ -89,6 +89,15 @@ export default class Script implements IterableIterator<Promise<void>> {
 
 
     // TODO: ...
+    canSnapshot(): boolean {
+
+        // TODO: implement...
+        // - if it was true before prev step, just need to check if prev instruction introduced a nonserializable value (via register assignment)
+        // - if it was false before prev step, we have to check the whole state graph, since we don't track nonserializable values once they enter the system.
+    }
+
+
+    // TODO: ...
     name: string;
 
 
