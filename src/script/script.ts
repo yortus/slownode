@@ -67,7 +67,7 @@ export default class Script implements IterableIterator<Promise<void>> {
         }
 
         // TODO: universal steps...
-        this.next = makeNextFunction(this.program, this._processor);
+        this.next = makeNextFunction(this.program, this._processor, this._replacer);
         this.throw = makeThrowFunction(this.program, this._processor);
     }
 
@@ -90,12 +90,7 @@ export default class Script implements IterableIterator<Promise<void>> {
 
 
     // TODO: ...
-    // canSnapshot(): boolean {
-
-    //     // TODO: implement...
-    //     // - if it was true before prev step, just need to check if prev instruction introduced a nonserializable value (via register assignment)
-    //     // - if it was false before prev step, we have to check the whole state graph, since we don't track nonserializable values once they enter the system.
-    // }
+    canSnapshot: boolean;
 
 
     // TODO: ...
@@ -160,7 +155,7 @@ export interface ScriptOptions {
 
 
 // TODO: put in separate file?
-function makeNextFunction(program: JASM.Program, processor: JasmProcessor): () => IteratorResult<Promise<void>> {
+function makeNextFunction(program: JASM.Program, processor: JasmProcessor, replacer: KVON.Replacer): () => IteratorResult<Promise<void>> {
 
     // TODO: Associate each label with it's zero-based line number...
     let labelLines = program.lines.reduce((labels, line, i) => {
@@ -210,10 +205,28 @@ function makeNextFunction(program: JASM.Program, processor: JasmProcessor): () =
     let execNext: (pc: number) => Promise<void> = eval(`(${execNextSource})`);
 
     let nextFunc = (): IteratorResult<Promise<void>> => {
+        let nextPC = _.PC;
         let nextInstr = program.lines[_.PC];
         let isDone = nextInstr.type === 'instruction' && nextInstr.opcode === 'stop';
         if (isDone) return <any> {done: true};
         let value = execNext(_.PC++);
+
+
+
+
+//TODO: temp testing...
+value = value.then(() => {
+    let prevCanSnap = nextPC === 0 || nextInstr.type !== 'instruction'; // TODO: temp testing... need to get this from Script instance somehow...
+    let canSnap = prevCanSnap;
+    if (nextInstr.type === 'instruction') {
+        canSnap = canSnapshot(prevCanSnap, nextInstr, processor.registers, replacer);
+    }
+    console.log(`@${nextPC}   canSnapshot: ${canSnap}`);
+});
+
+
+
+
         return {done: false, value};
     };
 
@@ -252,7 +265,7 @@ function canSnapshot(prevCanSnapshot: boolean, prevInstr: JASM.InstructionLine, 
 
         // TODO: make DRY - this is copypasta from above...
         let regNames = [...registers.keys()];
-        let data = regNames.reduce((obj, regName) => (obj[regName] = this.registers.get(regName), obj), {});
+        let data = regNames.reduce((obj, regName) => (obj[regName] = registers.get(regName), obj), {});
         return KVON.canStringify(data, replacer);
     }
 }
