@@ -173,8 +173,8 @@ function makeNextFunction(program: Program, processor: JasmProcessor): () => Ite
             case 'label':
                 return '';
             case 'instruction':
-                let opcode = line.opcode.toUpperCase();
-                return `p = _.${opcode}(${line.arguments.map(arg => {
+                let method = line.opcode.toUpperCase();
+                return `p = _.${method}(${line.arguments.map(arg => {
                     switch (arg.type) {
                         case 'register':    return `'${arg.name}'`;
                         case 'label':       return labelLines[arg.name];
@@ -209,7 +209,7 @@ function makeNextFunction(program: Program, processor: JasmProcessor): () => Ite
 
     let nextFunc = (): IteratorResult<Promise<void>> => {
         let nextInstr = program.lines[_.PC];
-        let isDone = nextInstr.type === 'instruction' && nextInstr.opcode.toUpperCase() === 'STOP';
+        let isDone = nextInstr.type === 'instruction' && nextInstr.opcode === 'stop';
         if (isDone) return <any> {done: true};
         let value = execNext(_.PC++);
         return {done: false, value};
@@ -224,11 +224,16 @@ function makeNextFunction(program: Program, processor: JasmProcessor): () => Ite
 
 
 // TODO: ...
-function checkIfSnapshotable(wasSnapshotable: boolean, prevInstr: InstructionLine, registers: Map<Register, any>) {
-    if (wasSnapshotable) {
+function canSnapshot(prevCanSnapshot: boolean, prevInstr: InstructionLine, registers: Map<Register, any>) {
+    if (prevCanSnapshot) {
         // - if instr is a CALL or NEW, and return value assigned to register is not serializable
         // - THEN set canSnapshot to `false`
         // - any other way for a non-serializable to enter system without CALL or NEW? Not if all builtin types/ops are serializable...
+        if (prevInstr.type !== 'instruction') return true;
+        let opcode = prevInstr.opcode;
+        
+
+
 
 
 

@@ -46,9 +46,19 @@ export interface LabelLine extends Line{
 // TODO: doc...
 export interface InstructionLine extends Line {
     type: 'instruction';
-    opcode: string;
+    opcode: OpCode;
     arguments: Array<RegisterArgument | LabelArgument | ConstArgument>;
 }
+
+
+
+
+
+// TODO: doc...
+export type OpCode = 'add' | 'array' | 'await' | 'b' | 'bf' | 'bt' | 'call' | 'div'
+                    | 'eq' | 'false' | 'ge' | 'gt' | 'le' | 'load' | 'lt' | 'mul'
+                    | 'ne' | 'neg' | 'not' | 'null' | 'number' | 'object' | 'regexp' | 'stop'
+                    | 'store' | 'string' | 'sub' | 'throw' | 'true' | 'undefd';
 
 
 

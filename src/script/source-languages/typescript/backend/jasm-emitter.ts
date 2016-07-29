@@ -2,6 +2,7 @@ import * as assert from 'assert';
 import {SourceLocation, BindingKind} from "babel-types"; // Elided (used only for types)
 import Label from './label';
 import JasmProcessor, {Register, Register as R} from '../../../jasm-processor';
+import {OpCode} from '../../../../serializers';
 
 
 
@@ -21,44 +22,44 @@ export default class JasmEmitter implements JasmProcessor {
 
 
     // Instructions: Load/store
-    LOAD    (tgt: R, obj: R, key: R) { this.addInstr('LOAD', tgt, obj, key); }
-    STORE   (obj: R, key: R, src: R) { this.addInstr('STORE', obj, key, src); }
+    LOAD    (tgt: R, obj: R, key: R) { this.addInstr('load', tgt, obj, key); }
+    STORE   (obj: R, key: R, src: R) { this.addInstr('store', obj, key, src); }
 
     // Instructions: Arithmetic/logic
-    ADD     (tgt: R, lhs: R, rhs: R) { this.addInstr('ADD', tgt, lhs, rhs); }
-    SUB     (tgt: R, lhs: R, rhs: R) { this.addInstr('SUB', tgt, lhs, rhs); }
-    MUL     (tgt: R, lhs: R, rhs: R) { this.addInstr('MUL', tgt, lhs, rhs); }
-    DIV     (tgt: R, lhs: R, rhs: R) { this.addInstr('DIV', tgt, lhs, rhs); }
-    NEG     (tgt: R, arg: R) { this.addInstr('NEG', tgt, arg); }
-    NOT     (tgt: R, arg: R) { this.addInstr('NOT', tgt, arg); }
+    ADD     (tgt: R, lhs: R, rhs: R) { this.addInstr('add', tgt, lhs, rhs); }
+    SUB     (tgt: R, lhs: R, rhs: R) { this.addInstr('sub', tgt, lhs, rhs); }
+    MUL     (tgt: R, lhs: R, rhs: R) { this.addInstr('mul', tgt, lhs, rhs); }
+    DIV     (tgt: R, lhs: R, rhs: R) { this.addInstr('div', tgt, lhs, rhs); }
+    NEG     (tgt: R, arg: R) { this.addInstr('neg', tgt, arg); }
+    NOT     (tgt: R, arg: R) { this.addInstr('not', tgt, arg); }
 
     // Instructions: Relational
-    EQ      (tgt: R, lhs: R, rhs: R) { this.addInstr('EQ', tgt, lhs, rhs); }
-    NE      (tgt: R, lhs: R, rhs: R) { this.addInstr('NE', tgt, lhs, rhs); }
-    GE      (tgt: R, lhs: R, rhs: R) { this.addInstr('GE', tgt, lhs, rhs); }
-    GT      (tgt: R, lhs: R, rhs: R) { this.addInstr('GT', tgt, lhs, rhs); }
-    LE      (tgt: R, lhs: R, rhs: R) { this.addInstr('LE', tgt, lhs, rhs); }
-    LT      (tgt: R, lhs: R, rhs: R) { this.addInstr('LT', tgt, lhs, rhs); }
+    EQ      (tgt: R, lhs: R, rhs: R) { this.addInstr('eq', tgt, lhs, rhs); }
+    NE      (tgt: R, lhs: R, rhs: R) { this.addInstr('ne', tgt, lhs, rhs); }
+    GE      (tgt: R, lhs: R, rhs: R) { this.addInstr('ge', tgt, lhs, rhs); }
+    GT      (tgt: R, lhs: R, rhs: R) { this.addInstr('gt', tgt, lhs, rhs); }
+    LE      (tgt: R, lhs: R, rhs: R) { this.addInstr('le', tgt, lhs, rhs); }
+    LT      (tgt: R, lhs: R, rhs: R) { this.addInstr('lt', tgt, lhs, rhs); }
 
     // Instructions: Control
-    B       (line: Label|number) { this.addInstr('B', typeof line === 'number' ? lit(line) : line.name); }
-    BF      (line: Label|number, arg: R) { this.addInstr('BF', typeof line === 'number' ? lit(line) : line.name, arg); }
-    BT      (line: Label|number, arg: R) { this.addInstr('BT', typeof line === 'number' ? lit(line) : line.name, arg); }
-    CALL    (tgt: R, func: R, thís: R, args: R) { this.addInstr('CALL', tgt, func, thís, args); }
-    THROW   (err: R) { this.addInstr('THROW', err); return null; }
-    AWAIT   (tgt: R, arg: R) { this.addInstr('AWAIT', tgt, arg); return null; }
-    STOP    () { this.addInstr('STOP'); }
+    B       (line: Label|number) { this.addInstr('b', typeof line === 'number' ? lit(line) : line.name); }
+    BF      (line: Label|number, arg: R) { this.addInstr('bf', typeof line === 'number' ? lit(line) : line.name, arg); }
+    BT      (line: Label|number, arg: R) { this.addInstr('bt', typeof line === 'number' ? lit(line) : line.name, arg); }
+    CALL    (tgt: R, func: R, thís: R, args: R) { this.addInstr('call', tgt, func, thís, args); }
+    THROW   (err: R) { this.addInstr('throw', err); return null; }
+    AWAIT   (tgt: R, arg: R) { this.addInstr('await', tgt, arg); return null; }
+    STOP    () { this.addInstr('stop'); }
 
     // Instructions: Data
-    STRING  (tgt: R, val: string) { this.addInstr('STRING', tgt, lit(val)); }
-    NUMBER  (tgt: R, val: number) { this.addInstr('NUMBER', tgt, lit(val)); }
-    REGEXP  (tgt: R, pattern: string, flags: string) { this.addInstr('REGEXP', tgt, lit(pattern), lit(flags)); }
-    ARRAY   (tgt: R) { this.addInstr('ARRAY', tgt); }
-    OBJECT  (tgt: R) { this.addInstr('OBJECT', tgt); }
-    TRUE    (tgt: R) { this.addInstr('TRUE', tgt); }
-    FALSE   (tgt: R) { this.addInstr('FALSE', tgt); }
-    NULL    (tgt: R) { this.addInstr('NULL', tgt); }
-    UNDEFD  (tgt: R) { this.addInstr('UNDEFD', tgt); }
+    STRING  (tgt: R, val: string) { this.addInstr('string', tgt, lit(val)); }
+    NUMBER  (tgt: R, val: number) { this.addInstr('number', tgt, lit(val)); }
+    REGEXP  (tgt: R, pattern: string, flags: string) { this.addInstr('regexp', tgt, lit(pattern), lit(flags)); }
+    ARRAY   (tgt: R) { this.addInstr('array', tgt); }
+    OBJECT  (tgt: R) { this.addInstr('object', tgt); }
+    TRUE    (tgt: R) { this.addInstr('true', tgt); }
+    FALSE   (tgt: R) { this.addInstr('false', tgt); }
+    NULL    (tgt: R) { this.addInstr('null', tgt); }
+    UNDEFD  (tgt: R) { this.addInstr('undefd', tgt); }
 
 
     // Registers
@@ -164,8 +165,8 @@ export default class JasmEmitter implements JasmProcessor {
 
 
     /** TODO: doc... */
-    private addInstr(name: string, ...args: string[]) {
-        this.addLine(`    ${name.toLowerCase()}${' '.repeat(Math.max(0, 8 - name.length))}${args.join(', ')}`);
+    private addInstr(name: OpCode, ...args: string[]) {
+        this.addLine(`    ${name}${' '.repeat(Math.max(0, 8 - name.length))}${args.join(', ')}`);
     }
 
 
