@@ -1,9 +1,4 @@
-import JASM, {Program} from './jasm';
-import KVON from './kvon';
-
-
-
-
-
-export {JASM, Program};
-export {KVON};
+export * from './jasm';
+export * from './kvon';
+export {default as JASM} from './jasm';
+export {default as KVON} from './kvon';

@@ -1,7 +1,7 @@
 // TODO: support Iterator#return method? Would need JASM support...
 import defaultGlobalFactory from './global-factories/default';
 import GlobalFactory from './global-factory';
-import {JASM, KVON, Program} from '../serializers';
+import {JASM, KVON, Program, InstructionLine} from '../serializers';
 import JasmProcessor, {Register} from './jasm-processor';
 import * as typescript from './source-languages/typescript';
 
@@ -89,12 +89,12 @@ export default class Script implements IterableIterator<Promise<void>> {
 
 
     // TODO: ...
-    canSnapshot(): boolean {
+    // canSnapshot(): boolean {
 
-        // TODO: implement...
-        // - if it was true before prev step, just need to check if prev instruction introduced a nonserializable value (via register assignment)
-        // - if it was false before prev step, we have to check the whole state graph, since we don't track nonserializable values once they enter the system.
-    }
+    //     // TODO: implement...
+    //     // - if it was true before prev step, just need to check if prev instruction introduced a nonserializable value (via register assignment)
+    //     // - if it was false before prev step, we have to check the whole state graph, since we don't track nonserializable values once they enter the system.
+    // }
 
 
     // TODO: ...
@@ -166,7 +166,7 @@ function makeNextFunction(program: Program, processor: JasmProcessor): () => Ite
         return labels;
     }, {});
 
-    // TODO: ...
+    // TODO: convert the program lines into a list of case statements for a switch block with the PC as the discriminant
     let switchCases = program.lines.map((line, i) => {
         switch (line.type) {
             case 'blank':
@@ -196,23 +196,53 @@ function makeNextFunction(program: Program, processor: JasmProcessor): () => Ite
     // TODO: Eval up the next() function...
     // TODO: what if a THROW/AWAIT op rejects? It's not handled properly in the following source code...
     let _ = processor;
-    let source = `
-        function iteratorNext() {
-            let nextInstr = program.lines[_.PC];
-            let isDone = nextInstr.type === 'instruction' && nextInstr.opcode.toUpperCase() === 'STOP';
-            if (isDone) return {done: true};
-
+    let execNextSource = `
+        function execNext(pc) {
             let p;
-            switch (_.PC++) {
+            switch (pc) {
                 ${switchCases.join(`\n                `)}
             }
-            return {done: false, value: Promise.resolve(p)};
+            return Promise.resolve(p);
         }
     `.split(/(?:\r\n)|\r|\n/).map(line => line.slice(8)).join('\n');
-    let result: () => IteratorResult<Promise<void>> = eval(`(${source})`);
+    let execNext: (pc: number) => Promise<void> = eval(`(${execNextSource})`);
+
+    let nextFunc = (): IteratorResult<Promise<void>> => {
+        let nextInstr = program.lines[_.PC];
+        let isDone = nextInstr.type === 'instruction' && nextInstr.opcode.toUpperCase() === 'STOP';
+        if (isDone) return <any> {done: true};
+        let value = execNext(_.PC++);
+        return {done: false, value};
+    };
 
     // TODO: ...
-    return result;
+    return nextFunc;
+}
+
+
+
+
+
+// TODO: ...
+function checkIfSnapshotable(wasSnapshotable: boolean, prevInstr: InstructionLine, registers: Map<Register, any>) {
+    if (wasSnapshotable) {
+        // - if instr is a CALL or NEW, and return value assigned to register is not serializable
+        // - THEN set canSnapshot to `false`
+        // - any other way for a non-serializable to enter system without CALL or NEW? Not if all builtin types/ops are serializable...
+
+
+
+    }
+    else {
+        // - if instr potentially destroys data reachable from registers...
+        //   - safe but slow: assume ANY instr can do this...
+        //   - possible optimisations - but MUST doc/clarify/modify codegen assumptions here!
+        //     - opcode is UNDEFD (clears registers after use)
+        //     - any instr whose output register is also an input register (ie overwrites)...
+        //     - any instr that executes external code that might mutate reachable data...
+        // - if ALL registers are now serializable (using KVON.canStringify on whole register set)...
+        // - THEN set canSnapshot to `true`
+    }
 }
 
 
@@ -237,18 +267,15 @@ function makeThrowFunction(program: Program, processor: JasmProcessor): (err: an
 
 
 
-// TODO: ... add in KVON.replacers.all
+// ==================================================================
+// TODO: ... put all below into a separate dir like 'transformers'...
 function makeReplacer(gf: GlobalFactory) {
-    return function replacer(key: string, val: {}) {
-        let replaced = gf.replacer.call(this, key, val);
-        if (!Object.is(val, replaced)) return replaced;
+    return KVON.compose(KVON.replacers.all, gf.replacer, promiseReplacer);
 
-        if (val && Object.getPrototypeOf(val) === Promise.prototype) {
-            replaced = {$: 'Promise'}; // TODO: ...
-            return replaced;
-        }        
-
-        return val;
+    function promiseReplacer(key: string, val: {}) {
+        if (!val || Object.getPrototypeOf(val) !== Promise.prototype)  return val;
+        let replaced = {$: 'Promise'}; // TODO: ...
+        return replaced;
     }
 }
 
@@ -258,15 +285,11 @@ function makeReplacer(gf: GlobalFactory) {
 
 // TODO: ... add in KVON.revivers.all
 function makeReviver(gf: GlobalFactory) {
-    return function reviver(key: string, val: any) {
-        let revived = gf.reviver.call(this, key, val);
-        if (!Object.is(val, revived)) return revived;
+    return KVON.compose(KVON.revivers.all, gf.reviver, promiseReviver);
 
-        if (val && val.$ === 'Promise') {
-            revived = Promise.reject(new Error(`Epoch resumed`)); // TODO: use specific Error subclass
-            return revived;
-        }        
-
-        return val;
+    function promiseReviver(key: string, val: any) {
+        if (!val || val.$ !== 'Promise') return val;
+        let revived = Promise.reject(new Error(`Epoch resumed`)); // TODO: use specific Error subclass
+        return revived;
     }
 }

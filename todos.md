@@ -107,6 +107,7 @@ Testing a Script object
 - replacers and revivers must occur in dualistic pairs.
 - If a `replacer` function returns a replacement value, then the replacement *must* be a discriminated plain object (DPO).
 - `reviver` functions will only ever be called with DPO values.
+  - TODO: simplify builtin revivers to exploit the ^^^ previous invariant
 - if a replacer replaces a value, it's pair reviver must revive the replacement value back to the original value.
 - if a replacer does not act on a value, it's dual reviver must not act on that value either.
 - replacers may not mutate the object containing the value being replaced/revived (passed as `this`).
@@ -121,6 +122,39 @@ Testing a Script object
   - 'Discriminated Plain Object' (DPO) - plain object with a '$' key
   - 'Discriminant key' - '$'
   - 'Reference' value - string starting with '^'. '^' and '.' are special chars.
+
+
+## Script
+- canSnapshot
+  - true --> false
+    - upon completion of current instr...
+    - given canSnapshot is currently set to `true`...
+    - if instr is a CALL or NEW, and return value assigned to register is not serializable
+    - THEN set canSnapshot to `false`
+    - any other way for a non-serializable to enter system without CALL or NEW? Not if all builtin types/ops are serializable...
+
+  - false --> true
+    - upon completion of current instr...
+    - given canSnapshot is currently set to `false`...
+    - if instr potentially destroys data reachable from registers...
+      - safe but slow: assume ANY instr can do this...
+      - possible optimisations - but MUST doc/clarify/modify codegen assumptions here!
+        - opcode is UNDEFD (clears registers after use)
+        - any instr whose output register is also an input register (ie overwrites)...
+        - any instr that executes external code that might mutate reachable data...
+    - if ALL registers are now serializable (using KVON.canStringify on whole register set)...
+    - THEN set canSnapshot to `true`
+
+
+
+
+
+
+
+
+
+
+
 
 
 ## Slow Scripting
