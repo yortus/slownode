@@ -1,7 +1,7 @@
 // TODO: support Iterator#return method? Would need JASM support...
 import defaultGlobalFactory from './global-factories/default';
 import GlobalFactory from './global-factory';
-import {JASM, KVON, Program, InstructionLine} from '../serializers';
+import {JASM, KVON} from '../serializers';
 import JasmProcessor, {Register} from './jasm-processor';
 import * as typescript from './source-languages/typescript';
 
@@ -102,7 +102,7 @@ export default class Script implements IterableIterator<Promise<void>> {
 
 
     // TODO: ...
-    program: Program;
+    program: JASM.Program;
 
 
     // TODO: ...
@@ -158,7 +158,7 @@ export interface ScriptOptions {
 
 
 // TODO: put in separate file?
-function makeNextFunction(program: Program, processor: JasmProcessor): () => IteratorResult<Promise<void>> {
+function makeNextFunction(program: JASM.Program, processor: JasmProcessor): () => IteratorResult<Promise<void>> {
 
     // TODO: Associate each label with it's zero-based line number...
     let labelLines = program.lines.reduce((labels, line, i) => {
@@ -224,13 +224,16 @@ function makeNextFunction(program: Program, processor: JasmProcessor): () => Ite
 
 
 // TODO: ...
-function canSnapshot(prevCanSnapshot: boolean, prevInstr: InstructionLine, registers: Map<Register, any>) {
+function canSnapshot(prevCanSnapshot: boolean, prevInstr: JASM.InstructionLine, registers: Map<Register, any>) {
     if (prevCanSnapshot) {
         // - if instr is a CALL or NEW, and return value assigned to register is not serializable
         // - THEN set canSnapshot to `false`
         // - any other way for a non-serializable to enter system without CALL or NEW? Not if all builtin types/ops are serializable...
         if (prevInstr.type !== 'instruction') return true;
         let opcode = prevInstr.opcode;
+        if (opcode !== 'call') return true;
+
+        let tragetRegister = <JASM.RegisterArgument> prevInstr.arguments[0];
         
 
 
@@ -255,7 +258,7 @@ function canSnapshot(prevCanSnapshot: boolean, prevInstr: InstructionLine, regis
 
 
 // TODO: put in separate file?
-function makeThrowFunction(program: Program, processor: JasmProcessor): (err: any) => IteratorResult<Promise<void>> {
+function makeThrowFunction(program: JASM.Program, processor: JasmProcessor): (err: any) => IteratorResult<Promise<void>> {
 
     // TODO: doc... does this need to otherwise work like step(), return a value, etc? I think not, but think about it...
     return function iteratorThrow(err: any): IteratorResult<Promise<void>> {
