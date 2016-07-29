@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import {SourceLocation, BindingKind} from "babel-types"; // Elided (used only for types)
 import Label from './label';
-import JasmProcessor, {Register, Register as R} from '../../../jasm-processor';
+import JasmProcessor, {RegisterName, RegisterName as R} from '../../../jasm-processor';
 import {JASM} from '../../../../serializers';
 
 
@@ -106,8 +106,8 @@ export default class JasmEmitter implements JasmProcessor {
 
 
     /** Allocate N registers for the duration of `callback`. */
-    withRegisters(callback: (...args: Register[]) => void) {
-        let args: Register[] = new Array(callback.length);
+    withRegisters(callback: (...args: RegisterName[]) => void) {
+        let args: RegisterName[] = new Array(callback.length);
         for (let i = 0; i < callback.length; ++i) {
             args[i] = this.reserveRegister();
         }
@@ -177,7 +177,7 @@ export default class JasmEmitter implements JasmProcessor {
 
 
     /** TODO: doc... */
-    private reserveRegister(): Register {
+    private reserveRegister(): RegisterName {
         for (let reg of this.registers.keys()) {
             if (this.registers.get(reg) === RESERVED_REGISTER) continue;
             this.registers.set(reg, RESERVED_REGISTER);
@@ -188,7 +188,7 @@ export default class JasmEmitter implements JasmProcessor {
 
 
     /** TODO: doc... */
-    private releaseRegister(reg: Register) {
+    private releaseRegister(reg: RegisterName) {
         this.UNDEFD(reg);
         this.registers.set(reg, FREE_REGISTER);
     }

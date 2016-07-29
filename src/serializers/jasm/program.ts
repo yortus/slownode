@@ -67,8 +67,15 @@ export type OpCode = 'add' | 'array' | 'await' | 'b' | 'bf' | 'bt' | 'call' | 'd
 // TODO: doc...
 export interface RegisterArgument {
     type: 'register';
-    name: string;
+    name: RegisterName;
 }
+
+
+
+
+
+// TODO: doc...
+export type RegisterName = 'PC' | 'ENV' | 'ERR' | '$0' | '$1' | '$2' | '$3' | '$4' | '$5' | '$6' | '$7';
 
 
 

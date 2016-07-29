@@ -6,7 +6,7 @@ import {types as t} from '../babel';
 import JasmEmitter from './jasm-emitter';
 import Label from './label';
 import matchNode from './match-node';
-import {Register} from '../../../jasm-processor';
+import {RegisterName} from '../../../jasm-processor';
 
 
 
@@ -30,7 +30,7 @@ function visitStatement(emit: JasmEmitter, stmt: Statement|ProgramNode) {
 
     // TODO: ...
     let visitStmt = (stmt: Statement) => visitStatement(emit, stmt);
-    let visitExpr = (expr: Expression|SpreadElement, $T: Register) => visitExpression(emit, expr, $T);
+    let visitExpr = (expr: Expression|SpreadElement, $T: RegisterName) => visitExpression(emit, expr, $T);
 
     // TODO: temp testing...
     if (stmt.loc) emit.syncSourceLocation(stmt.loc.start.line);
@@ -152,10 +152,10 @@ function visitStatement(emit: JasmEmitter, stmt: Statement|ProgramNode) {
 
 
 // TODO: ...
-function visitExpression(emit: JasmEmitter, expr: Expression|SpreadElement, $T: Register) {
+function visitExpression(emit: JasmEmitter, expr: Expression|SpreadElement, $T: RegisterName) {
 
     // TODO: ...
-    let visitExpr = (expr: Expression|SpreadElement, $T: Register) => visitExpression(emit, expr, $T);
+    let visitExpr = (expr: Expression|SpreadElement, $T: RegisterName) => visitExpression(emit, expr, $T);
 
     // TODO: temp testing...
     if (expr.loc) emit.syncSourceLocation(expr.loc.start.line);
@@ -206,7 +206,7 @@ function visitExpression(emit: JasmEmitter, expr: Expression|SpreadElement, $T: 
 
                                     // Handle compound arithmetic/assignment operation
                                     else {
-                                        let operation = (operator: string, $T: Register, $0: Register) => {
+                                        let operation = (operator: string, $T: RegisterName, $0: RegisterName) => {
                                             switch (operator) {
                                                 case '+=': return emit.ADD($T, $0, $T);
                                                 case '-=': return emit.SUB($T, $0, $T);

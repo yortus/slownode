@@ -2,7 +2,7 @@
 import defaultGlobalFactory from './global-factories/default';
 import GlobalFactory from './global-factory';
 import {JASM, KVON} from '../serializers';
-import JasmProcessor, {Register} from './jasm-processor';
+import JasmProcessor, {RegisterName} from './jasm-processor';
 import * as typescript from './source-languages/typescript';
 
 
@@ -21,7 +21,12 @@ export default class Script implements IterableIterator<Promise<void>> {
         this._options = options = options || {};
         let language = options.language = options.language || 'typescript';
         this.name = options.name = options.name || '«anonymous script»';
-        this._globalFactory = defaultGlobalFactory; // TODO: allow other options?
+        let globalFactory = defaultGlobalFactory; // TODO: allow other options?
+
+        // TODO: Create a composite replacer and reviver once per instance...
+        // TODO: how to validate that _globalFactory is the same factory that was used when the snapshot was created? E.g. use https://github.com/puleos/object-hash
+        this._replacer = makeReplacer(globalFactory);
+        this._reviver = makeReviver(globalFactory);
 
         // Create a JASM processor for executing the script step-by-step.
         let processor = this._processor = new JasmProcessor();
@@ -40,11 +45,8 @@ export default class Script implements IterableIterator<Promise<void>> {
             this.name = name;
             this._jasm = jasm;
             this.program = JASM.parse(jasm);
-
-            // TODO: how to validate this is the same factory that was used when the snapshot was created? E.g. use https://github.com/puleos/object-hash
-            let reviver = makeReviver(this._globalFactory);
             
-            let data = KVON.parse(kvon, reviver); // TODO: validate data is an object with *all* registers defined as keys
+            let data = KVON.parse(kvon, this._reviver); // TODO: validate data is an object with *all* registers defined as keys
             let registers = Object.keys(data).reduce((map, key) => (map.set(key, data[key])), new Map());
             this.registers = this._processor.registers = registers;
         }
@@ -60,7 +62,7 @@ export default class Script implements IterableIterator<Promise<void>> {
             this.registers = processor.registers;
 
             // TODO: create global and set ENV
-            let globalObject = this._globalFactory.create();
+            let globalObject = globalFactory.create();
             this.registers.set('ENV', globalObject);
         }
 
@@ -79,10 +81,9 @@ export default class Script implements IterableIterator<Promise<void>> {
 
     // TODO: ...
     snapshot(): string {
-        let replacer = makeReplacer(this._globalFactory); // TODO: don't create new replacer on every call...
         let regNames = [...this.registers.keys()];
         let data = regNames.reduce((obj, regName) => (obj[regName] = this.registers.get(regName), obj), {});
-        let jasm = this._jasm, kvon = KVON.stringify(data, replacer);
+        let jasm = this._jasm, kvon = KVON.stringify(data, this._replacer);
         let snapshot = `.NAME\n${JSON.stringify(this._options.name)}\n.CODE\n${jasm}\n.DATA\n${kvon}`;
         return snapshot;
     }
@@ -106,7 +107,7 @@ export default class Script implements IterableIterator<Promise<void>> {
 
 
     // TODO: ...
-    registers: Map<Register, any>;
+    registers: Map<RegisterName, any>;
 
 
     // TODO: ...
@@ -140,7 +141,8 @@ export default class Script implements IterableIterator<Promise<void>> {
 
 
     // TODO: ...
-    private _globalFactory: GlobalFactory;
+    private _replacer: KVON.Replacer;
+    private _reviver: KVON.Reviver;
 }
 
 
@@ -224,8 +226,9 @@ function makeNextFunction(program: JASM.Program, processor: JasmProcessor): () =
 
 
 // TODO: ...
-function canSnapshot(prevCanSnapshot: boolean, prevInstr: JASM.InstructionLine, registers: Map<Register, any>) {
+function canSnapshot(prevCanSnapshot: boolean, prevInstr: JASM.InstructionLine, registers: Map<RegisterName, any>, replacer: KVON.Replacer) {
     if (prevCanSnapshot) {
+        // TODO: explain steps...
         // - if instr is a CALL or NEW, and return value assigned to register is not serializable
         // - THEN set canSnapshot to `false`
         // - any other way for a non-serializable to enter system without CALL or NEW? Not if all builtin types/ops are serializable...
@@ -233,15 +236,11 @@ function canSnapshot(prevCanSnapshot: boolean, prevInstr: JASM.InstructionLine, 
         let opcode = prevInstr.opcode;
         if (opcode !== 'call') return true;
 
-        let tragetRegister = <JASM.RegisterArgument> prevInstr.arguments[0];
-        
-
-
-
-
-
+        let targetRegisterName = (<JASM.RegisterArgument> prevInstr.arguments[0]).name;
+        return KVON.canStringify(registers.get(targetRegisterName), replacer);
     }
     else {
+        // TODO: explain steps...
         // - if instr potentially destroys data reachable from registers...
         //   - safe but slow: assume ANY instr can do this...
         //   - possible optimisations - but MUST doc/clarify/modify codegen assumptions here!
@@ -250,6 +249,11 @@ function canSnapshot(prevCanSnapshot: boolean, prevInstr: JASM.InstructionLine, 
         //     - any instr that executes external code that might mutate reachable data...
         // - if ALL registers are now serializable (using KVON.canStringify on whole register set)...
         // - THEN set canSnapshot to `true`
+
+        // TODO: make DRY - this is copypasta from above...
+        let regNames = [...registers.keys()];
+        let data = regNames.reduce((obj, regName) => (obj[regName] = this.registers.get(regName), obj), {});
+        return KVON.canStringify(data, replacer);
     }
 }
 
@@ -277,7 +281,7 @@ function makeThrowFunction(program: JASM.Program, processor: JasmProcessor): (er
 
 // ==================================================================
 // TODO: ... put all below into a separate dir like 'transformers'...
-function makeReplacer(gf: GlobalFactory) {
+function makeReplacer(gf: GlobalFactory): KVON.Replacer {
     return KVON.compose(KVON.replacers.all, gf.replacer, promiseReplacer);
 
     function promiseReplacer(key: string, val: {}) {
@@ -292,7 +296,7 @@ function makeReplacer(gf: GlobalFactory) {
 
 
 // TODO: ... add in KVON.revivers.all
-function makeReviver(gf: GlobalFactory) {
+function makeReviver(gf: GlobalFactory): KVON.Reviver {
     return KVON.compose(KVON.revivers.all, gf.reviver, promiseReviver);
 
     function promiseReviver(key: string, val: any) {

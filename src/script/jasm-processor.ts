@@ -3,14 +3,15 @@
 // TODO: properly handle (at runtime) use before assignment for block-scoped vars, prevent re-assignment of consts, etc
 // TODO: add ERR register to VM for exception in flight? (can only be one)
 // TODO: add CONST opcode to replace STRING, NUMBER, NULL, TRUE, FALSE
+import {JASM} from '../serializers';
 
 
 
 
 
 // TODO: ...
-type R = 'PC' | 'ENV' | 'ERR' | '$0' | '$1' | '$2' | '$3' | '$4' | '$5' | '$6' | '$7';
-export {R as Register};
+type R = JASM.RegisterName;
+export {R as RegisterName};
 
 
 
