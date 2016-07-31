@@ -100,6 +100,15 @@ Testing a Script object
 - comments are preserved in Program
 - canonical instruction lines are aligned with spaces; opcodes start at column 4, args start at column 12
 - canonical label lines are not indented
+- SUPPORTED:
+  - 
+- PARTIALLY SUPPORTED:
+ - 
+- UNSUPPORTED:
+  - function declarations
+  - function expressions
+  - class declarations
+  - class expressions
 
 
 ## KVON
