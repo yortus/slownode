@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as PEG from 'pegjs';
-import Program from './program';
+import Program from '../../script/program';
 
 
 

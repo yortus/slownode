@@ -1,4 +1,4 @@
-import Program from './program';
+import Program from '../../script/program';
 
 
 

@@ -3,6 +3,7 @@ import defaultGlobalFactory from './global-factories/default';
 import GlobalFactory from './global-factory';
 import {JASM, KVON} from '../serializers';
 import JasmProcessor, {RegisterName} from './jasm-processor';
+import Program, {InstructionLine, RegisterArgument} from './program';
 import * as typescript from './source-languages/typescript';
 
 
@@ -130,7 +131,7 @@ export default class Script implements IterableIterator<Promise<void>> {
 
 
     // TODO: ...
-    program: JASM.Program;
+    program: Program;
 
 
     // TODO: ...
@@ -273,7 +274,7 @@ export default class Script implements IterableIterator<Promise<void>> {
 
 
     // TODO: ...
-    private computeCanSnapshot(prevInstr: JASM.InstructionLine) {
+    private computeCanSnapshot(prevInstr: InstructionLine) {
         let prevCanSnapshot = this.canSnapshot;
 
         if (prevCanSnapshot) {
@@ -285,7 +286,7 @@ export default class Script implements IterableIterator<Promise<void>> {
             let opcode = prevInstr.opcode;
             if (opcode !== 'call') return true;
 
-            let targetRegisterName = (<JASM.RegisterArgument> prevInstr.arguments[0]).name;
+            let targetRegisterName = (<RegisterArgument> prevInstr.arguments[0]).name;
             return KVON.canStringify(this.registers.get(targetRegisterName), this._replacer);
         }
         else {
