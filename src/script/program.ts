@@ -4,9 +4,8 @@
 
 
 // TODO: ...
-export default Program;
-interface Program {
-    lines: Array<BlankLine | LabelLine | InstructionLine>;
+export default class Program {
+    constructor(public lines: Array<BlankLine | LabelLine | InstructionLine>) { }
 }
 
 

@@ -9,7 +9,8 @@ import Program from '../../script/program';
 
 // TODO: doc...
 export default function parse(text: string): Program {
-    let result = pegParser.parse(text);
+    let lines = pegParser.parse(text);
+    let result = new Program(lines);
     return result;
 }
 
@@ -33,7 +34,7 @@ const pegParser = PEG.buildParser(`
 }
 
 // ---------- start rule ----------
-Start                 =   lines:CodeLine*   EOF   { return {lines}; }
+Start                 =   lines:CodeLine*   EOF   { return lines; }
 CodeLine              =   BlankLine   /   LabelLine   /   InstructionLine
 
 // ---------- blank line ----------
