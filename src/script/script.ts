@@ -1,9 +1,10 @@
 // TODO: support Iterator#return method? Would need JASM support...
 import defaultGlobalFactory from './global-factories/default';
 import GlobalFactory from './global-factory';
-import {JASM, KVON} from '../serializers';
+import {KVON} from '../serializers';
 import JasmProcessor, {RegisterName} from './jasm-processor';
 import Program, {InstructionLine, RegisterArgument} from './program';
+import * as transformers from './kvon-transformers';
 import * as typescript from './source-languages/typescript';
 
 
@@ -48,9 +49,7 @@ export default class Script implements IterableIterator<Promise<void>> {
             // TODO: decode source...
             let obj: any = KVON.parse(source, this._reviver);
             this.name = obj.NAME;
-            let jasm = obj.CODE.join('\n');
-            this._jasm = jasm;
-            this.program = JASM.parse(jasm);
+            this.program = obj.CODE;
             let data = obj.DATA; // TODO: validate data is an object with *all* registers defined as keys
             let registers = Object.keys(data).reduce((map, key) => (map.set(key, data[key])), new Map());
             this.registers = this._processor.registers = registers;
@@ -79,8 +78,9 @@ export default class Script implements IterableIterator<Promise<void>> {
             if (!transpileToJasm) throw new Error(`Unsupported script source language '${language}'`);
 
             // TODO: language-independent steps...
-            let jasm = this._jasm = transpileToJasm(source);
-            this.program = JASM.parse(jasm);
+            let jasm = this._jasm = transpileToJasm(source); // TODO: temp messy fix next few lines...
+            let jasm2 = JSON.stringify({$:'Program', lines: jasm.split('\n')}); // TODO: remove useless stringify round-trip...
+            this.program = <any> KVON.parse(jasm2, this._reviver);
             this.registers = processor.registers;
 
             // TODO: create global and set ENV
@@ -107,10 +107,9 @@ export default class Script implements IterableIterator<Promise<void>> {
         let data = regNames.reduce((obj, regName) => (obj[regName] = this.registers.get(regName), obj), {});
 //        let kvon = KVON.stringify(data, this._replacer);
 
-        let jasm = this._jasm.split('\n');
         let obj = {
             NAME: this._options.name,
-            CODE: jasm,
+            CODE: this.program,
             DATA: data
         };
 
@@ -315,7 +314,7 @@ export default class Script implements IterableIterator<Promise<void>> {
 // ==================================================================
 // TODO: ... put all below into a separate dir like 'transformers'...
 function makeReplacer(gf: GlobalFactory): KVON.Replacer {
-    return KVON.compose(KVON.replacers.all, gf.replacer, promiseReplacer);
+    return KVON.compose(KVON.replacers.all, gf.replacer, promiseReplacer, transformers.replacers.Program);
 
     function promiseReplacer(key: string, val: {}) {
         if (!val || Object.getPrototypeOf(val) !== Promise.prototype)  return val;
@@ -334,7 +333,7 @@ return val;
 
 // TODO: ... add in KVON.revivers.all
 function makeReviver(gf: GlobalFactory): KVON.Reviver {
-    return KVON.compose(KVON.revivers.all, gf.reviver, promiseReviver);
+    return KVON.compose(KVON.revivers.all, gf.reviver, promiseReviver, transformers.revivers.Array);
 
     function promiseReviver(key: string, val: any) {
         if (!val || val.$ !== 'Promise') return val;
