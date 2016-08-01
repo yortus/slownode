@@ -16,6 +16,7 @@ describe('Running a script to completion', () => {
         `let s: any = 'foo', result = s * 3;                        ==> NaN`,
         `let one: any = '1', result = 2 + one;                      ==> "21"`,
         `let one: any = '1', result = 2 - one;                      ==> 1`,
+        `let result = [1,2,3].length > 10 ? 'long' : 'short';       ==> "short"`,
         'let s = "bar", result = `foo${s}baz${[1, 2, 3]}`;          ==> "foobarbaz1,2,3"',
         `let n = 2; while (n < 1000) n = n*n; let result = n;       ==> 65536`,
         `undeclaredVar = 1;                                         ==> ERROR: Static checking failed...`,

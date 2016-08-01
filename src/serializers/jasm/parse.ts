@@ -51,17 +51,17 @@ NextArgument          =   SPC?   ","   SPC?   arg:Argument   { return arg; }
 Argument              =   RegisterArgument   /   LabelArgument   /   StringArgument   /   NumberArgument
 RegisterArgument      =   ("PC"   /   "ENV"   /   "ERR"   /   ("$" [0-7]))   { return {type: 'register', name: text()}; }
 LabelArgument "label" =   [a-z]i   [a-z0-9]i*   { return {type: 'label', name: text()}; }
-StringArgument        =   String   { return {type:'const', value: JSON.parse(text())}; }
+StringArgument        =   String   { return {type:'const', value: JSON.parse('"' + text().slice(1, -1) + '"')}; }
 NumberArgument        =   Number   { return {type:'const', value: JSON.parse(text())}; }
 
 // ---------- comment ----------
 Comment "comment"     =   ";"   (!EOL .)*   { return { text: text().slice(1), col: location().start.column - 1 }; }
 
 // ---------- string literal ----------
-String "string"       =   '"'   Character*   '"'
-Character             =   [^\\0-\\x1F\\x22\\x5C]   // NB: double escaped!
+String "string"       =   "'"   Character*   "'"
+Character             =   [^\\0-\\x1F\\x27\\x5C]   // NB: double escaped!
                       /   BSLASH   BSLASH
-                      /   BSLASH   ["/bfnrt]
+                      /   BSLASH   ['/bfnrt]
                       /   BSLASH   "u"   HEXDIGIT   HEXDIGIT   HEXDIGIT   HEXDIGIT
 
 // ---------- number literal ----------

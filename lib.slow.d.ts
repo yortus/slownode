@@ -1,5 +1,5 @@
 
-interface Array<T> {}
+interface Array<T> {length: number;}
 interface Boolean {}
 interface Function {}
 interface IArguments {}

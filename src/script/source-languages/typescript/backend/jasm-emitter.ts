@@ -220,7 +220,11 @@ const FREE_REGISTER = {};
 
 // TODO: ...
 function lit(v: string | number) {
-    return JSON.stringify(v);
+    let result = JSON.stringify(v);
+    if (typeof v === 'string') {
+        result = "'" + result.replace(/'/g, "\\'").slice(1, -1) + "'";
+    }
+    return result;
 }
 
 

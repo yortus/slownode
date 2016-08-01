@@ -26,7 +26,7 @@ export default function stringify(program: Program): string {
                     switch (arg.type) {
                         case 'register':    return arg.name;
                         case 'label':       return arg.name;
-                        case 'const':       return JSON.stringify(arg.value);
+                        case 'const':       return "'" + JSON.stringify(arg.value).replace(/'/g, "\\'").slice(1, -1) + "'";
                         default:            throw new Error(`Unhandled JASM argument type`);
                     }
                 });
