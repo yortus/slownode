@@ -1,6 +1,6 @@
 {
   "name": "slownode",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "slownode",
   "readmeFilename": "README.md",
   "main": "built/index.js",
