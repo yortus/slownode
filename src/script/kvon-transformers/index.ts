@@ -1,23 +1,23 @@
-import * as program from './program';
+import * as jasm from './jasm';
 
 
 
 
 
-/** Built-in replacer functions. */
+/** Replacer functions. */
 export namespace replacers {
 
     // TODO: ...
-    export let Program = program.replacer;
+    export let JASM = jasm.replacer;
 }
 
 
 
 
 
-/** Built-in reviver functions. */
+/** Reviver functions. */
 export namespace revivers {
 
     // TODO: ...
-    export let Array = program.reviver;
+    export let JASM = jasm.reviver;
 }

@@ -4,7 +4,7 @@
 
 
 // TODO: ...
-export default class Program {
+export default class JASM {
     constructor(public lines: Array<BlankLine | LabelLine | InstructionLine>) { }
 }
 

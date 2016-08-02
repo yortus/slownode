@@ -1,16 +1,16 @@
 import * as PEG from 'pegjs';
-import Program from '../program';
+import JASM from '../jasm';
 
 
 
 
 
 export function replacer(key, val) {
-    if (!(val instanceof Program)) return val;
+    if (!(val instanceof JASM)) return val;
 
     // TODO: ...
-    let program: Program = val;
-    let lines = program.lines.map(line => {
+    let jasm: JASM = val;
+    let lines = jasm.lines.map(line => {
 
         // TODO: ...
         let s: string;
@@ -50,7 +50,7 @@ export function replacer(key, val) {
     });
 
     // TODO: ...
-    return {$: 'Program', lines};
+    return {$: 'JASM', lines};
 }
 
 
@@ -58,10 +58,10 @@ export function replacer(key, val) {
 
 
 export function reviver(key, val) {
-    if (!val || val.$ !== 'Program') return val;
+    if (!val || val.$ !== 'JASM') return val;
 
     let lines = pegParser.parse(val.lines.join('\n') + '\n');
-    let result = new Program(lines);
+    let result = new JASM(lines);
     return result;
 }
 

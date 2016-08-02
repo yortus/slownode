@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import {SourceLocation, BindingKind} from "babel-types"; // Elided (used only for types)
 import Label from './label';
 import JasmProcessor, {RegisterName, RegisterName as R} from '../../../jasm-processor';
-import {OpCode} from '../../../program';
+import {OpCode} from '../../../jasm';
 
 
 

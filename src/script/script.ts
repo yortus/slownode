@@ -3,7 +3,7 @@ import defaultGlobalFactory from './global-factories/default';
 import GlobalFactory from './global-factory';
 import KVON from '../kvon';
 import JasmProcessor, {RegisterName} from './jasm-processor';
-import Program, {InstructionLine, RegisterArgument} from './program';
+import JASM, {InstructionLine, RegisterArgument} from './jasm';
 import * as transformers from './kvon-transformers';
 import * as typescript from './source-languages/typescript';
 
@@ -49,27 +49,10 @@ export default class Script implements IterableIterator<Promise<void>> {
             // TODO: decode source...
             let obj: any = KVON.parse(source, this._reviver);
             this.name = obj.NAME;
-            this.program = obj.CODE;
+            this.jasm = obj.CODE;
             let data = obj.DATA; // TODO: validate data is an object with *all* registers defined as keys
             let registers = Object.keys(data).reduce((map, key) => (map.set(key, data[key])), new Map());
             this.registers = this._processor.registers = registers;
-
-
-            // TODO: was...
-            // let matches = source
-            //     .replace(/(?:\r\n)|\r/g, '\n')
-            //     .match(/^\.NAME\n([^\n]+)\n\.CODE\n([\s\S]+?)\n\.DATA\n([\s\S]+)$/);
-            // if (matches === null) throw new Error(`Invalid snapshot format`);
-            // let [, name, jasm, kvon] = matches;
-
-            // // TODO: ...
-            // this.name = name;
-            // this._jasm = jasm;
-            // this.program = JASM.parse(jasm);
-            
-            // let data = KVON.parse(kvon, this._reviver); // TODO: validate data is an object with *all* registers defined as keys
-            // let registers = Object.keys(data).reduce((map, key) => (map.set(key, data[key])), new Map());
-            // this.registers = this._processor.registers = registers;
         }
         else {
 
@@ -78,9 +61,9 @@ export default class Script implements IterableIterator<Promise<void>> {
             if (!transpileToJasm) throw new Error(`Unsupported script source language '${language}'`);
 
             // TODO: language-independent steps...
-            let jasm = this._jasm = transpileToJasm(source); // TODO: temp messy fix next few lines...
-            let jasm2 = JSON.stringify({$:'Program', lines: jasm.split('\n')}); // TODO: remove useless stringify round-trip...
-            this.program = <any> KVON.parse(jasm2, this._reviver);
+            let jasm = transpileToJasm(source); // TODO: temp messy fix next few lines...
+            let jasm2 = JSON.stringify({$:'JASM', lines: jasm.split('\n')}); // TODO: remove useless stringify round-trip...
+            this.jasm = <any> KVON.parse(jasm2, this._reviver);
             this.registers = processor.registers;
 
             // TODO: create global and set ENV
@@ -105,18 +88,12 @@ export default class Script implements IterableIterator<Promise<void>> {
     snapshot(): string {
         let regNames = [...this.registers.keys()];
         let data = regNames.reduce((obj, regName) => (obj[regName] = this.registers.get(regName), obj), {});
-//        let kvon = KVON.stringify(data, this._replacer);
-
         let obj = {
             NAME: this._options.name,
-            CODE: this.program,
+            CODE: this.jasm,
             DATA: data
         };
-
         let snapshot = KVON.stringify(obj, this._replacer, 2);
-
-
-//        let snapshot = `.NAME\n${JSON.stringify(this._options.name)}\n.CODE\n${jasm}\n.DATA\n${kvon}`;
         return snapshot;
     }
 
@@ -125,15 +102,15 @@ export default class Script implements IterableIterator<Promise<void>> {
     canSnapshot = true;
 
 
-    // TODO: ...
+    // TODO: aka NAME...
     name: string;
 
 
-    // TODO: ...
-    program: Program;
+    // TODO: aka CODE...
+    jasm: JASM;
 
 
-    // TODO: ...
+    // TODO: aka DATA...
     registers: Map<RegisterName, any>;
 
 
@@ -164,10 +141,6 @@ export default class Script implements IterableIterator<Promise<void>> {
 
 
     // TODO: ...
-    private _jasm: string;
-
-
-    // TODO: ...
     private _replacer: KVON.Replacer;
     private _reviver: KVON.Reviver;
 
@@ -179,13 +152,13 @@ export default class Script implements IterableIterator<Promise<void>> {
     private makeNextFunction(): () => IteratorResult<Promise<void>> {
 
         // TODO: Associate each label with it's zero-based line number...
-        let labelLines = this.program.lines.reduce((labels, line, i) => {
+        let labelLines = this.jasm.lines.reduce((labels, line, i) => {
             if (line.type === 'label') labels[line.name] = i;
             return labels;
         }, {});
 
-        // TODO: convert the program lines into a list of case statements for a switch block with the PC as the discriminant
-        let switchCases = this.program.lines.map((line, i) => {
+        // TODO: convert the JASM lines into a list of case statements for a switch block with the PC as the discriminant
+        let switchCases = this.jasm.lines.map((line, i) => {
             switch (line.type) {
                 case 'blank':
                 case 'label':
@@ -205,10 +178,10 @@ export default class Script implements IterableIterator<Promise<void>> {
             }
         }).map((line, i) => `case ${`${i}:    `.slice(0, 6)} ${line}break;`);
 
-        // TODO: retain program comments to aid debugging... NB: An inline sourcemap to JASM (or to the original script) might be the best thing here
+        // TODO: retain JASM comments to aid debugging... NB: An inline sourcemap to JASM (or to the original script) might be the best thing here
         switchCases = switchCases.map((line, i) => {
-            if (!this.program.lines[i].comment) return line;
-            return `${line}${' '.repeat(Math.max(0, 72 - line.length))}//${this.program.lines[i].comment}`;
+            if (!this.jasm.lines[i].comment) return line;
+            return `${line}${' '.repeat(Math.max(0, 72 - line.length))}//${this.jasm.lines[i].comment}`;
         });
 
         // TODO: Eval up the next() function...
@@ -227,7 +200,7 @@ export default class Script implements IterableIterator<Promise<void>> {
 
         let nextFunc: (this: Script) => IteratorResult<Promise<void>> = function () {
             let nextPC = _.PC;
-            let nextInstr = this.program.lines[_.PC];
+            let nextInstr = this.jasm.lines[_.PC];
             let isDone = nextInstr.type === 'instruction' && nextInstr.opcode === 'stop';
             if (isDone) return <any> {done: true};
             let value = execNext(_.PC++);
@@ -314,7 +287,7 @@ export default class Script implements IterableIterator<Promise<void>> {
 // ==================================================================
 // TODO: ... put all below into a separate dir like 'transformers'...
 function makeReplacer(gf: GlobalFactory): KVON.Replacer {
-    return KVON.compose(KVON.replacers.all, gf.replacer, promiseReplacer, transformers.replacers.Program);
+    return KVON.compose(KVON.replacers.all, gf.replacer, promiseReplacer, transformers.replacers.JASM);
 
     function promiseReplacer(key: string, val: {}) {
         if (!val || Object.getPrototypeOf(val) !== Promise.prototype)  return val;
@@ -333,7 +306,7 @@ return val;
 
 // TODO: ... add in KVON.revivers.all
 function makeReviver(gf: GlobalFactory): KVON.Reviver {
-    return KVON.compose(KVON.revivers.all, gf.reviver, promiseReviver, transformers.revivers.Array);
+    return KVON.compose(KVON.revivers.all, gf.reviver, promiseReviver, transformers.revivers.JASM);
 
     function promiseReviver(key: string, val: any) {
         if (!val || val.$ !== 'Promise') return val;
