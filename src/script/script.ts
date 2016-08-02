@@ -1,7 +1,7 @@
 // TODO: support Iterator#return method? Would need JASM support...
 import defaultGlobalFactory from './global-factories/default';
 import GlobalFactory from './global-factory';
-import {KVON} from '../serializers';
+import KVON from '../kvon';
 import JasmProcessor, {RegisterName} from './jasm-processor';
 import Program, {InstructionLine, RegisterArgument} from './program';
 import * as transformers from './kvon-transformers';

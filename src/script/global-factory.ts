@@ -1,4 +1,4 @@
-import {KVON} from '../serializers';
+import KVON from '../kvon';
 
 
 
