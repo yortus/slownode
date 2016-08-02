@@ -109,8 +109,8 @@ LabelLine             =   SPC?   name:LabelName   ":"   SPC?   c:Comment?   EOL 
 LabelName             =   [a-z]i    [a-z0-9]i*   { return text(); }
 
 // ---------- instruction line ----------
-InstructionLine       =   SPC?   o:OpCode   SPC?   a:ArgumentList?   SPC?   c:Comment?   EOL   { return instr(o, a, c); }
-OpCode "opcode"       =   [a-z]i+   { return text(); }
+InstructionLine       =   SPC?   o:Opcode   SPC?   a:ArgumentList?   SPC?   c:Comment?   EOL   { return instr(o, a, c); }
+Opcode "opcode"       =   [a-z]i+   { return text(); }
 ArgumentList          =   first:Argument   rest:NextArgument*   { return [first].concat(rest); }
 NextArgument          =   SPC?   ","   SPC?   arg:Argument   { return arg; }
 Argument              =   RegisterArgument   /   LabelArgument   /   StringArgument   /   NumberArgument

@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import {SourceLocation, BindingKind} from "babel-types"; // Elided (used only for types)
 import Label from './label';
 import JasmProcessor, {RegisterName, RegisterName as R} from '../../../jasm-processor';
-import {OpCode} from '../../../jasm';
+import {Opcode} from '../../../jasm';
 
 
 
@@ -165,7 +165,7 @@ export default class JasmEmitter implements JasmProcessor {
 
 
     /** TODO: doc... */
-    private addInstr(name: OpCode, ...args: string[]) {
+    private addInstr(name: Opcode, ...args: string[]) {
         this.addLine(`    ${name}${' '.repeat(Math.max(0, 8 - name.length))}${args.join(', ')}`);
     }
 
