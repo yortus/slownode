@@ -28,7 +28,7 @@ export function replacer(key, val) {
                     switch (arg.type) {
                         case 'register':    return arg.name;
                         case 'label':       return arg.name;
-                        case 'const':       return "'" + JSON.stringify(arg.value).replace(/'/g, "\\'").slice(1, -1) + "'";
+                        case 'const':       return lit(arg.value);
                         default:            throw new Error(`Unhandled JASM argument type`);
                     }
                 });
@@ -62,6 +62,19 @@ export function reviver(key, val) {
 
     let lines = pegParser.parse(val.lines.join('\n') + '\n');
     let result = new Program(lines);
+    return result;
+}
+
+
+
+
+
+// TODO: this is copypasta from jasm-emitter.ts...
+function lit(v: string | number) {
+    let result = JSON.stringify(v);
+    if (typeof v === 'string') {
+        result = "'" + result.replace(/'/g, "\\'").slice(1, -1) + "'";
+    }
     return result;
 }
 
