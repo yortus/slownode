@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 import typeScriptToAst from './frontend/typescript-to-ast';
 import astToJasm from './backend/ast-to-jasm';
+import JASM from '../../jasm';
 import staticCheck from './frontend/static-check';
 import {types as t} from './babel';
 
@@ -9,7 +10,7 @@ import {types as t} from './babel';
 
 
 // TODO: ... return all errors/diagnostics somehow!! See how babel/ts do it (i.e. return an object)
-export default function transpileToJasm(typeScriptSource: string): string {
+export default function transpileToJasm(typeScriptSource: string): JASM {
 
     // TODO: wrap in IIAFE, without changing line numbers)
     let wrappedSource = `(async () => {${typeScriptSource}})()`;

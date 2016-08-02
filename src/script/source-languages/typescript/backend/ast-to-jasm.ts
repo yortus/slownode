@@ -3,8 +3,8 @@ import {Node, File, Program as ProgramNode} from "babel-types";             // E
 import {Statement, Expression, Identifier} from "babel-types";              // Elided (used only for types)
 import {StringLiteral, NumericLiteral, SpreadElement} from "babel-types";   // Elided (used only for types)
 import {types as t} from '../babel';
+import JASM from '../../../jasm';
 import JasmEmitter from './jasm-emitter';
-import Label from './label';
 import matchNode from './match-node';
 import {RegisterName} from '../../../jasm-processor';
 
@@ -13,12 +13,12 @@ import {RegisterName} from '../../../jasm-processor';
 
 
 // TODO: ... make second arg optional
-export default function astToJasm(ast: Node, typeScriptSource: string): string {
+export default function astToJasm(ast: Node, typeScriptSource: string): JASM {
     assert(t.isFile(ast));
     let emit = new JasmEmitter(typeScriptSource);
     visitStatement(emit, (<File> ast).program);
-    let jasmText = emit.build();
-    return jasmText;
+    let jasm = emit.build();
+    return jasm;
 }
 
 
@@ -82,8 +82,8 @@ function visitStatement(emit: JasmEmitter, stmt: Statement|ProgramNode) {
         // ForStatement:        stmt => [***],
         // FunctionDeclaration: stmt => [***],
         IfStatement:            stmt => {
-                                    let L1 = new Label();
-                                    let L2 = new Label();
+                                    let L1 = emit.newLabel();
+                                    let L2 = emit.newLabel();
                                     emit.withRegisters($0 => {
                                         visitExpr(stmt.test, $0);
                                         emit.BF(L1, $0);
@@ -107,8 +107,8 @@ function visitStatement(emit: JasmEmitter, stmt: Statement|ProgramNode) {
         // TryStatement:        stmt => [***],
         // VariableDeclarator:  stmt => [***],
         WhileStatement:         stmt => {
-                                    let L1 = new Label();
-                                    let L2 = new Label();
+                                    let L1 = emit.newLabel();
+                                    let L2 = emit.newLabel();
                                     emit.LABEL(L1);
                                     emit.withRegisters($0 => {
                                         visitExpr(stmt.test, $0);
@@ -289,8 +289,8 @@ function visitExpression(emit: JasmEmitter, expr: Expression|SpreadElement, $T: 
                                     }
                                 },
         ConditionalExpression:  expr => {
-                                    let L1 = new Label();
-                                    let L2 = new Label();
+                                    let L1 = emit.newLabel();
+                                    let L2 = emit.newLabel();
                                     visitExpr(expr.test, $T);
                                     emit.BF(L1, $T);
                                     visitExpr(expr.consequent, $T);
@@ -316,7 +316,7 @@ function visitExpression(emit: JasmEmitter, expr: Expression|SpreadElement, $T: 
                                     emit.REGEXP($T, expr.pattern, expr.flags);
                                 },
         LogicalExpression:      expr => {
-                                    let L1 = new Label();
+                                    let L1 = emit.newLabel();
                                     visitExpr(expr.left, $T);
                                     expr.operator === '&&' ? emit.BF(L1, $T) : emit.BT(L1, $T);
                                     visitExpr(expr.right, $T);

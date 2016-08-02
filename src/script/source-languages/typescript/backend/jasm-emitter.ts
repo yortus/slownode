@@ -1,8 +1,8 @@
 import * as assert from 'assert';
 import {SourceLocation, BindingKind} from "babel-types"; // Elided (used only for types)
-import Label from './label';
 import JasmProcessor, {RegisterName, RegisterName as R} from '../../../jasm-processor';
-import {Opcode} from '../../../jasm';
+import JASM, {BlankLine, LabelLine, InstructionLine, Opcode} from '../../../jasm';
+import {RegisterArgument as Register, LabelArgument as Label, ConstArgument as Const} from '../../../jasm';
 
 
 
@@ -42,9 +42,9 @@ export default class JasmEmitter implements JasmProcessor {
     LT      (tgt: R, lhs: R, rhs: R) { this.addInstr('lt', tgt, lhs, rhs); }
 
     // Instructions: Control
-    B       (line: Label|number) { this.addInstr('b', typeof line === 'number' ? lit(line) : line.name); }
-    BF      (line: Label|number, arg: R) { this.addInstr('bf', typeof line === 'number' ? lit(line) : line.name, arg); }
-    BT      (line: Label|number, arg: R) { this.addInstr('bt', typeof line === 'number' ? lit(line) : line.name, arg); }
+    B       (line: Label|number) { this.addInstr('b', typeof line === 'number' ? lit(line) : line); }
+    BF      (line: Label|number, arg: R) { this.addInstr('bf', typeof line === 'number' ? lit(line) : line, arg); }
+    BT      (line: Label|number, arg: R) { this.addInstr('bt', typeof line === 'number' ? lit(line) : line, arg); }
     CALL    (tgt: R, func: R, thís: R, args: R) { this.addInstr('call', tgt, func, thís, args); }
     THROW   (err: R) { this.addInstr('throw', err); return null; }
     AWAIT   (tgt: R, arg: R) { this.addInstr('await', tgt, arg); return null; }
@@ -77,7 +77,15 @@ export default class JasmEmitter implements JasmProcessor {
 
 
     // TODO: doc...
-    LABEL(label: Label) { this.addLabel(label); }
+    LABEL(label: Label) {
+        this._lines.push(label);
+    }
+
+
+    // TODO: ...
+    newLabel(): Label {
+        return {type: 'label', name: `L${++JasmEmitter._labelCount}`};
+    }
 
 
     /** TODO: temp testing... */
@@ -89,12 +97,19 @@ export default class JasmEmitter implements JasmProcessor {
         this._currentScope = scopeCount;
 
         // TODO: temp testing...
-        this.addLine(`    ; ===== ENTER SCOPE ${this._currentScope} ===== { ${Object.keys(identifiers).map(id => `${id}: ${identifiers[id]}`).join(', ')} }`);
+        let line: BlankLine = {
+            type: 'blank',
+            comment: `    ; ===== ENTER SCOPE ${this._currentScope} ===== { ${Object.keys(identifiers).map(id => `${id}: ${identifiers[id]}`).join(', ')} }`
+        };
+        this._lines.push(line);
     }
     leaveScope() {
 
         // TODO: temp testing...
-        this.addLine(`    ; ===== LEAVE SCOPE ${this._currentScope} =====`);
+        let line: BlankLine = {
+            type: 'blank',
+            comment: `    ; ===== LEAVE SCOPE ${this._currentScope} =====`
+        };
 
         this._currentScope = this._scopes.lineage[this._currentScope];
     }
@@ -114,36 +129,44 @@ export default class JasmEmitter implements JasmProcessor {
 
 
     /** TODO: doc... */
-    build(): string {
+    build(): JASM {
 
         // TODO: ...
         this.STOP();
         this._syncLines.push([this._lines.length, this._sourceLines.length]);
 
-        // TODO: ...
-        let lines: string[] = [];
-        for (let i = 0; i < this._syncLines.length - 1; ++i) {
-            let lstart = this._syncLines[i][0];
-            let rstart = this._syncLines[i][1];
-            let lcount = this._syncLines[i + 1][0] - lstart;
-            let rcount = this._syncLines[i + 1][1] - rstart;
+// TODO: temp testing...
+        let lines = this._lines;
+        return {lines};
 
-            let llines = this._lines.slice(lstart, lstart + lcount);
-            let rlines = this._sourceLines.slice(rstart, rstart + rcount);
-            while (llines.length < rlines.length) llines.push('');
-            while (rlines.length < llines.length) rlines.push('');
 
-            lines = lines.concat(llines.map((lline, i) => {
-                let rline = rlines[i];
-                if (rline.trim() === '') return lline;
 
-                let gap = ' '.repeat(Math.max(0, 48 - lline.length));
-                return `${lline}${gap}; ${rline}`;
-            }));
-        }
+// TODO: was... restore...
 
-        // TODO: ...
-        return `${lines.join('\n')}\n`;
+        // // TODO: ...
+        // let lines: string[] = [];
+        // for (let i = 0; i < this._syncLines.length - 1; ++i) {
+        //     let lstart = this._syncLines[i][0];
+        //     let rstart = this._syncLines[i][1];
+        //     let lcount = this._syncLines[i + 1][0] - lstart;
+        //     let rcount = this._syncLines[i + 1][1] - rstart;
+
+        //     let llines = this._lines.slice(lstart, lstart + lcount);
+        //     let rlines = this._sourceLines.slice(rstart, rstart + rcount);
+        //     while (llines.length < rlines.length) llines.push('');
+        //     while (rlines.length < llines.length) rlines.push('');
+
+        //     lines = lines.concat(llines.map((lline, i) => {
+        //         let rline = rlines[i];
+        //         if (rline.trim() === '') return lline;
+
+        //         let gap = ' '.repeat(Math.max(0, 48 - lline.length));
+        //         return `${lline}${gap}; ${rline}`;
+        //     }));
+        // }
+
+        // // TODO: ...
+        // return `${lines.join('\n')}\n`;
     }
 
 
@@ -156,19 +179,12 @@ export default class JasmEmitter implements JasmProcessor {
 
 
     /** TODO: doc... */
-    private addLabel(label: Label) {
-        this.addLine(`${label.name}:`);
-    }
-
-
-    /** TODO: doc... */
-    private addInstr(name: Opcode, ...args: string[]) {
-        this.addLine(`    ${name}${' '.repeat(Math.max(0, 8 - name.length))}${args.join(', ')}`);
-    }
-
-
-    /** TODO: doc... */
-    private addLine(line: string) {
+    private addInstr(opcode: Opcode, ...args: Array<RegisterName|Label|Const>) {
+        let line: InstructionLine = {
+            type: 'instruction',
+            opcode,
+            arguments: args.map(arg => typeof arg === 'string' ? <Register> {type: 'register', name: arg} : arg)
+        };
         this._lines.push(line);
     }
 
@@ -192,7 +208,7 @@ export default class JasmEmitter implements JasmProcessor {
 
 
     /** TODO: doc... */
-    private _lines: string[] = [];
+    private _lines: Array<BlankLine | LabelLine | InstructionLine> = [];
 
 
     /** TODO: doc... */
@@ -201,6 +217,10 @@ export default class JasmEmitter implements JasmProcessor {
 
     /** TODO: doc... */
     private _sourceLinesEmitted: number;
+
+
+    /** TODO: doc... */
+    private static _labelCount = 0;
 }
 
 
@@ -217,13 +237,10 @@ const FREE_REGISTER = <any> {};
 
 
 // TODO: ...
-function lit(v: string | number) {
-    let result = JSON.stringify(v);
-    if (typeof v === 'string') {
-        result = "'" + result.replace(/'/g, "\\'").slice(1, -1) + "'";
-    }
-    return result;
+function lit(value: string | number): Const {
+    return { type: 'const', value };
 }
+
 
 
 

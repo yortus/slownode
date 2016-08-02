@@ -78,9 +78,7 @@ export default class Script implements IterableIterator<Promise<void>> {
             if (!transpileToJasm) throw new Error(`Unsupported script source language '${language}'`);
 
             // TODO: language-independent steps...
-            let jasm = transpileToJasm(source); // TODO: temp messy fix next few lines...
-            let jasm2 = JSON.stringify({$:'JASM', lines: jasm.split('\n')}); // TODO: remove useless stringify round-trip...
-            this.jasm = <any> KVON.parse(jasm2, this._reviver);
+            this.jasm = transpileToJasm(source);
 
             // TODO: create global and set ENV
             let globalObject = globalFactory.create();
