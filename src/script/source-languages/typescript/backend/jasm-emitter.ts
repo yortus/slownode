@@ -63,20 +63,17 @@ export default class JasmEmitter implements JasmProcessor {
 
 
     // Registers
-    registers = new Map(<[R, any][]>[
-        ['PC', RESERVED_REGISTER], // TODO: overkill! we don't need FREE/RESERVED here, just truthy/falsy
-        ['ENV', RESERVED_REGISTER],
-        ['ERR', RESERVED_REGISTER],
-        ['$0', FREE_REGISTER],
-        ['$1', FREE_REGISTER],
-        ['$2', FREE_REGISTER],
-        ['$3', FREE_REGISTER],
-        ['$4', FREE_REGISTER],
-        ['$5', FREE_REGISTER],
-        ['$6', FREE_REGISTER],
-        ['$7', FREE_REGISTER]
-    ]);
-    PC: never; // TODO: doc... required to implement JasmProcessor, but not used at runtime
+    PC      = RESERVED_REGISTER;
+    ENV     = RESERVED_REGISTER;
+    ERR     = RESERVED_REGISTER;
+    $0      = FREE_REGISTER;
+    $1      = FREE_REGISTER;
+    $2      = FREE_REGISTER;
+    $3      = FREE_REGISTER;
+    $4      = FREE_REGISTER;
+    $5      = FREE_REGISTER;
+    $6      = FREE_REGISTER;
+    $7      = FREE_REGISTER;
 
 
     // TODO: doc...
@@ -178,19 +175,19 @@ export default class JasmEmitter implements JasmProcessor {
 
     /** TODO: doc... */
     private reserveRegister(): RegisterName {
-        for (let reg of this.registers.keys()) {
-            if (this.registers.get(reg) === RESERVED_REGISTER) continue;
-            this.registers.set(reg, RESERVED_REGISTER);
-            return reg;
+        for (let regName of REGISTER_NAMES) {
+            if (this[regName] === RESERVED_REGISTER) continue;
+            this[regName] = RESERVED_REGISTER;
+            return regName;
         }
         throw new Error(`Expression too complex - ran out of registers`);
     }
 
 
     /** TODO: doc... */
-    private releaseRegister(reg: RegisterName) {
-        this.UNDEFD(reg);
-        this.registers.set(reg, FREE_REGISTER);
+    private releaseRegister(regName: RegisterName) {
+        this.UNDEFD(regName);
+        this[regName] = FREE_REGISTER;
     }
 
 
@@ -211,8 +208,9 @@ export default class JasmEmitter implements JasmProcessor {
 
 
 /** TODO: doc... sentinel value for unused registers */
-const RESERVED_REGISTER = {};
-const FREE_REGISTER = {};
+const REGISTER_NAMES: RegisterName[] = ['PC', 'ENV', 'ERR', '$0', '$1', '$2', '$3', '$4', '$5', '$6', '$7']
+const RESERVED_REGISTER = <any> {};
+const FREE_REGISTER = <any> {};
 
 
 

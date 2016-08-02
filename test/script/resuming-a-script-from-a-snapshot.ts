@@ -54,7 +54,7 @@ describe('Resuming a script from a snapshot', () => {
                         script = Script.fromSnapshot(snapshot);
                     }
                 }
-                actual = script.registers.get('ENV')['result'];
+                actual = script.registers.ENV['result'];
             }
             catch (er) {
                 actual = `ERROR: ${er.message}`;

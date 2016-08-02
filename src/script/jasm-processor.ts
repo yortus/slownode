@@ -21,59 +21,55 @@ export {R as RegisterName};
 export default class JasmProcessor {
 
     // Instructions: Load/store
-    LOAD    (tgt: R, obj: R, key: R) { let r = this.registers; r.set(tgt, r.get(obj)[r.get(key)]); }
-    STORE   (obj: R, key: R, src: R) { let r = this.registers; r.get(obj)[r.get(key)] = r.get(src); }
+    LOAD        (tgt: R, obj: R, key: R) { this[tgt] = this[obj][this[key]]; }
+    STORE       (obj: R, key: R, src: R) { this[obj][this[key]] = this[src]; }
 
     // Instructions: Arithmetic/logic
-    ADD     (tgt: R, lhs: R, rhs: R) { let r = this.registers; r.set(tgt, r.get(lhs) + r.get(rhs)); }
-    SUB     (tgt: R, lhs: R, rhs: R) { let r = this.registers; r.set(tgt, r.get(lhs) - r.get(rhs)); }
-    MUL     (tgt: R, lhs: R, rhs: R) { let r = this.registers; r.set(tgt, r.get(lhs) * r.get(rhs)); }
-    DIV     (tgt: R, lhs: R, rhs: R) { let r = this.registers; r.set(tgt, r.get(lhs) / r.get(rhs)); }
-    NEG     (tgt: R, arg: R) { let r = this.registers; r.set(tgt, -r.get(arg)); }
-    NOT     (tgt: R, arg: R) { let r = this.registers; r.set(tgt, !r.get(arg)); }
+    ADD         (tgt: R, lhs: R, rhs: R) { this[tgt] = this[lhs] + this[rhs]; }
+    SUB         (tgt: R, lhs: R, rhs: R) { this[tgt] = this[lhs] - this[rhs]; }
+    MUL         (tgt: R, lhs: R, rhs: R) { this[tgt] = this[lhs] * this[rhs]; }
+    DIV         (tgt: R, lhs: R, rhs: R) { this[tgt] = this[lhs] / this[rhs]; }
+    NEG         (tgt: R, arg: R) { this[tgt] = -this[arg]; }
+    NOT         (tgt: R, arg: R) { this[tgt] = !this[arg]; }
 
     // Instructions: Relational
-    EQ      (tgt: R, lhs: R, rhs: R) { let r = this.registers; r.set(tgt, r.get(lhs) === r.get(rhs)); }
-    GE      (tgt: R, lhs: R, rhs: R) { let r = this.registers; r.set(tgt, r.get(lhs) >=  r.get(rhs)); }
-    GT      (tgt: R, lhs: R, rhs: R) { let r = this.registers; r.set(tgt, r.get(lhs) >   r.get(rhs)); }
-    LE      (tgt: R, lhs: R, rhs: R) { let r = this.registers; r.set(tgt, r.get(lhs) <=  r.get(rhs)); }
-    LT      (tgt: R, lhs: R, rhs: R) { let r = this.registers; r.set(tgt, r.get(lhs) <   r.get(rhs)); }
-    NE      (tgt: R, lhs: R, rhs: R) { let r = this.registers; r.set(tgt, r.get(lhs) !== r.get(rhs)); }
+    EQ          (tgt: R, lhs: R, rhs: R) { this[tgt] = this[lhs] === this[rhs]; }
+    GE          (tgt: R, lhs: R, rhs: R) { this[tgt] = this[lhs] >=  this[rhs]; }
+    GT          (tgt: R, lhs: R, rhs: R) { this[tgt] = this[lhs] >   this[rhs]; }
+    LE          (tgt: R, lhs: R, rhs: R) { this[tgt] = this[lhs] <=  this[rhs]; }
+    LT          (tgt: R, lhs: R, rhs: R) { this[tgt] = this[lhs] <   this[rhs]; }
+    NE          (tgt: R, lhs: R, rhs: R) { this[tgt] = this[lhs] !== this[rhs]; }
 
     // Instructions: Control
-    B       (line: number) { this.PC = line; }
-    BF      (line: number, arg: R) { this.registers.get(arg) ? null : this.PC = line; }
-    BT      (line: number, arg: R) { this.registers.get(arg) ? this.registers.set('PC', line) : null; }
-    CALL    (tgt: R, func: R, thís: R, args: R) { let r = this.registers; r.set(tgt, r.get(func).apply(r.get(thís), r.get(args))); }
-    THROW   = async (err: R) => { throw this.registers[err]; } // TODO: temporary soln... how to really implement this?
-    AWAIT   = async (tgt: R, arg: R) => { let r = this.registers; r.set(tgt, await r.get(arg)); }
-    STOP    () { this.PC = Infinity; }
+    B           (line: number) { this.PC = line; }
+    BF          (line: number, arg: R) { this[arg] ? null : this.PC = line; }
+    BT          (line: number, arg: R) { this[arg] ? this.PC = line : null; }
+    CALL        (tgt: R, func: R, thís: R, args: R) { this[tgt] = this[func].apply(this[thís], this[args]); }
+    async THROW (err: R) { this.ERR = this[err]; throw this.ERR; } // TODO: temporary soln... how to really implement this?
+    async AWAIT (tgt: R, arg: R) { this[tgt] = await this[arg]; }
+    STOP        () { this.PC = Infinity; }
 
     // Instructions: Data
-    STRING  (tgt: R, val: string) { this.registers.set(tgt, val); }
-    NUMBER  (tgt: R, val: number) { this.registers.set(tgt, val); }
-    REGEXP  (tgt: R, pattern: string, flags: string) { this.registers.set(tgt, new RegExp(pattern, flags)); }
-    ARRAY   (tgt: R) { this.registers.set(tgt, []); }
-    OBJECT  (tgt: R) { this.registers.set(tgt, {}); }
-    TRUE    (tgt: R) { this.registers.set(tgt, true); }
-    FALSE   (tgt: R) { this.registers.set(tgt, false); }
-    NULL    (tgt: R) { this.registers.set(tgt, null); }
-    UNDEFD  (tgt: R) { this.registers.set(tgt, void 0); }
+    STRING      (tgt: R, val: string) { this[tgt] = val; }
+    NUMBER      (tgt: R, val: number) { this[tgt] = val; }
+    REGEXP      (tgt: R, pattern: string, flags: string) { this[tgt] = new RegExp(pattern, flags); }
+    ARRAY       (tgt: R) { this[tgt] = []; }
+    OBJECT      (tgt: R) { this[tgt] = {}; }
+    TRUE        (tgt: R) { this[tgt] = true; }
+    FALSE       (tgt: R) { this[tgt] = false; }
+    NULL        (tgt: R) { this[tgt] = null; }
+    UNDEFD      (tgt: R) { this[tgt] = void 0; }
 
     // Registers
-    registers = new Map(<[R, any][]>[
-        ['PC', 0],
-        ['ENV', void 0],
-        ['ERR', void 0],
-        ['$0', void 0],
-        ['$1', void 0],
-        ['$2', void 0],
-        ['$3', void 0],
-        ['$4', void 0],
-        ['$5', void 0],
-        ['$6', void 0],
-        ['$7', void 0]
-    ]);
-    get PC() { return <number> this.registers.get('PC'); }
-    set PC(value: number) { this.registers.set('PC', value); }
+    PC          = <any> 0;
+    ENV         = void 0;
+    ERR         = void 0;
+    $0          = void 0;
+    $1          = void 0;
+    $2          = void 0;
+    $3          = void 0;
+    $4          = void 0;
+    $5          = void 0;
+    $6          = void 0;
+    $7          = void 0;
 }

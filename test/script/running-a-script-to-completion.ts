@@ -42,7 +42,7 @@ describe('Running a script to completion', () => {
             try {
                 let script = new Script(source);
                 for (let step of script) await step;
-                actual = script.registers.get('ENV')['result'];
+                actual = script.registers.ENV['result'];
             }
             catch (er) {
                 actual = `ERROR: ${er.message}`;

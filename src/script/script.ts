@@ -21,6 +21,25 @@ export interface ScriptOptions {
 
 
 
+// TODO: ... put this elsewhere, like in jasm-processor.ts?
+export interface RegisterSet {
+    PC: any;
+    ENV: any;
+    ERR: any;
+    $0: any;
+    $1: any;
+    $2: any;
+    $3: any;
+    $4: any;
+    $5: any;
+    $6: any;
+    $7: any;
+}
+
+
+
+
+
 // TODO: ...
 export default class Script implements IterableIterator<Promise<void>> {
 
@@ -50,9 +69,7 @@ export default class Script implements IterableIterator<Promise<void>> {
             let obj: any = KVON.parse(source, this._reviver);
             this.name = obj.NAME;
             this.jasm = obj.CODE;
-            let data = obj.DATA; // TODO: validate data is an object with *all* registers defined as keys
-            let registers = Object.keys(data).reduce((map, key) => (map.set(key, data[key])), new Map());
-            this.registers = this._processor.registers = registers;
+            this.registers = obj.DATA; // TODO: validate data is an object with *all* registers defined as keys
         }
         else {
 
@@ -64,11 +81,10 @@ export default class Script implements IterableIterator<Promise<void>> {
             let jasm = transpileToJasm(source); // TODO: temp messy fix next few lines...
             let jasm2 = JSON.stringify({$:'JASM', lines: jasm.split('\n')}); // TODO: remove useless stringify round-trip...
             this.jasm = <any> KVON.parse(jasm2, this._reviver);
-            this.registers = processor.registers;
 
             // TODO: create global and set ENV
             let globalObject = globalFactory.create();
-            this.registers.set('ENV', globalObject);
+            this._processor.ENV = globalObject;
         }
 
         // TODO: universal steps...
@@ -86,12 +102,10 @@ export default class Script implements IterableIterator<Promise<void>> {
 
     // TODO: ...
     snapshot(): string {
-        let regNames = [...this.registers.keys()];
-        let data = regNames.reduce((obj, regName) => (obj[regName] = this.registers.get(regName), obj), {});
         let obj = {
             NAME: this._options.name,
             CODE: this.jasm,
-            DATA: data
+            DATA: this.registers
         };
         let snapshot = KVON.stringify(obj, this._replacer, 2);
         return snapshot;
@@ -111,8 +125,17 @@ export default class Script implements IterableIterator<Promise<void>> {
 
 
     // TODO: aka DATA...
-    registers: Map<RegisterName, any>;
-
+    // TODO: super inefficient! Creates new obj each call, so simple things like `if (script.registers.PC === x)` in a loop will be nasty
+    get registers(): RegisterSet {
+        let registerNames = Object.keys(this._processor);
+        let result = registerNames.reduce((res, regName) => (res[regName] = this._processor[regName], res), <any> {});
+        return result;
+    }
+    set registers(value: RegisterSet) {
+        let registerNames = Object.keys(this._processor);
+        registerNames.forEach(regName => this._processor[regName] = value[regName]);
+    }
+    
 
     // TODO: ...
     next: () => IteratorResult<Promise<void>>;
@@ -259,7 +282,7 @@ export default class Script implements IterableIterator<Promise<void>> {
             if (opcode !== 'call') return true;
 
             let targetRegisterName = (<RegisterArgument> prevInstr.arguments[0]).name;
-            return KVON.canStringify(this.registers.get(targetRegisterName), this._replacer);
+            return KVON.canStringify(this._processor[targetRegisterName], this._replacer);
         }
         else {
             // TODO: explain steps...
@@ -273,9 +296,7 @@ export default class Script implements IterableIterator<Promise<void>> {
             // - THEN set canSnapshot to `true`
 
             // TODO: make DRY - this is copypasta from above...
-            let regNames = [...this.registers.keys()];
-            let data = regNames.reduce((obj, regName) => (obj[regName] = this.registers.get(regName), obj), {});
-            return KVON.canStringify(data, this._replacer);
+            return KVON.canStringify(this.registers, this._replacer);
         }
     }
 }

@@ -170,7 +170,7 @@ function isNextInstructionFreeOfExternalSideEffects(script: Script) {
 
     // TODO: use 'AWAIT' instructions as a proxy for this condition for now... But this needs refinement...
     // TODO: what about awaiting for a DelayPromise? That is safe/resumable/has no side-effects
-    let instr = script.jasm.lines[script.registers.get('PC')];
+    let instr = script.jasm.lines[script.registers.PC];
     let isAwait = instr.type === 'instruction' && instr.opcode === 'await';
     return !isAwait;
 }
