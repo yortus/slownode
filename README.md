@@ -4,6 +4,8 @@
 
 ## Glossary
 
+- **KVON**: TODO
+
 - **JASM**: TODO: target language, a kind of bytecode, easy to interpret using a JS engine
 
 - **JASM Program**: TODO
@@ -18,11 +20,11 @@
 
 - **Register Set**: TODO
 
-- **JS to JASM transpiler**: TODO
-
-- **Epoch**: TODO
+- **TypeScript to JASM transpiler**: TODO
 
 - **Script**: TODO
+
+- **Epoch**: TODO
 
 - ** **: TODO
 
